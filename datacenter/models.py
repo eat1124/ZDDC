@@ -17,7 +17,7 @@ class Fun(models.Model):
     name = models.CharField(u"功能名称", max_length=100)
     app = models.ManyToManyField(App)
     sort = models.IntegerField(u"排序", blank=True, null=True)
-    type = models.CharField(u"类型", blank=True, null=True, max_length=20)
+    funtype = models.CharField(u"类型", blank=True, null=True, max_length=20)
     url = models.CharField(u"地址", blank=True, null=True, max_length=500)
     icon = models.CharField(u"图标", blank=True, null=True, max_length=100)
     state = models.CharField(u"状态", blank=True, null=True, max_length=20)
@@ -38,7 +38,7 @@ class UserInfo(models.Model):
     phone = models.CharField(u"电话", blank=True, null=True, max_length=50)
     group = models.ManyToManyField(Group)
     pnode = models.ForeignKey('self', blank=True, null=True, related_name='children', verbose_name='父节点')
-    type = models.CharField(u"类型", blank=True, null=True, max_length=20)
+    usertype = models.CharField(u"类型", blank=True, null=True, max_length=20)
     state = models.CharField(u"状态", blank=True, null=True, max_length=20)
     sort = models.IntegerField(u"排序", blank=True, null=True)
     remark = models.CharField(u"说明", blank=True, null=True, max_length=5000)
@@ -47,13 +47,14 @@ class UserInfo(models.Model):
     forgetpassword = models.CharField(u"修改密码地址", blank=True, null=True, max_length=50)
 
 
-class Dict(models.Model):
-    dictname = models.CharField(u"字典名称",  max_length=100)
+class Dictindex(models.Model):
+    name = models.CharField(u"字典名称",  max_length=100)
+    remark = models.CharField(u"说明", blank=True, null=True, max_length=5000)
     sort = models.IntegerField(u"排序", blank=True, null=True)
     state = models.CharField(u"状态", blank=True, max_length=20)
 
-class DictList(models.Model):
-    dict = models.ForeignKey(Dict)
+class Dictlist(models.Model):
+    dictindex = models.ForeignKey(Dictindex)
     name = models.CharField(u"条目名称",  max_length=100)
     remark = models.CharField(u"说明", blank=True, null=True, max_length=5000)
     sort = models.IntegerField(u"排序", blank=True, null=True)
@@ -63,7 +64,7 @@ class Source(models.Model):
     pnode = models.ForeignKey('self', blank=True, null=True, related_name='children', verbose_name='父节点')
     name = models.CharField(u"数据源名称", max_length=100)
     code = models.CharField(u"数据源代码", blank=True, max_length=50)
-    type = models.CharField(u"类型", blank=True, null=True, max_length=20)
+    sourcetype = models.CharField(u"类型", blank=True, null=True, max_length=20)
     connection = models.CharField(u"连接串", blank=True, null=True, max_length=500)
     sort = models.IntegerField(u"排序", blank=True, null=True)
     state = models.CharField(u"状态", blank=True, null=True, max_length=20)
@@ -80,7 +81,7 @@ class Storage(models.Model):
     name = models.CharField(u"存储名称", max_length=100)
     code = models.CharField(u"存储代码", blank=True, max_length=50)
     tablename = models.CharField(u"表名", blank=True, max_length=200)
-    type = models.CharField(u"存储类型", blank=True, null=True, max_length=20)
+    storagetype = models.CharField(u"存储类型", blank=True, null=True, max_length=20)
     validtime = models.CharField(u"数据有效时间", blank=True, null=True, max_length=20)
     sort = models.IntegerField(u"排序", blank=True, null=True)
     state = models.CharField(u"状态", blank=True, null=True, max_length=20)
