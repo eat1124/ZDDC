@@ -158,8 +158,8 @@ def group_get_user_tree(parent, selectusers):
         node = {}
         node["text"] = child.fullname
         node["id"] = "user_" + str(child.id)
-        node["type"] = child.type
-        if child.type == "user" and child in selectusers:
+        node["type"] = child.usertype
+        if child.usertype == "user" and child in selectusers:
             node["state"] = {"selected": True}
         node["children"] = group_get_user_tree(child, selectusers)
         nodes.append(node)
@@ -173,8 +173,8 @@ def group_get_fun_tree(parent, selectfuns):
         node = {}
         node["text"] = child.name
         node["id"] = "fun_" + str(child.id)
-        node["type"] = child.type
-        if child.type == "fun" and child in selectfuns:
+        node["type"] = child.funtype
+        if child.funtype == "fun" and child in selectfuns:
             node["state"] = {"selected": True}
         node["children"] = group_get_fun_tree(child, selectfuns)
         nodes.append(node)

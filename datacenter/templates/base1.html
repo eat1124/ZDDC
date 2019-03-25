@@ -4,29 +4,29 @@
     <meta charset="utf-8"/>
     <title>
         {% if homepage %}
-            上海特速自动化灾备管理软件
+        上海特速自动化灾备管理软件
         {% else %}
-            {% for  fun in pagefuns.pagefuns %}
-                {% if fun.isselected %}
-                    {% if not fun.child %}
-                        {{ fun.name }}
-                    {% else %}
-                        {% for  fun1 in fun.child %}
-                            {% if fun1.isselected %}
-                                {% if not fun1.child %}
-                                    {{ fun1.name }}
-                                {% else %}
-                                    {% for  fun2 in fun1.child %}
-                                        {% if fun2.isselected %}
-                                            {{ fun2.name }}
-                                        {% endif %}
-                                    {% endfor %}
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
+        {% for fun in pagefuns.pagefuns %}
+        {% if fun.isselected %}
+        {% if not fun.child %}
+        {{ fun.name }}
+        {% else %}
+        {% for fun1 in fun.child %}
+        {% if fun1.isselected %}
+        {% if not fun1.child %}
+        {{ fun1.name }}
+        {% else %}
+        {% for fun2 in fun1.child %}
+        {% if fun2.isselected %}
+        {{ fun2.name }}
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endif %}
+        {% endfor %}
         {% endif %}
 
     </title>
@@ -56,7 +56,7 @@
             </a>
             <a href="/index" class="navbar-brand">
                 <img src="/static/new/images/cloud-logo1.png" class="m-r-sm" alt="scale">
-                <span class="hidden-nav-xs">上海特速灾备运维管理软件TSDBOM</span>
+                <span class="hidden-nav-xs">镇海数据中心管理平台ZDDC</span>
             </a>
             <a class="btn btn-link visible-xs" data-toggle="dropdown" data-target=".user">
                 <i class="fa fa-cog"></i>
@@ -73,8 +73,8 @@
                        data-close-others="true">
                         <i id="dropdown_task_nums" style="font-size:18px" class="fa fa-bell-o"></i>
                         {% if pagefuns.task_nums > 0 %}
-                            <span class="badge badge-default" id="task_nums"
-                                  style="background-color: #36c6d3"> {{ pagefuns.task_nums }} </span>
+                        <span class="badge badge-default" id="task_nums"
+                              style="background-color: #36c6d3"> {{ pagefuns.task_nums }} </span>
                         {% endif %}
                     </a>
                     <ul class="dropdown-menu">
@@ -83,45 +83,45 @@
                             <div class="scroller" style="height: 620px;" data-always-visible="1" data-rail-visible="0">
                                 <ul class="feeds" id="locate_task">
                                     {% for task in pagefuns.message_task %}
-                                        <li id="{{ task.task_id }}">
-                                            <a id="a_{{ task.task_id }}" href="javascript:void(0)"
-                                               name="{{ task.pop }}">
+                                    <li id="{{ task.task_id }}">
+                                        <a id="a_{{ task.task_id }}" href="javascript:void(0)"
+                                           name="{{ task.pop }}">
 
-                                                <input id="tasktype" type="text" value="{{ task.task_type }}" hidden>
-                                                <input id="task_id" type="text" value="{{ task.task_id }}" hidden>
-                                                <input id="process_name" type="text" value="{{ task.process_name }}"
-                                                       hidden>
-                                                <input id="send_time" type="text" value="{{ task.send_time }}" hidden>
-                                                <input id="sign_role" type="text" value="{{ task.group_name }}" hidden>
-                                                <input id="process_run_reason" type="text"
-                                                       value="{{ task.process_run_reason }}" hidden>
-                                                <input id="task_extra" type="text"
-                                                       value="{{ task.task_extra }}" hidden>
-                                                <input id="processrunid" type="text"
-                                                       value="{{ task.processrunid }}" hidden>
-                                                <input id="address" type="text"
-                                                       value="{{ task.address }}" hidden>
-                                                <div class="col1">
-                                                    <div class="cont">
-                                                        <div class="cont-col1">
-                                                            <div class="label label-sm {{ task.task_color }}">
-                                                                <i class="{{ task.task_icon }}"></i>
-                                                            </div>
+                                            <input id="tasktype" type="text" value="{{ task.task_type }}" hidden>
+                                            <input id="task_id" type="text" value="{{ task.task_id }}" hidden>
+                                            <input id="process_name" type="text" value="{{ task.process_name }}"
+                                                   hidden>
+                                            <input id="send_time" type="text" value="{{ task.send_time }}" hidden>
+                                            <input id="sign_role" type="text" value="{{ task.group_name }}" hidden>
+                                            <input id="process_run_reason" type="text"
+                                                   value="{{ task.process_run_reason }}" hidden>
+                                            <input id="task_extra" type="text"
+                                                   value="{{ task.task_extra }}" hidden>
+                                            <input id="processrunid" type="text"
+                                                   value="{{ task.processrunid }}" hidden>
+                                            <input id="address" type="text"
+                                                   value="{{ task.address }}" hidden>
+                                            <div class="col1">
+                                                <div class="cont">
+                                                    <div class="cont-col1">
+                                                        <div class="label label-sm {{ task.task_color }}">
+                                                            <i class="{{ task.task_icon }}"></i>
                                                         </div>
-                                                        <div class="cont-col2">
-                                                            <div class="desc"> <span class="label label-sm "
-                                                                                     style="background-color:{{ task.process_color }};"> {{ task.process_name }}
+                                                    </div>
+                                                    <div class="cont-col2">
+                                                        <div class="desc"> <span class="label label-sm "
+                                                                                 style="background-color:{{ task.process_color }};"> {{ task.process_name }}
                                                         </span>{{ task.content }}
 
-                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col2">
-                                                    <div class="date"> {{ task.time }}</div>
-                                                </div>
-                                            </a>
-                                        </li>
+                                            </div>
+                                            <div class="col2">
+                                                <div class="date"> {{ task.time }}</div>
+                                            </div>
+                                        </a>
+                                    </li>
                                     {% endfor %}
                                 </ul>
                             </div>
@@ -169,54 +169,54 @@
                             <!-- nav -->
                             <nav class="nav-primary hidden-xs ">
                                 <ul class="nav nav-main" data-ride="collapse">
-                                    {% for  fun in pagefuns.pagefuns %}
-                                        <li style="font-size:16px" class="{% if fun.isselected %}active{% endif %} ">
-                                            <a href="{{ fun.url }}" class="auto">
-                                                {% if fun.child %}
-                                                    <span class="pull-right text-muted">
+                                    {% for fun in pagefuns.pagefuns %}
+                                    <li style="font-size:16px" class="{% if fun.isselected %}active{% endif %} ">
+                                        <a href="{{ fun.url }}" class="auto">
+                                            {% if fun.child %}
+                                            <span class="pull-right text-muted">
                               <i class="i i-circle-sm-o text"></i>
                               <i class="i i-circle-sm text-active"></i>
                             </span>
-                                                {% endif %}
-                                                <i style="font-size:16px" class="{{ fun.icon }}">
-                                                </i>
-                                                <span>{{ fun.name }} </span>
-                                            </a>
-                                            {% if fun.child %}
-                                                <ul class="nav dk">
-                                                    {% for  fun1 in fun.child %}
-                                                        <li class=" {% if fun1.isselected %}active{% endif %}">
-                                                            <a href="{{ fun1.url }}" class="auto">
-                                                                {% if fun1.child %}
-                                                                    <span class="pull-right text-muted">
+                                            {% endif %}
+                                            <i style="font-size:16px" class="{{ fun.icon }}">
+                                            </i>
+                                            <span>{{ fun.name }} </span>
+                                        </a>
+                                        {% if fun.child %}
+                                        <ul class="nav dk">
+                                            {% for fun1 in fun.child %}
+                                            <li class=" {% if fun1.isselected %}active{% endif %}">
+                                                <a href="{{ fun1.url }}" class="auto">
+                                                    {% if fun1.child %}
+                                                    <span class="pull-right text-muted">
                                       <i class="i i-circle-sm-o text"></i>
                                       <i class="i i-circle-sm text-active"></i>
                                     </span>
-                                                                {% endif %}
-                                                                <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ fun1.name }}</span>
-                                                            </a>
-                                                            {% if fun1.child %}
-                                                                <ul class="nav dk">
-                                                                    {% for  fun2 in fun1.child %}
-                                                                        <li class=" {% if fun2.isselected %}active{% endif %}">
-                                                                            <a href="{{ fun2.url }}" class="auto">
-                                                                                {% if fun2.child %}
-                                                                                    <span class="pull-right text-muted">
+                                                    {% endif %}
+                                                    <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ fun1.name }}</span>
+                                                </a>
+                                                {% if fun1.child %}
+                                                <ul class="nav dk">
+                                                    {% for fun2 in fun1.child %}
+                                                    <li class=" {% if fun2.isselected %}active{% endif %}">
+                                                        <a href="{{ fun2.url }}" class="auto">
+                                                            {% if fun2.child %}
+                                                            <span class="pull-right text-muted">
                                               <i class="i i-circle-sm-o text"></i>
                                               <i class="i i-circle-sm text-active"></i>
                                             </span>
-                                                                                {% endif %}
-                                                                                <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ fun2.name }}</span>
-                                                                            </a>
-                                                                        </li>
-                                                                    {% endfor %}
-                                                                </ul>
                                                             {% endif %}
-                                                        </li>
+                                                            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ fun2.name }}</span>
+                                                        </a>
+                                                    </li>
                                                     {% endfor %}
                                                 </ul>
-                                            {% endif %}
-                                        </li>
+                                                {% endif %}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% endif %}
+                                    </li>
                                     {% endfor %}
                                 </ul>
                             </nav>
@@ -238,59 +238,59 @@
             <section id="content">
                 <section class="vbox">
                     {% if homepage %}
-                        {% block contenthome %}{% endblock %}
+                    {% block contenthome %}{% endblock %}
                     {% else %}
-                        <section class="scrollable wrapper">
-                            <!-- .breadcrumb -->
-                            <ul class="breadcrumb">
-                                <li><a href="/index"><i class="fa fa-home"></i> 首页</a></li>
-                                {% for  fun in pagefuns.pagefuns %}
-                                    {% if fun.isselected %}
-                                        <li>{{ fun.name }}</li>
-                                        {% if fun.child %}
-                                            {% for  fun1 in fun.child %}
-                                                {% if fun1.isselected %}
-                                                    <li>{{ fun1.name }}</li>
-                                                    {% if fun1.child %}
-                                                        {% for  fun2 in fun1.child %}
-                                                            {% if fun2.isselected %}
-                                                                <li>{{ fun2.name }}</li>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                    {% endif %}
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    {% endif %}
+                    <section class="scrollable wrapper">
+                        <!-- .breadcrumb -->
+                        <ul class="breadcrumb">
+                            <li><a href="/index"><i class="fa fa-home"></i> 首页</a></li>
+                            {% for fun in pagefuns.pagefuns %}
+                            {% if fun.isselected %}
+                            <li>{{ fun.name }}</li>
+                            {% if fun.child %}
+                            {% for fun1 in fun.child %}
+                            {% if fun1.isselected %}
+                            <li>{{ fun1.name }}</li>
+                            {% if fun1.child %}
+                            {% for fun2 in fun1.child %}
+                            {% if fun2.isselected %}
+                            <li>{{ fun2.name }}</li>
+                            {% endif %}
+                            {% endfor %}
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                        <section class="panel panel-default">
+                            <header class="panel-heading">
+                                {% for fun in pagefuns.pagefuns %}
+                                {% if fun.isselected %}
+                                {% if not fun.child %}
+                                {{ fun.name }}
+                                {% else %}
+                                {% for fun1 in fun.child %}
+                                {% if fun1.isselected %}
+                                {% if not fun1.child %}
+                                {{ fun1.name }}
+                                {% else %}
+                                {% for fun2 in fun1.child %}
+                                {% if fun2.isselected %}
+                                {{ fun2.name }}
+                                {% endif %}
                                 {% endfor %}
-                            </ul>
-                            <section class="panel panel-default">
-                                <header class="panel-heading">
-                                    {% for  fun in pagefuns.pagefuns %}
-                                        {% if fun.isselected %}
-                                            {% if not fun.child %}
-                                                {{ fun.name }}
-                                            {% else %}
-                                                {% for  fun1 in fun.child %}
-                                                    {% if fun1.isselected %}
-                                                        {% if not fun1.child %}
-                                                            {{ fun1.name }}
-                                                        {% else %}
-                                                            {% for  fun2 in fun1.child %}
-                                                                {% if fun2.isselected %}
-                                                                    {{ fun2.name }}
-                                                                {% endif %}
-                                                            {% endfor %}
-                                                        {% endif %}
-                                                    {% endif %}
-                                                {% endfor %}
-                                            {% endif %}
-                                        {% endif %}
-                                    {% endfor %}
-                                </header>
-                                {% block content %}{% endblock %}
-                            </section>
+                                {% endif %}
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                                {% endif %}
+                                {% endfor %}
+                            </header>
+                            {% block content %}{% endblock %}
                         </section>
+                    </section>
                     {% endif %}
                 </section>
                 <a href="#" class="hide nav-off-screen-block" data-toggle="class:nav-off-screen" data-target="#nav"></a>
@@ -654,7 +654,7 @@
 
     //var loadTasksTag = $("#load_tasks_tag").val();
     // if (loadTasksTag == 1) {
-    var my_t = window.setInterval(getTaskInfo, 6000);
+    // var my_t = window.setInterval(getTaskInfo, 6000);
     //}
     //else {
     //    window.clearInterval(my_t)
@@ -720,7 +720,7 @@
         });
     });
 </script>
-
+<!--
 <script>
     // 针对火狐浏览器样式不正确的修改
     if ($(".vbox").offset().top != 0) {
@@ -743,5 +743,5 @@
         }
     }
 </script>
-
+-->
 </html>

@@ -2,10 +2,10 @@ from django.conf.urls import url
 from datacenter.views import *
 
 urlpatterns = [
-    url(r'^$', index, {'funid': '2'}),
+    url(r'^$', index, {'funid': '1'}),
     url(r'^test/$', test),
     url(r'^processindex/(\d+)/$', processindex),
-    url(r'^index/$', index, {'funid': '2'}),
+    url(r'^index/$', index, {'funid': '1'}),
     url(r'^get_process_rto/$', get_process_rto),
     url(r'^get_daily_processrun/$', get_daily_processrun),
     url(r'^get_process_index_data/$', get_process_index_data),
@@ -21,20 +21,27 @@ urlpatterns = [
     url(r'^userpassword/$', userpassword),
 
     # 系统维护
-    url(r'^organization/$', organization, {'funid': '61'}),
+    url(r'^organization/$', organization, {'funid': '8'}),
     url(r'^orgdel/$', orgdel),
     url(r'^orgmove/$', orgmove),
     url(r'^orgpassword/$', orgpassword),
-    url(r'^group/$', group, {'funid': '62'}),
+    url(r'^group/$', group, {'funid': '9'}),
     url(r'^groupsave/$', groupsave),
     url(r'^groupdel/$', groupdel),
     url(r'^getusertree/$', getusertree),
     url(r'^groupsaveusertree/$', groupsaveusertree),
     url(r'^getfuntree/$', getfuntree),
     url(r'^groupsavefuntree/$', groupsavefuntree),
-    url(r'^function/$', function, {'funid': '63'}),
+    url(r'^function/$', function, {'funid': '10'}),
     url(r'^fundel/$', fundel),
     url(r'^funmove/$', funmove),
+
+    url(r'^dict/$', dictindex, {'funid': '11'}),
+    url(r'^dictsave/$', dictsave),
+    url(r'^dictselect/$', dictselect),
+    url(r'^dictlistsave/$', dictlistsave),
+    url(r'^dictdel/$', dictdel),
+    url(r'^dictlistdel/$', dictlistdel),
 
     # 场景管理
     url(r'^scene/$', scene, {'funid': '70'}),
