@@ -148,6 +148,7 @@ $('#save').click(function () {
             var mydata = data["data"];
             if (myres == "新增成功。") {
                 $("#se_1").append("<option id='" + "dict_" + mydata + "' sort='" + $("#dictsort").val() + "'>" + $("#dictname").val() + "</option>");
+                $('#static').modal('hide');
             }
             if (myres == "修改成功。") {
                 $("#" + $("#dictid").val()).text($("#dictname").val())
@@ -172,7 +173,6 @@ $('#listsave').click(function () {
             {
                 dictid: $("#se_1").find('option:selected').attr('id'),
                 listid: $("#listid").val(),
-
                 listname: $("#listname").val(),
                 listsort: $("#listsort").val(),
             },
@@ -181,6 +181,7 @@ $('#listsave').click(function () {
             var mydata = data["data"];
             if (myres == "新增成功。") {
                 $("#se_2").append("<option id='" + "list_" + mydata + "' sort='" + $("#listsort").val() + "'>" + $("#listname").val() + "</option>");
+                $('#static1').modal('hide');
             }
             if (myres == "修改成功。") {
                 $("#" + $("#listid").val()).text($("#listname").val())

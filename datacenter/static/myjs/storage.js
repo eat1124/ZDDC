@@ -35,7 +35,6 @@ $(document).ready(function () {
                 "sLast": "尾页"
             },
             "sZeroRecords": "没有检索到数据",
-
         }
     });
     // 行按钮

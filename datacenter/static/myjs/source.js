@@ -22,7 +22,6 @@ function customTree() {
                     "check_callback": true,
                     'data': treedata
                 },
-
                 "types": {
                     "node": {
                         "icon": "fa fa-folder icon-state-warning icon-lg"
@@ -44,23 +43,15 @@ function customTree() {
                                 var inst = jQuery.jstree.reference(data.reference),
                                     obj = inst.get_node(data.reference);
 
-                                $("#group").empty();
                                 $("#title").text("新建");
                                 $("#id").val("0");
                                 $("#pid").val(obj.id);
-                                $("#time").val("");
-                                $("#skip option:selected").removeProp("selected");
-                                $("#approval option:selected").removeProp("selected");
-                                $("#group option:selected").removeProp("selected");
-                                $("#rto_count_in option:selected").removeProp("selected");
-                                $("#name").val("");
 
-                                var groupInfoList = obj.data.allgroups.split("&");
-                                for (var i = 0; i < groupInfoList.length - 1; i++) {
-                                    var singlegroupInfoList = groupInfoList[i].split("+");
-                                    $("#group").append('<option value="' + singlegroupInfoList[0] + '">' + singlegroupInfoList[1] + '</option>')
-                                }
-                                // inst.add_node(obj);
+                                $("#name").val("");
+                                $("#code").val("");
+                                $("#sort").val("");
+                                $("#connection").val("");
+                                $("#sourcetype option:selected").removeProp("selected");
                             }
                         },
                         "删除": {
@@ -76,10 +67,9 @@ function customTree() {
                                     if (confirm("确定要删除此节点？删除后不可恢复。")) {
                                         $.ajax({
                                             type: "POST",
-                                            url: "../del_step/",
+                                            url: "../del_source/",
                                             data: {
                                                 id: obj.id,
-                                                process_id: $("#process option:selected").val(),
                                             },
                                             success: function (data) {
                                                 if (data == 1) {
@@ -112,14 +102,13 @@ function customTree() {
                         } else {
                             $.ajax({
                                 type: "POST",
-                                url: "../move_step/",
+                                url: "../move_source/",
                                 data: {
                                     id: data.node.id,
                                     parent: data.parent,
                                     old_parent: data.old_parent,
                                     position: data.position,
                                     old_position: data.old_position,
-                                    process_id: $("#process option:selected").val(),
                                 },
                                 success: function (data) {
                                     var selectid = $("#id").val();
@@ -141,12 +130,10 @@ function customTree() {
                 })
                 .bind('select_node.jstree', function (event, data) {
                     if (data.node.data.verify == "first_node") {
-                        alert(111111)
                         $("#formdiv").hide();
                     } else {
                         $("#formdiv").show();
                     }
-                    $("#formdiv").show();
                     $("#title").text(data.node.text);
                     $("#id").val(data.node.id);
                     $("#pid").val(data.node.parent);
@@ -154,24 +141,8 @@ function customTree() {
                     $("#sourcetype").val(data.node.data.sourcetype);
                     $("#code").val(data.node.data.code);
                     $("#sort").val(data.node.data.sort);
-
-
-                    /*
-                    var eventNodeName = event.target.nodeName;
-                    if (eventNodeName == 'INS') {
-                        return;
-                    } else if (eventNodeName == 'A') {
-                        var $subject = $(event.target).parent();
-                        if ($subject.find('ul').length > 0) {
-                            $("#title").text($(event.target).text())
-
-                        } else {
-                            //选择的id值
-                            alert($(event.target).parents('li').attr('id'));
-                        }
-                    }
-                    */
-
+                    $("#connection").val(data.node.data.connection);
+                    $("#p_name").val(data.node.data.p_name);
                 })
         },
         error: function (e) {
@@ -184,68 +155,26 @@ function customTree() {
 customTree();
 
 
-$('#sample_1 tbody').on('click', 'button#select', function () {
-    var table = $('#sample_1').DataTable();
-    var data = table.row($(this).parents('tr')).data();
-    $("#scriptcode").val(data.code);
-    $("#script_name").val(data.name);
-    $("#scriptip").val(data.ip);
-    // $("#scriptport").val(data.port);
-    $("#scripttype").val(data.type);
-    // $("#scriptruntype").val(data.runtype);
-    $("#scriptusername").val(data.username);
-    $("#scriptpassword").val(data.password);
-    $("#scriptfilename").val(data.filename);
-    // $("#scriptparamtype").val(data.paramtype);
-    // $("#scriptparam").val(data.param);
-    $("#scriptscriptpath").val(data.scriptpath);
-    $("#success_text").val(data.success_text);
-    $("#log_address").val(data.log_address);
-
-    // $("#scriptrunpath").val(data.runpath);
-    // $("#scriptcommand").val("cd " + $("#scriptscriptpath").val() + ";" + $("#scriptrunpath").val() + "/" + $("#scriptfilename").val() + " " + $("#scriptparam").val());
-    // $("#scriptmaxtime").val(data.maxtime);
-    // $("#scripttime").val(data.time);
-    $('#static1').modal('hide');
-});
-
-
 $('#save').click(function () {
     $.ajax({
         type: "POST",
-        url: "../setpsave/",
+        url: "../source_save/",
         data: {
             id: $("#id").val(),
             pid: $("#pid").val(),
             name: $("#name").val(),
-            time: $("#time").val(),
-            skip: $("#skip").val(),
-            approval: $("#approval").val(),
-            group: $("#group").val(),
-            rto_count_in: $("#rto_count_in").val(),
-            new: $("#new").val(),
-            process_id: $("#process option:selected").val(),
-            remark: $("#remark").val()
+            code: $("#code").val(),
+            connection: $("#connection").val(),
+            sourcetype: $("#sourcetype option:selected").val(),
         },
         success: function (data) {
-            // $("#name_" + $("#id").val()).text($("#name").val());
-            // $("#time_" + $("#id").val()).val($("#time").val());
-            // $("#approval_" + $("#id").val()).val($("#approval").val());
-            // $("#skip_" + $("#id").val()).val($("#skip").val());
-            // $("#group_" + $("#id").val()).val($("#group").val());
-            // var approvaltext = ""
-            // if ($("#approval").val() == "1")
-            //     approvaltext = "需审批"
-            // var skiptext = ""
-            // if ($("#skip").val() == "1")
-            //     skiptext = "可跳过"
-            // $("#curstring_" + $("#id").val()).text(approvaltext + skiptext);
             if (data["data"]) {
+                alert("保存成功！");
                 $("#id").val(data.data);
+            } else {
+                alert(data["result"])
             }
-            alert("保存成功！");
             $('#tree_2').jstree("destroy");
-
             customTree();
         },
         error: function (e) {

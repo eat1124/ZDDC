@@ -2,159 +2,161 @@
 
 {% block content %}
 
-    <div style="height:10px"></div>
-    <div class="table-toolbar">
-        <div id="error">
-            {% if errors %}
-                {% for error in errors %}
-                    <div class="alert alert-danger ">{{ error }}</div>
-                    <span> {% endfor %}</span>
+<div style="height:10px"></div>
+<div class="table-toolbar">
+    <div id="error">
+        {% if errors %}
+        {% for error in errors %}
+        <div class="alert alert-danger ">{{ error }}</div>
+        <span> {% endfor %}</span>
 
-            {% endif %}</div>
-        <div class="row">
-            <div class="col-md-6">
-                <div>
-                    <button id="new" type="button" data-toggle="modal" data-target="#static" class="btn  green">
-                        新增
-                        <i class="fa fa-plus"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
+        {% endif %}
     </div>
-
-    <table class="table table-striped table-bordered table-hover table-checkable order-column" id="sample_1">
-        <thead>
-        <tr>
-            <th style="width:40px;"> 序号</th>
-            <th> 存储名称</th>
-            <th> 存储代码</th>
-            <th> 表名</th>
-            <th> 存储类型</th>
-            <th> 数据有效时间</th>
-            <th> 排序</th>
-            <th style="width:50px;"> 操作</th>
-        </tr>
-        </thead>
-
-        <tbody>
-
-        </tbody>
-    </table>
-    <div id="static" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-                    <h4 class="modal-title">存储管理</h4>
-                    <input hidden id="id" type="text" name="id">
-                </div>
-                <div class="panel-body">
-
-                    <form class="bs-example form-horizontal activate-form">{% csrf_token %}
-
-                        <div class="form-body">
-                            <div class="form-group">
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>存储名称</label>
-                                <div class="col-md-10">
-                                    <input id="storage_name" type="text" name="storage_name" class="form-control "
-                                           placeholder="">
-                                    <div class="form-control-focus"></div>
-
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>存储代码</label>
-                                <div class="col-md-10">
-                                    <input id="storage_code" type="text" name="storage_code" class="form-control "
-                                           placeholder="">
-                                    <div class="form-control-focus"></div>
-
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; "></span>表名</label>
-                                <div class="col-md-10">
-                                    <input id="table_name" type="text" name="table_name" class="form-control "
-                                           placeholder="">
-                                    <div class="form-control-focus"></div>
-
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>存储类型</label>
-                                <div class="col-md-10">
-                                    <select class="form-control" id="storage_type" name="storage_type">
-                                        <option value="1">列</option>
-                                        <option value="2">行</option>
-                                    </select>
-                                    <div class="form-control-focus"></div>
-
-                                </div>
-                            </div>
-
-
-                            <div class="form-group">
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>数据有效时间</label>
-                                <div class="col-md-10">
-                                    <select class="form-control" id="valid_time" name="valid_time">
-                                        <option value="1">一个月</option>
-                                        <option value="2">一年</option>
-                                        <option value="3">永久</option>
-                                    </select>
-                                    <div class="form-control-focus"></div>
-
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; "></span>排序</label>
-                                <div class="col-md-10">
-                                    <input id="sort" type="number" name="sort" class="form-control"
-                                           placeholder="">
-                                    <div class="form-control-focus"></div>
-
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-actions ">
-                            <div class="modal-footer">
-                                <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭
-                                </button>
-                                <button type="button" id="save" name="save" class="btn green">保存</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div>
+                <button id="new" type="button" data-toggle="modal" data-target="#static" class="btn  green">
+                    新增
+                    <i class="fa fa-plus"></i>
+                </button>
             </div>
         </div>
     </div>
+
+</div>
+
+<table class="table table-striped table-bordered table-hover table-checkable order-column" id="sample_1">
+    <thead>
+    <tr>
+        <th style="width:40px;"> 序号</th>
+        <th> 存储名称</th>
+        <th> 存储代码</th>
+        <th> 表名</th>
+        <th> 存储类型</th>
+        <th> 有效时间</th>
+        <th> 排序</th>
+        <th style="width:50px;"> 操作</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    </tbody>
+</table>
+<div id="static" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">存储管理</h4>
+                <input hidden id="id" type="text" name="id">
+            </div>
+            <div class="panel-body">
+
+                <form class="bs-example form-horizontal activate-form">{% csrf_token %}
+
+                    <div class="form-body">
+                        <div class="form-group">
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>存储名称</label>
+                            <div class="col-md-10">
+                                <input id="storage_name" type="text" name="storage_name" class="form-control "
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>存储代码</label>
+                            <div class="col-md-10">
+                                <input id="storage_code" type="text" name="storage_code" class="form-control "
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>表名</label>
+                            <div class="col-md-10">
+                                <input id="table_name" type="text" name="table_name" class="form-control "
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>存储类型</label>
+                            <div class="col-md-10">
+                                <select class="form-control" id="storage_type" name="storage_type">
+                                    {% for storage_type in storage_type_list %}
+                                    <option value="{{storage_type}}">{{storage_type}}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>有效时间</label>
+                            <div class="col-md-10">
+                                <select class="form-control" id="valid_time" name="valid_time">
+                                    {% for vt in valid_time_list %}
+                                    <option value="{{vt}}">{{vt}}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; "></span>排序</label>
+                            <div class="col-md-10">
+                                <input id="sort" type="number" name="sort" class="form-control"
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions ">
+                        <div class="modal-footer">
+                            <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭
+                            </button>
+                            <button type="button" id="save" name="save" class="btn green">保存</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 
 {% block script %}
-    <script>
-        $.ajaxSetup({
-            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
-        });
-    </script>
-    <link href="/static/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css" rel="stylesheet"
-          type="text/css"/>
-    <link href="/static/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css"/>
-    <link href="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet"
-          type="text/css"/>
-    <script src="/static/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.js"
-            type="text/javascript"></script>
-    <script src="/static/assets/global/plugins/datatables/datatables.min.js" type="text/javascript"></script>
-    <script src="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js"
-            type="text/javascript"></script>
+<script>
+    $.ajaxSetup({
+        data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+    });
+</script>
+<link href="/static/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css" rel="stylesheet"
+      type="text/css"/>
+<link href="/static/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css"/>
+<link href="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet"
+      type="text/css"/>
+<script src="/static/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.js"
+        type="text/javascript"></script>
+<script src="/static/assets/global/plugins/datatables/datatables.min.js" type="text/javascript"></script>
+<script src="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js"
+        type="text/javascript"></script>
 
 {% endblock %}
 

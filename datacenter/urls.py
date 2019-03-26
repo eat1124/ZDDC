@@ -60,6 +60,9 @@ urlpatterns = [
     url(r'^source/$', source_index, {'funid': '14'}),
     url(r'^get_source_tree/$', get_source_tree),
     url(r'^custom_source_tree/$', custom_source_tree),
+    url(r'^source_save/$', source_save),
+    url(r'^del_source/$', del_source),
+    url(r'^move_source/$', move_source),
 
     # 场景管理
     url(r'^scene/$', scene, {'funid': '70'}),

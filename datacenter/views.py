@@ -159,7 +159,7 @@ def dictlistsave(request):
                     result["res"] = listname + '已存在。'
                 else:
                     listsave = DictList()
-                    listsave.DictIndex = alldict
+                    listsave.dictindex = alldict
                     listsave.name = listname
                     listsave.sort = listsort
                     listsave.save()
@@ -226,8 +226,26 @@ def storage_index(request, funid):
     存储配置
     """
     if request.user.is_authenticated():
+        c_dict_index_1 = DictIndex.objects.filter(name="存储类型").exclude(state='9')
+        if c_dict_index_1.exists():
+            c_dict_index_1 = c_dict_index_1[0]
+            dict_list1 = c_dict_index_1.dictlist_set.values_list("name")
+            storage_type_list = []
+            for i in dict_list1:
+                storage_type_list.append(i[0])
+
+        c_dict_index_2 = DictIndex.objects.filter(name="有效时间").exclude(state='9')
+        if c_dict_index_2.exists():
+            c_dict_index_2 = c_dict_index_2[0]
+            dict_list2 = c_dict_index_2.dictlist_set.values_list("name")
+            valid_time_list = []
+            for i in dict_list2:
+                valid_time_list.append(i[0])
+        print(valid_time_list)
         return render(request, 'storage.html',
                       {'username': request.user.userinfo.fullname,
+                       "storage_type_list": storage_type_list,
+                       "valid_time_list": valid_time_list,
                        "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
@@ -236,17 +254,6 @@ def storage_index(request, funid):
 def storage_data(request):
     if request.user.is_authenticated():
         result = []
-
-        storage_type_dict = {
-            "1": "列",
-            "2": "行"
-        }
-
-        valid_time_dict = {
-            "1": "一个月",
-            "2": "一年",
-            "3": "永久",
-        }
 
         all_storage = Storage.objects.exclude(state="9").order_by("sort")
         for storage in all_storage:
@@ -257,8 +264,8 @@ def storage_data(request):
                 "tablename": storage.tablename,
                 "storagetype_num": storage.storagetype,
                 "validtime_num": storage.validtime,
-                "storagetype": storage_type_dict[storage.storagetype] if storage.storagetype else "",
-                "validtime": valid_time_dict[storage.validtime] if storage.validtime else "",
+                "storagetype": storage.storagetype,
+                "validtime": storage.validtime,
                 "sort": storage.sort,
             })
 
@@ -281,40 +288,56 @@ def storage_save(request):
             raise Http404()
 
         result = {}
-        if id == 0:
-            all_storage = Storage.objects.filter(code=storage_code).exclude(state="9")
-            if (len(all_storage) > 0):
-                result["res"] = '存储代码:' + storage_code + '已存在。'
-            else:
-                storage_save = Storage()
-                storage_save.name = storage_name
-                storage_save.code = storage_code
-                storage_save.tablename = table_name
-                storage_save.storagetype = storage_type
-                storage_save.validtime = valid_time
-                storage_save.sort = sort
-                storage_save.save()
-                result["res"] = "保存成功。"
-                result["data"] = storage_save.id
+
+        if storage_name.strip() == '':
+            result["res"] = '存储名称不能为空。'
         else:
-            all_storage = Storage.objects.filter(code=storage_code).exclude(
-                id=id).exclude(state="9")
-            if (len(all_storage) > 0):
-                result["res"] = '存储代码:' + storage_code + '已存在。'
+            if storage_code.strip() == '':
+                result["res"] = '存储代码不能为空。'
             else:
-                try:
-                    storage_save = Storage.objects.get(id=id)
-                    storage_save.name = storage_name
-                    storage_save.code = storage_code
-                    storage_save.tablename = table_name
-                    storage_save.storagetype = storage_type
-                    storage_save.validtime = valid_time
-                    storage_save.sort = sort
-                    storage_save.save()
-                    result["res"] = "保存成功。"
-                    result["data"] = storage_save.id
-                except:
-                    result["res"] = "修改失败。"
+                if table_name.strip() == '':
+                    result["res"] = '数据库表名不能为空。'
+                else:
+                    if storage_type.strip() == '':
+                        result["res"] = '存储类型不能为空。'
+                    else:
+                        if valid_time.strip() == '':
+                            result["res"] = '有效时间不能为空。'
+                        else:
+                            if id == 0:
+                                all_storage = Storage.objects.filter(code=storage_code).exclude(state="9")
+                                if (len(all_storage) > 0):
+                                    result["res"] = '存储代码:' + storage_code + '已存在。'
+                                else:
+                                    storage_save = Storage()
+                                    storage_save.name = storage_name
+                                    storage_save.code = storage_code
+                                    storage_save.tablename = table_name
+                                    storage_save.storagetype = storage_type
+                                    storage_save.validtime = valid_time
+                                    storage_save.sort = sort
+                                    storage_save.save()
+                                    result["res"] = "保存成功。"
+                                    result["data"] = storage_save.id
+                            else:
+                                all_storage = Storage.objects.filter(code=storage_code).exclude(
+                                    id=id).exclude(state="9")
+                                if (len(all_storage) > 0):
+                                    result["res"] = '存储代码:' + storage_code + '已存在。'
+                                else:
+                                    try:
+                                        storage_save = Storage.objects.get(id=id)
+                                        storage_save.name = storage_name
+                                        storage_save.code = storage_code
+                                        storage_save.tablename = table_name
+                                        storage_save.storagetype = storage_type
+                                        storage_save.validtime = valid_time
+                                        storage_save.sort = int(sort) if sort else None
+                                        storage_save.save()
+                                        result["res"] = "保存成功。"
+                                        result["data"] = storage_save.id
+                                    except:
+                                        result["res"] = "修改失败。"
     return JsonResponse(result)
 
 
@@ -373,45 +396,57 @@ def cycle_save(request):
         minutes = request.POST.get("minutes", "")
         create_date = request.POST.get("create_date", "")
         sort = request.POST.get("sort", "")
-        print(create_date)
         try:
             id = int(id)
         except:
             raise Http404()
-
         result = {}
-        if id == 0:
-            all_cycle = Cycle.objects.filter(code=cycle_code).exclude(state="9")
-            if (len(all_cycle) > 0):
-                result["res"] = '存储代码:' + cycle_code + '已存在。'
-            else:
-                cycle_save = Cycle()
-                cycle_save.name = cycle_name
-                cycle_save.code = cycle_code
-                cycle_save.minutes = minutes
-                cycle_save.creatdate = create_date
-                cycle_save.sort = sort
-                cycle_save.save()
-                result["res"] = "保存成功。"
-                result["data"] = cycle_save.id
+
+        if cycle_name.strip() == '':
+            result["res"] = '周期名称不能为空。'
         else:
-            all_cycle = Cycle.objects.filter(code=cycle_code).exclude(
-                id=id).exclude(state="9")
-            if (len(all_cycle) > 0):
-                result["res"] = '存储代码:' + cycle_code + '已存在。'
+            if cycle_code.strip() == '':
+                result["res"] = '周期代码不能为空。'
             else:
-                try:
-                    cycle_save = Cycle.objects.get(id=id)
-                    cycle_save.name = cycle_name
-                    cycle_save.code = cycle_code
-                    cycle_save.minutes = minutes
-                    cycle_save.creatdate = create_date
-                    cycle_save.sort = sort
-                    cycle_save.save()
-                    result["res"] = "保存成功。"
-                    result["data"] = cycle_save.id
-                except:
-                    result["res"] = "修改失败。"
+                if minutes.strip() == '':
+                    result["res"] = '分钟不能为空。'
+                else:
+                    if create_date.strip() == '':
+                        result["res"] = '开始时间不能为空。'
+                    else:
+                        if id == 0:
+                            all_cycle = Cycle.objects.filter(code=cycle_code).exclude(state="9")
+                            if (len(all_cycle) > 0):
+                                result["res"] = '存储代码:' + cycle_code + '已存在。'
+                            else:
+                                cycle_save = Cycle()
+                                cycle_save.name = cycle_name
+                                cycle_save.code = cycle_code
+                                cycle_save.minutes = minutes
+                                cycle_save.creatdate = create_date
+                                cycle_save.sort = sort
+                                cycle_save.save()
+                                result["res"] = "保存成功。"
+                                result["data"] = cycle_save.id
+                        else:
+                            all_cycle = Cycle.objects.filter(code=cycle_code).exclude(
+                                id=id).exclude(state="9")
+                            if (len(all_cycle) > 0):
+                                result["res"] = '存储代码:' + cycle_code + '已存在。'
+                            else:
+                                try:
+                                    cycle_save = Cycle.objects.get(id=id)
+                                    cycle_save.name = cycle_name
+                                    cycle_save.code = cycle_code
+                                    cycle_save.minutes = minutes
+                                    cycle_save.creatdate = create_date
+                                    cycle_save.sort = int(sort) if sort else None
+                                    cycle_save.save()
+                                    result["res"] = "保存成功。"
+                                    result["data"] = cycle_save.id
+                                except Exception as e:
+                                    print(e)
+                                    result["res"] = "修改失败。"
         return JsonResponse(result)
 
 
@@ -439,8 +474,16 @@ def source_index(request, funid):
     :return:
     """
     if request.user.is_authenticated():
+        c_dict_index = DictIndex.objects.filter(name="数据源类型").exclude(state='9')
+        if c_dict_index.exists():
+            c_dict_index = c_dict_index[0]
+            dict_list = c_dict_index.dictlist_set.values_list("name")
+            source_type_list = []
+            for i in dict_list:
+                source_type_list.append(i[0])
         return render(request, 'source.html',
                       {'username': request.user.userinfo.fullname,
+                       "source_type_list": source_type_list,
                        "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
@@ -460,6 +503,7 @@ def get_source_tree(parent, selectid):
             "sourcetype": child.sourcetype,
             "connection": child.connection,
             "sort": child.sort,
+            "p_name": parent.name
         }
         try:
             if int(selectid) == child.id:
@@ -525,6 +569,7 @@ def custom_source_tree(request):
                     "sourcetype": rootnode.sourcetype,
                     "connection": rootnode.connection,
                     "sort": rootnode.sort,
+                    "p_name": rootnode.code,
                 }
                 root["children"] = get_source_tree(rootnode, selectid)
                 root["state"] = {"opened": True}
@@ -534,10 +579,201 @@ def custom_source_tree(request):
         process["data"] = {"verify": "first_node"}
         process["children"] = treedata
         process["state"] = {"opened": True}
-        print(process)
         return JsonResponse({"treedata": process})
     else:
         return HttpResponseRedirect("/login")
+
+
+def source_save(request):
+    if request.user.is_authenticated():
+        id = request.POST.get('id', '')
+        pid = request.POST.get('pid', '')
+        name = request.POST.get('name', '')
+        code = request.POST.get('code', '')
+        connection = request.POST.get('connection', '')
+        sourcetype = request.POST.get('sourcetype', '')
+        result = ""
+        try:
+            id = int(id)
+        except:
+            raise Http404()
+        data = ""
+        if code.strip() == '':
+            result = '数据源代码不能为空。'
+        else:
+            if name.strip() == '':
+                result = '数据源名称不能为空。'
+            else:
+                if connection.strip() == '':
+                    result = '连接符不能为空。'
+                else:
+                    if sourcetype.strip() == '':
+                        result = '数据源类型不能为空。'
+                    else:
+                        # 新增步骤
+                        if id == 0:
+                            try:
+                                pid = int(pid)
+                            except:
+                                pid = None
+                                max_sort_from_pnode = \
+                                    Source.objects.exclude(state="9").filter(pnode_id=None).aggregate(Max("sort"))[
+                                        "sort__max"]
+                            else:
+                                max_sort_from_pnode = \
+                                    Source.objects.exclude(state="9").filter(pnode_id=pid).aggregate(Max("sort"))[
+                                        "sort__max"]
+
+                            # 当前没有父节点
+                            if max_sort_from_pnode or max_sort_from_pnode == 0:
+                                my_sort = max_sort_from_pnode + 1
+                            else:
+                                my_sort = 0
+
+                            source = Source()
+                            source.name = name
+                            source.connection = connection
+                            source.code = code
+                            source.sort = my_sort
+                            source.sourcetype = sourcetype
+                            source.pnode_id = pid
+                            source.save()
+
+                            result = "保存成功。"
+                            data = source.id
+                        else:
+                            source = Source.objects.filter(id=id)
+                            if source.exists():
+                                source = source[0]
+                                source.name = name
+                                source.code = code
+                                source.connection = connection
+                                source.sourcetype = sourcetype
+                                source.save()
+                                result = "保存成功。"
+                            else:
+                                result = "当前步骤不存在，请联系客服！"
+        return JsonResponse({
+            "result": result,
+            "data": data
+        })
+
+
+def del_source(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            id = request.POST.get('id', '')
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+            all_source = Source.objects.filter(id=id)
+            if all_source.exists():
+                all_source = all_source[0]
+                sort = all_source.sort
+                p_source = all_source.pnode
+                all_source.state = 9
+                all_source.save()
+                sort_source = Source.objects.filter(pnode=p_source).filter(sort__gt=sort).exclude(state="9")
+                if sort_source.exists():
+                    for sortstep in sort_source:
+                        try:
+                            sortstep.sort = sortstep.sort - 1
+                            sortstep.save()
+                        except:
+                            pass
+
+                return HttpResponse(1)
+            else:
+                return HttpResponse(0)
+
+
+def move_source(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            id = request.POST.get('id', '')
+            parent = request.POST.get('parent', '')
+            old_parent = request.POST.get('old_parent', '')
+            old_position = request.POST.get('old_position', '')
+            position = request.POST.get('position', '')
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+            try:
+                parent = int(parent)
+            except:
+                parent = None
+            try:
+                old_parent = int(old_parent)
+            except:
+                old_parent = None
+            try:
+                old_position = int(old_position)
+            except:
+                raise Http404()
+            try:
+                position = int(position)
+            except:
+                raise Http404()
+
+            cur_source_obj = \
+                Source.objects.filter(pnode_id=old_parent).filter(sort=old_position).exclude(state="9")[0]
+            cur_source_obj.sort = position
+            cur_source_id = cur_source_obj.id
+            cur_source_obj.save()
+            # 同一pnode
+            if parent == old_parent:
+                # 向上拽
+                source_under_pnode = Source.objects.filter(pnode_id=old_parent).exclude(state="9").filter(
+                    sort__gte=position,
+                    sort__lt=old_position).exclude(id=cur_source_id)
+                for source in source_under_pnode:
+                    source.sort += 1
+                    source.save()
+
+                # 向下拽
+                source_under_pnode = Source.objects.filter(pnode_id=old_parent).exclude(state="9").filter(
+                    sort__gt=old_position, sort__lte=position).exclude(id=cur_source_id)
+                for source in source_under_pnode:
+                    source.sort -= 1
+                    source.save()
+
+            # 向其他节点拽
+            else:
+                # 原来pnode下
+                old_source = Source.objects.filter(pnode_id=old_parent).exclude(state="9").filter(
+                    sort__gt=old_position).exclude(id=cur_source_id)
+                for step in old_source:
+                    step.sort -= 1
+                    step.save()
+                # 后来pnode下
+                cur_source = Source.objects.filter(pnode_id=parent).exclude(state="9").filter(
+                    sort__gte=position).exclude(
+                    id=cur_source_id)
+                for source in cur_source:
+                    source.sort += 1
+                    source.save()
+
+            # pnode
+            if parent:
+                parent_source = Source.objects.get(id=parent)
+            else:
+                parent_source = None
+            mystep = Source.objects.get(id=id)
+            try:
+                mystep.pnode = parent_source
+                mystep.save()
+            except:
+                pass
+
+            if parent != old_parent:
+                if parent == None:
+                    return HttpResponse(" ^ ")
+                else:
+                    return HttpResponse(parent_source.name + "^" + str(parent_source.id))
+            else:
+                return HttpResponse("0")
 
 
 def getfun(myfunlist, fun):
