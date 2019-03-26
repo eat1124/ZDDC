@@ -36,12 +36,30 @@ urlpatterns = [
     url(r'^fundel/$', fundel),
     url(r'^funmove/$', funmove),
 
+    # 字典维护
     url(r'^dict/$', dictindex, {'funid': '11'}),
     url(r'^dictsave/$', dictsave),
     url(r'^dictselect/$', dictselect),
     url(r'^dictlistsave/$', dictlistsave),
     url(r'^dictdel/$', dictdel),
     url(r'^dictlistdel/$', dictlistdel),
+
+    # 存储配置
+    url(r'^storage/$', storage_index, {'funid': '12'}),
+    url(r'^storage_data/$', storage_data),
+    url(r'^storage_save/$', storage_save),
+    url(r'^storage_del/$', storage_del),
+
+    # 周期配置
+    url(r'^cycle/$', cycle_index, {'funid': '13'}),
+    url(r'^cycle_data/$', cycle_data),
+    url(r'^cycle_save/$', cycle_save),
+    url(r'^cycle_del/$', cycle_del),
+
+    # 数据源配置
+    url(r'^source/$', source_index, {'funid': '14'}),
+    url(r'^get_source_tree/$', get_source_tree),
+    url(r'^custom_source_tree/$', custom_source_tree),
 
     # 场景管理
     url(r'^scene/$', scene, {'funid': '70'}),

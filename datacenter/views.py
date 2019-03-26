@@ -221,6 +221,325 @@ def dictlistdel(request):
         return HttpResponse(result)
 
 
+def storage_index(request, funid):
+    """
+    存储配置
+    """
+    if request.user.is_authenticated():
+        return render(request, 'storage.html',
+                      {'username': request.user.userinfo.fullname,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def storage_data(request):
+    if request.user.is_authenticated():
+        result = []
+
+        storage_type_dict = {
+            "1": "列",
+            "2": "行"
+        }
+
+        valid_time_dict = {
+            "1": "一个月",
+            "2": "一年",
+            "3": "永久",
+        }
+
+        all_storage = Storage.objects.exclude(state="9").order_by("sort")
+        for storage in all_storage:
+            result.append({
+                "id": storage.id,
+                "name": storage.name,
+                "code": storage.code,
+                "tablename": storage.tablename,
+                "storagetype_num": storage.storagetype,
+                "validtime_num": storage.validtime,
+                "storagetype": storage_type_dict[storage.storagetype] if storage.storagetype else "",
+                "validtime": valid_time_dict[storage.validtime] if storage.validtime else "",
+                "sort": storage.sort,
+            })
+
+        return JsonResponse({"data": result})
+
+
+def storage_save(request):
+    if request.user.is_authenticated():
+        id = request.POST.get("id", "")
+        storage_name = request.POST.get("storage_name", "")
+        storage_code = request.POST.get("storage_code", "")
+        table_name = request.POST.get("table_name", "")
+        storage_type = request.POST.get("storage_type", "")
+        valid_time = request.POST.get("valid_time", "")
+        sort = request.POST.get("sort", "")
+
+        try:
+            id = int(id)
+        except:
+            raise Http404()
+
+        result = {}
+        if id == 0:
+            all_storage = Storage.objects.filter(code=storage_code).exclude(state="9")
+            if (len(all_storage) > 0):
+                result["res"] = '存储代码:' + storage_code + '已存在。'
+            else:
+                storage_save = Storage()
+                storage_save.name = storage_name
+                storage_save.code = storage_code
+                storage_save.tablename = table_name
+                storage_save.storagetype = storage_type
+                storage_save.validtime = valid_time
+                storage_save.sort = sort
+                storage_save.save()
+                result["res"] = "保存成功。"
+                result["data"] = storage_save.id
+        else:
+            all_storage = Storage.objects.filter(code=storage_code).exclude(
+                id=id).exclude(state="9")
+            if (len(all_storage) > 0):
+                result["res"] = '存储代码:' + storage_code + '已存在。'
+            else:
+                try:
+                    storage_save = Storage.objects.get(id=id)
+                    storage_save.name = storage_name
+                    storage_save.code = storage_code
+                    storage_save.tablename = table_name
+                    storage_save.storagetype = storage_type
+                    storage_save.validtime = valid_time
+                    storage_save.sort = sort
+                    storage_save.save()
+                    result["res"] = "保存成功。"
+                    result["data"] = storage_save.id
+                except:
+                    result["res"] = "修改失败。"
+    return JsonResponse(result)
+
+
+def storage_del(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            id = request.POST.get('id', '')
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+            storage = Storage.objects.get(id=id)
+            storage.state = "9"
+            storage.save()
+
+            return HttpResponse(1)
+        else:
+            return HttpResponse(0)
+
+
+def cycle_index(request, funid):
+    """
+    周期配置
+    """
+    if request.user.is_authenticated():
+        return render(request, 'cycle.html',
+                      {'username': request.user.userinfo.fullname,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def cycle_data(request):
+    if request.user.is_authenticated():
+        result = []
+
+        all_cycle = Cycle.objects.exclude(state="9").order_by("sort")
+        for cycle in all_cycle:
+            result.append({
+                "id": cycle.id,
+                "name": cycle.name,
+                "code": cycle.code,
+                "minutes": cycle.minutes,
+                "create_date": cycle.creatdate.strftime('%Y-%m-%d %H:%M:%S') if cycle.creatdate else "",
+                "sort": cycle.sort,
+            })
+
+        return JsonResponse({"data": result})
+
+
+def cycle_save(request):
+    if request.user.is_authenticated():
+        id = request.POST.get("id", "")
+        cycle_name = request.POST.get("cycle_name", "")
+        cycle_code = request.POST.get("cycle_code", "")
+        minutes = request.POST.get("minutes", "")
+        create_date = request.POST.get("create_date", "")
+        sort = request.POST.get("sort", "")
+        print(create_date)
+        try:
+            id = int(id)
+        except:
+            raise Http404()
+
+        result = {}
+        if id == 0:
+            all_cycle = Cycle.objects.filter(code=cycle_code).exclude(state="9")
+            if (len(all_cycle) > 0):
+                result["res"] = '存储代码:' + cycle_code + '已存在。'
+            else:
+                cycle_save = Cycle()
+                cycle_save.name = cycle_name
+                cycle_save.code = cycle_code
+                cycle_save.minutes = minutes
+                cycle_save.creatdate = create_date
+                cycle_save.sort = sort
+                cycle_save.save()
+                result["res"] = "保存成功。"
+                result["data"] = cycle_save.id
+        else:
+            all_cycle = Cycle.objects.filter(code=cycle_code).exclude(
+                id=id).exclude(state="9")
+            if (len(all_cycle) > 0):
+                result["res"] = '存储代码:' + cycle_code + '已存在。'
+            else:
+                try:
+                    cycle_save = Cycle.objects.get(id=id)
+                    cycle_save.name = cycle_name
+                    cycle_save.code = cycle_code
+                    cycle_save.minutes = minutes
+                    cycle_save.creatdate = create_date
+                    cycle_save.sort = sort
+                    cycle_save.save()
+                    result["res"] = "保存成功。"
+                    result["data"] = cycle_save.id
+                except:
+                    result["res"] = "修改失败。"
+        return JsonResponse(result)
+
+
+def cycle_del(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            id = request.POST.get('id', '')
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+            cycle = Cycle.objects.get(id=id)
+            cycle.state = "9"
+            cycle.save()
+
+            return HttpResponse(1)
+        else:
+            return HttpResponse(0)
+
+
+def source_index(request, funid):
+    """
+    数据源配置
+    :param request:
+    :return:
+    """
+    if request.user.is_authenticated():
+        return render(request, 'source.html',
+                      {'username': request.user.userinfo.fullname,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def get_source_tree(parent, selectid):
+    nodes = []
+    children = parent.children.exclude(state="9").order_by("sort").all()
+    for child in children:
+        node = dict()
+        node["text"] = child.name
+        node["id"] = child.id
+        node["children"] = get_source_tree(child, selectid)
+
+        node["data"] = {
+            "code": child.code,
+            "sourcetype": child.sourcetype,
+            "connection": child.connection,
+            "sort": child.sort,
+        }
+        try:
+            if int(selectid) == child.id:
+                node["state"] = {"selected": True}
+        except:
+            pass
+        nodes.append(node)
+    return nodes
+
+
+def custom_source_tree(request):
+    if request.user.is_authenticated():
+        errors = []
+        id = request.POST.get('id', "")
+        p_source = ""
+        pid = request.POST.get('pid', "")
+        name = request.POST.get('name', "")
+
+        if id == 0:
+            selectid = pid
+            title = "新建"
+        else:
+            selectid = id
+            title = name
+
+        # 保存
+        try:
+            if id == 0:
+                sort = 1
+                try:
+                    max_source = Source.objects.filter(pnode=p_source).latest('sort').exclude(state="9")
+                    sort = max_source.sort + 1
+                except:
+                    pass
+                source_save = Source()
+                source_save.pnode = p_source
+                source_save.name = name
+                source_save.sort = sort
+                source_save.save()
+                title = name
+                id = source_save.id
+                selectid = id
+            else:
+                source_save = Source.objects.get(id=id)
+                source_save.name = name
+                source_save.save()
+                title = name
+        except:
+            errors.append('保存失败。')
+
+        # 加载树
+        treedata = []
+        rootnodes = Source.objects.order_by("sort").filter(pnode=None).exclude(state="9")
+
+        if len(rootnodes) > 0:
+            for rootnode in rootnodes:
+                root = dict()
+                root["text"] = rootnode.name
+                root["id"] = rootnode.id
+
+                root["data"] = {
+                    "code": rootnode.code,
+                    "sourcetype": rootnode.sourcetype,
+                    "connection": rootnode.connection,
+                    "sort": rootnode.sort,
+                }
+                root["children"] = get_source_tree(rootnode, selectid)
+                root["state"] = {"opened": True}
+                treedata.append(root)
+        process = dict()
+        process["text"] = "数据源配置"
+        process["data"] = {"verify": "first_node"}
+        process["children"] = treedata
+        process["state"] = {"opened": True}
+        print(process)
+        return JsonResponse({"treedata": process})
+    else:
+        return HttpResponseRedirect("/login")
+
+
 def getfun(myfunlist, fun):
     try:
         if (fun.pnode_id is not None):
@@ -1077,96 +1396,179 @@ def get_org_tree(parent, selectid, allgroup):
 
 def organization(request, funid):
     if request.user.is_authenticated():
-        # try:
-        errors = []
-        title = "请选择组织"
-        selectid = ""
-        id = ""
-        pid = ""
-        pname = ""
-        noselectgroup = []
-        selectgroup = []
-        username = ""
-        fullname = ""
-        orgname = ""
-        phone = ""
-        email = ""
-        password = ""
-        mytype = ""
-        remark = ""
-        hiddendiv = "hidden"
-        hiddenuser = "hidden"
-        hiddenorg = "hidden"
-        newpassword = "hidden"
-        editpassword = ""
-        allgroup = Group.objects.exclude(state="9")
-        if request.method == 'POST':
-            hiddendiv = ""
-            id = request.POST.get('id')
-            pid = request.POST.get('pid')
-            mytype = request.POST.get('mytype')
-            try:
-                id = int(id)
+        try:
+            errors = []
+            title = "请选择组织"
+            selectid = ""
+            id = ""
+            pid = ""
+            pname = ""
+            noselectgroup = []
+            selectgroup = []
+            username = ""
+            fullname = ""
+            orgname = ""
+            phone = ""
+            email = ""
+            password = ""
+            mytype = ""
+            remark = ""
+            hiddendiv = "hidden"
+            hiddenuser = "hidden"
+            hiddenorg = "hidden"
+            newpassword = "hidden"
+            editpassword = ""
+            allgroup = Group.objects.exclude(state="9")
+            if request.method == 'POST':
+                hiddendiv = ""
+                id = request.POST.get('id')
+                pid = request.POST.get('pid')
+                mytype = request.POST.get('mytype')
+                try:
+                    id = int(id)
 
-            except:
-                raise Http404()
-            try:
-                pid = int(pid)
-            except:
-                raise Http404()
+                except:
+                    raise Http404()
+                try:
+                    pid = int(pid)
+                except:
+                    raise Http404()
 
-            if 'usersave' in request.POST:
-                hiddenuser = ""
-                hiddenorg = "hidden"
-                grouplist = request.POST.getlist('source')
-                noselectgroup = []
-                selectgroup = []
-                for group in allgroup:
-                    if str(group.id) in grouplist:
-                        selectgroup.append({"groupname": group.name, "id": group.id})
+                if 'usersave' in request.POST:
+                    hiddenuser = ""
+                    hiddenorg = "hidden"
+                    grouplist = request.POST.getlist('source')
+                    noselectgroup = []
+                    selectgroup = []
+                    for group in allgroup:
+                        if str(group.id) in grouplist:
+                            selectgroup.append({"groupname": group.name, "id": group.id})
+                        else:
+                            noselectgroup.append({"groupname": group.name, "id": group.id})
+                    pname = request.POST.get('pname')
+                    username = request.POST.get('myusername', '')
+                    fullname = request.POST.get('fullname', '')
+                    phone = request.POST.get('phone', '')
+                    email = request.POST.get('email', '')
+                    password = request.POST.get('password', '')
+                    if id == 0:
+                        newpassword = ""
+                        editpassword = "hidden"
+                        selectid = pid
+                        title = "新建"
+                        alluser = User.objects.filter(username=username)
+                        if username.strip() == '':
+                            errors.append('用户名不能为空。')
+                        else:
+                            if password.strip() == '':
+                                errors.append('密码不能为空。')
+                            else:
+                                if fullname.strip() == '':
+                                    errors.append('姓名不能为空。')
+                                else:
+                                    if (len(alluser) > 0):
+                                        errors.append('用户名:' + username + '已存在。')
+                                    else:
+                                        try:
+                                            newuser = User()
+                                            newuser.username = username
+                                            newuser.set_password(password)
+                                            newuser.email = email
+                                            newuser.save()
+                                            # 用户扩展信息 profile
+                                            profile = UserInfo()  # e*************************
+                                            profile.user_id = newuser.id
+                                            profile.phone = phone
+                                            profile.fullname = fullname
+                                            try:
+                                                porg = UserInfo.objects.get(id=pid)
+                                            except:
+                                                raise Http404()
+                                            profile.pnode = porg
+                                            profile.usertype = "user"
+                                            sort = 1
+                                            try:
+                                                maxorg = UserInfo.objects.filter(pnode=porg).latest('sort')
+                                                sort = maxorg.sort + 1
+                                            except:
+                                                pass
+                                            profile.sort = sort
+                                            profile.save()
+                                            for group in grouplist:
+                                                try:
+                                                    group = int(group)
+                                                    mygroup = allgroup.get(id=group)
+                                                    profile.group.add(mygroup)
+                                                except ValueError:
+                                                    raise Http404()
+                                            title = fullname
+                                            selectid = profile.id
+                                            id = profile.id
+                                            newpassword = "hidden"
+                                            editpassword = ""
+                                        except ValueError:
+                                            raise Http404()
                     else:
-                        noselectgroup.append({"groupname": group.name, "id": group.id})
-                pname = request.POST.get('pname')
-                username = request.POST.get('myusername', '')
-                fullname = request.POST.get('fullname', '')
-                phone = request.POST.get('phone', '')
-                email = request.POST.get('email', '')
-                password = request.POST.get('password', '')
-                if id == 0:
-                    newpassword = ""
-                    editpassword = "hidden"
-                    selectid = pid
-                    title = "新建"
-                    alluser = User.objects.filter(username=username)
-                    if username.strip() == '':
-                        errors.append('用户名不能为空。')
-                    else:
-                        if password.strip() == '':
-                            errors.append('密码不能为空。')
+                        selectid = id
+                        title = fullname
+                        exalluser = User.objects.filter(username=username)
+                        if username.strip() == '':
+                            errors.append('用户名不能为空。')
                         else:
                             if fullname.strip() == '':
                                 errors.append('姓名不能为空。')
                             else:
-                                if (len(alluser) > 0):
+                                if (len(exalluser) > 0 and exalluser[0].userinfo.id != id):
                                     errors.append('用户名:' + username + '已存在。')
                                 else:
                                     try:
-                                        newuser = User()
-                                        newuser.username = username
-                                        newuser.set_password(password)
-                                        newuser.email = email
-                                        newuser.save()
+                                        alluserinfo = UserInfo.objects.get(id=id)
+                                        alluser = alluserinfo.user
+                                        alluser.email = email
+                                        alluser.save()
                                         # 用户扩展信息 profile
+                                        alluserinfo.phone = phone
+                                        alluserinfo.fullname = fullname
+                                        alluserinfo.save()
+                                        alluserinfo.group.clear()
+                                        for group in grouplist:
+                                            try:
+                                                group = int(group)
+                                                mygroup = allgroup.get(id=group)
+                                                alluserinfo.group.add(mygroup)
+                                            except ValueError:
+                                                raise Http404()
+                                        title = fullname
+                                    except:
+                                        errors.append('保存失败。')
+
+                else:
+                    if 'orgsave' in request.POST:
+                        hiddenuser = "hidden"
+                        hiddenorg = ""
+                        pname = request.POST.get('orgpname')
+                        orgname = request.POST.get('orgname', '')
+                        remark = request.POST.get('remark', '')
+                        if id == 0:
+                            selectid = pid
+                            title = "新建"
+                            try:
+                                porg = UserInfo.objects.get(id=pid)
+                            except:
+                                raise Http404()
+                            allorg = UserInfo.objects.filter(fullname=orgname, pnode=porg)
+                            if orgname.strip() == '':
+                                errors.append('组织名称不能为空。')
+                            else:
+                                if (len(allorg) > 0):
+                                    errors.append(orgname + '已存在。')
+                                else:
+                                    try:
                                         profile = UserInfo()  # e*************************
-                                        profile.user_id = newuser.id
-                                        profile.phone = phone
-                                        profile.fullname = fullname
-                                        try:
-                                            porg = UserInfo.objects.get(id=pid)
-                                        except:
-                                            raise Http404()
+                                        profile.fullname = orgname
                                         profile.pnode = porg
-                                        profile.usertype = "user"
+                                        profile.remark = remark
+                                        profile.usertype = "org"
                                         sort = 1
                                         try:
                                             maxorg = UserInfo.objects.filter(pnode=porg).latest('sort')
@@ -1175,150 +1577,67 @@ def organization(request, funid):
                                             pass
                                         profile.sort = sort
                                         profile.save()
-                                        for group in grouplist:
-                                            try:
-                                                group = int(group)
-                                                mygroup = allgroup.get(id=group)
-                                                profile.group.add(mygroup)
-                                            except ValueError:
-                                                raise Http404()
-                                        title = fullname
+                                        title = orgname
                                         selectid = profile.id
                                         id = profile.id
-                                        newpassword = "hidden"
-                                        editpassword = ""
                                     except ValueError:
                                         raise Http404()
-                else:
-                    selectid = id
-                    title = fullname
-                    exalluser = User.objects.filter(username=username)
-                    if username.strip() == '':
-                        errors.append('用户名不能为空。')
-                    else:
-                        if fullname.strip() == '':
-                            errors.append('姓名不能为空。')
                         else:
-                            if (len(exalluser) > 0 and exalluser[0].userinfo.id != id):
-                                errors.append('用户名:' + username + '已存在。')
+                            selectid = id
+                            title = orgname
+                            try:
+                                porg = UserInfo.objects.get(id=pid)
+                            except:
+                                raise Http404()
+                            exalluser = UserInfo.objects.filter(fullname=orgname, pnode=porg).exclude(state="9")
+                            if orgname.strip() == '':
+                                errors.append('组织名称不能为空。')
                             else:
-                                try:
-                                    alluserinfo = UserInfo.objects.get(id=id)
-                                    alluser = alluserinfo.user
-                                    alluser.email = email
-                                    alluser.save()
-                                    # 用户扩展信息 profile
-                                    alluserinfo.phone = phone
-                                    alluserinfo.fullname = fullname
-                                    alluserinfo.save()
-                                    alluserinfo.group.clear()
-                                    for group in grouplist:
-                                        try:
-                                            group = int(group)
-                                            mygroup = allgroup.get(id=group)
-                                            alluserinfo.group.add(mygroup)
-                                        except ValueError:
-                                            raise Http404()
-                                    title = fullname
-                                except:
-                                    errors.append('保存失败。')
-
-            else:
-                if 'orgsave' in request.POST:
-                    hiddenuser = "hidden"
-                    hiddenorg = ""
-                    pname = request.POST.get('orgpname')
-                    orgname = request.POST.get('orgname', '')
-                    remark = request.POST.get('remark', '')
-                    if id == 0:
-                        selectid = pid
-                        title = "新建"
-                        try:
-                            porg = UserInfo.objects.get(id=pid)
-                        except:
-                            raise Http404()
-                        allorg = UserInfo.objects.filter(fullname=orgname, pnode=porg)
-                        if orgname.strip() == '':
-                            errors.append('组织名称不能为空。')
-                        else:
-                            if (len(allorg) > 0):
-                                errors.append(orgname + '已存在。')
-                            else:
-                                try:
-                                    profile = UserInfo()  # e*************************
-                                    profile.fullname = orgname
-                                    profile.pnode = porg
-                                    profile.remark = remark
-                                    profile.usertype = "org"
-                                    sort = 1
+                                if (len(exalluser) > 0 and exalluser[0].id != id):
+                                    errors.append(username + '已存在。')
+                                else:
                                     try:
-                                        maxorg = UserInfo.objects.filter(pnode=porg).latest('sort')
-                                        sort = maxorg.sort + 1
+                                        alluserinfo = UserInfo.objects.get(id=id)
+                                        alluserinfo.fullname = orgname
+                                        alluserinfo.remark = remark
+                                        alluserinfo.save()
+                                        title = orgname
                                     except:
-                                        pass
-                                    profile.sort = sort
-                                    profile.save()
-                                    title = orgname
-                                    selectid = profile.id
-                                    id = profile.id
-                                except ValueError:
-                                    raise Http404()
-                    else:
-                        selectid = id
-                        title = orgname
-                        try:
-                            porg = UserInfo.objects.get(id=pid)
-                        except:
-                            raise Http404()
-                        exalluser = UserInfo.objects.filter(fullname=orgname, pnode=porg).exclude(state="9")
-                        if orgname.strip() == '':
-                            errors.append('组织名称不能为空。')
+                                        errors.append('保存失败。')
+            treedata = []
+            rootnodes = UserInfo.objects.order_by("sort").exclude(state="9").filter(pnode=None, usertype="org")
+            if len(rootnodes) > 0:
+                for rootnode in rootnodes:
+                    root = {}
+                    root["text"] = rootnode.fullname
+                    root["id"] = rootnode.id
+                    root["type"] = "org"
+                    myallgroup = []
+                    for group in allgroup:
+                        myallgroup.append({"groupname": group.name, "id": group.id})
+                    root["data"] = {"remark": rootnode.remark, "pname": "无", "myallgroup": myallgroup}
+                    try:
+                        if int(selectid) == rootnode.id:
+                            root["state"] = {"opened": True, "selected": True}
                         else:
-                            if (len(exalluser) > 0 and exalluser[0].id != id):
-                                errors.append(username + '已存在。')
-                            else:
-                                try:
-                                    alluserinfo = UserInfo.objects.get(id=id)
-                                    alluserinfo.fullname = orgname
-                                    alluserinfo.remark = remark
-                                    alluserinfo.save()
-                                    title = orgname
-                                except:
-                                    errors.append('保存失败。')
-        treedata = []
-        rootnodes = UserInfo.objects.order_by("sort").exclude(state="9").filter(pnode=None, usertype="org")
-        if len(rootnodes) > 0:
-            for rootnode in rootnodes:
-                root = {}
-                root["text"] = rootnode.fullname
-                root["id"] = rootnode.id
-                root["type"] = "org"
-                myallgroup = []
-                for group in allgroup:
-                    myallgroup.append({"groupname": group.name, "id": group.id})
-                root["data"] = {"remark": rootnode.remark, "pname": "无", "myallgroup": myallgroup}
-                try:
-                    if int(selectid) == rootnode.id:
-                        root["state"] = {"opened": True, "selected": True}
-                    else:
+                            root["state"] = {"opened": True}
+                    except:
                         root["state"] = {"opened": True}
-                except:
-                    root["state"] = {"opened": True}
-                root["children"] = get_org_tree(rootnode, selectid, allgroup)
-                treedata.append(root)
-        treedata = json.dumps(treedata)
-        return render(request, 'organization.html',
-                      {'username': request.user.userinfo.fullname, 'errors': errors, "id": id, "orgname": orgname,
-                       "pid": pid, "pname": pname, "fullname": fullname, "phone": phone, "myusername": username,
-                       "email": email, "password": password, "noselectgroup": noselectgroup,
-                       "selectgroup": selectgroup, "remark": remark, "title": title, "mytype": mytype,
-                       "hiddenuser": hiddenuser, "hiddenorg": hiddenorg, "newpassword": newpassword,
-                       "editpassword": editpassword, "hiddendiv": hiddendiv, "treedata": treedata,
-                       "pagefuns": getpagefuns(funid, request=request)})
+                    root["children"] = get_org_tree(rootnode, selectid, allgroup)
+                    treedata.append(root)
+            treedata = json.dumps(treedata)
+            return render(request, 'organization.html',
+                          {'username': request.user.userinfo.fullname, 'errors': errors, "id": id, "orgname": orgname,
+                           "pid": pid, "pname": pname, "fullname": fullname, "phone": phone, "myusername": username,
+                           "email": email, "password": password, "noselectgroup": noselectgroup,
+                           "selectgroup": selectgroup, "remark": remark, "title": title, "mytype": mytype,
+                           "hiddenuser": hiddenuser, "hiddenorg": hiddenorg, "newpassword": newpassword,
+                           "editpassword": editpassword, "hiddendiv": hiddendiv, "treedata": treedata,
+                           "pagefuns": getpagefuns(funid, request=request)})
 
-        # except Exception as e:
-        #     print(e)
-        #     return HttpResponseRedirect("/index")
+        except Exception as e:
+            print(e)
+            return HttpResponseRedirect("/index")
     else:
         return HttpResponseRedirect("/login")
 
