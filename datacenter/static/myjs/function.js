@@ -1,7 +1,5 @@
 $(function () {
-
     $('#tree_2').jstree({
-
         'core': {
             "themes": {
                 "responsive": false

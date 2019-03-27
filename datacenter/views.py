@@ -474,17 +474,147 @@ def source_index(request, funid):
     :return:
     """
     if request.user.is_authenticated():
-        c_dict_index = DictIndex.objects.filter(name="数据源类型").exclude(state='9')
-        if c_dict_index.exists():
-            c_dict_index = c_dict_index[0]
-            dict_list = c_dict_index.dictlist_set.values_list("name")
-            source_type_list = []
-            for i in dict_list:
-                source_type_list.append(i[0])
-        return render(request, 'source.html',
-                      {'username': request.user.userinfo.fullname,
-                       "source_type_list": source_type_list,
-                       "pagefuns": getpagefuns(funid)})
+        try:
+            errors = []
+            selectid = ""
+            id = ""
+            pid = ""
+            title = ""
+            hiddendiv = "hidden"
+
+            # 数据源类型
+            c_dict_index = DictIndex.objects.filter(name="数据源类型").exclude(state='9')
+            if c_dict_index.exists():
+                c_dict_index = c_dict_index[0]
+                dict_list = c_dict_index.dictlist_set.values_list("name")
+                source_type_list = []
+                for i in dict_list:
+                    source_type_list.append(i[0])
+            else:
+                source_type_list = []
+
+            # 新增/保存/修改
+            if request.method == "POST":
+                hiddendiv = ""
+                id = request.POST.get('id', '')
+                pid = request.POST.get('pid', '')
+                name = request.POST.get('name', '')
+                code = request.POST.get('code', '')
+                connection = request.POST.get('connection', '')
+                sourcetype = request.POST.get('sourcetype', '')
+                try:
+                    id = int(id)
+                except:
+                    raise Http404()
+                try:
+                    pid = int(pid)
+                except:
+                    raise Http404()
+                if id == 0:
+                    selectid = pid
+                    title = "新建"
+                else:
+                    selectid = id
+                    title = name
+
+                if code.strip() == '':
+                    errors.append('数据源代码不能为空。')
+                else:
+                    if name.strip() == '':
+                        errors.append('数据源名称不能为空。')
+                    else:
+                        if connection.strip() == '':
+                            errors.append('连接符不能为空。')
+                        else:
+                            if sourcetype.strip() == '':
+                                errors.append('数据源类型不能为空。')
+                            else:
+                                try:
+                                    # 新增步骤
+                                    if id == 0:
+                                        try:
+                                            pid = int(pid)
+                                        except:
+                                            pid = None
+                                            max_sort_from_pnode = \
+                                                Source.objects.exclude(state="9").filter(pnode_id=None).aggregate(
+                                                    Max("sort"))[
+                                                    "sort__max"]
+                                        else:
+                                            max_sort_from_pnode = \
+                                                Source.objects.exclude(state="9").filter(pnode_id=pid).aggregate(
+                                                    Max("sort"))[
+                                                    "sort__max"]
+
+                                        # 当前没有父节点
+                                        if max_sort_from_pnode or max_sort_from_pnode == 0:
+                                            my_sort = max_sort_from_pnode + 1
+                                        else:
+                                            my_sort = 0
+
+                                        source = Source()
+                                        source.name = name
+                                        source.connection = connection
+                                        source.code = code
+                                        source.sort = my_sort
+                                        source.sourcetype = sourcetype
+                                        source.pnode_id = pid
+                                        source.save()
+
+                                        id = source.id
+                                        title = name
+                                        selectid = id
+                                    else:
+                                        source = Source.objects.filter(id=id)
+                                        if source.exists():
+                                            source = source[0]
+                                            source.name = name
+                                            source.code = code
+                                            source.connection = connection
+                                            source.sourcetype = sourcetype
+                                            source.save()
+                                            title = name
+                                        else:
+                                            errors.append("当前资源不存在，无法修改，请联系客服！")
+                                except:
+                                    errors.append('保存失败。')
+
+            # 加载树
+            treedata = []
+            rootnodes = Source.objects.order_by("sort").filter(pnode=None).exclude(state="9")
+
+            if len(rootnodes) > 0:
+                for rootnode in rootnodes:
+                    root = dict()
+                    root["text"] = rootnode.name
+                    root["id"] = rootnode.id
+
+                    root["data"] = {
+                        "code": rootnode.code,
+                        "sourcetype": rootnode.sourcetype,
+                        "connection": rootnode.connection,
+                        "sort": rootnode.sort,
+                        "p_name": rootnode.code,
+                        "verify": "first_node",
+                    }
+                    root["children"] = get_source_tree(rootnode, selectid)
+                    root["state"] = {"opened": True}
+                    treedata.append(root)
+
+            treedata = json.dumps(treedata)
+            return render(request, 'source.html',
+                          {'username': request.user.userinfo.fullname,
+                           "hiddendiv": hiddendiv,
+                           "id": id,
+                           "pid": pid,
+                           "treedata": treedata,
+                           "title": title,
+                           "errors": errors,
+                           "source_type_list": source_type_list,
+                           "pagefuns": getpagefuns(funid)})
+        except Exception as e:
+            print(e)
+            return HttpResponseRedirect("/index")
     else:
         return HttpResponseRedirect("/login")
 
@@ -503,7 +633,7 @@ def get_source_tree(parent, selectid):
             "sourcetype": child.sourcetype,
             "connection": child.connection,
             "sort": child.sort,
-            "p_name": parent.name
+            "p_name": parent.name if parent.pnode else child.code,
         }
         try:
             if int(selectid) == child.id:
@@ -512,151 +642,6 @@ def get_source_tree(parent, selectid):
             pass
         nodes.append(node)
     return nodes
-
-
-def custom_source_tree(request):
-    if request.user.is_authenticated():
-        errors = []
-        id = request.POST.get('id', "")
-        p_source = ""
-        pid = request.POST.get('pid', "")
-        name = request.POST.get('name', "")
-
-        if id == 0:
-            selectid = pid
-            title = "新建"
-        else:
-            selectid = id
-            title = name
-
-        # 保存
-        try:
-            if id == 0:
-                sort = 1
-                try:
-                    max_source = Source.objects.filter(pnode=p_source).latest('sort').exclude(state="9")
-                    sort = max_source.sort + 1
-                except:
-                    pass
-                source_save = Source()
-                source_save.pnode = p_source
-                source_save.name = name
-                source_save.sort = sort
-                source_save.save()
-                title = name
-                id = source_save.id
-                selectid = id
-            else:
-                source_save = Source.objects.get(id=id)
-                source_save.name = name
-                source_save.save()
-                title = name
-        except:
-            errors.append('保存失败。')
-
-        # 加载树
-        treedata = []
-        rootnodes = Source.objects.order_by("sort").filter(pnode=None).exclude(state="9")
-
-        if len(rootnodes) > 0:
-            for rootnode in rootnodes:
-                root = dict()
-                root["text"] = rootnode.name
-                root["id"] = rootnode.id
-
-                root["data"] = {
-                    "code": rootnode.code,
-                    "sourcetype": rootnode.sourcetype,
-                    "connection": rootnode.connection,
-                    "sort": rootnode.sort,
-                    "p_name": rootnode.code,
-                }
-                root["children"] = get_source_tree(rootnode, selectid)
-                root["state"] = {"opened": True}
-                treedata.append(root)
-        process = dict()
-        process["text"] = "数据源配置"
-        process["data"] = {"verify": "first_node"}
-        process["children"] = treedata
-        process["state"] = {"opened": True}
-        return JsonResponse({"treedata": process})
-    else:
-        return HttpResponseRedirect("/login")
-
-
-def source_save(request):
-    if request.user.is_authenticated():
-        id = request.POST.get('id', '')
-        pid = request.POST.get('pid', '')
-        name = request.POST.get('name', '')
-        code = request.POST.get('code', '')
-        connection = request.POST.get('connection', '')
-        sourcetype = request.POST.get('sourcetype', '')
-        result = ""
-        try:
-            id = int(id)
-        except:
-            raise Http404()
-        data = ""
-        if code.strip() == '':
-            result = '数据源代码不能为空。'
-        else:
-            if name.strip() == '':
-                result = '数据源名称不能为空。'
-            else:
-                if connection.strip() == '':
-                    result = '连接符不能为空。'
-                else:
-                    if sourcetype.strip() == '':
-                        result = '数据源类型不能为空。'
-                    else:
-                        # 新增步骤
-                        if id == 0:
-                            try:
-                                pid = int(pid)
-                            except:
-                                pid = None
-                                max_sort_from_pnode = \
-                                    Source.objects.exclude(state="9").filter(pnode_id=None).aggregate(Max("sort"))[
-                                        "sort__max"]
-                            else:
-                                max_sort_from_pnode = \
-                                    Source.objects.exclude(state="9").filter(pnode_id=pid).aggregate(Max("sort"))[
-                                        "sort__max"]
-
-                            # 当前没有父节点
-                            if max_sort_from_pnode or max_sort_from_pnode == 0:
-                                my_sort = max_sort_from_pnode + 1
-                            else:
-                                my_sort = 0
-
-                            source = Source()
-                            source.name = name
-                            source.connection = connection
-                            source.code = code
-                            source.sort = my_sort
-                            source.sourcetype = sourcetype
-                            source.pnode_id = pid
-                            source.save()
-
-                            result = "保存成功。"
-                            data = source.id
-                        else:
-                            source = Source.objects.filter(id=id)
-                            if source.exists():
-                                source = source[0]
-                                source.name = name
-                                source.code = code
-                                source.connection = connection
-                                source.sourcetype = sourcetype
-                                source.save()
-                                result = "保存成功。"
-                            else:
-                                result = "当前步骤不存在，请联系客服！"
-        return JsonResponse({
-            "result": result,
-            "data": data
-        })
 
 
 def del_source(request):
@@ -754,7 +739,6 @@ def move_source(request):
                 for source in cur_source:
                     source.sort += 1
                     source.save()
-
             # pnode
             if parent:
                 parent_source = Source.objects.get(id=parent)
@@ -1415,7 +1399,6 @@ def function(request, funid):
                 icon = request.POST.get('icon')
                 try:
                     id = int(id)
-
                 except:
                     raise Http404()
                 try:
@@ -1426,13 +1409,11 @@ def function(request, funid):
                     selectid = pid
                     title = "新建"
                 else:
-
                     selectid = id
                     title = name
 
                 if name.strip() == '':
                     errors.append('功能名称不能为空。')
-
                 else:
                     try:
                         pfun = Fun.objects.get(id=pid)
@@ -1687,41 +1668,135 @@ def organization(request, funid):
                     phone = request.POST.get('phone', '')
                     email = request.POST.get('email', '')
                     password = request.POST.get('password', '')
-                    if id == 0:
-                        newpassword = ""
-                        editpassword = "hidden"
-                        selectid = pid
-                        title = "新建"
-                        alluser = User.objects.filter(username=username)
+                    if fullname.strip() == '':
+                        errors.append('用户姓名不能为空。')
+                    else:
                         if username.strip() == '':
                             errors.append('用户名不能为空。')
                         else:
                             if password.strip() == '':
                                 errors.append('密码不能为空。')
                             else:
-                                if fullname.strip() == '':
-                                    errors.append('姓名不能为空。')
+                                if id == 0:
+                                    newpassword = ""
+                                    editpassword = "hidden"
+                                    selectid = pid
+                                    title = "新建"
+                                    alluser = User.objects.filter(username=username)
+                                    if username.strip() == '':
+                                        errors.append('用户名不能为空。')
+                                    else:
+                                        if password.strip() == '':
+                                            errors.append('密码不能为空。')
+                                        else:
+                                            if fullname.strip() == '':
+                                                errors.append('姓名不能为空。')
+                                            else:
+                                                if (len(alluser) > 0):
+                                                    errors.append('用户名:' + username + '已存在。')
+                                                else:
+                                                    try:
+                                                        newuser = User()
+                                                        newuser.username = username
+                                                        newuser.set_password(password)
+                                                        newuser.email = email
+                                                        newuser.save()
+                                                        # 用户扩展信息 profile
+                                                        profile = UserInfo()  # e*************************
+                                                        profile.user_id = newuser.id
+                                                        profile.phone = phone
+                                                        profile.fullname = fullname
+                                                        try:
+                                                            porg = UserInfo.objects.get(id=pid)
+                                                        except:
+                                                            raise Http404()
+                                                        profile.pnode = porg
+                                                        profile.usertype = "user"
+                                                        sort = 1
+                                                        try:
+                                                            maxorg = UserInfo.objects.filter(pnode=porg).latest('sort')
+                                                            sort = maxorg.sort + 1
+                                                        except:
+                                                            pass
+                                                        profile.sort = sort
+                                                        profile.save()
+                                                        for group in grouplist:
+                                                            try:
+                                                                group = int(group)
+                                                                mygroup = allgroup.get(id=group)
+                                                                profile.group.add(mygroup)
+                                                            except ValueError:
+                                                                raise Http404()
+                                                        title = fullname
+                                                        selectid = profile.id
+                                                        id = profile.id
+                                                        newpassword = "hidden"
+                                                        editpassword = ""
+                                                    except ValueError:
+                                                        raise Http404()
                                 else:
-                                    if (len(alluser) > 0):
-                                        errors.append('用户名:' + username + '已存在。')
+                                    selectid = id
+                                    title = fullname
+                                    exalluser = User.objects.filter(username=username)
+                                    if username.strip() == '':
+                                        errors.append('用户名不能为空。')
+                                    else:
+                                        if fullname.strip() == '':
+                                            errors.append('姓名不能为空。')
+                                        else:
+                                            if (len(exalluser) > 0 and exalluser[0].userinfo.id != id):
+                                                errors.append('用户名:' + username + '已存在。')
+                                            else:
+                                                try:
+                                                    alluserinfo = UserInfo.objects.get(id=id)
+                                                    alluser = alluserinfo.user
+                                                    alluser.email = email
+                                                    alluser.save()
+                                                    # 用户扩展信息 profile
+                                                    alluserinfo.phone = phone
+                                                    alluserinfo.fullname = fullname
+                                                    alluserinfo.save()
+                                                    alluserinfo.group.clear()
+                                                    for group in grouplist:
+                                                        try:
+                                                            group = int(group)
+                                                            mygroup = allgroup.get(id=group)
+                                                            alluserinfo.group.add(mygroup)
+                                                        except ValueError:
+                                                            raise Http404()
+                                                    title = fullname
+                                                except:
+                                                    errors.append('保存失败。')
+                else:
+                    if 'orgsave' in request.POST:
+                        hiddenuser = "hidden"
+                        hiddenorg = ""
+                        pname = request.POST.get('orgpname')
+                        orgname = request.POST.get('orgname', '')
+                        remark = request.POST.get('remark', '')
+                        if orgname.strip() == '':
+                            errors.append('组织名称不能为空。')
+                        else:
+                            if id == 0:
+                                selectid = pid
+                                title = "新建"
+                                try:
+                                    porg = UserInfo.objects.get(id=pid)
+                                except:
+                                    raise Http404()
+                                allorg = UserInfo.objects.filter(fullname=orgname, pnode=porg)
+                                if orgname.strip() == '':
+                                    errors.append('组织名称不能为空。')
+                                else:
+                                    if (len(allorg) > 0):
+                                        errors.append(orgname + '已存在。')
                                     else:
                                         try:
-                                            newuser = User()
-                                            newuser.username = username
-                                            newuser.set_password(password)
-                                            newuser.email = email
-                                            newuser.save()
-                                            # 用户扩展信息 profile
                                             profile = UserInfo()  # e*************************
-                                            profile.user_id = newuser.id
-                                            profile.phone = phone
-                                            profile.fullname = fullname
-                                            try:
-                                                porg = UserInfo.objects.get(id=pid)
-                                            except:
-                                                raise Http404()
+                                            profile.fullname = orgname
                                             profile.pnode = porg
-                                            profile.usertype = "user"
+                                            profile.remark = remark
+                                            profile.usertype = "org"
                                             sort = 1
                                             try:
                                                 maxorg = UserInfo.objects.filter(pnode=porg).latest('sort')
@@ -1730,116 +1805,33 @@ def organization(request, funid):
                                                 pass
                                             profile.sort = sort
                                             profile.save()
-                                            for group in grouplist:
-                                                try:
-                                                    group = int(group)
-                                                    mygroup = allgroup.get(id=group)
-                                                    profile.group.add(mygroup)
-                                                except ValueError:
-                                                    raise Http404()
-                                            title = fullname
+                                            title = orgname
                                             selectid = profile.id
                                             id = profile.id
-                                            newpassword = "hidden"
-                                            editpassword = ""
                                         except ValueError:
                                             raise Http404()
-                    else:
-                        selectid = id
-                        title = fullname
-                        exalluser = User.objects.filter(username=username)
-                        if username.strip() == '':
-                            errors.append('用户名不能为空。')
-                        else:
-                            if fullname.strip() == '':
-                                errors.append('姓名不能为空。')
                             else:
-                                if (len(exalluser) > 0 and exalluser[0].userinfo.id != id):
-                                    errors.append('用户名:' + username + '已存在。')
+                                selectid = id
+                                title = orgname
+                                try:
+                                    porg = UserInfo.objects.get(id=pid)
+                                except:
+                                    raise Http404()
+                                exalluser = UserInfo.objects.filter(fullname=orgname, pnode=porg).exclude(state="9")
+                                if orgname.strip() == '':
+                                    errors.append('组织名称不能为空。')
                                 else:
-                                    try:
-                                        alluserinfo = UserInfo.objects.get(id=id)
-                                        alluser = alluserinfo.user
-                                        alluser.email = email
-                                        alluser.save()
-                                        # 用户扩展信息 profile
-                                        alluserinfo.phone = phone
-                                        alluserinfo.fullname = fullname
-                                        alluserinfo.save()
-                                        alluserinfo.group.clear()
-                                        for group in grouplist:
-                                            try:
-                                                group = int(group)
-                                                mygroup = allgroup.get(id=group)
-                                                alluserinfo.group.add(mygroup)
-                                            except ValueError:
-                                                raise Http404()
-                                        title = fullname
-                                    except:
-                                        errors.append('保存失败。')
-
-                else:
-                    if 'orgsave' in request.POST:
-                        hiddenuser = "hidden"
-                        hiddenorg = ""
-                        pname = request.POST.get('orgpname')
-                        orgname = request.POST.get('orgname', '')
-                        remark = request.POST.get('remark', '')
-                        if id == 0:
-                            selectid = pid
-                            title = "新建"
-                            try:
-                                porg = UserInfo.objects.get(id=pid)
-                            except:
-                                raise Http404()
-                            allorg = UserInfo.objects.filter(fullname=orgname, pnode=porg)
-                            if orgname.strip() == '':
-                                errors.append('组织名称不能为空。')
-                            else:
-                                if (len(allorg) > 0):
-                                    errors.append(orgname + '已存在。')
-                                else:
-                                    try:
-                                        profile = UserInfo()  # e*************************
-                                        profile.fullname = orgname
-                                        profile.pnode = porg
-                                        profile.remark = remark
-                                        profile.usertype = "org"
-                                        sort = 1
+                                    if (len(exalluser) > 0 and exalluser[0].id != id):
+                                        errors.append(username + '已存在。')
+                                    else:
                                         try:
-                                            maxorg = UserInfo.objects.filter(pnode=porg).latest('sort')
-                                            sort = maxorg.sort + 1
+                                            alluserinfo = UserInfo.objects.get(id=id)
+                                            alluserinfo.fullname = orgname
+                                            alluserinfo.remark = remark
+                                            alluserinfo.save()
+                                            title = orgname
                                         except:
-                                            pass
-                                        profile.sort = sort
-                                        profile.save()
-                                        title = orgname
-                                        selectid = profile.id
-                                        id = profile.id
-                                    except ValueError:
-                                        raise Http404()
-                        else:
-                            selectid = id
-                            title = orgname
-                            try:
-                                porg = UserInfo.objects.get(id=pid)
-                            except:
-                                raise Http404()
-                            exalluser = UserInfo.objects.filter(fullname=orgname, pnode=porg).exclude(state="9")
-                            if orgname.strip() == '':
-                                errors.append('组织名称不能为空。')
-                            else:
-                                if (len(exalluser) > 0 and exalluser[0].id != id):
-                                    errors.append(username + '已存在。')
-                                else:
-                                    try:
-                                        alluserinfo = UserInfo.objects.get(id=id)
-                                        alluserinfo.fullname = orgname
-                                        alluserinfo.remark = remark
-                                        alluserinfo.save()
-                                        title = orgname
-                                    except:
-                                        errors.append('保存失败。')
+                                            errors.append('保存失败。')
             treedata = []
             rootnodes = UserInfo.objects.order_by("sort").exclude(state="9").filter(pnode=None, usertype="org")
             if len(rootnodes) > 0:
