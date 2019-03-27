@@ -75,7 +75,6 @@ $(function () {
                         }
                     }
                 },
-
             }
         },
         "plugins": ["contextmenu", "dnd", "types", "role"]

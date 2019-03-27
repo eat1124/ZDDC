@@ -8,12 +8,9 @@ $(function() {
                 'data': sourceTreeData
             },
             "types": {
-                "node": {
+                "default": {
                     "icon": "fa fa-folder icon-state-warning icon-lg"
                 },
-                "fun": {
-                    "icon": "fa fa-file icon-state-warning icon-lg"
-                }
             },
             "contextmenu": {
                 "items": {
