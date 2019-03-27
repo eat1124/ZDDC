@@ -467,6 +467,21 @@ def cycle_del(request):
             return HttpResponse(0)
 
 
+def get_select_source_type(temp_source_type=""):
+    c_dict_index = DictIndex.objects.filter(name="数据源类型").exclude(state='9')
+    if c_dict_index.exists():
+        c_dict_index = c_dict_index[0]
+        dict_list = c_dict_index.dictlist_set.values_list("name")
+        source_type_list = []
+        for i in dict_list:
+            source_type_list.append({
+                    "source_type": i[0],
+                    "source_if_selected":"selected" if temp_source_type ==  i[0] else "",
+                })
+    else:
+        source_type_list = []
+    return source_type_list
+
 def source_index(request, funid):
     """
     数据源配置
@@ -480,18 +495,16 @@ def source_index(request, funid):
             id = ""
             pid = ""
             title = ""
+            code = ""
+            p_name = ""
+            name = ""
+            connection = ""
+
+
             hiddendiv = "hidden"
 
             # 数据源类型
-            c_dict_index = DictIndex.objects.filter(name="数据源类型").exclude(state='9')
-            if c_dict_index.exists():
-                c_dict_index = c_dict_index[0]
-                dict_list = c_dict_index.dictlist_set.values_list("name")
-                source_type_list = []
-                for i in dict_list:
-                    source_type_list.append(i[0])
-            else:
-                source_type_list = []
+            source_type_list = get_select_source_type()
 
             # 新增/保存/修改
             if request.method == "POST":
@@ -502,6 +515,10 @@ def source_index(request, funid):
                 code = request.POST.get('code', '')
                 connection = request.POST.get('connection', '')
                 sourcetype = request.POST.get('sourcetype', '')
+                p_name = request.POST.get('p_name', '')
+
+                source_type_list = get_select_source_type(temp_source_type=sourcetype)
+
                 try:
                     id = int(id)
                 except:
@@ -604,13 +621,18 @@ def source_index(request, funid):
             treedata = json.dumps(treedata)
             return render(request, 'source.html',
                           {'username': request.user.userinfo.fullname,
-                           "hiddendiv": hiddendiv,
-                           "id": id,
-                           "pid": pid,
                            "treedata": treedata,
                            "title": title,
                            "errors": errors,
                            "source_type_list": source_type_list,
+                           # 表单默认数据
+                            "hiddendiv": hiddendiv,
+                           "id": id,
+                           "pid": pid,
+                           "code": code,
+                           "p_name": p_name,
+                           "name": name,
+                           "connection": connection,
                            "pagefuns": getpagefuns(funid)})
         except Exception as e:
             print(e)

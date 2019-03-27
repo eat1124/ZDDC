@@ -28,13 +28,13 @@
                                     <input hidden id="pid" type="text" name="pid" value="{{pid}}">
 
                                     <input id="code" autocomplete="off" type="text" name="code"
-                                           class="form-control" placeholder="">
+                                           class="form-control" placeholder="" value={{code}}>
                                     <div class="form-control-focus"></div>
                                 </div>
                                 <label class="col-md-3 control-label">所属数据库</label>
                                 <div class="col-md-3">
                                     <input id="p_name" autocomplete="off" type="text" name="p_name"
-                                           class="form-control" placeholder="" readonly>
+                                           class="form-control" placeholder="" value="{{p_name}}" readonly>
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>
@@ -43,7 +43,7 @@
                                         style="color:red; ">*</span>数据源名称</label>
                                 <div class="col-md-9">
                                     <input id="name" autocomplete="off" type="text" name="name"
-                                           class="form-control" placeholder="">
+                                           class="form-control" value="{{name}}" placeholder="">
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>
@@ -52,7 +52,7 @@
                                         style="color:red; ">*</span>连接串</label>
                                 <div class="col-md-9">
                                     <input id="connection" autocomplete="off" type="text" name="connection"
-                                           class="form-control" placeholder="">
+                                           class="form-control" value="{{connection}}" placeholder="">
                                     <div class="form-control-focus"></div>
                                 </div>
 
@@ -62,8 +62,8 @@
                                         style="color:red; ">*</span>数据源类型</label>
                                 <div class="col-md-9">
                                     <select class="form-control" id="sourcetype" name="sourcetype">
-                                        {% for source_type in source_type_list%}
-                                        <option value="{{source_type}}">{{source_type}}</option>
+                                        {% for source in source_type_list%}
+                                        <option value="{{source.source_type}}" {{ source.source_if_selected}}>{{source.source_type}}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
