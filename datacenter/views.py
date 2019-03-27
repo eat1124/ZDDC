@@ -84,7 +84,8 @@ def dictsave(request):
             result["res"] = '字典名称不能为空。'
         else:
             if dictid == 0:
-                alldict = DictIndex.objects.filter(name=dictname).exclude(state="9")
+                alldict = DictIndex.objects.filter(
+                    name=dictname).exclude(state="9")
                 if (len(alldict) > 0):
                     result["res"] = dictname + '已存在。'
                 else:
@@ -92,11 +93,13 @@ def dictsave(request):
                     dictsave.name = dictname
                     dictsave.sort = dictsort
                     dictsave.save()
-                    dictsave = DictIndex.objects.filter(name=dictname).exclude(state="9")
+                    dictsave = DictIndex.objects.filter(
+                        name=dictname).exclude(state="9")
                     result["res"] = "新增成功。"
                     result["data"] = dictsave[0].id
             else:
-                alldict = DictIndex.objects.filter(name=dictname).exclude(id=dictid).exclude(state="9")
+                alldict = DictIndex.objects.filter(
+                    name=dictname).exclude(id=dictid).exclude(state="9")
                 if (len(alldict) > 0):
                     result["res"] = dictname + '已存在。'
                 else:
@@ -120,10 +123,12 @@ def dictselect(request):
         except:
             raise Http404()
         alldict = DictIndex.objects.get(id=dictid)
-        allDictList = DictList.objects.order_by("sort").filter(dictindex=alldict).exclude(state="9")
+        allDictList = DictList.objects.order_by("sort").filter(
+            dictindex=alldict).exclude(state="9")
         if (len(allDictList) > 0):
             for dict_list in allDictList:
-                result.append({"id": dict_list.id, "name": dict_list.name, "sort": dict_list.sort})
+                result.append(
+                    {"id": dict_list.id, "name": dict_list.name, "sort": dict_list.sort})
         return HttpResponse(json.dumps(result))
 
 
@@ -154,7 +159,8 @@ def dictlistsave(request):
             alldict = DictIndex.objects.get(id=dictid)
             if listid == 0:
 
-                alllist = DictList.objects.filter(name=listname, dictindex=alldict).exclude(state="9")
+                alllist = DictList.objects.filter(
+                    name=listname, dictindex=alldict).exclude(state="9")
                 if (len(alllist) > 0):
                     result["res"] = listname + '已存在。'
                 else:
@@ -163,7 +169,8 @@ def dictlistsave(request):
                     listsave.name = listname
                     listsave.sort = listsort
                     listsave.save()
-                    listsave = DictList.objects.filter(name=listname, dictindex=alldict).exclude(state="9")
+                    listsave = DictList.objects.filter(
+                        name=listname, dictindex=alldict).exclude(state="9")
                     result["res"] = "新增成功。"
                     result["data"] = listsave[0].id
             else:
@@ -226,7 +233,8 @@ def storage_index(request, funid):
     存储配置
     """
     if request.user.is_authenticated():
-        c_dict_index_1 = DictIndex.objects.filter(name="存储类型").exclude(state='9')
+        c_dict_index_1 = DictIndex.objects.filter(
+            name="存储类型").exclude(state='9')
         if c_dict_index_1.exists():
             c_dict_index_1 = c_dict_index_1[0]
             dict_list1 = c_dict_index_1.dictlist_set.values_list("name")
@@ -234,7 +242,8 @@ def storage_index(request, funid):
             for i in dict_list1:
                 storage_type_list.append(i[0])
 
-        c_dict_index_2 = DictIndex.objects.filter(name="有效时间").exclude(state='9')
+        c_dict_index_2 = DictIndex.objects.filter(
+            name="有效时间").exclude(state='9')
         if c_dict_index_2.exists():
             c_dict_index_2 = c_dict_index_2[0]
             dict_list2 = c_dict_index_2.dictlist_set.values_list("name")
@@ -305,9 +314,11 @@ def storage_save(request):
                             result["res"] = '有效时间不能为空。'
                         else:
                             if id == 0:
-                                all_storage = Storage.objects.filter(code=storage_code).exclude(state="9")
+                                all_storage = Storage.objects.filter(
+                                    code=storage_code).exclude(state="9")
                                 if (len(all_storage) > 0):
-                                    result["res"] = '存储代码:' + storage_code + '已存在。'
+                                    result["res"] = '存储代码:' + \
+                                        storage_code + '已存在。'
                                 else:
                                     storage_save = Storage()
                                     storage_save.name = storage_name
@@ -323,16 +334,19 @@ def storage_save(request):
                                 all_storage = Storage.objects.filter(code=storage_code).exclude(
                                     id=id).exclude(state="9")
                                 if (len(all_storage) > 0):
-                                    result["res"] = '存储代码:' + storage_code + '已存在。'
+                                    result["res"] = '存储代码:' + \
+                                        storage_code + '已存在。'
                                 else:
                                     try:
-                                        storage_save = Storage.objects.get(id=id)
+                                        storage_save = Storage.objects.get(
+                                            id=id)
                                         storage_save.name = storage_name
                                         storage_save.code = storage_code
                                         storage_save.tablename = table_name
                                         storage_save.storagetype = storage_type
                                         storage_save.validtime = valid_time
-                                        storage_save.sort = int(sort) if sort else None
+                                        storage_save.sort = int(
+                                            sort) if sort else None
                                         storage_save.save()
                                         result["res"] = "保存成功。"
                                         result["data"] = storage_save.id
@@ -415,7 +429,8 @@ def cycle_save(request):
                         result["res"] = '开始时间不能为空。'
                     else:
                         if id == 0:
-                            all_cycle = Cycle.objects.filter(code=cycle_code).exclude(state="9")
+                            all_cycle = Cycle.objects.filter(
+                                code=cycle_code).exclude(state="9")
                             if (len(all_cycle) > 0):
                                 result["res"] = '存储代码:' + cycle_code + '已存在。'
                             else:
@@ -440,7 +455,8 @@ def cycle_save(request):
                                     cycle_save.code = cycle_code
                                     cycle_save.minutes = minutes
                                     cycle_save.creatdate = create_date
-                                    cycle_save.sort = int(sort) if sort else None
+                                    cycle_save.sort = int(
+                                        sort) if sort else None
                                     cycle_save.save()
                                     result["res"] = "保存成功。"
                                     result["data"] = cycle_save.id
@@ -475,12 +491,13 @@ def get_select_source_type(temp_source_type=""):
         source_type_list = []
         for i in dict_list:
             source_type_list.append({
-                    "source_type": i[0],
-                    "source_if_selected":"selected" if temp_source_type ==  i[0] else "",
-                })
+                "source_type": i[0],
+                "source_if_selected": "selected" if temp_source_type == i[0] else "",
+            })
     else:
         source_type_list = []
     return source_type_list
+
 
 def source_index(request, funid):
     """
@@ -500,7 +517,6 @@ def source_index(request, funid):
             name = ""
             connection = ""
 
-
             hiddendiv = "hidden"
 
             # 数据源类型
@@ -517,7 +533,8 @@ def source_index(request, funid):
                 sourcetype = request.POST.get('sourcetype', '')
                 p_name = request.POST.get('p_name', '')
 
-                source_type_list = get_select_source_type(temp_source_type=sourcetype)
+                source_type_list = get_select_source_type(
+                    temp_source_type=sourcetype)
 
                 try:
                     id = int(id)
@@ -592,13 +609,15 @@ def source_index(request, funid):
                                             source.save()
                                             title = name
                                         else:
-                                            errors.append("当前资源不存在，无法修改，请联系客服！")
+                                            errors.append(
+                                                "当前资源不存在，无法修改，请联系客服！")
                                 except:
                                     errors.append('保存失败。')
 
             # 加载树
             treedata = []
-            rootnodes = Source.objects.order_by("sort").filter(pnode=None).exclude(state="9")
+            rootnodes = Source.objects.order_by(
+                "sort").filter(pnode=None).exclude(state="9")
 
             if len(rootnodes) > 0:
                 for rootnode in rootnodes:
@@ -626,7 +645,7 @@ def source_index(request, funid):
                            "errors": errors,
                            "source_type_list": source_type_list,
                            # 表单默认数据
-                            "hiddendiv": hiddendiv,
+                           "hiddendiv": hiddendiv,
                            "id": id,
                            "pid": pid,
                            "code": code,
@@ -681,7 +700,8 @@ def del_source(request):
                 p_source = all_source.pnode
                 all_source.state = 9
                 all_source.save()
-                sort_source = Source.objects.filter(pnode=p_source).filter(sort__gt=sort).exclude(state="9")
+                sort_source = Source.objects.filter(pnode=p_source).filter(
+                    sort__gt=sort).exclude(state="9")
                 if sort_source.exists():
                     for sortstep in sort_source:
                         try:
@@ -725,7 +745,8 @@ def move_source(request):
                 raise Http404()
 
             cur_source_obj = \
-                Source.objects.filter(pnode_id=old_parent).filter(sort=old_position).exclude(state="9")[0]
+                Source.objects.filter(pnode_id=old_parent).filter(
+                    sort=old_position).exclude(state="9")[0]
             cur_source_obj.sort = position
             cur_source_id = cur_source_obj.id
             cur_source_obj.save()
@@ -845,7 +866,8 @@ def getpagefuns(funid, request=""):
             if "falconstorswitch" in myurl:
                 compile_obj = re.compile(r"/.*/")
                 jsurl = compile_obj.findall(myurl)[0][:-1]
-        mycurfun = {"id": curfun[0].id, "name": curfun[0].name, "url": myurl, "jsurl": jsurl}
+        mycurfun = {
+            "id": curfun[0].id, "name": curfun[0].name, "url": myurl, "jsurl": jsurl}
     return {"pagefuns": pagefuns, "curfun": mycurfun, "task_nums": task_nums}
 
 
@@ -863,7 +885,8 @@ def processindex(request, processrun_id):
         errors = []
         # processrun_id = request.GET.get("p_run_id", "")
         s_tag = request.GET.get("s", "")
-        c_process_run = ProcessRun.objects.filter(id=processrun_id).select_related("process")
+        c_process_run = ProcessRun.objects.filter(
+            id=processrun_id).select_related("process")
         if c_process_run.exists():
             process_url = c_process_run[0].process.url
             process_name = c_process_run[0].process.name
@@ -887,7 +910,8 @@ def get_process_index_data(request):
     if request.user.is_authenticated():
         processrun_id = request.POST.get("p_run_id", "")
 
-        current_processruns = ProcessRun.objects.filter(id=int(processrun_id)).select_related("process")
+        current_processruns = ProcessRun.objects.filter(
+            id=int(processrun_id)).select_related("process")
 
         if current_processruns:
             current_processrun = current_processruns[0]
@@ -914,7 +938,8 @@ def get_process_index_data(request):
             for c_num, step in enumerate(c_process_steps):
                 if step.intertype == "complex":
                     sub_process_id = step.sub_process
-                    c_process = Process.objects.filter(id=int(sub_process_id)).filter(state="1")
+                    c_process = Process.objects.filter(
+                        id=int(sub_process_id)).filter(state="1")
                     if c_process.exists():
                         c_process = c_process[0]
                         # name
@@ -936,7 +961,8 @@ def get_process_index_data(request):
                         # starttime
                         first_step = c_process.step_set.filter(state="1").filter(
                             intertype__in=["node", "task"]).order_by("sort").first()
-                        first_step_run = first_step.steprun_set.filter(processrun=current_processrun)
+                        first_step_run = first_step.steprun_set.filter(
+                            processrun=current_processrun)
                         if first_step_run:
                             first_step_run = first_step_run[0]
                             start_time = first_step_run.starttime
@@ -945,7 +971,8 @@ def get_process_index_data(request):
                         # endtime
                         end_step = c_process.step_set.filter(state="1").filter(intertype__in=["node", "task"]).order_by(
                             "drwaid").last()
-                        end_step_run = end_step.steprun_set.filter(processrun=current_processrun)
+                        end_step_run = end_step.steprun_set.filter(
+                            processrun=current_processrun)
                         if end_step_run:
                             end_step_run = end_step_run[0]
                             end_time = end_step_run.endtime
@@ -956,7 +983,8 @@ def get_process_index_data(request):
                         if state == "DONE":
                             percent = "100"
                         else:
-                            percent = "%02d" % (c_step_run_index / len(all_steps) * 100)
+                            percent = "%02d" % (
+                                c_step_run_index / len(all_steps) * 100)
                         # type 当前运行子流程  *************************************
                         # 流程结束后的当前步骤 >> 最后一个步骤
                         type = ""
@@ -990,7 +1018,8 @@ def get_process_index_data(request):
                         })
                 else:
                     name = step.name
-                    c_step_run = step.steprun_set.filter(processrun=current_processrun)
+                    c_step_run = step.steprun_set.filter(
+                        processrun=current_processrun)
                     if c_step_run.exists():
                         c_step_run = c_step_run[0]
                         state = c_step_run.state
@@ -1039,13 +1068,15 @@ def get_process_index_data(request):
             for step in c_process_steps:
                 if step.intertype == "complex":
                     sub_process_id = step.sub_process
-                    c_process = Process.objects.filter(id=int(sub_process_id)).filter(state="1")
+                    c_process = Process.objects.filter(
+                        id=int(sub_process_id)).filter(state="1")
                     if c_process.exists():
                         c_process = c_process[0]
                         all_steps = c_process.step_set.filter(state="1").filter(
                             intertype__in=["node", "task"]).order_by("sort")
                         for sub_step in all_steps:
-                            sub_step_run = sub_step.steprun_set.filter(processrun=current_processrun)
+                            sub_step_run = sub_step.steprun_set.filter(
+                                processrun=current_processrun)
                             if sub_step_run.exists():
                                 sub_step_run = sub_step_run[0]
                                 if sub_step_run.state in ["CONFIRM", "DONE"] and sub_step.rto_count_in == "0":
@@ -1053,7 +1084,8 @@ def get_process_index_data(request):
                                     break
 
                 else:
-                    c_step_run = step.steprun_set.filter(processrun=current_processrun)
+                    c_step_run = step.steprun_set.filter(
+                        processrun=current_processrun)
                     if c_step_run.exists():
                         c_step_run = c_step_run[0]
                         if c_step_run.state in ["CONFIRM", "DONE"] and step.rto_count_in == "0":
@@ -1068,7 +1100,8 @@ def get_process_index_data(request):
             for sub_process in sub_processes:
                 if sub_process[1] == "complex":
                     sub_process_id = sub_process[0]
-                    c_process = Process.objects.filter(id=int(sub_process_id)).filter(state="1")
+                    c_process = Process.objects.filter(
+                        id=int(sub_process_id)).filter(state="1")
 
                     mystep = c_process[0].step_set.order_by("sort").filter(state="1").filter(
                         intertype__in=["node", "task"])
@@ -1084,15 +1117,18 @@ def get_process_index_data(request):
                 for i in total_list:
                     if i.rto_count_in == "0":
                         break
-                    i_step_run = i.steprun_set.filter(processrun=current_processrun)
+                    i_step_run = i.steprun_set.filter(
+                        processrun=current_processrun)
                     if i_step_run.exists():
                         i_step_run = i_step_run[0]
-                        rtoendtime = i_step_run.endtime.strftime('%Y-%m-%d %H:%M:%S')
+                        rtoendtime = i_step_run.endtime.strftime(
+                            '%Y-%m-%d %H:%M:%S')
 
             # 流程需要签字
             if current_processrun.state == "SIGN":
                 rtostate = "DONE"
-                rtoendtime = current_processrun.starttime.strftime('%Y-%m-%d %H:%M:%S')
+                rtoendtime = current_processrun.starttime.strftime(
+                    '%Y-%m-%d %H:%M:%S')
 
             # process_rate
             done_step_run = current_processrun.steprun_set.filter(state="DONE")
@@ -1100,7 +1136,8 @@ def get_process_index_data(request):
                 done_num = len(done_step_run)
             else:
                 done_num = 0
-            process_rate = "%02d" % (done_num / len(current_processrun.steprun_set.all()) * 100)
+            process_rate = "%02d" % (
+                done_num / len(current_processrun.steprun_set.all()) * 100)
 
             current_time = datetime.datetime.now()
             c_step_run_data = {
@@ -1168,12 +1205,14 @@ def index(request, funid):
 def get_process_rto(request):
     if request.user.is_authenticated():
         # 不同流程最近的12次切换RTO
-        all_processes = Process.objects.exclude(state="9").filter(type="falconstor", level="1")
+        all_processes = Process.objects.exclude(
+            state="9").filter(type="falconstor", level="1")
         process_rto_list = []
         if all_processes:
             for process in all_processes:
                 process_name = process.name
-                processrun_rto_obj_list = process.processrun_set.filter(state="DONE")
+                processrun_rto_obj_list = process.processrun_set.filter(
+                    state="DONE")
                 current_rto_list = []
                 for processrun_rto_obj in processrun_rto_obj_list:
                     current_rto = processrun_rto_obj.rto
@@ -1191,7 +1230,8 @@ def get_process_rto(request):
 
 def get_daily_processrun(request):
     if request.user.is_authenticated():
-        all_processrun_objs = ProcessRun.objects.filter(Q(state="DONE") | Q(state="STOP")).select_related("process")
+        all_processrun_objs = ProcessRun.objects.filter(
+            Q(state="DONE") | Q(state="STOP")).select_related("process")
         process_success_rate_list = []
         if all_processrun_objs:
             for process_run in all_processrun_objs:
@@ -1201,7 +1241,8 @@ def get_daily_processrun(request):
                 process_color = process_run.process.color
                 process_run_id = process_run.id
                 # 进程url
-                processrun_url = "/processindex/" + str(process_run.id) + "?s=true"
+                processrun_url = "/processindex/" + \
+                    str(process_run.id) + "?s=true"
 
                 process_run_dict = {
                     "process_name": process_name,
@@ -1213,7 +1254,8 @@ def get_daily_processrun(request):
                     "invite": "0"
                 }
                 process_success_rate_list.append(process_run_dict)
-        all_process_run_invited = ProcessRun.objects.filter(state="PLAN").select_related("process")
+        all_process_run_invited = ProcessRun.objects.filter(
+            state="PLAN").select_related("process")
         if all_process_run_invited:
             for process_run_invited in all_process_run_invited:
                 invitations_dict = {
@@ -1287,7 +1329,8 @@ def forgetPassword(request):
             message = u'用户:' + alluser[0].username + u'您好。' \
                       + u"\n您在云灾备系统申请了密码重置，点击链接进入密码重置页面:" \
                       + u"http://127.0.0.1:8000/resetpassword/" + url
-            send_mail(subject, message, settings.EMAIL_HOST_USER, [alluser[0].email])
+            send_mail(subject, message, settings.EMAIL_HOST_USER,
+                      [alluser[0].email])
             myuserinfo.forgetpassword = url
             myuserinfo.save()
             result = "邮件发送成功，请注意查收。"
@@ -1384,7 +1427,8 @@ def get_fun_tree(parent, selectid):
         node["text"] = child.name
         node["id"] = child.id
         node["type"] = child.funtype
-        node["data"] = {"url": child.url, "icon": child.icon, "pname": parent.name}
+        node["data"] = {"url": child.url,
+                        "icon": child.icon, "pname": parent.name}
         node["children"] = get_fun_tree(child, selectid)
         try:
             if int(selectid) == child.id:
@@ -1446,7 +1490,8 @@ def function(request, funid):
                             sort = 1
 
                             try:
-                                maxfun = Fun.objects.filter(pnode=pfun).latest('sort')
+                                maxfun = Fun.objects.filter(
+                                    pnode=pfun).latest('sort')
                                 sort = maxfun.sort + 1
                             except:
                                 pass
@@ -1482,7 +1527,8 @@ def function(request, funid):
                     root["text"] = rootnode.name
                     root["id"] = rootnode.id
                     root["type"] = "node"
-                    root["data"] = {"url": rootnode.url, "icon": rootnode.icon, "pname": "无"}
+                    root["data"] = {"url": rootnode.url,
+                                    "icon": rootnode.icon, "pname": "无"}
                     try:
                         if int(selectid) == rootnode.id:
                             root["state"] = {"opened": True, "selected": True}
@@ -1559,13 +1605,17 @@ def funmove(request):
                 old_position = int(old_position)
             except:
                 raise Http404()
+
+            print(id, parent, position, parent, old_position)
             oldpfun = Fun.objects.get(id=old_parent)
             oldsort = old_position + 1
-            oldfuns = Fun.objects.filter(pnode=oldpfun).filter(sort__gt=oldsort)
+            oldfuns = Fun.objects.filter(
+                pnode=oldpfun).filter(sort__gt=oldsort)
 
             pfun = Fun.objects.get(id=parent)
             sort = position + 1
-            funs = Fun.objects.filter(pnode=pfun).filter(sort__gte=sort).exclude(id=id)
+            funs = Fun.objects.filter(pnode=pfun).filter(
+                sort__gte=sort).exclude(id=id)
 
             if pfun.funtype == "fun":
                 return HttpResponse("类型")
@@ -1610,16 +1660,19 @@ def get_org_tree(parent, selectid, allgroup):
             myallgroup = []
             for group in allgroup:
                 myallgroup.append({"groupname": group.name, "id": group.id})
-            node["data"] = {"remark": child.remark, "pname": parent.fullname, "myallgroup": myallgroup}
+            node["data"] = {"remark": child.remark,
+                            "pname": parent.fullname, "myallgroup": myallgroup}
         if child.usertype == "user":
             noselectgroup = []
             selectgroup = []
             allselectgroup = child.group.all()
             for group in allgroup:
                 if group in allselectgroup:
-                    selectgroup.append({"groupname": group.name, "id": group.id})
+                    selectgroup.append(
+                        {"groupname": group.name, "id": group.id})
                 else:
-                    noselectgroup.append({"groupname": group.name, "id": group.id})
+                    noselectgroup.append(
+                        {"groupname": group.name, "id": group.id})
             node["data"] = {"pname": parent.fullname, "username": child.user.username, "fullname": child.fullname,
                             "phone": child.phone, "email": child.user.email, "noselectgroup": noselectgroup,
                             "selectgroup": selectgroup}
@@ -1681,9 +1734,11 @@ def organization(request, funid):
                     selectgroup = []
                     for group in allgroup:
                         if str(group.id) in grouplist:
-                            selectgroup.append({"groupname": group.name, "id": group.id})
+                            selectgroup.append(
+                                {"groupname": group.name, "id": group.id})
                         else:
-                            noselectgroup.append({"groupname": group.name, "id": group.id})
+                            noselectgroup.append(
+                                {"groupname": group.name, "id": group.id})
                     pname = request.POST.get('pname')
                     username = request.POST.get('myusername', '')
                     fullname = request.POST.get('fullname', '')
@@ -1704,7 +1759,8 @@ def organization(request, funid):
                                     editpassword = "hidden"
                                     selectid = pid
                                     title = "新建"
-                                    alluser = User.objects.filter(username=username)
+                                    alluser = User.objects.filter(
+                                        username=username)
                                     if username.strip() == '':
                                         errors.append('用户名不能为空。')
                                     else:
@@ -1715,12 +1771,14 @@ def organization(request, funid):
                                                 errors.append('姓名不能为空。')
                                             else:
                                                 if (len(alluser) > 0):
-                                                    errors.append('用户名:' + username + '已存在。')
+                                                    errors.append(
+                                                        '用户名:' + username + '已存在。')
                                                 else:
                                                     try:
                                                         newuser = User()
                                                         newuser.username = username
-                                                        newuser.set_password(password)
+                                                        newuser.set_password(
+                                                            password)
                                                         newuser.email = email
                                                         newuser.save()
                                                         # 用户扩展信息 profile
@@ -1729,14 +1787,16 @@ def organization(request, funid):
                                                         profile.phone = phone
                                                         profile.fullname = fullname
                                                         try:
-                                                            porg = UserInfo.objects.get(id=pid)
+                                                            porg = UserInfo.objects.get(
+                                                                id=pid)
                                                         except:
                                                             raise Http404()
                                                         profile.pnode = porg
                                                         profile.usertype = "user"
                                                         sort = 1
                                                         try:
-                                                            maxorg = UserInfo.objects.filter(pnode=porg).latest('sort')
+                                                            maxorg = UserInfo.objects.filter(
+                                                                pnode=porg).latest('sort')
                                                             sort = maxorg.sort + 1
                                                         except:
                                                             pass
@@ -1744,9 +1804,12 @@ def organization(request, funid):
                                                         profile.save()
                                                         for group in grouplist:
                                                             try:
-                                                                group = int(group)
-                                                                mygroup = allgroup.get(id=group)
-                                                                profile.group.add(mygroup)
+                                                                group = int(
+                                                                    group)
+                                                                mygroup = allgroup.get(
+                                                                    id=group)
+                                                                profile.group.add(
+                                                                    mygroup)
                                                             except ValueError:
                                                                 raise Http404()
                                                         title = fullname
@@ -1759,7 +1822,8 @@ def organization(request, funid):
                                 else:
                                     selectid = id
                                     title = fullname
-                                    exalluser = User.objects.filter(username=username)
+                                    exalluser = User.objects.filter(
+                                        username=username)
                                     if username.strip() == '':
                                         errors.append('用户名不能为空。')
                                     else:
@@ -1767,10 +1831,12 @@ def organization(request, funid):
                                             errors.append('姓名不能为空。')
                                         else:
                                             if (len(exalluser) > 0 and exalluser[0].userinfo.id != id):
-                                                errors.append('用户名:' + username + '已存在。')
+                                                errors.append(
+                                                    '用户名:' + username + '已存在。')
                                             else:
                                                 try:
-                                                    alluserinfo = UserInfo.objects.get(id=id)
+                                                    alluserinfo = UserInfo.objects.get(
+                                                        id=id)
                                                     alluser = alluserinfo.user
                                                     alluser.email = email
                                                     alluser.save()
@@ -1782,8 +1848,10 @@ def organization(request, funid):
                                                     for group in grouplist:
                                                         try:
                                                             group = int(group)
-                                                            mygroup = allgroup.get(id=group)
-                                                            alluserinfo.group.add(mygroup)
+                                                            mygroup = allgroup.get(
+                                                                id=group)
+                                                            alluserinfo.group.add(
+                                                                mygroup)
                                                         except ValueError:
                                                             raise Http404()
                                                     title = fullname
@@ -1806,7 +1874,8 @@ def organization(request, funid):
                                     porg = UserInfo.objects.get(id=pid)
                                 except:
                                     raise Http404()
-                                allorg = UserInfo.objects.filter(fullname=orgname, pnode=porg)
+                                allorg = UserInfo.objects.filter(
+                                    fullname=orgname, pnode=porg)
                                 if orgname.strip() == '':
                                     errors.append('组织名称不能为空。')
                                 else:
@@ -1821,7 +1890,8 @@ def organization(request, funid):
                                             profile.usertype = "org"
                                             sort = 1
                                             try:
-                                                maxorg = UserInfo.objects.filter(pnode=porg).latest('sort')
+                                                maxorg = UserInfo.objects.filter(
+                                                    pnode=porg).latest('sort')
                                                 sort = maxorg.sort + 1
                                             except:
                                                 pass
@@ -1839,7 +1909,8 @@ def organization(request, funid):
                                     porg = UserInfo.objects.get(id=pid)
                                 except:
                                     raise Http404()
-                                exalluser = UserInfo.objects.filter(fullname=orgname, pnode=porg).exclude(state="9")
+                                exalluser = UserInfo.objects.filter(
+                                    fullname=orgname, pnode=porg).exclude(state="9")
                                 if orgname.strip() == '':
                                     errors.append('组织名称不能为空。')
                                 else:
@@ -1847,7 +1918,8 @@ def organization(request, funid):
                                         errors.append(username + '已存在。')
                                     else:
                                         try:
-                                            alluserinfo = UserInfo.objects.get(id=id)
+                                            alluserinfo = UserInfo.objects.get(
+                                                id=id)
                                             alluserinfo.fullname = orgname
                                             alluserinfo.remark = remark
                                             alluserinfo.save()
@@ -1855,7 +1927,8 @@ def organization(request, funid):
                                         except:
                                             errors.append('保存失败。')
             treedata = []
-            rootnodes = UserInfo.objects.order_by("sort").exclude(state="9").filter(pnode=None, usertype="org")
+            rootnodes = UserInfo.objects.order_by("sort").exclude(
+                state="9").filter(pnode=None, usertype="org")
             if len(rootnodes) > 0:
                 for rootnode in rootnodes:
                     root = {}
@@ -1864,8 +1937,10 @@ def organization(request, funid):
                     root["type"] = "org"
                     myallgroup = []
                     for group in allgroup:
-                        myallgroup.append({"groupname": group.name, "id": group.id})
-                    root["data"] = {"remark": rootnode.remark, "pname": "无", "myallgroup": myallgroup}
+                        myallgroup.append(
+                            {"groupname": group.name, "id": group.id})
+                    root["data"] = {"remark": rootnode.remark,
+                                    "pname": "无", "myallgroup": myallgroup}
                     try:
                         if int(selectid) == rootnode.id:
                             root["state"] = {"opened": True, "selected": True}
@@ -1873,7 +1948,8 @@ def organization(request, funid):
                             root["state"] = {"opened": True}
                     except:
                         root["state"] = {"opened": True}
-                    root["children"] = get_org_tree(rootnode, selectid, allgroup)
+                    root["children"] = get_org_tree(
+                        rootnode, selectid, allgroup)
                     treedata.append(root)
             treedata = json.dumps(treedata)
             return render(request, 'organization.html',
@@ -1906,12 +1982,13 @@ def orgdel(request):
             userinfo.sort = 9999
             userinfo.save()
 
-            if userinfo.type == "user":
+            if userinfo.usertype == "user":
                 user = userinfo.user
                 user.is_active = 0
                 user.save()
 
-            userinfos = UserInfo.objects.filter(pnode=userinfo.pnode).filter(sort__gt=sort).exclude(state="9")
+            userinfos = UserInfo.objects.filter(pnode=userinfo.pnode).filter(
+                sort__gt=sort).exclude(state="9")
             if (len(userinfos) > 0):
                 for myuserinfo in userinfos:
                     try:
@@ -1946,16 +2023,18 @@ def orgmove(request):
             except:
                 raise Http404()
             try:
-                parent = int(parent)
+                position = int(position)
             except:
                 raise Http404()
             try:
                 old_position = int(old_position)
             except:
                 raise Http404()
+            print(id, parent, position, position, old_position)
             oldpuserinfo = UserInfo.objects.get(id=old_parent)
             oldsort = old_position + 1
-            olduserinfos = UserInfo.objects.filter(pnode=oldpuserinfo).filter(sort__gt=oldsort)
+            olduserinfos = UserInfo.objects.filter(
+                pnode=oldpuserinfo).filter(sort__gt=oldsort)
 
             puserinfo = UserInfo.objects.get(id=parent)
             sort = position + 1
@@ -1963,7 +2042,7 @@ def orgmove(request):
                 state="9")
 
             myuserinfo = UserInfo.objects.get(id=id)
-            if puserinfo.type == "user":
+            if puserinfo.usertype == "user":
                 return HttpResponse("类型")
             else:
                 usersame = UserInfo.objects.filter(pnode=puserinfo).filter(fullname=myuserinfo.fullname).exclude(
@@ -2054,7 +2133,8 @@ def groupsave(request):
                     result["res"] = "新增成功。"
                     result["data"] = groupsave.id
             else:
-                allgroup = Group.objects.filter(name=name).exclude(id=id).exclude(state="9")
+                allgroup = Group.objects.filter(
+                    name=name).exclude(id=id).exclude(state="9")
                 if (len(allgroup) > 0):
                     result["res"] = name + '已存在。'
                 else:
@@ -2101,7 +2181,8 @@ def getusertree(request):
         groupsave = Group.objects.get(id=id)
         selectusers = groupsave.userinfo_set.all()
 
-        rootnodes = UserInfo.objects.order_by("sort").exclude(state="9").filter(pnode=None, usertype="org")
+        rootnodes = UserInfo.objects.order_by("sort").exclude(
+            state="9").filter(pnode=None, usertype="org")
 
         if len(rootnodes) > 0:
             for rootnode in rootnodes:
@@ -2131,8 +2212,9 @@ def groupsaveusertree(request):
         if len(selectedusers) > 0:
             for selecteduser in selectedusers:
                 try:
-                    myuser = UserInfo.objects.get(id=int(selecteduser.replace("user_", "")))
-                    if myuser.type == "user":
+                    myuser = UserInfo.objects.get(
+                        id=int(selecteduser.replace("user_", "")))
+                    if myuser.usertype == "user":
                         myuser.group.add(groupsave)
                 except:
                     pass
@@ -2151,7 +2233,8 @@ def getfuntree(request):
         groupsave = Group.objects.get(id=id)
         selectfuns = groupsave.fun.all()
 
-        rootnodes = Fun.objects.order_by("sort").filter(pnode=None, funtype="node")
+        rootnodes = Fun.objects.order_by(
+            "sort").filter(pnode=None, funtype="node")
 
         if len(rootnodes) > 0:
             for rootnode in rootnodes:
@@ -2181,8 +2264,9 @@ def groupsavefuntree(request):
         if len(selectedfuns) > 0:
             for selectedfun in selectedfuns:
                 try:
-                    myfun = Fun.objects.get(id=int(selectedfun.replace("fun_", "")))
-                    if myfun.type == "fun":
+                    myfun = Fun.objects.get(
+                        id=int(selectedfun.replace("fun_", "")))
+                    if myfun.funtype == "fun":
                         groupsave.fun.add(myfun)
                 except:
                     pass
@@ -2202,11 +2286,14 @@ def get_scene_tree(parent, selectid, allprocess):
         allselectprocess = child.process.all()
         myallprocess = []
         for process in allprocess:
-            myallprocess.append({"name": process.name, "id": process.id, "code": process.code})
+            myallprocess.append(
+                {"name": process.name, "id": process.id, "code": process.code})
             if process in allselectprocess:
-                selectprocess.append({"name": process.name, "id": process.id, "code": process.code})
+                selectprocess.append(
+                    {"name": process.name, "id": process.id, "code": process.code})
             else:
-                noselectprocess.append({"name": process.name, "id": process.id, "code": process.code})
+                noselectprocess.append(
+                    {"name": process.name, "id": process.id, "code": process.code})
 
         node["data"] = {"code": child.code, "remark": child.remark, "business": child.business,
                         "application": child.application, "pname": parent.name,
@@ -2266,9 +2353,11 @@ def scene(request, funid):
                 selectprocess = []
                 for process in allprocess:
                     if str(process.id) in processlist:
-                        selectprocess.append({"name": process.name, "id": process.id, "code": process.code})
+                        selectprocess.append(
+                            {"name": process.name, "id": process.id, "code": process.code})
                     else:
-                        noselectprocess.append({"name": process.name, "id": process.id, "code": process.code})
+                        noselectprocess.append(
+                            {"name": process.name, "id": process.id, "code": process.code})
                 pname = request.POST.get('pname')
                 code = request.POST.get('code', '')
                 name = request.POST.get('name', '')
@@ -2285,7 +2374,8 @@ def scene(request, funid):
                         if name.strip() == '':
                             errors.append('场景名称不能为空。')
                         else:
-                            allscene = Scene.objects.exclude(state="9").filter(code=code)
+                            allscene = Scene.objects.exclude(
+                                state="9").filter(code=code)
                             if (len(allscene) > 0):
                                 errors.append('场景编号:' + code + '已存在。')
                             else:
@@ -2303,7 +2393,8 @@ def scene(request, funid):
                                     newscene.pnode = pscene
                                     sort = 1
                                     try:
-                                        maxscene = Scene.objects.filter(pnode=pscene).latest('sort')
+                                        maxscene = Scene.objects.filter(
+                                            pnode=pscene).latest('sort')
                                         sort = maxscene.sort + 1
                                     except:
                                         pass
@@ -2312,7 +2403,8 @@ def scene(request, funid):
                                     for process in processlist:
                                         try:
                                             process = int(process)
-                                            myprocess = allprocess.get(id=process)
+                                            myprocess = allprocess.get(
+                                                id=process)
                                             newscene.process.add(myprocess)
                                         except ValueError:
                                             raise Http404()
@@ -2330,7 +2422,8 @@ def scene(request, funid):
                         if name.strip() == '':
                             errors.append('场景名称不能为空。')
                         else:
-                            allscene = Scene.objects.exclude(state="9").filter(code=code)
+                            allscene = Scene.objects.exclude(
+                                state="9").filter(code=code)
                             if (len(allscene) > 0 and allscene[0].id != id):
                                 errors.append('场景编号:' + code + '已存在。')
                             else:
@@ -2346,7 +2439,8 @@ def scene(request, funid):
                                     for process in processlist:
                                         try:
                                             process = int(process)
-                                            myprocess = allprocess.get(id=process)
+                                            myprocess = allprocess.get(
+                                                id=process)
                                             scene.process.add(myprocess)
                                         except ValueError:
                                             raise Http404()
@@ -2355,7 +2449,8 @@ def scene(request, funid):
                                     errors.append('保存失败。')
 
         treedata = []
-        rootnodes = Scene.objects.order_by("sort").exclude(state="9").filter(pnode=None)
+        rootnodes = Scene.objects.order_by(
+            "sort").exclude(state="9").filter(pnode=None)
         if len(rootnodes) > 0:
             for rootnode in rootnodes:
                 root = {}
@@ -2364,7 +2459,8 @@ def scene(request, funid):
                 root["type"] = "org"
                 myallprocess = []
                 for process in allprocess:
-                    myallprocess.append({"name": process.name, "id": process.id, "code": process.code})
+                    myallprocess.append(
+                        {"name": process.name, "id": process.id, "code": process.code})
                 root["data"] = {"code": rootnode.code, "remark": rootnode.remark, "business": rootnode.business,
                                 "noselectprocess": [], "selectprocess": [],
                                 "application": rootnode.application, "pname": "无", "myallprocess": myallprocess}
@@ -2375,7 +2471,8 @@ def scene(request, funid):
                         root["state"] = {"opened": True}
                 except:
                     root["state"] = {"opened": True}
-                root["children"] = get_scene_tree(rootnode, selectid, allprocess)
+                root["children"] = get_scene_tree(
+                    rootnode, selectid, allprocess)
                 treedata.append(root)
         treedata = json.dumps(treedata)
         return render(request, 'scene.html',
@@ -2434,14 +2531,17 @@ def scenemove(request):
                 raise Http404()
             oldpscene = Scene.objects.get(id=old_parent)
             oldsort = old_position + 1
-            oldscenes = Scene.objects.filter(pnode=oldpscene).filter(sort__gt=oldsort)
+            oldscenes = Scene.objects.filter(
+                pnode=oldpscene).filter(sort__gt=oldsort)
 
             pscene = Scene.objects.get(id=parent)
             sort = position + 1
-            scenes = Scene.objects.filter(pnode=pscene).filter(sort__gte=sort).exclude(id=id)
+            scenes = Scene.objects.filter(pnode=pscene).filter(
+                sort__gte=sort).exclude(id=id)
 
             myscene = Scene.objects.get(id=id)
-            scenesame = Scene.objects.filter(pnode=pscene).filter(name=myscene.name).exclude(id=id)
+            scenesame = Scene.objects.filter(pnode=pscene).filter(
+                name=myscene.name).exclude(id=id)
             if (len(scenesame) > 0):
                 return HttpResponse("重名")
             else:
@@ -2475,13 +2575,15 @@ def script(request, funid):
     if request.user.is_authenticated() and request.session['isadmin']:
         errors = []
         if request.method == 'POST':
-            my_file = request.FILES.get("myfile", None)  # 获取上传的文件，如果没有文件，则默认为None
+            # 获取上传的文件，如果没有文件，则默认为None
+            my_file = request.FILES.get("myfile", None)
             if not my_file:
                 errors.append("请选择要导入的文件。")
             else:
                 filetype = my_file.name.split(".")[-1]
                 if filetype == "xls" or filetype == "xlsx":
-                    myfilepath = os.path.join(os.path.join(os.path.dirname(__file__), "upload\\temp"), my_file.name)
+                    myfilepath = os.path.join(os.path.join(
+                        os.path.dirname(__file__), "upload\\temp"), my_file.name)
                     destination = open(myfilepath, 'wb+')
                     for chunk in my_file.chunks():  # 分块写入文件
                         destination.write(chunk)
@@ -2497,7 +2599,8 @@ def script(request, funid):
                                 allscript = Script.objects.filter(code=sheet.cell(i, 0).value).exclude(
                                     state="9").filter(step_id=None)
                                 if (len(allscript) > 0):
-                                    errors.append(sheet.cell(i, 0).value + ":已存在。")
+                                    errors.append(sheet.cell(
+                                        i, 0).value + ":已存在。")
                                 else:
                                     ncols = sheet.ncols
                                     scriptsave = Script()
@@ -2507,18 +2610,24 @@ def script(request, funid):
                                     # scriptsave.port = sheet.cell(i, 2).value
                                     scriptsave.type = sheet.cell(i, 3).value
                                     # scriptsave.runtype = sheet.cell(i, 4).value
-                                    scriptsave.username = sheet.cell(i, 4).value
-                                    scriptsave.password = sheet.cell(i, 5).value
-                                    scriptsave.filename = sheet.cell(i, 6).value
+                                    scriptsave.username = sheet.cell(
+                                        i, 4).value
+                                    scriptsave.password = sheet.cell(
+                                        i, 5).value
+                                    scriptsave.filename = sheet.cell(
+                                        i, 6).value
                                     # scriptsave.paramtype = sheet.cell(i, 8).value
                                     # scriptsave.param = sheet.cell(i, 9).value
-                                    scriptsave.scriptpath = sheet.cell(i, 7).value
+                                    scriptsave.scriptpath = sheet.cell(
+                                        i, 7).value
                                     # scriptsave.runpath = sheet.cell(i, 11).value
                                     # scriptsave.maxtime = int(sheet.cell(i, 12).value)
-                                    scriptsave.succeedtext = int(sheet.cell(i, 8).value)
+                                    scriptsave.succeedtext = int(
+                                        sheet.cell(i, 8).value)
                                     scriptsave.save()
                             except:
-                                errors.append(sheet.cell(i, 0).value + ":数据存在问题，已剔除。")
+                                errors.append(sheet.cell(
+                                    i, 0).value + ":数据存在问题，已剔除。")
                     os.remove(myfilepath)
                 else:
                     errors.append("只能上传xls和xlsx文件，请选择正确的文件类型。")
@@ -2532,7 +2641,8 @@ def script(request, funid):
 def scriptdata(request):
     if request.user.is_authenticated() and request.session['isadmin']:
         result = []
-        allscript = Script.objects.exclude(state="9").filter(step_id=None).values()
+        allscript = Script.objects.exclude(
+            state="9").filter(step_id=None).values()
         if (len(allscript) > 0):
             for script in allscript:
                 result.append(
@@ -2642,7 +2752,8 @@ def scriptsave(request):
                                                 allscript = Script.objects.filter(code=code).exclude(
                                                     state="9").filter(step_id=None)
                                                 if (len(allscript) > 0):
-                                                    result["res"] = '脚本编码:' + code + '已存在。'
+                                                    result["res"] = '脚本编码:' + \
+                                                        code + '已存在。'
                                                 else:
                                                     scriptsave = Script()
                                                     scriptsave.code = code
@@ -2675,10 +2786,12 @@ def scriptsave(request):
                                                 allscript = Script.objects.filter(code=code).exclude(
                                                     id=id).exclude(state="9").filter(step_id=None)
                                                 if (len(allscript) > 0):
-                                                    result["res"] = '脚本编码:' + code + '已存在。'
+                                                    result["res"] = '脚本编码:' + \
+                                                        code + '已存在。'
                                                 else:
                                                     try:
-                                                        scriptsave = Script.objects.get(id=id)
+                                                        scriptsave = Script.objects.get(
+                                                            id=id)
                                                         scriptsave.code = code
                                                         scriptsave.name = name
                                                         scriptsave.ip = ip
@@ -2713,7 +2826,8 @@ def scriptsave(request):
 def scriptexport(request):
     # do something...
     if request.user.is_authenticated():
-        myfilepath = os.path.join(os.path.dirname(__file__), "upload\\temp\\scriptexport.xls")
+        myfilepath = os.path.join(os.path.dirname(
+            __file__), "upload\\temp\\scriptexport.xls")
         try:
             os.remove(myfilepath)
         except:
@@ -2762,7 +2876,8 @@ def scriptexport(request):
         the_file_name = "scriptexport.xls"
         response = StreamingHttpResponse(file_iterator(myfilepath))
         response['Content-Type'] = 'application/octet-stream; charset=unicode'
-        response['Content-Disposition'] = 'attachment;filename="{0}"'.format(the_file_name)
+        response['Content-Disposition'] = 'attachment;filename="{0}"'.format(
+            the_file_name)
         return response
 
     else:
@@ -2821,9 +2936,11 @@ def processscriptsave(request):
                                                 allscript = Script.objects.filter(code=code).exclude(
                                                     state="9").filter(step_id=pid)
                                                 if (len(allscript) > 0):
-                                                    result["res"] = '脚本编码:' + code + '已存在。'
+                                                    result["res"] = '脚本编码:' + \
+                                                        code + '已存在。'
                                                 else:
-                                                    steplist = Step.objects.filter(drwaid=pid, process_id=processid)
+                                                    steplist = Step.objects.filter(
+                                                        drwaid=pid, process_id=processid)
                                                     if len(steplist) > 0:
                                                         scriptsave = Script()
                                                         scriptsave.code = code
@@ -2839,16 +2956,19 @@ def processscriptsave(request):
                                                         scriptsave.step = steplist[0]
                                                         scriptsave.save()
                                                         result["res"] = "新增成功。"
-                                                        result["data"] = str(scriptsave.id).zfill(10)
+                                                        result["data"] = str(
+                                                            scriptsave.id).zfill(10)
 
                                             else:
                                                 allscript = Script.objects.filter(code=code).exclude(
                                                     id=id).exclude(state="9").filter(step_id=pid)
                                                 if (len(allscript) > 0):
-                                                    result["res"] = '脚本编码:' + code + '已存在。'
+                                                    result["res"] = '脚本编码:' + \
+                                                        code + '已存在。'
                                                 else:
                                                     try:
-                                                        scriptsave = Script.objects.get(id=id)
+                                                        scriptsave = Script.objects.get(
+                                                            id=id)
                                                         scriptsave.code = code
                                                         scriptsave.name = name
                                                         scriptsave.ip = ip
@@ -2862,7 +2982,8 @@ def processscriptsave(request):
 
                                                         scriptsave.save()
                                                         result["res"] = "修改成功。"
-                                                        result["data"] = str(scriptsave.id).zfill(10)
+                                                        result["data"] = str(
+                                                            scriptsave.id).zfill(10)
                                                     except:
                                                         result["res"] = "修改失败。"
             return HttpResponse(json.dumps(result))
@@ -2886,7 +3007,8 @@ def verify_items_save(request):
                 result["res"] = '名称不能为空。'
             else:
                 if id == 0:
-                    steplist = Step.objects.filter(drwaid=pid, process_id=process_id)
+                    steplist = Step.objects.filter(
+                        drwaid=pid, process_id=process_id)
                     verify_save = VerifyItems()
                     verify_save.name = name
                     verify_save.step = steplist[0]
@@ -2916,10 +3038,12 @@ def get_verify_items_data(request):
                 verify_id = int(verify_id)
             except:
                 raise Http404()
-            all_verify_items = VerifyItems.objects.exclude(state="9").filter(id=verify_id)
+            all_verify_items = VerifyItems.objects.exclude(
+                state="9").filter(id=verify_id)
             verify_data = ""
             if (len(all_verify_items) > 0):
-                verify_data = {"id": str(all_verify_items[0].id).zfill(10), "name": all_verify_items[0].name}
+                verify_data = {"id": str(all_verify_items[0].id).zfill(
+                    10), "name": all_verify_items[0].name}
             return HttpResponse(json.dumps(verify_data))
 
 
@@ -3026,10 +3150,12 @@ def processdrawtest(request):
                 return HttpResponse("未发现开始节点，流程中必须存在开始节点。")
             if (len(allstart) > 1):
                 return HttpResponse("发现多个开始节点，流程中只能存在一个开始节点。")
-            startlineto = allstep.filter(type='lines', tonode='demo_node_' + str(allstart[0].drwaid).zfill(10))
+            startlineto = allstep.filter(
+                type='lines', tonode='demo_node_' + str(allstart[0].drwaid).zfill(10))
             if (len(startlineto) > 0):
                 return HttpResponse("开始节点不能作为连线终点。")
-            startlinefrom = allstep.filter(type='lines', fromnode='demo_node_' + str(allstart[0].drwaid).zfill(10))
+            startlinefrom = allstep.filter(
+                type='lines', fromnode='demo_node_' + str(allstart[0].drwaid).zfill(10))
             if (len(startlinefrom) < 1):
                 return HttpResponse("必须存在以开始节点为起点的连线。")
 
@@ -3038,10 +3164,12 @@ def processdrawtest(request):
                 return HttpResponse("未发现结束节点，流程中必须存在结束节点。")
             if (len(allend) > 1):
                 return HttpResponse("发现多个结束节点，流程中只能存在一个结束节点。")
-            endlinefrom = allstep.filter(type='lines', fromnode='demo_node_' + str(allend[0].drwaid).zfill(10))
+            endlinefrom = allstep.filter(
+                type='lines', fromnode='demo_node_' + str(allend[0].drwaid).zfill(10))
             if (len(endlinefrom) > 0):
                 return HttpResponse("结束节点不能作为连线起点。")
-            endlineto = allstep.filter(type='lines', tonode='demo_node_' + str(allend[0].drwaid).zfill(10))
+            endlineto = allstep.filter(
+                type='lines', tonode='demo_node_' + str(allend[0].drwaid).zfill(10))
             if (len(endlineto) < 1):
                 return HttpResponse("必须存在以结束节点为终点的连线。")
 
@@ -3049,10 +3177,12 @@ def processdrawtest(request):
                 intertype__contains="end")
             if len(allnodes) > 0:
                 for allnode in allnodes:
-                    linefrom = allstep.filter(type='lines', fromnode='demo_node_' + str(allnode.drwaid).zfill(10))
+                    linefrom = allstep.filter(
+                        type='lines', fromnode='demo_node_' + str(allnode.drwaid).zfill(10))
                     if (len(linefrom) <= 0):
                         return HttpResponse("节点" + allnode.name + "必须连接下一步。")
-                    lineto = allstep.filter(type='lines', tonode='demo_node_' + str(allnode.drwaid).zfill(10))
+                    lineto = allstep.filter(
+                        type='lines', tonode='demo_node_' + str(allnode.drwaid).zfill(10))
                     if (len(lineto) <= 0):
                         return HttpResponse("节点" + allnode.name + "必须连接上一步。")
             return HttpResponse("验证通过")
@@ -3081,7 +3211,8 @@ def processcopy(request):
                 if name.strip() == '':
                     result["res"] = '新预案名称不能为空。'
                 else:
-                    allprocess = Process.objects.filter(code=code).exclude(state="9")
+                    allprocess = Process.objects.filter(
+                        code=code).exclude(state="9")
                     if (len(allprocess) > 0):
                         result["res"] = '预案编码:' + code + '已存在。'
                     else:
@@ -3289,7 +3420,8 @@ def custom_step_tree(request):
             if id == 0:
                 sort = 1
                 try:
-                    maxstep = Step.objects.filter(pnode=p_step).latest('sort').exclude(state="9")
+                    maxstep = Step.objects.filter(
+                        pnode=p_step).latest('sort').exclude(state="9")
                     sort = maxstep.sort + 1
                 except:
                     pass
@@ -3310,7 +3442,8 @@ def custom_step_tree(request):
             errors.append('保存失败。')
 
         treedata = []
-        rootnodes = Step.objects.order_by("sort").filter(process_id=process_id, pnode=None).exclude(state="9")
+        rootnodes = Step.objects.order_by("sort").filter(
+            process_id=process_id, pnode=None).exclude(state="9")
 
         all_groups = Group.objects.exclude(state="9")
         group_string = "" + "+" + " -------------- " + "&"
@@ -3323,13 +3456,15 @@ def custom_step_tree(request):
                 scripts = rootnode.script_set.exclude(state="9")
                 script_string = ""
                 for script in scripts:
-                    id_code_plus = str(script.id) + "+" + str(script.name) + "&"
+                    id_code_plus = str(script.id) + "+" + \
+                        str(script.name) + "&"
                     script_string += id_code_plus
 
                 verify_items_string = ""
                 verify_items = rootnode.verifyitems_set.exclude(state="9")
                 for verify_item in verify_items:
-                    id_name_plus = str(verify_item.id) + "+" + str(verify_item.name) + "&"
+                    id_name_plus = str(verify_item.id) + \
+                        "+" + str(verify_item.name) + "&"
                     verify_items_string += id_name_plus
                 root["text"] = rootnode.name
                 root["id"] = rootnode.id
@@ -3361,10 +3496,12 @@ def processconfig(request, funid):
         if process_id:
             process_id = int(process_id)
 
-        processes = Process.objects.exclude(state="9").order_by("sort").filter(type="falconstor")
+        processes = Process.objects.exclude(state="9").order_by(
+            "sort").filter(type="falconstor")
         processlist = []
         for process in processes:
-            processlist.append({"id": process.id, "code": process.code, "name": process.name})
+            processlist.append(
+                {"id": process.id, "code": process.code, "name": process.name})
         return render(request, 'processconfig.html',
                       {'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request=request),
                        "processlist": processlist, "process_id": process_id})
@@ -3562,7 +3699,8 @@ def process_data(request):
         process_level = request.GET.get("process_level", "")
         result = []
         if not process_level or process_level == "0":
-            all_process = Process.objects.exclude(state="9").filter(type="falconstor").order_by("sort")
+            all_process = Process.objects.exclude(state="9").filter(
+                type="falconstor").order_by("sort")
         else:
             all_process = Process.objects.exclude(state="9").filter(type="falconstor",
                                                                     level=int(process_level)).order_by(
@@ -3639,10 +3777,12 @@ def process_save(request):
                                     result["res"] = "保存成功。"
                                     result["data"] = processsave.id
                             else:
-                                all_process = Process.objects.filter(id=id).exclude(state="9")
+                                all_process = Process.objects.filter(
+                                    id=id).exclude(state="9")
                                 if all_process.exists():
                                     try:
-                                        processsave = Process.objects.get(id=id)
+                                        processsave = Process.objects.get(
+                                            id=id)
                                         processsave.code = code
                                         processsave.name = name
                                         processsave.remark = remark
@@ -3686,11 +3826,11 @@ def processdraw(request, offset, funid):
         except:
             raise Http404()
         process = Process.objects.get(id=id)
-        allprocess = Process.objects.exclude(state="9").filter(type="falconstor", level=2)
+        allprocess = Process.objects.exclude(
+            state="9").filter(type="falconstor", level=2)
         allgroup = Group.objects.exclude(state="9")
         return render(request, 'processdraw.html',
-                      {'username': request.user.last_name + request.user.first_name
-                          , "allprocess": allprocess, "allgroup": allgroup, "pagefuns": getpagefuns(funid),
+                      {'username': request.user.last_name + request.user.first_name, "allprocess": allprocess, "allgroup": allgroup, "pagefuns": getpagefuns(funid),
                        "name": process.name, "id": process.id, "offset": offset, "sidebarclosed": True})
     else:
         return HttpResponseRedirect("/login")
@@ -3722,7 +3862,8 @@ def getprocess(request):
             if (len(allnode) > 0):
                 nodes = {}
                 for node in allnode:
-                    allscript = Script.objects.exclude(state="9").filter(step=node).order_by("id")
+                    allscript = Script.objects.exclude(
+                        state="9").filter(step=node).order_by("id")
                     stepscript = {}
                     if len(allscript) > 0:
                         for script in allscript:
@@ -3736,7 +3877,8 @@ def getprocess(request):
                                                                                 }
 
                     verify_items = {}
-                    all_verify_items = VerifyItems.objects.exclude(state="9").filter(step=node).order_by("id")
+                    all_verify_items = VerifyItems.objects.exclude(
+                        state="9").filter(step=node).order_by("id")
                     if all_verify_items.exists():
                         for verify_item in all_verify_items:
                             verify_items["verify_" + str(verify_item.id).zfill(10)] = {
@@ -3761,8 +3903,7 @@ def getprocess(request):
                 for line in allline:
                     lines["demo_line_" + str(line.drwaid).zfill(10)] = {"name": line.name, "from": line.fromnode,
                                                                         "to": line.tonode, "type": line.intertype,
-                                                                        "alt": True
-                        , "formula": line.formula}
+                                                                        "alt": True, "formula": line.formula}
                 result["lines"] = lines
             allarea = allstep.filter(type="areas")
             if (len(allarea) > 0):
@@ -4069,14 +4210,16 @@ def processdrawsave(request):
 
             # 将步骤存入一个sort排序字段取代drawid
             # 1.当前流程的start节点
-            start_step = myprocess.step_set.filter(state="1", intertype__contains="start")[0]
+            start_step = myprocess.step_set.filter(
+                state="1", intertype__contains="start")[0]
 
             line_step = \
                 myprocess.step_set.filter(state="1", type="lines",
                                           fromnode="demo_node_" + str(start_step.drwaid).zfill(10))[0]
             to_node = int(line_step.tonode.split("demo_node_")[1])
             current_step = \
-                myprocess.step_set.filter(state="1", drwaid=to_node, intertype__in=["node", "task", "complex"])
+                myprocess.step_set.filter(state="1", drwaid=to_node, intertype__in=[
+                                          "node", "task", "complex"])
 
             if current_step.exists():
                 current_step = current_step[0]
@@ -4116,7 +4259,8 @@ def falconstorswitch(request, process_id):
         # 遍历主流程(子流程/主流程步骤)
         wrapper_step_list = custom_wrapper_step_list(process_id)
         # 计划流程
-        plan_process_run = ProcessRun.objects.filter(process_id=process_id, state="PLAN")
+        plan_process_run = ProcessRun.objects.filter(
+            process_id=process_id, state="PLAN")
         if plan_process_run:
             plan_process_run = plan_process_run[0]
             plan_process_run_id = plan_process_run.id
@@ -4202,15 +4346,18 @@ def falconstorrun(request):
             processid = int(processid)
         except:
             raise Http404()
-        process = Process.objects.filter(id=processid).filter(state="1").filter(type="falconstor")
+        process = Process.objects.filter(id=processid).filter(
+            state="1").filter(type="falconstor")
         if (len(process) <= 0):
             result["res"] = '流程启动失败，该流程不存在。'
         else:
-            running_process = ProcessRun.objects.filter(process=process[0], state__in=["RUN", "ERROR"])
+            running_process = ProcessRun.objects.filter(
+                process=process[0], state__in=["RUN", "ERROR"])
             if (len(running_process) > 0):
                 result["res"] = '流程启动失败，该流程正在进行中，请勿重复启动。'
             else:
-                planning_process = ProcessRun.objects.filter(process=process[0], state="PLAN")
+                planning_process = ProcessRun.objects.filter(
+                    process=process[0], state="PLAN")
                 if (len(planning_process) > 0):
                     result["res"] = '流程启动失败，计划流程未执行，务必先完成计划流程。'
                 else:
@@ -4246,7 +4393,8 @@ def falconstorrun(request):
                                 myscriptrun.state = "EDIT"
                                 myscriptrun.save()
 
-                            myverifyitems = step.verifyitems_set.exclude(state="9")
+                            myverifyitems = step.verifyitems_set.exclude(
+                                state="9")
                             for verifyitems in myverifyitems:
                                 # 生成流程确认项
                                 myverifyitemsrun = VerifyItemsRun()
@@ -4257,10 +4405,12 @@ def falconstorrun(request):
                         allgroup = process[0].step_set.exclude(state="9").exclude(Q(group="") | Q(group=None)).values(
                             "group").distinct()  # 过滤出需要签字的组,但一个对象只发送一次task
 
-                        if process[0].sign == "1" and len(allgroup) > 0:  # 如果流程需要签字,发送签字tasks
+                        # 如果流程需要签字,发送签字tasks
+                        if process[0].sign == "1" and len(allgroup) > 0:
                             # 将当前流程改成SIGN
                             c_process_run_id = myprocessrun.id
-                            c_process_run = ProcessRun.objects.filter(id=c_process_run_id)
+                            c_process_run = ProcessRun.objects.filter(
+                                id=c_process_run_id)
                             if c_process_run:
                                 c_process_run = c_process_run[0]
                                 c_process_run.state = "SIGN"
@@ -4268,7 +4418,8 @@ def falconstorrun(request):
 
                             for group in allgroup:
                                 try:
-                                    signgroup = Group.objects.get(id=int(group["group"]))
+                                    signgroup = Group.objects.get(
+                                        id=int(group["group"]))
                                     groupname = signgroup.name
                                     myprocesstask = ProcessTask()
                                     myprocesstask.processrun = myprocessrun
@@ -4285,7 +4436,8 @@ def falconstorrun(request):
                             result["data"] = "/"
 
                         else:
-                            prosssigns = ProcessTask.objects.filter(processrun=myprocessrun, state="0")
+                            prosssigns = ProcessTask.objects.filter(
+                                processrun=myprocessrun, state="0")
                             if len(prosssigns) <= 0:
                                 myprocesstask = ProcessTask()
                                 myprocesstask.processrun = myprocessrun
@@ -4299,7 +4451,8 @@ def falconstorrun(request):
 
                                 exec_process.delay(myprocessrun.id)
                                 result["res"] = "新增成功。"
-                                result["data"] = "/processindex/" + str(myprocessrun.id)
+                                result["data"] = "/processindex/" + \
+                                    str(myprocessrun.id)
         return HttpResponse(json.dumps(result))
 
 
@@ -4332,22 +4485,26 @@ def falconstor_run_invited(request):
                 current_process_run.DataSet_id = 89
                 current_process_run.save()
 
-                process = Process.objects.filter(id=process_id).exclude(state="9").filter(type="falconstor")
+                process = Process.objects.filter(id=process_id).exclude(
+                    state="9").filter(type="falconstor")
 
                 allgroup = process[0].step_set.exclude(state="9").exclude(Q(group="") | Q(group=None)).values(
                     "group").distinct()  # 过滤出需要签字的组,但一个对象只发送一次task
 
-                if process[0].sign == "1" and len(allgroup) > 0:  # 如果流程需要签字,发送签字tasks
+                # 如果流程需要签字,发送签字tasks
+                if process[0].sign == "1" and len(allgroup) > 0:
                     # 将当前流程改成SIGN
                     c_process_run_id = current_process_run.id
-                    c_process_run = ProcessRun.objects.filter(id=c_process_run_id)
+                    c_process_run = ProcessRun.objects.filter(
+                        id=c_process_run_id)
                     if c_process_run:
                         c_process_run = c_process_run[0]
                         c_process_run.state = "SIGN"
                         c_process_run.save()
                     for group in allgroup:
                         try:
-                            signgroup = Group.objects.get(id=int(group["group"]))
+                            signgroup = Group.objects.get(
+                                id=int(group["group"]))
                             groupname = signgroup.name
                             myprocesstask = ProcessTask()
                             myprocesstask.processrun = current_process_run
@@ -4364,7 +4521,8 @@ def falconstor_run_invited(request):
                     result["data"] = "/"
 
                 else:
-                    prosssigns = ProcessTask.objects.filter(processrun=current_process_run, state="0")
+                    prosssigns = ProcessTask.objects.filter(
+                        processrun=current_process_run, state="0")
                     if len(prosssigns) <= 0:
                         myprocesstask = ProcessTask()
                         myprocesstask.processrun = current_process_run
@@ -4378,7 +4536,8 @@ def falconstor_run_invited(request):
 
                         exec_process.delay(current_process_run.id)
                         result["res"] = "新增成功。"
-                        result["data"] = process[0].url + "/" + str(current_process_run.id)
+                        result["data"] = process[0].url + \
+                            "/" + str(current_process_run.id)
         else:
             result["res"] = '流程启动异常，请联系客服。'
 
@@ -4430,22 +4589,26 @@ def getrunsetps(request):
                 processrun = int(processrun)
             except:
                 raise Http404()
-            processruns = ProcessRun.objects.exclude(state="9").filter(id=processrun)
+            processruns = ProcessRun.objects.exclude(
+                state="9").filter(id=processrun)
             if len(processruns) > 0:
                 process_name = processruns[0].process.name
                 process_state = processruns[0].state
                 process_note = processruns[0].note
                 try:
-                    process_starttime = processruns[0].starttime.strftime("%Y-%m-%d %H:%M:%S")
+                    process_starttime = processruns[0].starttime.strftime(
+                        "%Y-%m-%d %H:%M:%S")
                 except:
                     pass
                 try:
-                    process_endtime = processruns[0].endtime.strftime("%Y-%m-%d %H:%M:%S")
+                    process_endtime = processruns[0].endtime.strftime(
+                        "%Y-%m-%d %H:%M:%S")
                 except:
                     pass
                 if process_state == "DONE" or process_state == "STOP":
                     try:
-                        current_delta_time = (processruns[0].endtime - processruns[0].starttime).total_seconds()
+                        current_delta_time = (
+                            processruns[0].endtime - processruns[0].starttime).total_seconds()
                         m, s = divmod(current_delta_time, 60)
                         h, m = divmod(m, 60)
                         process_rto = "%d时%02d分%02d秒" % (h, m, s)
@@ -4454,7 +4617,8 @@ def getrunsetps(request):
                 else:
                     start_time = processruns[0].starttime.replace(tzinfo=None)
                     current_time = datetime.datetime.now()
-                    current_delta_time = (current_time - start_time).total_seconds()
+                    current_delta_time = (
+                        current_time - start_time).total_seconds()
                     m, s = divmod(current_delta_time, 60)
                     h, m = divmod(m, 60)
                     process_rto = "%d时%02d分%02d秒" % (h, m, s)
@@ -4468,7 +4632,8 @@ def getrunsetps(request):
                     done_num = len(done_step_run)
                 else:
                     done_num = 0
-                process_rate = "%02d" % (done_num / len(processruns[0].steprun_set.all()) * 100)
+                process_rate = "%02d" % (
+                    done_num / len(processruns[0].steprun_set.all()) * 100)
 
                 processresult["process_rate"] = process_rate
                 processresult["current_process_task_info"] = current_process_task_info
@@ -4502,15 +4667,18 @@ def getrunsetps(request):
                         # 状态
                         sub_process = step.sub_process
                         sub_process_id = int(sub_process)
-                        c_process = Process.objects.filter(state="1", id=sub_process_id)
+                        c_process = Process.objects.filter(
+                            state="1", id=sub_process_id)
                         if c_process.exists():
                             c_process = c_process[0]
-                            steps = c_process.step_set.filter(state="1", intertype__in=["node", "task", "complex"])
+                            steps = c_process.step_set.filter(state="1", intertype__in=[
+                                                              "node", "task", "complex"])
                             done_num = 0
                             run_num = 0
                             edit_num = 0
                             for c_step in steps:
-                                c_step_run = c_step.steprun_set.filter(processrun=processruns[0])
+                                c_step_run = c_step.steprun_set.filter(
+                                    processrun=processruns[0])
                                 if c_step_run.exists():
                                     c_step_run = c_step_run[0]
                                     # 完成
@@ -4531,22 +4699,25 @@ def getrunsetps(request):
                                 state = ""
                     else:
                         # 步骤信息
-                        steprunlist = step.steprun_set.filter(processrun=processruns[0])
+                        steprunlist = step.steprun_set.filter(
+                            processrun=processruns[0])
                         if len(steprunlist) > 0:
                             runid = steprunlist[0].id
                             try:
-                                starttime = steprunlist[0].starttime.strftime("%Y-%m-%d %H:%M:%S")
+                                starttime = steprunlist[0].starttime.strftime(
+                                    "%Y-%m-%d %H:%M:%S")
                             except:
                                 pass
                             try:
-                                endtime = steprunlist[0].endtime.strftime("%Y-%m-%d %H:%M:%S")
+                                endtime = steprunlist[0].endtime.strftime(
+                                    "%Y-%m-%d %H:%M:%S")
                             except:
                                 pass
                             rto = ""
                             if steprunlist[0].state == "DONE":
                                 try:
                                     current_delta_time = (
-                                            steprunlist[0].endtime - steprunlist[0].starttime).total_seconds()
+                                        steprunlist[0].endtime - steprunlist[0].starttime).total_seconds()
                                     m, s = divmod(current_delta_time, 60)
                                     h, m = divmod(m, 60)
                                     rto = "%d时%02d分%02d秒" % (h, m, s)
@@ -4557,14 +4728,15 @@ def getrunsetps(request):
                                     0].starttime else ""
                                 current_time = datetime.datetime.now()
                                 current_delta_time = (
-                                        current_time - start_time).total_seconds() if current_time and start_time else 0
+                                    current_time - start_time).total_seconds() if current_time and start_time else 0
                                 m, s = divmod(current_delta_time, 60)
                                 h, m = divmod(m, 60)
                                 rto = "%d时%02d分%02d秒" % (h, m, s)
                             operator = steprunlist[0].operator
                             if operator is not None and operator != "":
                                 try:
-                                    curuser = User.objects.get(username=operator)
+                                    curuser = User.objects.get(
+                                        username=operator)
                                     operator = curuser.userinfo.fullname
                                 except:
                                     pass
@@ -4582,7 +4754,8 @@ def getrunsetps(request):
                             except:
                                 pass
                         # script
-                        scriptlist = Script.objects.exclude(state="9").filter(step=step)
+                        scriptlist = Script.objects.exclude(
+                            state="9").filter(step=step)
                         for script in scriptlist:
                             runscriptid = 0
                             scriptstarttime = ""
@@ -4598,11 +4771,13 @@ def getrunsetps(request):
                                 if len(scriptrunlist) > 0:
                                     runscriptid = scriptrunlist[0].id
                                     try:
-                                        scriptstarttime = scriptrunlist[0].starttime.strftime("%Y-%m-%d %H:%M:%S")
+                                        scriptstarttime = scriptrunlist[0].starttime.strftime(
+                                            "%Y-%m-%d %H:%M:%S")
                                     except:
                                         pass
                                     try:
-                                        scriptendtime = scriptrunlist[0].endtime.strftime("%Y-%m-%d %H:%M:%S")
+                                        scriptendtime = scriptrunlist[0].endtime.strftime(
+                                            "%Y-%m-%d %H:%M:%S")
                                     except:
                                         pass
                                     scriptoperator = scriptrunlist[0].operator
@@ -4617,7 +4792,8 @@ def getrunsetps(request):
                                  "scriptrunresult": scriptrunresult, "scriptexplain": scriptexplain,
                                  "scriptrunlog": scriptrunlog, "scriptstate": scriptstate})
                         # verify_items
-                        verifyitemslist = VerifyItems.objects.exclude(state="9").filter(step=step)
+                        verifyitemslist = VerifyItems.objects.exclude(
+                            state="9").filter(step=step)
                         for verifyitem in verifyitemslist:
                             runverifyitemid = 0
                             has_verified = ""
@@ -4660,7 +4836,8 @@ def falconstorcontinue(request):
         if current_process_run:
             current_process_run = current_process_run[0]
 
-            all_tasks_ever = current_process_run.processtask_set.filter(state="0")
+            all_tasks_ever = current_process_run.processtask_set.filter(
+                state="0")
             if all_tasks_ever:
                 for task in all_tasks_ever:
                     task.endtime = datetime.datetime.now()
@@ -4720,7 +4897,8 @@ def revoke_current_task(request):
                 task_id = key
 
         if abnormal == "1":
-            stop_url = "http://127.0.0.1:5555/api/task/revoke/{0}?terminate=true".format(task_id)
+            stop_url = "http://127.0.0.1:5555/api/task/revoke/{0}?terminate=true".format(
+                task_id)
             response = requests.post(stop_url)
             print(response.text)
             task_content = "异步任务被自主关闭。"
@@ -4756,7 +4934,8 @@ def get_script_log(request):
         except:
             raise Http404()
 
-        current_script_run = ScriptRun.objects.filter(id=script_run_id).select_related("script")
+        current_script_run = ScriptRun.objects.filter(
+            id=script_run_id).select_related("script")
         log_info = ""
         if current_script_run:
             current_script_run = current_script_run[0]
@@ -4816,7 +4995,8 @@ def processsignsave(request):
 
             myprocessrun = process_task.processrun
 
-            prosssigns = ProcessTask.objects.filter(processrun=myprocessrun, state="0")
+            prosssigns = ProcessTask.objects.filter(
+                processrun=myprocessrun, state="0")
             if len(prosssigns) <= 0:
                 myprocessrun.state = "RUN"
                 myprocessrun.starttime = datetime.datetime.now()
@@ -4893,7 +5073,8 @@ def reload_task_nums(request):
 
                 task_nums = len(allprosstasks)
                 process_color = task.processrun.process.color
-                process_url = task.processrun.process.url + "/" + str(task.processrun.id)
+                process_url = task.processrun.process.url + \
+                    "/" + str(task.processrun.id)
                 time = task.starttime
 
                 # 图标与颜色
@@ -4960,8 +5141,10 @@ def get_current_scriptinfo(request):
                 "": "",
             }
 
-            starttime = scriptrun_obj.starttime.strftime("%Y-%m-%d %H:%M:%S") if scriptrun_obj.starttime else ""
-            endtime = scriptrun_obj.endtime.strftime("%Y-%m-%d %H:%M:%S") if scriptrun_obj.endtime else ""
+            starttime = scriptrun_obj.starttime.strftime(
+                "%Y-%m-%d %H:%M:%S") if scriptrun_obj.starttime else ""
+            endtime = scriptrun_obj.endtime.strftime(
+                "%Y-%m-%d %H:%M:%S") if scriptrun_obj.endtime else ""
             script_info = {
                 "processrunstate": scriptrun_obj.steprun.processrun.state,
                 "code": script_obj.code,
@@ -5012,7 +5195,8 @@ def stop_current_process(request):
         else:
             raise Http404()
 
-        current_process_run = ProcessRun.objects.exclude(state="9").filter(id=process_run_id)
+        current_process_run = ProcessRun.objects.exclude(
+            state="9").filter(id=process_run_id)
         if current_process_run:
             current_process_run = current_process_run[0]
 
@@ -5034,7 +5218,8 @@ def stop_current_process(request):
             current_process_run.note = process_note
             current_process_run.save()
 
-            all_tasks_ever = current_process_run.processtask_set.filter(state="0")
+            all_tasks_ever = current_process_run.processtask_set.filter(
+                state="0")
             if all_tasks_ever:
                 for task in all_tasks_ever:
                     task.endtime = datetime.datetime.now()
@@ -5068,7 +5253,8 @@ def verify_items(request):
             current_step_run.endtime = datetime.datetime.now()
             current_step_run.save()
 
-            all_current__tasks = current_step_run.processrun.processtask_set.exclude(state="1")
+            all_current__tasks = current_step_run.processrun.processtask_set.exclude(
+                state="1")
             for task in all_current__tasks:
                 task.endtime = datetime.datetime.now()
                 task.state = "1"
@@ -5126,7 +5312,8 @@ def show_result(request):
         step_info_list = []
 
         c_process = current_processrun.process
-        p_steps = c_process.step_set.order_by("sort").filter(state="1", intertype__in=["node", "task", "complex"])
+        p_steps = c_process.step_set.order_by("sort").filter(
+            state="1", intertype__in=["node", "task", "complex"])
 
         for num, p_step in enumerate(p_steps):
             # rto, step_name, end_time, operator, start_time, inner_step_list
@@ -5138,7 +5325,8 @@ def show_result(request):
             inner_step_list = []
             if p_step.intertype == "complex":
                 sup_process_id = p_step.sub_process
-                sub_process = Process.objects.filter(state="1", id=sup_process_id)
+                sub_process = Process.objects.filter(
+                    state="1", id=sup_process_id)
                 if sub_process.exists():
                     sub_process = sub_process[0]
                     p_step_name = sub_process.name
@@ -5163,22 +5351,28 @@ def show_result(request):
                             else:
                                 start_time = step_run.starttime.strftime(
                                     "%Y-%m-%d %H:%M:%S") if step_run.starttime else ""
-                                end_time = step_run.endtime.strftime("%Y-%m-%d %H:%M:%S") if step_run.endtime else ""
+                                end_time = step_run.endtime.strftime(
+                                    "%Y-%m-%d %H:%M:%S") if step_run.endtime else ""
 
                                 if step_run.endtime and step_run.starttime:
-                                    end_time = step_run.endtime.strftime("%Y-%m-%d %H:%M:%S")
-                                    start_time = step_run.starttime.strftime("%Y-%m-%d %H:%M:%S")
+                                    end_time = step_run.endtime.strftime(
+                                        "%Y-%m-%d %H:%M:%S")
+                                    start_time = step_run.starttime.strftime(
+                                        "%Y-%m-%d %H:%M:%S")
                                     delta_seconds = datetime.datetime.strptime(end_time,
                                                                                '%Y-%m-%d %H:%M:%S') - datetime.datetime.strptime(
                                         start_time, '%Y-%m-%d %H:%M:%S')
-                                    hour, minute, second = str(delta_seconds).split(":")
-                                    delta_time = "{0}时{1}分{2}秒".format(hour, minute, second)
+                                    hour, minute, second = str(
+                                        delta_seconds).split(":")
+                                    delta_time = "{0}时{1}分{2}秒".format(
+                                        hour, minute, second)
                                     rto = delta_time
                                 else:
                                     rto = ""
                             # 操作人员
                             try:
-                                users = User.objects.filter(username=step_run.operator)
+                                users = User.objects.filter(
+                                    username=step_run.operator)
                                 if users:
                                     operator = users[0].userinfo.fullname
                                 else:
@@ -5211,16 +5405,21 @@ def show_result(request):
                     else:
                         p_start_time = step_run.starttime.strftime(
                             "%Y-%m-%d %H:%M:%S") if step_run.starttime else ""
-                        p_end_time = step_run.endtime.strftime("%Y-%m-%d %H:%M:%S") if step_run.endtime else ""
+                        p_end_time = step_run.endtime.strftime(
+                            "%Y-%m-%d %H:%M:%S") if step_run.endtime else ""
 
                         if step_run.endtime and step_run.starttime:
-                            p_end_time = step_run.endtime.strftime("%Y-%m-%d %H:%M:%S")
-                            p_start_time = step_run.starttime.strftime("%Y-%m-%d %H:%M:%S")
+                            p_end_time = step_run.endtime.strftime(
+                                "%Y-%m-%d %H:%M:%S")
+                            p_start_time = step_run.starttime.strftime(
+                                "%Y-%m-%d %H:%M:%S")
                             delta_seconds = datetime.datetime.strptime(p_end_time,
                                                                        '%Y-%m-%d %H:%M:%S') - datetime.datetime.strptime(
                                 p_start_time, '%Y-%m-%d %H:%M:%S')
-                            hour, minute, second = str(delta_seconds).split(":")
-                            delta_time = "{0}时{1}分{2}秒".format(hour, minute, second)
+                            hour, minute, second = str(
+                                delta_seconds).split(":")
+                            delta_time = "{0}时{1}分{2}秒".format(
+                                hour, minute, second)
                             p_rto = delta_time
                         else:
                             p_rto = ""
@@ -5250,7 +5449,8 @@ def show_result(request):
         if all_groups:
             for group in all_groups:
                 all_group_dict = {}
-                current_group_users = group.userinfo_set.exclude(state="9", pnode=None).filter(type="user")
+                current_group_users = group.userinfo_set.exclude(
+                    state="9", pnode=None).filter(type="user")
                 if current_group_users:
                     all_group_dict["group"] = group.name
 
@@ -5286,7 +5486,8 @@ def show_result(request):
 def reject_invited(request):
     if request.user.is_authenticated():
         plan_process_run_id = request.POST.get("plan_process_run_id", "")
-        rejected_process_runs = ProcessRun.objects.filter(id=plan_process_run_id)
+        rejected_process_runs = ProcessRun.objects.filter(
+            id=plan_process_run_id)
         if rejected_process_runs:
             rejected_process_run = rejected_process_runs[0]
             rejected_process_run.state = "REJECT"
@@ -5434,7 +5635,8 @@ def custom_pdf_report(request):
             }
             if pstep.intertype == "complex":
                 sup_process_id = pstep.sub_process
-                sub_process = Process.objects.filter(state="1", id=sup_process_id)
+                sub_process = Process.objects.filter(
+                    state="1", id=sup_process_id)
 
                 # 子流程下步骤信息
                 if sub_process.exists():
@@ -5466,21 +5668,26 @@ def custom_pdf_report(request):
                                     "%Y-%m-%d %H:%M:%S") if steprun_obj.endtime else ""
 
                                 if steprun_obj.endtime and steprun_obj.starttime:
-                                    end_time = steprun_obj.endtime.strftime("%Y-%m-%d %H:%M:%S")
-                                    start_time = steprun_obj.starttime.strftime("%Y-%m-%d %H:%M:%S")
+                                    end_time = steprun_obj.endtime.strftime(
+                                        "%Y-%m-%d %H:%M:%S")
+                                    start_time = steprun_obj.starttime.strftime(
+                                        "%Y-%m-%d %H:%M:%S")
                                     delta_seconds = datetime.datetime.strptime(end_time,
                                                                                '%Y-%m-%d %H:%M:%S') - datetime.datetime.strptime(
                                         start_time, '%Y-%m-%d %H:%M:%S')
-                                    hour, minute, second = str(delta_seconds).split(":")
+                                    hour, minute, second = str(
+                                        delta_seconds).split(":")
 
-                                    delta_time = "{0}时{1}分{2}秒".format(hour, minute, second)
+                                    delta_time = "{0}时{1}分{2}秒".format(
+                                        hour, minute, second)
 
                                     inner_second_el_dict["rto"] = delta_time
                                 else:
                                     inner_second_el_dict["rto"] = ""
 
                             # 步骤负责人
-                            users = User.objects.filter(username=steprun_obj.operator)
+                            users = User.objects.filter(
+                                username=steprun_obj.operator)
                             if users:
                                 operator = users[0].userinfo.fullname
                                 inner_second_el_dict["operator"] = operator
@@ -5488,14 +5695,16 @@ def custom_pdf_report(request):
                                 inner_second_el_dict["operator"] = ""
 
                             # 当前步骤下脚本
-                            current_scripts = Script.objects.exclude(state="9").filter(step_id=step.id)
+                            current_scripts = Script.objects.exclude(
+                                state="9").filter(step_id=step.id)
 
                             script_list_inner = []
                             if current_scripts:
                                 for snum, current_script in enumerate(current_scripts):
                                     script_el_dict_inner = DictIndex()
                                     # title
-                                    script_name = "{0}.{1}".format("i" * (snum + 1), current_script.name)
+                                    script_name = "{0}.{1}".format(
+                                        "i" * (snum + 1), current_script.name)
                                     script_el_dict_inner["script_name"] = script_name
 
                                     # content
@@ -5511,14 +5720,18 @@ def custom_pdf_report(request):
                                             "%Y-%m-%d %H:%M:%S") if current_scriptrun_obj.endtime else ""
 
                                         if current_scriptrun_obj.endtime and current_scriptrun_obj.starttime:
-                                            end_time = current_scriptrun_obj.endtime.strftime("%Y-%m-%d %H:%M:%S")
-                                            start_time = current_scriptrun_obj.starttime.strftime("%Y-%m-%d %H:%M:%S")
+                                            end_time = current_scriptrun_obj.endtime.strftime(
+                                                "%Y-%m-%d %H:%M:%S")
+                                            start_time = current_scriptrun_obj.starttime.strftime(
+                                                "%Y-%m-%d %H:%M:%S")
                                             delta_seconds = datetime.datetime.strptime(end_time,
                                                                                        '%Y-%m-%d %H:%M:%S') - datetime.datetime.strptime(
                                                 start_time, '%Y-%m-%d %H:%M:%S')
-                                            hour, minute, second = str(delta_seconds).split(":")
+                                            hour, minute, second = str(
+                                                delta_seconds).split(":")
 
-                                            delta_time = "{0}时{1}分{2}秒".format(hour, minute, second)
+                                            delta_time = "{0}时{1}分{2}秒".format(
+                                                hour, minute, second)
 
                                             script_el_dict_inner["rto"] = delta_time
                                         else:
@@ -5533,13 +5746,15 @@ def custom_pdf_report(request):
                                         script_el_dict_inner["explain"] = current_scriptrun_obj.explain
                                     else:
                                         pass
-                                    script_list_inner.append(script_el_dict_inner)
+                                    script_list_inner.append(
+                                        script_el_dict_inner)
                             inner_second_el_dict["script_list_inner"] = script_list_inner
                         inner_step_list.append(inner_second_el_dict)
             else:
                 step_name = "{0}.{1}".format(num + 1, pstep.name)
                 second_el_dict["step_name"] = step_name
-                pnode_steprun = pstep.steprun_set.filter(processrun=process_run_obj)
+                pnode_steprun = pstep.steprun_set.filter(
+                    processrun=process_run_obj)
                 if pnode_steprun:
                     pnode_steprun = pnode_steprun[0]
                     if pnode_steprun.step.rto_count_in == "0":
@@ -5553,14 +5768,18 @@ def custom_pdf_report(request):
                             "%Y-%m-%d %H:%M:%S") if pnode_steprun.endtime else ""
 
                         if pnode_steprun.endtime and pnode_steprun.starttime:
-                            end_time = pnode_steprun.endtime.strftime("%Y-%m-%d %H:%M:%S")
-                            start_time = pnode_steprun.starttime.strftime("%Y-%m-%d %H:%M:%S")
+                            end_time = pnode_steprun.endtime.strftime(
+                                "%Y-%m-%d %H:%M:%S")
+                            start_time = pnode_steprun.starttime.strftime(
+                                "%Y-%m-%d %H:%M:%S")
                             delta_seconds = datetime.datetime.strptime(end_time,
                                                                        '%Y-%m-%d %H:%M:%S') - datetime.datetime.strptime(
                                 start_time, '%Y-%m-%d %H:%M:%S')
-                            hour, minute, second = str(delta_seconds).split(":")
+                            hour, minute, second = str(
+                                delta_seconds).split(":")
 
-                            delta_time = "{0}时{1}分{2}秒".format(hour, minute, second)
+                            delta_time = "{0}时{1}分{2}秒".format(
+                                hour, minute, second)
 
                             second_el_dict["rto"] = delta_time
                         else:
@@ -5568,7 +5787,8 @@ def custom_pdf_report(request):
 
                 # 步骤负责人
                 try:
-                    users = User.objects.filter(username=pnode_steprun.operator)
+                    users = User.objects.filter(
+                        username=pnode_steprun.operator)
                 except:
                     if users:
                         operator = users[0].userinfo.fullname
@@ -5576,18 +5796,21 @@ def custom_pdf_report(request):
                     else:
                         second_el_dict["operator"] = ""
 
-                current_scripts = Script.objects.exclude(state="9").filter(step_id=pstep.id)
+                current_scripts = Script.objects.exclude(
+                    state="9").filter(step_id=pstep.id)
                 script_list_wrapper = []
                 if current_scripts:
                     for snum, current_script in enumerate(current_scripts):
                         script_el_dict = DictIndex()
                         # title
-                        script_name = "{0}.{1}".format("i" * (snum + 1), current_script.name)
+                        script_name = "{0}.{1}".format(
+                            "i" * (snum + 1), current_script.name)
                         script_el_dict["script_name"] = script_name
                         # content
                         steprun_id = pnode_steprun.id if pnode_steprun else None
                         script_id = current_script.id
-                        current_scriptrun_obj = ScriptRun.objects.filter(steprun_id=steprun_id, script_id=script_id)
+                        current_scriptrun_obj = ScriptRun.objects.filter(
+                            steprun_id=steprun_id, script_id=script_id)
                         if current_scriptrun_obj:
                             current_scriptrun_obj = current_scriptrun_obj[0]
                             script_el_dict["start_time"] = current_scriptrun_obj.starttime.strftime(
@@ -5596,14 +5819,18 @@ def custom_pdf_report(request):
                                 "%Y-%m-%d %H:%M:%S") if current_scriptrun_obj.endtime else ""
 
                             if current_scriptrun_obj.endtime and current_scriptrun_obj.starttime:
-                                end_time = current_scriptrun_obj.endtime.strftime("%Y-%m-%d %H:%M:%S")
-                                start_time = current_scriptrun_obj.starttime.strftime("%Y-%m-%d %H:%M:%S")
+                                end_time = current_scriptrun_obj.endtime.strftime(
+                                    "%Y-%m-%d %H:%M:%S")
+                                start_time = current_scriptrun_obj.starttime.strftime(
+                                    "%Y-%m-%d %H:%M:%S")
                                 delta_seconds = datetime.datetime.strptime(end_time,
                                                                            '%Y-%m-%d %H:%M:%S') - datetime.datetime.strptime(
                                     start_time, '%Y-%m-%d %H:%M:%S')
-                                hour, minute, second = str(delta_seconds).split(":")
+                                hour, minute, second = str(
+                                    delta_seconds).split(":")
 
-                                delta_time = "{0}时{1}分{2}秒".format(hour, minute, second)
+                                delta_time = "{0}时{1}分{2}秒".format(
+                                    hour, minute, second)
 
                                 script_el_dict["rto"] = delta_time
                             else:
@@ -5631,7 +5858,8 @@ def custom_pdf_report(request):
 
         if sys.platform.startswith("win"):
             # 指定wkhtmltopdf运行程序路径
-            wkhtmltopdf_path = current_path + os.sep + "faconstor" + os.sep + "static" + os.sep + "process" + os.sep + "wkhtmltopdf" + os.sep + "bin" + os.sep + "wkhtmltopdf.exe"
+            wkhtmltopdf_path = current_path + os.sep + "faconstor" + os.sep + "static" + os.sep + \
+                "process" + os.sep + "wkhtmltopdf" + os.sep + "bin" + os.sep + "wkhtmltopdf.exe"
             config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
         else:
             config = None
@@ -5645,7 +5873,8 @@ def custom_pdf_report(request):
             'encoding': "UTF-8",
             'no-outline': None
         }
-        css_path = current_path + os.sep + "faconstor" + os.sep + "static" + os.sep + "new" + os.sep + "css" + os.sep + "bootstrap.css"
+        css_path = current_path + os.sep + "faconstor" + os.sep + "static" + \
+            os.sep + "new" + os.sep + "css" + os.sep + "bootstrap.css"
         css = [r"{0}".format(css_path)]
 
         pdfkit.from_string(t.content.decode(encoding="utf-8"), r"falconstor.pdf", configuration=config,
@@ -5654,7 +5883,8 @@ def custom_pdf_report(request):
         the_file_name = "falconstor.pdf"
         response = StreamingHttpResponse(file_iterator(the_file_name))
         response['Content-Type'] = 'application/octet-stream; charset=unicode'
-        response['Content-Disposition'] = 'attachment;filename="{0}"'.format(the_file_name)
+        response['Content-Disposition'] = 'attachment;filename="{0}"'.format(
+            the_file_name)
         return response
 
 
@@ -5662,8 +5892,10 @@ def falconstorsearch(request, funid):
     if request.user.is_authenticated():
         nowtime = datetime.datetime.now()
         endtime = nowtime.strftime("%Y-%m-%d")
-        starttime = (nowtime - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
-        all_processes = Process.objects.exclude(state="9").filter(type="falconstor")
+        starttime = (nowtime - datetime.timedelta(days=30)
+                     ).strftime("%Y-%m-%d")
+        all_processes = Process.objects.exclude(
+            state="9").filter(type="falconstor")
         processname_list = []
         for process in all_processes:
             processname_list.append(process.name)
@@ -5698,7 +5930,8 @@ def falconstorsearchdata(request):
         runstate = request.GET.get('runstate', '')
         startdate = request.GET.get('startdate', '')
         enddate = request.GET.get('enddate', '')
-        start_time = datetime.datetime.strptime(startdate, '%Y-%m-%d').strftime('%Y-%m-%d %H:%M:%S')
+        start_time = datetime.datetime.strptime(
+            startdate, '%Y-%m-%d').strftime('%Y-%m-%d %H:%M:%S')
         end_time = (datetime.datetime.strptime(enddate, '%Y-%m-%d') + datetime.timedelta(days=1) - datetime.timedelta(
             seconds=1)).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -5797,8 +6030,10 @@ def tasksearch(request, funid):
     if request.user.is_authenticated():
         nowtime = datetime.datetime.now()
         endtime = nowtime.strftime("%Y-%m-%d")
-        starttime = (nowtime - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
-        all_processes = Process.objects.exclude(state="9").filter(type="falconstor")
+        starttime = (nowtime - datetime.timedelta(days=30)
+                     ).strftime("%Y-%m-%d")
+        all_processes = Process.objects.exclude(
+            state="9").filter(type="falconstor")
         processname_list = []
         for process in all_processes:
             processname_list.append(process.name)
@@ -5817,7 +6052,8 @@ def tasksearchdata(request):
         has_finished = request.GET.get('has_finished', '')
         startdate = request.GET.get('startdate', '')
         enddate = request.GET.get('enddate', '')
-        start_time = datetime.datetime.strptime(startdate, '%Y-%m-%d').strftime('%Y-%m-%d %H:%M:%S')
+        start_time = datetime.datetime.strptime(
+            startdate, '%Y-%m-%d').strftime('%Y-%m-%d %H:%M:%S')
         end_time = (datetime.datetime.strptime(enddate, '%Y-%m-%d') + datetime.timedelta(days=1) - datetime.timedelta(
             seconds=1)).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -5886,9 +6122,11 @@ def downloadlist(request, funid):
                 if if_contains_sign(my_file.name):
                     errors.append(r"""请注意文件命名格式，'\/"*?<>'符号文件不允许上传。""")
                 else:
-                    myfilepath = settings.BASE_DIR + os.sep + "faconstor" + os.sep + "upload" + os.sep + "knowledgefiles" + os.sep + my_file.name
+                    myfilepath = settings.BASE_DIR + os.sep + "faconstor" + os.sep + \
+                        "upload" + os.sep + "knowledgefiles" + os.sep + my_file.name
 
-                    c_exist_model = KnowledgeFileDownload.objects.filter(file_name=my_file.name).exclude(state="9")
+                    c_exist_model = KnowledgeFileDownload.objects.filter(
+                        file_name=my_file.name).exclude(state="9")
 
                     if os.path.exists(myfilepath) or c_exist_model.exists():
                         errors.append("该文件已存在,请勿重复上传。")
@@ -5942,7 +6180,8 @@ def knowledge_file_del(request):
             c_file = c_file[0]
             c_file.delete()
             c_file_name = c_file.file_name
-            the_file_name = settings.BASE_DIR + os.sep + "faconstor" + os.sep + "upload" + os.sep + "knowledgefiles" + os.sep + c_file_name
+            the_file_name = settings.BASE_DIR + os.sep + "faconstor" + os.sep + \
+                "upload" + os.sep + "knowledgefiles" + os.sep + c_file_name
             if os.path.exists(the_file_name):
                 os.remove(the_file_name)
             result = "删除成功。"
@@ -5965,7 +6204,8 @@ def download(request):
         else:
             raise Http404()
         try:
-            the_file_name = settings.BASE_DIR + os.sep + "faconstor" + os.sep + "upload" + os.sep + "knowledgefiles" + os.sep + c_file_name
+            the_file_name = settings.BASE_DIR + os.sep + "faconstor" + os.sep + \
+                "upload" + os.sep + "knowledgefiles" + os.sep + c_file_name
             response = StreamingHttpResponse(file_iterator(the_file_name))
             response['Content-Type'] = 'application/octet-stream; charset=unicode'
             response['Content-Disposition'] = 'attachment;filename="{0}"'.format(
@@ -5993,16 +6233,19 @@ def save_invitation(request):
 
         if start_time:
             if end_time:
-                process = Process.objects.filter(id=process_id).exclude(state="9").filter(type="falconstor")
+                process = Process.objects.filter(id=process_id).exclude(
+                    state="9").filter(type="falconstor")
                 if (len(process) <= 0):
                     result["res"] = '流程计划失败，该流程不存在。'
                 else:
 
-                    planning_process = ProcessRun.objects.filter(process=process[0], state="PLAN")
+                    planning_process = ProcessRun.objects.filter(
+                        process=process[0], state="PLAN")
                     if (len(planning_process) > 0):
                         result["res"] = '流程计划失败，已经存在计划流程，务必先完成该计划流程。'
                     else:
-                        curprocessrun = ProcessRun.objects.filter(process=process[0], state__in=["RUN", "ERROR"])
+                        curprocessrun = ProcessRun.objects.filter(
+                            process=process[0], state__in=["RUN", "ERROR"])
                         if (len(curprocessrun) > 0):
                             result["res"] = '流程计划失败，有流程正在进行中，请勿重复启动。'
                         else:
@@ -6026,7 +6269,8 @@ def save_invitation(request):
                                     mysteprun.state = "EDIT"
                                     mysteprun.save()
 
-                                    myscript = step.script_set.exclude(state="9")
+                                    myscript = step.script_set.exclude(
+                                        state="9")
                                     for script in myscript:
                                         myscriptrun = ScriptRun()
                                         myscriptrun.script = script
@@ -6034,7 +6278,8 @@ def save_invitation(request):
                                         myscriptrun.state = "EDIT"
                                         myscriptrun.save()
 
-                                    myverifyitems = step.verifyitems_set.exclude(state="9")
+                                    myverifyitems = step.verifyitems_set.exclude(
+                                        state="9")
                                     for verifyitems in myverifyitems:
                                         myverifyitemsrun = VerifyItemsRun()
                                         myverifyitemsrun.verify_items = verifyitems
@@ -6086,7 +6331,8 @@ def save_modify_invitation(request):
 
         if start_time:
             if end_time:
-                current_invitation = Invitation.objects.filter(process_run_id=plan_process_run_id)
+                current_invitation = Invitation.objects.filter(
+                    process_run_id=plan_process_run_id)
                 if current_invitation:
                     current_invitation = current_invitation[0]
 
@@ -6121,7 +6367,8 @@ def save_modify_invitation(request):
 def fill_with_invitation(request):
     if request.user.is_authenticated():
         plan_process_run_id = request.POST.get("plan_process_run_id", "")
-        current_invitation = Invitation.objects.filter(process_run_id=plan_process_run_id)
+        current_invitation = Invitation.objects.filter(
+            process_run_id=plan_process_run_id)
         if current_invitation:
             current_invitation = current_invitation[0]
             start_time = current_invitation.start_time
@@ -6144,7 +6391,8 @@ def invite(request):
         nowtime = datetime.datetime.now()
         invite_time = nowtime.strftime("%Y-%m-%d")
 
-        current_processes = Process.objects.filter(id=process_id).filter(type="falconstor")
+        current_processes = Process.objects.filter(
+            id=process_id).filter(type="falconstor")
         process_name = current_processes[0].name if current_processes else ""
         allgroup = current_processes[0].step_set.exclude(state="9").exclude(Q(group="") | Q(group=None)).values(
             "group").distinct()
@@ -6172,7 +6420,8 @@ def invite(request):
 
         if sys.platform.startswith("win"):
             # 指定wkhtmltopdf运行程序路径
-            wkhtmltopdf_path = current_path + os.sep + "faconstor" + os.sep + "static" + os.sep + "process" + os.sep + "wkhtmltopdf" + os.sep + "bin" + os.sep + "wkhtmltopdf.exe"
+            wkhtmltopdf_path = current_path + os.sep + "faconstor" + os.sep + "static" + os.sep + \
+                "process" + os.sep + "wkhtmltopdf" + os.sep + "bin" + os.sep + "wkhtmltopdf.exe"
             config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
         else:
             config = None
@@ -6186,15 +6435,18 @@ def invite(request):
             'encoding': "UTF-8",
             'no-outline': None
         }
-        css_path = current_path + os.sep + "faconstor" + os.sep + "static" + os.sep + "new" + os.sep + "css"
+        css_path = current_path + os.sep + "faconstor" + \
+            os.sep + "static" + os.sep + "new" + os.sep + "css"
         css_01 = css_path + os.sep + "bootstrap.css"
         # css_02 = css_path + os.sep + "font-awesome.min.css"
         css_03 = css_path + os.sep + "icon.css"
         # css_04 = css_path + os.sep + "font.css"
         css_05 = css_path + os.sep + "app.css"
-        css_06 = current_path + os.sep + "faconstor" + os.sep + "static" + os.sep + "assets" + os.sep + "global" + os.sep + "css" + os.sep + "components.css"
+        css_06 = current_path + os.sep + "faconstor" + os.sep + "static" + os.sep + \
+            "assets" + os.sep + "global" + os.sep + "css" + os.sep + "components.css"
 
-        css = [r"{0}".format(mycss) for mycss in [css_01, css_03, css_05, css_06]]
+        css = [r"{0}".format(mycss)
+               for mycss in [css_01, css_03, css_05, css_06]]
 
         pdfkit.from_string(t.content.decode(encoding="utf-8"), r"invitation.pdf", configuration=config, options=options,
                            css=css)
@@ -6202,7 +6454,8 @@ def invite(request):
         the_file_name = "invitation.pdf"
         response = StreamingHttpResponse(file_iterator(the_file_name))
         response['Content-Type'] = 'application/octet-stream; charset=unicode'
-        response['Content-Disposition'] = 'attachment;filename="{0}"'.format(the_file_name)
+        response['Content-Disposition'] = 'attachment;filename="{0}"'.format(
+            the_file_name)
         return response
 
 

@@ -84,12 +84,12 @@ $(function () {
             var moveid = data.node.id;
             if (data.old_parent == "#") {
                 alert("根节点禁止移动。");
-                location.reload()
+                location.reload();
             }
             else {
                 if (data.parent == "#") {
                     alert("禁止新建根节点。");
-                    location.reload()
+                    location.reload();
                 }
                 else {
                     $.ajax({
@@ -106,20 +106,20 @@ $(function () {
                         success: function (data) {
                             if (data == "类型") {
                                 alert("不能移动至功能下。");
-                                location.reload()
+                                location.reload();
                             }
                             else {
-                                var selectid = $("#id").val()
+                                var selectid = $("#id").val();
                                 if (selectid == moveid) {
                                     var res = data.split('^')
-                                    $("#pid").val(res[1])
-                                    $("#pname").val(res[0])
+                                    $("#pid").val(res[1]);
+                                    $("#pname").val(res[0]);
                                 }
                             }
                         },
                         error: function (e) {
                             alert("移动失败，请于管理员联系。");
-                            location.reload()
+                            location.reload();
                         }
                     });
 
@@ -128,15 +128,14 @@ $(function () {
             }
         })
         .bind('select_node.jstree', function (event, data) {
-
-            $("#formdiv").show()
-            $("#title").text(data.node.text)
-            $("#id").val(data.node.id)
-            $("#pid").val(data.node.parent)
-            $("#name").val(data.node.text)
-            $("#pname").val(data.node.data.pname)
-            $("#url").val(data.node.data.url)
-            $("#icon").val(data.node.data.icon)
+            $("#formdiv").show();
+            $("#title").text(data.node.text);
+            $("#id").val(data.node.id);
+            $("#pid").val(data.node.parent);
+            $("#name").val(data.node.text);
+            $("#pname").val(data.node.data.pname);
+            $("#url").val(data.node.data.url);
+            $("#icon").val(data.node.data.icon);
             if (data.node.type == "fun") {
                 $('input:radio[name=radio2]')[0].checked = true;
             }
@@ -144,10 +143,10 @@ $(function () {
                 $('input:radio[name=radio2]')[1].checked = true;
             }
             if (data.node.parent == "#") {
-                $("#save").hide()
+                $("#save").hide();
             }
             else
-                $("#save").show()
+                $("#save").show();
 
             var eventNodeName = event.target.nodeName;
             var eventNodeName = event.target.nodeName;
@@ -157,13 +156,11 @@ $(function () {
                 var $subject = $(event.target).parent();
                 if ($subject.find('ul').length > 0) {
                     $("#title").text($(event.target).text())
-
                 } else {
                     //选择的id值
                     alert($(event.target).parents('li').attr('id'));
                 }
             }
-
         });
 
     $("#error").click(function () {
@@ -175,6 +172,4 @@ $(function () {
         if ($("#mytype").val() == "node")
             $('input:radio[name=radio2]')[1].checked = true;
     });
-
-
 });

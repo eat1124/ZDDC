@@ -154,24 +154,20 @@ $(function () {
                                 else {
                                     if (data != "0") {
                                         if (selectid == moveid) {
-                                            var res = data.split('^')
-                                            $("#pid").val(res[1])
-                                            $("#pname").val(res[0])
-                                            $("#orgpname").val(res[0])
+                                            var res = data.split('^');
+                                            $("#pid").val(res[1]);
+                                            $("#pname").val(res[0]);
+                                            $("#orgpname").val(res[0]);
                                         }
-
-
                                     }
                                 }
                             }
                         },
                         error: function (e) {
                             alert("移动失败，请于管理员联系。");
-                            location.reload()
+                            location.reload();
                         }
                     });
-
-
                 }
             }
         })
@@ -223,7 +219,6 @@ $(function () {
                 $("#orgsave").show()
                 $("#usersave").show()
             }
-
         });
 
     $("#error").click(function () {
