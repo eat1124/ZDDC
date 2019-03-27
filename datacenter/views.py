@@ -54,7 +54,6 @@ def dictindex(request, funid):
             curfun = Fun.objects.get(id=int(funid))
             if curfun in funlist:
                 alldict = DictIndex.objects.order_by("sort").exclude(state="9")
-                print(len(alldict))
                 return render(request, 'dict.html',
                               {'username': request.user.userinfo.fullname,
                                "alldict": alldict, "pagefuns": getpagefuns(funid)})
@@ -250,7 +249,6 @@ def storage_index(request, funid):
             valid_time_list = []
             for i in dict_list2:
                 valid_time_list.append(i[0])
-        print(valid_time_list)
         return render(request, 'storage.html',
                       {'username': request.user.userinfo.fullname,
                        "storage_type_list": storage_type_list,
@@ -944,7 +942,8 @@ def get_process_index_data(request):
                         c_process = c_process[0]
                         # name
                         name = c_process.name
-                        # state:DONE,RUN,ERROR,EDIT,STOP 根据第一个not_done步骤的状态来作为当前子流程状态
+                        # state:DONE,RUN,ERROR,EDIT,STOP
+                        # 根据第一个not_done步骤的状态来作为当前子流程状态
                         all_steps = c_process.step_set.filter(state="1").filter(
                             intertype__in=["node", "task"]).order_by("sort")
                         state = "EDIT"
@@ -953,7 +952,8 @@ def get_process_index_data(request):
                             first_not_done_step_run = first_not_done_step.steprun_set.filter(
                                 processrun=current_processrun)
                             if first_not_done_step_run:
-                                first_not_done_step_run = first_not_done_step_run[0]
+                                first_not_done_step_run = first_not_done_step_run[
+                                    0]
                                 state = first_not_done_step_run.state
                                 c_step_run_index = num
                                 if first_not_done_step_run.state not in ["DONE", "EDIT"]:
@@ -1064,7 +1064,8 @@ def get_process_index_data(request):
                         })
 
             # rtostate/rtoendtime RTO什么时候停止跳动?
-            # 包含步骤："不计入RTO & 状态为CONFIRM/DONE" 此时rtostate=DONE,rtoendtime为上一步结束时间;
+            # 包含步骤："不计入RTO & 状态为CONFIRM/DONE"
+            # 此时rtostate=DONE,rtoendtime为上一步结束时间;
             for step in c_process_steps:
                 if step.intertype == "complex":
                     sub_process_id = step.sub_process
@@ -1606,7 +1607,6 @@ def funmove(request):
             except:
                 raise Http404()
 
-            print(id, parent, position, parent, old_position)
             oldpfun = Fun.objects.get(id=old_parent)
             oldsort = old_position + 1
             oldfuns = Fun.objects.filter(
@@ -1718,7 +1718,6 @@ def organization(request, funid):
                 mytype = request.POST.get('mytype')
                 try:
                     id = int(id)
-
                 except:
                     raise Http404()
                 try:
@@ -1745,6 +1744,8 @@ def organization(request, funid):
                     phone = request.POST.get('phone', '')
                     email = request.POST.get('email', '')
                     password = request.POST.get('password', '')
+                    newpassword = ""
+                    editpassword = "hidden"
                     if fullname.strip() == '':
                         errors.append('用户姓名不能为空。')
                     else:
@@ -1755,8 +1756,6 @@ def organization(request, funid):
                                 errors.append('密码不能为空。')
                             else:
                                 if id == 0:
-                                    newpassword = ""
-                                    editpassword = "hidden"
                                     selectid = pid
                                     title = "新建"
                                     alluser = User.objects.filter(
@@ -2030,7 +2029,6 @@ def orgmove(request):
                 old_position = int(old_position)
             except:
                 raise Http404()
-            print(id, parent, position, position, old_position)
             oldpuserinfo = UserInfo.objects.get(id=old_parent)
             oldsort = old_position + 1
             olduserinfos = UserInfo.objects.filter(
@@ -2781,7 +2779,8 @@ def scriptsave(request):
                                                     #     pass
                                                     scriptsave.save()
                                                     result["res"] = "保存成功。"
-                                                    result["data"] = scriptsave.id
+                                                    result[
+                                                        "data"] = scriptsave.id
                                             else:
                                                 allscript = Script.objects.filter(code=code).exclude(
                                                     id=id).exclude(state="9").filter(step_id=None)
@@ -2817,7 +2816,8 @@ def scriptsave(request):
                                                         #     pass
                                                         scriptsave.save()
                                                         result["res"] = "保存成功。"
-                                                        result["data"] = scriptsave.id
+                                                        result[
+                                                            "data"] = scriptsave.id
                                                     except:
                                                         result["res"] = "修改失败。"
             return HttpResponse(json.dumps(result))
@@ -2953,7 +2953,8 @@ def processscriptsave(request):
                                                         scriptsave.scriptpath = scriptpath
                                                         scriptsave.succeedtext = success_text
                                                         scriptsave.log_address = log_address
-                                                        scriptsave.step = steplist[0]
+                                                        scriptsave.step = steplist[
+                                                            0]
                                                         scriptsave.save()
                                                         result["res"] = "新增成功。"
                                                         result["data"] = str(
@@ -3935,7 +3936,6 @@ def processdrawsave(request):
             lines = res["lines"]
             areas = res["areas"]
             pid = res["title"]
-            print(nodes)
             try:
                 pid = int(pid)
             except:
@@ -4006,15 +4006,18 @@ def processdrawsave(request):
                             except:
                                 pass
                             try:
-                                mystep[0].approval = nodes[nodeskey]["approval"]
+                                mystep[0].approval = nodes[
+                                    nodeskey]["approval"]
                             except:
                                 pass
                             try:
-                                mystep[0].sub_process = nodes[nodeskey]["sub_process"]
+                                mystep[0].sub_process = nodes[
+                                    nodeskey]["sub_process"]
                             except:
                                 pass
                             try:
-                                mystep[0].rto_count_in = nodes[nodeskey]["rto_count_in"]
+                                mystep[0].rto_count_in = nodes[
+                                    nodeskey]["rto_count_in"]
                             except:
                                 pass
 
@@ -4073,11 +4076,13 @@ def processdrawsave(request):
                             except:
                                 pass
                             try:
-                                savestep.sub_process = nodes[nodeskey]["sub_process"]
+                                savestep.sub_process = nodes[
+                                    nodeskey]["sub_process"]
                             except:
                                 pass
                             try:
-                                mystep[0].rto_count_in = nodes[nodeskey]["rto_count_in"]
+                                mystep[0].rto_count_in = nodes[
+                                    nodeskey]["rto_count_in"]
                             except:
                                 pass
 
@@ -4314,7 +4319,8 @@ def falconstorswitchdata(request):
             if processrun_obj[9] == "falconstor":
                 create_users = processrun_obj[2] if processrun_obj[2] else ""
                 create_user_objs = User.objects.filter(username=create_users)
-                create_user_fullname = create_user_objs[0].userinfo.fullname if create_user_objs else ""
+                create_user_fullname = create_user_objs[
+                    0].userinfo.fullname if create_user_objs else ""
 
                 result.append({
                     "starttime": processrun_obj[0].strftime('%Y-%m-%d %H:%M:%S') if processrun_obj[0] else "",
@@ -4636,7 +4642,8 @@ def getrunsetps(request):
                     done_num / len(processruns[0].steprun_set.all()) * 100)
 
                 processresult["process_rate"] = process_rate
-                processresult["current_process_task_info"] = current_process_task_info
+                processresult[
+                    "current_process_task_info"] = current_process_task_info
                 processresult["step"] = result
                 processresult["process_name"] = process_name
                 processresult["process_state"] = process_state
@@ -4804,8 +4811,10 @@ def getrunsetps(request):
                                     verify_items=verifyitem)
                                 if len(verifyitemsrunlist) > 0:
                                     runverifyitemid = verifyitemsrunlist[0].id
-                                    has_verified = verifyitemsrunlist[0].has_verified
-                                    verifyitemstate = verifyitemsrunlist[0].state
+                                    has_verified = verifyitemsrunlist[
+                                        0].has_verified
+                                    verifyitemstate = verifyitemsrunlist[
+                                        0].state
                             verifyitems.append(
                                 {"id": verifyitem.id, "name": verifyitem.name, "runverifyitemid": runverifyitemid,
                                  "has_verified": has_verified,
@@ -5458,9 +5467,11 @@ def show_result(request):
                     for user in current_group_users:
                         inner_dict = {}
                         inner_dict["fullname"] = user.fullname
-                        inner_dict["depart_name"] = user.pnode.fullname if user.pnode else ""
+                        inner_dict[
+                            "depart_name"] = user.pnode.fullname if user.pnode else ""
                         current_users_and_departments.append(inner_dict)
-                    all_group_dict["current_users_and_departments"] = current_users_and_departments
+                    all_group_dict[
+                        "current_users_and_departments"] = current_users_and_departments
                     total_list.append(all_group_dict)
         show_result_dict["total_list"] = total_list
 
@@ -5705,7 +5716,8 @@ def custom_pdf_report(request):
                                     # title
                                     script_name = "{0}.{1}".format(
                                         "i" * (snum + 1), current_script.name)
-                                    script_el_dict_inner["script_name"] = script_name
+                                    script_el_dict_inner[
+                                        "script_name"] = script_name
 
                                     # content
                                     steprun_id = steprun_obj.id
@@ -5713,7 +5725,8 @@ def custom_pdf_report(request):
                                     current_scriptrun_obj = ScriptRun.objects.filter(steprun_id=steprun_id,
                                                                                      script_id=script_id)
                                     if current_scriptrun_obj:
-                                        current_scriptrun_obj = current_scriptrun_obj[0]
+                                        current_scriptrun_obj = current_scriptrun_obj[
+                                            0]
                                         script_el_dict_inner["start_time"] = current_scriptrun_obj.starttime.strftime(
                                             "%Y-%m-%d %H:%M:%S") if current_scriptrun_obj.starttime else ""
                                         script_el_dict_inner["end_time"] = current_scriptrun_obj.endtime.strftime(
@@ -5733,22 +5746,26 @@ def custom_pdf_report(request):
                                             delta_time = "{0}时{1}分{2}秒".format(
                                                 hour, minute, second)
 
-                                            script_el_dict_inner["rto"] = delta_time
+                                            script_el_dict_inner[
+                                                "rto"] = delta_time
                                         else:
                                             script_el_dict_inner["rto"] = ""
 
                                         state = current_scriptrun_obj.state
                                         if state in state_dict.keys():
-                                            script_el_dict_inner["state"] = state_dict[state]
+                                            script_el_dict_inner[
+                                                "state"] = state_dict[state]
                                         else:
                                             script_el_dict_inner["state"] = ""
 
-                                        script_el_dict_inner["explain"] = current_scriptrun_obj.explain
+                                        script_el_dict_inner[
+                                            "explain"] = current_scriptrun_obj.explain
                                     else:
                                         pass
                                     script_list_inner.append(
                                         script_el_dict_inner)
-                            inner_second_el_dict["script_list_inner"] = script_list_inner
+                            inner_second_el_dict[
+                                "script_list_inner"] = script_list_inner
                         inner_step_list.append(inner_second_el_dict)
             else:
                 step_name = "{0}.{1}".format(num + 1, pstep.name)
@@ -5841,7 +5858,8 @@ def custom_pdf_report(request):
                                 script_el_dict["state"] = state_dict[state]
                             else:
                                 script_el_dict["state"] = ""
-                            script_el_dict["explain"] = current_scriptrun_obj.explain
+                            script_el_dict[
+                                "explain"] = current_scriptrun_obj.explain
 
                         script_list_wrapper.append(script_el_dict)
                     second_el_dict["script_list_wrapper"] = script_list_wrapper
@@ -6010,7 +6028,8 @@ def falconstorsearchdata(request):
         for processrun_obj in rows:
             create_users = processrun_obj[2] if processrun_obj[2] else ""
             create_user_objs = User.objects.filter(username=create_users)
-            create_user_fullname = create_user_objs[0].userinfo.fullname if create_user_objs else ""
+            create_user_fullname = create_user_objs[
+                0].userinfo.fullname if create_user_objs else ""
 
             result.append({
                 "starttime": processrun_obj[0].strftime('%Y-%m-%d %H:%M:%S') if processrun_obj[0] else "",
