@@ -343,7 +343,7 @@ def storage_index(request, funid):
             id=6).exclude(state='9')
         if c_dict_index_1.exists():
             c_dict_index_1 = c_dict_index_1[0]
-            dict_list1 = c_dict_index_1.dictlist_set.all()
+            dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
             for i in dict_list1:
                 storage_type_list.append({
                         "storage_name":i.name,
@@ -354,7 +354,7 @@ def storage_index(request, funid):
             id=5).exclude(state='9')
         if c_dict_index_2.exists():
             c_dict_index_2 = c_dict_index_2[0]
-            dict_list2 = c_dict_index_2.dictlist_set.all()
+            dict_list2 = c_dict_index_2.dictlist_set.exclude(state="9")
             for i in dict_list2:
                 valid_time_list.append({
                         "valid_time":i.name,
@@ -610,7 +610,7 @@ def get_select_source_type(temp_source_type=""):
     c_dict_index = DictIndex.objects.filter(id=2).exclude(state='9')
     if c_dict_index.exists():
         c_dict_index = c_dict_index[0]
-        dict_list = c_dict_index.dictlist_set.all()
+        dict_list = c_dict_index.dictlist_set.exclude(state="9")
         source_type_list = []
         for i in dict_list:
             source_type_list.append({
@@ -783,7 +783,7 @@ def source_index(request, funid):
 
 def get_source_tree(parent, selectid):
     nodes = []
-    children = parent.children.exclude(state="9").order_by("sort").all()
+    children = parent.children.exclude(state="9").order_by("sort").exclude(state="9")
     for child in children:
         node = dict()
         node["text"] = child.name
@@ -937,7 +937,7 @@ def getfun(myfunlist, fun):
 
 def childfun(myfun, funid):
     mychildfun = []
-    funs = myfun.children.order_by("sort").all()
+    funs = myfun.children.order_by("sort").exclude(state="9")
     pisselected = False
     for fun in funs:
         if fun in funlist:
@@ -1543,7 +1543,7 @@ def userpassword(request):
 
 def get_fun_tree(parent, selectid, all_app):
     nodes = []
-    children = parent.children.order_by("sort").all()
+    children = parent.children.order_by("sort").exclude(state="9")
     for child in children:
         node = {}
         node["text"] = child.name
@@ -1551,7 +1551,7 @@ def get_fun_tree(parent, selectid, all_app):
         node["type"] = child.funtype
         # app应用
         # 当前节点的所有外键
-        all_app_list = child.app.select_related().all()
+        all_app_list = child.app.select_related().exclude(state="9")
         c_app_list = []
         for c_app in all_app_list:
             c_app_list.append(c_app.id)
@@ -1665,7 +1665,7 @@ def function(request, funid):
                             selectid = id
                         else:
                             funsave = Fun.objects.get(id=id)
-                            if funsave.funtype == "node" and mytype == "fun" and len(funsave.children.all()) > 0:
+                            if funsave.funtype == "node" and mytype == "fun" and len(funsave.children.exclude(state="9")) > 0:
                                 errors.append('节点下还有其他节点或功能，无法修改为功能。')
                             elif mytype == "node" and funsave.app.exists():
                                 errors.append('功能下有关联应用，无法修改为节点。')
@@ -1709,7 +1709,7 @@ def function(request, funid):
                     root["type"] = "node"
 
                     # 当前节点的所有外键
-                    all_app_list = rootnode.app.select_related().all()
+                    all_app_list = rootnode.app.select_related().exclude(state="9")
                     c_app_list = []
                     for c_app in all_app_list:
                         c_app_list.append(c_app.id)
@@ -1849,7 +1849,7 @@ def funmove(request):
 
 def get_org_tree(parent, selectid, allgroup):
     nodes = []
-    children = parent.children.order_by("sort").exclude(state="9").all()
+    children = parent.children.order_by("sort").exclude(state="9")
     for child in children:
         node = {}
         node["text"] = child.fullname
@@ -1864,7 +1864,7 @@ def get_org_tree(parent, selectid, allgroup):
         if child.usertype == "user":
             noselectgroup = []
             selectgroup = []
-            allselectgroup = child.group.all()
+            allselectgroup = child.group.exclude(state="9")
             for group in allgroup:
                 if group in allselectgroup:
                     selectgroup.append(
@@ -2284,7 +2284,7 @@ def orgpassword(request):
 def group(request, funid):
     if request.user.is_authenticated():
         try:
-            allgroup = Group.objects.all().exclude(state="9")
+            allgroup = Group.objects.exclude(state="9")
 
             return render(request, 'group.html',
                           {'username': request.user.userinfo.fullname,
@@ -2366,7 +2366,7 @@ def getusertree(request):
 
         treedata = []
         groupsave = Group.objects.get(id=id)
-        selectusers = groupsave.userinfo_set.all()
+        selectusers = groupsave.userinfo_set.exclude(state="9")
 
         rootnodes = UserInfo.objects.order_by("sort").exclude(
             state="9").filter(pnode=None, usertype="org")
@@ -2418,7 +2418,7 @@ def getfuntree(request):
 
         treedata = []
         groupsave = Group.objects.get(id=id)
-        selectfuns = groupsave.fun.all()
+        selectfuns = groupsave.fun.exclude(state="9")
 
         rootnodes = Fun.objects.order_by(
             "sort").filter(pnode=None, funtype="node")
@@ -2462,7 +2462,7 @@ def groupsavefuntree(request):
 
 def get_scene_tree(parent, selectid, allprocess):
     nodes = []
-    children = parent.children.order_by("sort").exclude(state="9").all()
+    children = parent.children.order_by("sort").exclude(state="9")
     for child in children:
         node = {}
         node["text"] = child.name
@@ -2470,7 +2470,7 @@ def get_scene_tree(parent, selectid, allprocess):
         node["type"] = "org"
         noselectprocess = []
         selectprocess = []
-        allselectprocess = child.process.all()
+        allselectprocess = child.process.exclude(state="9")
         myallprocess = []
         for process in allprocess:
             myallprocess.append(
