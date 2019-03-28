@@ -336,12 +336,14 @@ def storage_index(request, funid):
     存储配置
     """
     if request.user.is_authenticated():
+        storage_type_list = []
+        valid_time_list = []
+
         c_dict_index_1 = DictIndex.objects.filter(
-            name="存储类型").exclude(state='9')
+            id=6).exclude(state='9')
         if c_dict_index_1.exists():
             c_dict_index_1 = c_dict_index_1[0]
             dict_list1 = c_dict_index_1.dictlist_set.all()
-            storage_type_list = []
             for i in dict_list1:
                 storage_type_list.append({
                         "storage_name":i.name,
@@ -353,7 +355,6 @@ def storage_index(request, funid):
         if c_dict_index_2.exists():
             c_dict_index_2 = c_dict_index_2[0]
             dict_list2 = c_dict_index_2.dictlist_set.all()
-            valid_time_list = []
             for i in dict_list2:
                 valid_time_list.append({
                         "valid_time":i.name,
