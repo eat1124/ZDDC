@@ -68,11 +68,16 @@ urlpatterns = [
     url(r'^app_save/$', app_save),
     url(r'^app_del/$', app_del),
 
+    # 指标管理
+    url(r'^target/$', target_index, {'funid': '23'}),
+    url(r'^target_data/$', target_data),
+    url(r'^target_save/$', storage_save),
+    url(r'^target_del/$', storage_del),
+
     # 场景管理
     url(r'^scene/$', scene, {'funid': '70'}),
     url(r'^scenedel/$', scenedel),
     url(r'^scenemove/$', scenemove),
-
 
     # 预案管理
     url(r'^script/$', script, {'funid': '32'}),

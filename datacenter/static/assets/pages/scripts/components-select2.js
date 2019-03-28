@@ -8,7 +8,7 @@ var ComponentsSelect2 = function() {
         // @see https://github.com/select2/select2/issues/2927
         $.fn.select2.defaults.set("theme", "bootstrap");
 
-        var placeholder = "Select a State";
+        var placeholder = "请选择";
 
         $(".select2, .select2-multiple").select2({
             placeholder: placeholder,

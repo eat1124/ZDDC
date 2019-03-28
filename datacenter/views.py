@@ -922,6 +922,121 @@ def move_source(request):
                 return HttpResponse("0")
 
 
+def target_index(request, funid):
+    """
+    指标管理
+    """
+    if request.user.is_authenticated():
+        app_list = []
+        operation_type_list = []
+        cycle_type_list = []
+        business_type_list = []
+        unit_list = []
+
+        applist = App.objects.all().exclude(state='9')
+        for i in applist:
+            app_list.append({
+                "app_name": i.name,
+                "app_id": i.id,
+            })
+
+        c_dict_index_1 = DictIndex.objects.filter(
+            id=1).exclude(state='9')
+        if c_dict_index_1.exists():
+            c_dict_index_1 = c_dict_index_1[0]
+            dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
+            for i in dict_list1:
+                operation_type_list.append({
+                        "operation_type_name":i.name,
+                        "operation_type_id": i.id,
+                    })
+
+        c_dict_index_2 = DictIndex.objects.filter(
+            id=7).exclude(state='9')
+        if c_dict_index_2.exists():
+            c_dict_index_2 = c_dict_index_2[0]
+            dict_list2 = c_dict_index_2.dictlist_set.exclude(state="9")
+            for i in dict_list2:
+                cycle_type_list.append({
+                    "cycle_type_name": i.name,
+                    "cycle_type_id": i.id,
+                })
+
+        c_dict_index_3 = DictIndex.objects.filter(
+            id=8).exclude(state='9')
+        if c_dict_index_3.exists():
+            c_dict_index_3 = c_dict_index_3[0]
+            dict_list3 = c_dict_index_3.dictlist_set.exclude(state="9")
+            for i in dict_list3:
+                business_type_list.append({
+                    "business_type_name": i.name,
+                    "business_type_id": i.id,
+                })
+
+        c_dict_index_4 = DictIndex.objects.filter(
+            id=9).exclude(state='9')
+        if c_dict_index_4.exists():
+            c_dict_index_4 = c_dict_index_4[0]
+            dict_list4 = c_dict_index_4.dictlist_set.exclude(state="9")
+            for i in dict_list4:
+                unit_list.append({
+                        "unit_name":i.name,
+                        "unit_id": i.id,
+                    })
+        return render(request, 'target.html',
+                      {'username': request.user.userinfo.fullname,
+                       "app_list":app_list,
+                       "operation_type_list": operation_type_list,
+                       "cycle_type_list": cycle_type_list,
+                       "business_type_list": business_type_list,
+                       "unit_list": unit_list,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def target_data(request):
+    if request.user.is_authenticated():
+
+        result = []
+        search_adminapp = request.POST.getlist('search_adminapp','')
+        search_app = request.GET.get('search_app', '')
+        search_operationtype = request.GET.get('search_operationtype', '')
+        search_cycletype = request.GET.get('search_cycletype', '')
+        search_businesstype = request.GET.get('search_businesstype', '')
+        search_unit = request.GET.get('search_unit', '')
+
+        all_target = Target.objects.exclude(state="9").order_by("sort")
+        if search_adminapp!="":
+            all_target = all_target.filter(adminapp=int(search_adminapp))
+        if search_app!="" and search_app!="null":
+            apps=[]
+            search_app=search_app.split(',')
+            for app in search_app:
+                apps.append(int(app))
+            all_target = all_target.filter(app__in=apps)
+        if search_operationtype != "":
+            all_target = all_target.filter(operationtype=search_operationtype)
+        if search_cycletype != "":
+            all_target = all_target.filter(cycletype=search_cycletype)
+        if search_businesstype != "":
+            all_target = all_target.filter(businesstype=search_businesstype)
+        if search_unit != "":
+            all_target = all_target.filter(unit=search_unit)
+
+        # for cycle in all_cycle:
+        #     result.append({
+        #         "id": cycle.id,
+        #         "name": cycle.name,
+        #         "code": cycle.code,
+        #         "minutes": cycle.minutes,
+        #         "create_date": cycle.creatdate.strftime('%Y-%m-%d %H:%M:%S') if cycle.creatdate else "",
+        #         "sort": cycle.sort,
+        #     })
+
+        return JsonResponse({"data": result})
+
+
 def getfun(myfunlist, fun):
     try:
         if (fun.pnode_id is not None):
