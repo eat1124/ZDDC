@@ -62,6 +62,12 @@ urlpatterns = [
     url(r'^del_source/$', del_source),
     url(r'^move_source/$', move_source),
 
+    # 应用管理
+    url(r'^app/$', app_index, {'funid': '22'}),
+    url(r'^app_data/$', app_data),
+    url(r'^app_save/$', app_save),
+    url(r'^app_del/$', app_del),
+
     # 场景管理
     url(r'^scene/$', scene, {'funid': '70'}),
     url(r'^scenedel/$', scenedel),

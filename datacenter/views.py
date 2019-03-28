@@ -48,6 +48,110 @@ info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Ad
         "lastlogin": 0}
 
 
+def app_save(request):
+    if request.user.is_authenticated():
+        id = request.POST.get("id", "")
+        app_name = request.POST.get("app_name", "")
+        app_code = request.POST.get("app_code", "")
+        remark = request.POST.get("remark", "")
+        sort = request.POST.get("sort", "")
+        try:
+            id = int(id)
+        except:
+            raise Http404()
+        result = {}
+
+        if app_name.strip() == '':
+            result["res"] = '应用名称不能为空。'
+        else:
+            if app_code.strip() == '':
+                result["res"] = '应用编码不能为空。'
+            else:
+                if remark.strip() == '':
+                    result["res"] = '说明不能为空。'
+                else:
+                    if id == 0:
+                        all_app = App.objects.filter(
+                            code=app_code).exclude(state="9")
+                        if (len(all_app) > 0):
+                            result["res"] = '存储代码:' + app_code + '已存在。'
+                        else:
+                            app_save = App()
+                            app_save.name = app_name
+                            app_save.code = app_code
+                            app_save.remark = remark
+                            app_save.sort = int(sort) if sort else None
+                            app_save.save()
+                            result["res"] = "保存成功。"
+                            result["data"] = app_save.id
+                    else:
+                        all_app = App.objects.filter(code=app_code).exclude(
+                            id=id).exclude(state="9")
+                        if (len(all_app) > 0):
+                            result["res"] = '存储代码:' + app_code + '已存在。'
+                        else:
+                            try:
+                                app_save = App.objects.get(id=id)
+                                app_save.name = app_name
+                                app_save.code = app_code
+                                app_save.remark = remark
+                                app_save.sort = int(
+                                    sort) if sort else None
+                                app_save.save()
+                                result["res"] = "保存成功。"
+                                result["data"] = app_save.id
+                            except Exception as e:
+                                print(e)
+                                result["res"] = "修改失败。"
+        return JsonResponse(result)
+
+
+def app_del(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            id = request.POST.get('id', '')
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+            app = App.objects.get(id=id)
+            app.state = "9"
+            app.save()
+
+            return HttpResponse(1)
+        else:
+            return HttpResponse(0)
+
+
+def app_index(request, funid):
+    """
+    应用管理
+    """
+    if request.user.is_authenticated():
+        return render(request, 'app.html',
+                      {'username': request.user.userinfo.fullname,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def app_data(request):
+    if request.user.is_authenticated():
+        result = []
+
+        all_app = App.objects.exclude(state="9").order_by("sort")
+        for app in all_app:
+            result.append({
+                "id": app.id,
+                "name": app.name,
+                "code": app.code,
+                "remark": app.remark,
+                "sort": app.sort,
+            })
+
+        return JsonResponse({"data": result})
+
+
 def dictindex(request, funid):
     if request.user.is_authenticated():
         try:
@@ -236,19 +340,25 @@ def storage_index(request, funid):
             name="存储类型").exclude(state='9')
         if c_dict_index_1.exists():
             c_dict_index_1 = c_dict_index_1[0]
-            dict_list1 = c_dict_index_1.dictlist_set.values_list("name")
+            dict_list1 = c_dict_index_1.dictlist_set.all()
             storage_type_list = []
             for i in dict_list1:
-                storage_type_list.append(i[0])
+                storage_type_list.append({
+                        "storage_name":i.name,
+                        "storage_type_id": i.id,
+                    })
 
         c_dict_index_2 = DictIndex.objects.filter(
-            name="有效时间").exclude(state='9')
+            id=5).exclude(state='9')
         if c_dict_index_2.exists():
             c_dict_index_2 = c_dict_index_2[0]
-            dict_list2 = c_dict_index_2.dictlist_set.values_list("name")
+            dict_list2 = c_dict_index_2.dictlist_set.all()
             valid_time_list = []
             for i in dict_list2:
-                valid_time_list.append(i[0])
+                valid_time_list.append({
+                        "valid_time":i.name,
+                        "valid_time_id": i.id,
+                    })
         return render(request, 'storage.html',
                       {'username': request.user.userinfo.fullname,
                        "storage_type_list": storage_type_list,
@@ -261,9 +371,23 @@ def storage_index(request, funid):
 def storage_data(request):
     if request.user.is_authenticated():
         result = []
-
         all_storage = Storage.objects.exclude(state="9").order_by("sort")
         for storage in all_storage:
+
+            storagetype_dict_list = DictList.objects.filter(id=int(storage.storagetype))
+            if storagetype_dict_list.exists():
+                storagetype_dict_list = storagetype_dict_list[0]
+                storagetype = storagetype_dict_list.name
+            else:
+                storagetype = ""
+
+            validtime_dict_list = DictList.objects.filter(id=int(storage.validtime))
+            if validtime_dict_list.exists():
+                validtime_dict_list = validtime_dict_list[0]
+                validtime = validtime_dict_list.name
+            else:
+                validtime = ""   
+
             result.append({
                 "id": storage.id,
                 "name": storage.name,
@@ -271,8 +395,8 @@ def storage_data(request):
                 "tablename": storage.tablename,
                 "storagetype_num": storage.storagetype,
                 "validtime_num": storage.validtime,
-                "storagetype": storage.storagetype,
-                "validtime": storage.validtime,
+                "storagetype": storagetype,
+                "validtime": validtime,
                 "sort": storage.sort,
             })
 
@@ -437,7 +561,7 @@ def cycle_save(request):
                                 cycle_save.code = cycle_code
                                 cycle_save.minutes = minutes
                                 cycle_save.creatdate = create_date
-                                cycle_save.sort = sort
+                                cycle_save.sort = int(sort) if sort else None
                                 cycle_save.save()
                                 result["res"] = "保存成功。"
                                 result["data"] = cycle_save.id
@@ -482,15 +606,16 @@ def cycle_del(request):
 
 
 def get_select_source_type(temp_source_type=""):
-    c_dict_index = DictIndex.objects.filter(name="数据源类型").exclude(state='9')
+    c_dict_index = DictIndex.objects.filter(id=2).exclude(state='9')
     if c_dict_index.exists():
         c_dict_index = c_dict_index[0]
-        dict_list = c_dict_index.dictlist_set.values_list("name")
+        dict_list = c_dict_index.dictlist_set.all()
         source_type_list = []
         for i in dict_list:
             source_type_list.append({
-                "source_type": i[0],
-                "source_if_selected": "selected" if temp_source_type == i[0] else "",
+                "source_type_id": i.id,
+                "source_type": i.name,
+                "source_if_selected": "selected" if temp_source_type == i.id else "",
             })
     else:
         source_type_list = []
@@ -511,12 +636,10 @@ def source_index(request, funid):
             pid = ""
             title = ""
             code = ""
-            p_name = ""
             name = ""
             connection = ""
 
             hiddendiv = "hidden"
-
             # 数据源类型
             source_type_list = get_select_source_type()
 
@@ -529,7 +652,6 @@ def source_index(request, funid):
                 code = request.POST.get('code', '')
                 connection = request.POST.get('connection', '')
                 sourcetype = request.POST.get('sourcetype', '')
-                p_name = request.POST.get('p_name', '')
 
                 source_type_list = get_select_source_type(
                     temp_source_type=sourcetype)
@@ -605,6 +727,7 @@ def source_index(request, funid):
                                             source.connection = connection
                                             source.sourcetype = sourcetype
                                             source.save()
+
                                             title = name
                                         else:
                                             errors.append(
@@ -628,10 +751,10 @@ def source_index(request, funid):
                         "sourcetype": rootnode.sourcetype,
                         "connection": rootnode.connection,
                         "sort": rootnode.sort,
-                        "p_name": rootnode.code,
                         "verify": "first_node",
                     }
-                    root["children"] = get_source_tree(rootnode, selectid)
+                    root["children"] = get_source_tree(
+                        rootnode, selectid)
                     root["state"] = {"opened": True}
                     treedata.append(root)
 
@@ -647,7 +770,6 @@ def source_index(request, funid):
                            "id": id,
                            "pid": pid,
                            "code": code,
-                           "p_name": p_name,
                            "name": name,
                            "connection": connection,
                            "pagefuns": getpagefuns(funid)})
@@ -666,13 +788,11 @@ def get_source_tree(parent, selectid):
         node["text"] = child.name
         node["id"] = child.id
         node["children"] = get_source_tree(child, selectid)
-
         node["data"] = {
             "code": child.code,
             "sourcetype": child.sourcetype,
             "connection": child.connection,
             "sort": child.sort,
-            "p_name": parent.name if parent.pnode else child.code,
         }
         try:
             if int(selectid) == child.id:
@@ -1420,7 +1540,7 @@ def userpassword(request):
     return HttpResponse(result)
 
 
-def get_fun_tree(parent, selectid):
+def get_fun_tree(parent, selectid, all_app):
     nodes = []
     children = parent.children.order_by("sort").all()
     for child in children:
@@ -1428,9 +1548,29 @@ def get_fun_tree(parent, selectid):
         node["text"] = child.name
         node["id"] = child.id
         node["type"] = child.funtype
+        # app应用
+        # 当前节点的所有外键
+        all_app_list = child.app.select_related().all()
+        c_app_list = []
+        for c_app in all_app_list:
+            c_app_list.append(c_app.id)
+
+        app_select_list = []
+        for app in all_app:
+            app_select_list.append({
+                "app_name": app.name,
+                "id": app.id,
+                "app_state": "selected" if app.id in c_app_list else ""
+            })
+
         node["data"] = {"url": child.url,
-                        "icon": child.icon, "pname": parent.name}
-        node["children"] = get_fun_tree(child, selectid)
+                        "icon": child.icon,
+                        "pname": parent.name,
+                        "app_list": app_select_list,
+                        "app_div_show": True if child.funtype == "fun" else False
+                        }
+        node["children"] = get_fun_tree(child, selectid, all_app)
+
         try:
             if int(selectid) == child.id:
                 node["state"] = {"selected": True}
@@ -1453,7 +1593,11 @@ def function(request, funid):
             mytype = ""
             url = ""
             icon = ""
+            app_list = []
+            pre_app_select_list = []
             hiddendiv = "hidden"
+            app_hidden_div = ""
+            all_app = App.objects.exclude(state="9")
 
             if request.method == 'POST':
                 hiddendiv = ""
@@ -1464,6 +1608,7 @@ def function(request, funid):
                 mytype = request.POST.get('radio2')
                 url = request.POST.get('url')
                 icon = request.POST.get('icon')
+                app_list = request.POST.getlist('app', '')
                 try:
                     id = int(id)
                 except:
@@ -1504,6 +1649,16 @@ def function(request, funid):
                             funsave.icon = icon
                             funsave.sort = sort if sort else None
                             funsave.save()
+
+                            # 存入多对多app
+                            for app_id in app_list:
+                                try:
+                                    app_id = int(app_id)
+                                    my_app = all_app.get(id=app_id)
+                                    funsave.app.add(my_app)
+                                except ValueError:
+                                    raise Http404()
+
                             title = name
                             id = funsave.id
                             selectid = id
@@ -1511,13 +1666,36 @@ def function(request, funid):
                             funsave = Fun.objects.get(id=id)
                             if funsave.funtype == "node" and mytype == "fun" and len(funsave.children.all()) > 0:
                                 errors.append('节点下还有其他节点或功能，无法修改为功能。')
+                            elif mytype == "node" and funsave.app.exists():
+                                errors.append('功能下有关联应用，无法修改为节点。')
                             else:
                                 funsave.name = name
                                 funsave.funtype = mytype
                                 funsave.url = url
                                 funsave.icon = icon
                                 funsave.save()
+
+                                funsave.app.clear()
+                                for app_id in app_list:
+                                    try:
+                                        app_id = int(app_id)
+                                        my_app = all_app.get(id=app_id)
+                                        funsave.app.add(my_app)
+                                    except ValueError:
+                                        raise Http404()
                                 title = name
+                        # 保存成功后，重新刷新页面，重新构造app_select_list
+                        for c_app in all_app:
+                            pre_app_select_list.append({
+                                "app_name": c_app.name,
+                                "id": c_app.id,
+                                "app_state": "selected" if str(c_app.id) in app_list else ""
+                            })
+                        if mytype == "node":
+                            app_hidden_div = "hidden"
+                        else:
+                            app_hidden_div = ""
+
                     except:
                         errors.append('保存失败。')
             treedata = []
@@ -1528,8 +1706,26 @@ def function(request, funid):
                     root["text"] = rootnode.name
                     root["id"] = rootnode.id
                     root["type"] = "node"
+
+                    # 当前节点的所有外键
+                    all_app_list = rootnode.app.select_related().all()
+                    c_app_list = []
+                    for c_app in all_app_list:
+                        c_app_list.append(c_app.id)
+                    app_select_list = []
+                    for app in all_app:
+                        app_select_list.append({
+                            "app_name": app.name,
+                            "id": app.id,
+                            "app_state": "selected" if app.id in c_app_list else ""
+                        })
+
                     root["data"] = {"url": rootnode.url,
-                                    "icon": rootnode.icon, "pname": "无"}
+                                    "icon": rootnode.icon,
+                                     "pname": "无",
+                                     "app_list": app_select_list,
+                                     "app_div_show": True if rootnode.funtype == "fun" else False
+                                    }
                     try:
                         if int(selectid) == rootnode.id:
                             root["state"] = {"opened": True, "selected": True}
@@ -1537,13 +1733,15 @@ def function(request, funid):
                             root["state"] = {"opened": True}
                     except:
                         root["state"] = {"opened": True}
-                    root["children"] = get_fun_tree(rootnode, selectid)
+                    root["children"] = get_fun_tree(rootnode, selectid, all_app)
                     treedata.append(root)
+
             treedata = json.dumps(treedata)
             return render(request, 'function.html',
                           {'username': request.user.userinfo.fullname, 'errors': errors, "id": id,
                            "pid": pid, "pname": pname, "name": name, "url": url, "icon": icon, "title": title,
                            "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata,
+                           "app_select_list": pre_app_select_list, "app_hidden_div":app_hidden_div,
                            "pagefuns": getpagefuns(funid, request=request)})
         except Exception as e:
             print(e)

@@ -124,8 +124,6 @@ $(function() {
             $("#code").val(data.node.data.code);
             $("#sort").val(data.node.data.sort);
             $("#connection").val(data.node.data.connection);
-            // 所属数据库
-            $("#p_name").val(data.node.data.p_name);
 
             var eventNodeName = event.target.nodeName;
             var eventNodeName = event.target.nodeName;

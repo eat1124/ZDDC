@@ -93,7 +93,7 @@
                             <div class="col-md-10">
                                 <select class="form-control" id="storage_type" name="storage_type">
                                     {% for storage_type in storage_type_list %}
-                                    <option value="{{storage_type}}">{{storage_type}}</option>
+                                    <option value="{{storage_type.storage_type_id}}">{{storage_type.storage_name}}</option>
                                     {% endfor %}
                                 </select>
                                 <div class="form-control-focus"></div>
@@ -108,7 +108,7 @@
                             <div class="col-md-10">
                                 <select class="form-control" id="valid_time" name="valid_time">
                                     {% for vt in valid_time_list %}
-                                    <option value="{{vt}}">{{vt}}</option>
+                                    <option value="{{vt.valid_time_id}}">{{vt.valid_time}}</option>
                                     {% endfor %}
                                 </select>
                                 <div class="form-control-focus"></div>

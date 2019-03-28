@@ -83,7 +83,16 @@
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>
-
+                            <div class="form-group" id="app_div" {{app_hidden_div}}>
+                                <label class="col-md-2 control-label" for="form_control_1">应用</label>
+                                <div class="col-md-10">
+                                    <select id="app" name="app" placeholder="默认" class="form-control select2" multiple>
+                                        {% for app in app_select_list %}
+                                            <option {{app.app_state}} value="{{app.id}}">{{app.app_name}} </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
 
                         </div>
                         <div class="form-actions noborder" style="margin-top:-30px;text-align:center">
