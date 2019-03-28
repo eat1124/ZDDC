@@ -1746,147 +1746,44 @@ def organization(request, funid):
                     password = request.POST.get('password', '')
                     newpassword = ""
                     editpassword = "hidden"
-                    if fullname.strip() == '':
-                        errors.append('用户姓名不能为空。')
-                    else:
+
+                    if id == 0:
+                        selectid = pid
+                        title = "新建"
+                        alluser = User.objects.filter(
+                            username=username)
                         if username.strip() == '':
                             errors.append('用户名不能为空。')
                         else:
                             if password.strip() == '':
                                 errors.append('密码不能为空。')
                             else:
-                                if id == 0:
-                                    selectid = pid
-                                    title = "新建"
-                                    alluser = User.objects.filter(
-                                        username=username)
-                                    if username.strip() == '':
-                                        errors.append('用户名不能为空。')
-                                    else:
-                                        if password.strip() == '':
-                                            errors.append('密码不能为空。')
-                                        else:
-                                            if fullname.strip() == '':
-                                                errors.append('姓名不能为空。')
-                                            else:
-                                                if (len(alluser) > 0):
-                                                    errors.append(
-                                                        '用户名:' + username + '已存在。')
-                                                else:
-                                                    try:
-                                                        newuser = User()
-                                                        newuser.username = username
-                                                        newuser.set_password(
-                                                            password)
-                                                        newuser.email = email
-                                                        newuser.save()
-                                                        # 用户扩展信息 profile
-                                                        profile = UserInfo()  # e*************************
-                                                        profile.user_id = newuser.id
-                                                        profile.phone = phone
-                                                        profile.fullname = fullname
-                                                        try:
-                                                            porg = UserInfo.objects.get(
-                                                                id=pid)
-                                                        except:
-                                                            raise Http404()
-                                                        profile.pnode = porg
-                                                        profile.usertype = "user"
-                                                        sort = 1
-                                                        try:
-                                                            maxorg = UserInfo.objects.filter(
-                                                                pnode=porg).latest('sort')
-                                                            sort = maxorg.sort + 1
-                                                        except:
-                                                            pass
-                                                        profile.sort = sort
-                                                        profile.save()
-                                                        for group in grouplist:
-                                                            try:
-                                                                group = int(
-                                                                    group)
-                                                                mygroup = allgroup.get(
-                                                                    id=group)
-                                                                profile.group.add(
-                                                                    mygroup)
-                                                            except ValueError:
-                                                                raise Http404()
-                                                        title = fullname
-                                                        selectid = profile.id
-                                                        id = profile.id
-                                                        newpassword = "hidden"
-                                                        editpassword = ""
-                                                    except ValueError:
-                                                        raise Http404()
+                                if fullname.strip() == '':
+                                    errors.append('姓名不能为空。')
                                 else:
-                                    selectid = id
-                                    title = fullname
-                                    exalluser = User.objects.filter(
-                                        username=username)
-                                    if username.strip() == '':
-                                        errors.append('用户名不能为空。')
-                                    else:
-                                        if fullname.strip() == '':
-                                            errors.append('姓名不能为空。')
-                                        else:
-                                            if (len(exalluser) > 0 and exalluser[0].userinfo.id != id):
-                                                errors.append(
-                                                    '用户名:' + username + '已存在。')
-                                            else:
-                                                try:
-                                                    alluserinfo = UserInfo.objects.get(
-                                                        id=id)
-                                                    alluser = alluserinfo.user
-                                                    alluser.email = email
-                                                    alluser.save()
-                                                    # 用户扩展信息 profile
-                                                    alluserinfo.phone = phone
-                                                    alluserinfo.fullname = fullname
-                                                    alluserinfo.save()
-                                                    alluserinfo.group.clear()
-                                                    for group in grouplist:
-                                                        try:
-                                                            group = int(group)
-                                                            mygroup = allgroup.get(
-                                                                id=group)
-                                                            alluserinfo.group.add(
-                                                                mygroup)
-                                                        except ValueError:
-                                                            raise Http404()
-                                                    title = fullname
-                                                except:
-                                                    errors.append('保存失败。')
-                else:
-                    if 'orgsave' in request.POST:
-                        hiddenuser = "hidden"
-                        hiddenorg = ""
-                        pname = request.POST.get('orgpname')
-                        orgname = request.POST.get('orgname', '')
-                        remark = request.POST.get('remark', '')
-                        if orgname.strip() == '':
-                            errors.append('组织名称不能为空。')
-                        else:
-                            if id == 0:
-                                selectid = pid
-                                title = "新建"
-                                try:
-                                    porg = UserInfo.objects.get(id=pid)
-                                except:
-                                    raise Http404()
-                                allorg = UserInfo.objects.filter(
-                                    fullname=orgname, pnode=porg)
-                                if orgname.strip() == '':
-                                    errors.append('组织名称不能为空。')
-                                else:
-                                    if (len(allorg) > 0):
-                                        errors.append(orgname + '已存在。')
+                                    if (len(alluser) > 0):
+                                        errors.append(
+                                            '用户名:' + username + '已存在。')
                                     else:
                                         try:
+                                            newuser = User()
+                                            newuser.username = username
+                                            newuser.set_password(
+                                                password)
+                                            newuser.email = email
+                                            newuser.save()
+                                            # 用户扩展信息 profile
                                             profile = UserInfo()  # e*************************
-                                            profile.fullname = orgname
+                                            profile.user_id = newuser.id
+                                            profile.phone = phone
+                                            profile.fullname = fullname
+                                            try:
+                                                porg = UserInfo.objects.get(
+                                                    id=pid)
+                                            except:
+                                                raise Http404()
                                             profile.pnode = porg
-                                            profile.remark = remark
-                                            profile.usertype = "org"
+                                            profile.usertype = "user"
                                             sort = 1
                                             try:
                                                 maxorg = UserInfo.objects.filter(
@@ -1896,35 +1793,128 @@ def organization(request, funid):
                                                 pass
                                             profile.sort = sort
                                             profile.save()
-                                            title = orgname
+                                            for group in grouplist:
+                                                try:
+                                                    group = int(
+                                                        group)
+                                                    mygroup = allgroup.get(
+                                                        id=group)
+                                                    profile.group.add(
+                                                        mygroup)
+                                                except ValueError:
+                                                    raise Http404()
+                                            title = fullname
                                             selectid = profile.id
                                             id = profile.id
+                                            newpassword = "hidden"
+                                            editpassword = ""
                                         except ValueError:
                                             raise Http404()
+                    else:
+                        selectid = id
+                        title = fullname
+                        exalluser = User.objects.filter(
+                            username=username)
+                        if username.strip() == '':
+                            errors.append('用户名不能为空。')
+                        else:
+                            if fullname.strip() == '':
+                                errors.append('姓名不能为空。')
                             else:
-                                selectid = id
-                                title = orgname
-                                try:
-                                    porg = UserInfo.objects.get(id=pid)
-                                except:
-                                    raise Http404()
-                                exalluser = UserInfo.objects.filter(
-                                    fullname=orgname, pnode=porg).exclude(state="9")
-                                if orgname.strip() == '':
-                                    errors.append('组织名称不能为空。')
+                                if (len(exalluser) > 0 and exalluser[0].userinfo.id != id):
+                                    errors.append(
+                                        '用户名:' + username + '已存在。')
                                 else:
-                                    if (len(exalluser) > 0 and exalluser[0].id != id):
-                                        errors.append(username + '已存在。')
-                                    else:
+                                    try:
+                                        alluserinfo = UserInfo.objects.get(
+                                            id=id)
+                                        alluser = alluserinfo.user
+                                        alluser.email = email
+                                        alluser.save()
+                                        # 用户扩展信息 profile
+                                        alluserinfo.phone = phone
+                                        alluserinfo.fullname = fullname
+                                        alluserinfo.save()
+                                        alluserinfo.group.clear()
+                                        for group in grouplist:
+                                            try:
+                                                group = int(group)
+                                                mygroup = allgroup.get(
+                                                    id=group)
+                                                alluserinfo.group.add(
+                                                    mygroup)
+                                            except ValueError:
+                                                raise Http404()
+                                        title = fullname
+                                    except:
+                                        errors.append('保存失败。')
+                else:
+                    if 'orgsave' in request.POST:
+                        hiddenuser = "hidden"
+                        hiddenorg = ""
+                        pname = request.POST.get('orgpname')
+                        orgname = request.POST.get('orgname', '')
+                        remark = request.POST.get('remark', '')
+
+                        if id == 0:
+                            selectid = pid
+                            title = "新建"
+                            try:
+                                porg = UserInfo.objects.get(id=pid)
+                            except:
+                                raise Http404()
+                            allorg = UserInfo.objects.filter(
+                                fullname=orgname, pnode=porg)
+                            if orgname.strip() == '':
+                                errors.append('组织名称不能为空。')
+                            else:
+                                if (len(allorg) > 0):
+                                    errors.append(orgname + '已存在。')
+                                else:
+                                    try:
+                                        profile = UserInfo()  # e*************************
+                                        profile.fullname = orgname
+                                        profile.pnode = porg
+                                        profile.remark = remark
+                                        profile.usertype = "org"
+                                        sort = 1
                                         try:
-                                            alluserinfo = UserInfo.objects.get(
-                                                id=id)
-                                            alluserinfo.fullname = orgname
-                                            alluserinfo.remark = remark
-                                            alluserinfo.save()
-                                            title = orgname
+                                            maxorg = UserInfo.objects.filter(
+                                                pnode=porg).latest('sort')
+                                            sort = maxorg.sort + 1
                                         except:
-                                            errors.append('保存失败。')
+                                            pass
+                                        profile.sort = sort
+                                        profile.save()
+                                        title = orgname
+                                        selectid = profile.id
+                                        id = profile.id
+                                    except ValueError:
+                                        raise Http404()
+                        else:
+                            selectid = id
+                            title = orgname
+                            try:
+                                porg = UserInfo.objects.get(id=pid)
+                            except:
+                                raise Http404()
+                            exalluser = UserInfo.objects.filter(
+                                fullname=orgname, pnode=porg).exclude(state="9")
+                            if orgname.strip() == '':
+                                errors.append('组织名称不能为空。')
+                            else:
+                                if (len(exalluser) > 0 and exalluser[0].id != id):
+                                    errors.append(username + '已存在。')
+                                else:
+                                    try:
+                                        alluserinfo = UserInfo.objects.get(
+                                            id=id)
+                                        alluserinfo.fullname = orgname
+                                        alluserinfo.remark = remark
+                                        alluserinfo.save()
+                                        title = orgname
+                                    except:
+                                        errors.append('保存失败。')
             treedata = []
             rootnodes = UserInfo.objects.order_by("sort").exclude(
                 state="9").filter(pnode=None, usertype="org")
