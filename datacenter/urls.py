@@ -72,7 +72,7 @@ urlpatterns = [
     url(r'^target/$', target_index, {'funid': '23'}),
     url(r'^target_data/$', target_data),
     url(r'^target_save/$', storage_save),
-    url(r'^target_del/$', storage_del),
+    url(r'^target_del/$', target_del),
 
     # 场景管理
     url(r'^scene/$', scene, {'funid': '70'}),

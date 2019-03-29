@@ -8,10 +8,11 @@ $(document).ready(function () {
             {"data": "id"},
             {"data": "name"},
             {"data": "code"},
-            {"data": "tablename"},
-            {"data": "storagetype"},
-            {"data": "validtime"},
-            {"data": "sort"},
+            {"data": "operationtype_name"},
+            {"data": "cycletype_name"},
+            {"data": "businesstype_name"},
+            {"data": "unit_name"},
+            {"data": "adminapp_name"},
             {"data": null}
         ],
 
@@ -44,7 +45,7 @@ $(document).ready(function () {
             var data = table.row($(this).parents('tr')).data();
             $.ajax({
                 type: "POST",
-                url: "../storage_del/",
+                url: "../target_del/",
                 data:
                     {
                         id: data.id,
@@ -75,9 +76,48 @@ $(document).ready(function () {
         $("#valid_time").val(data.validtime_num);
         $("#sort").val(data.sort);
     });
-    $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit').change(function () {
+
+    $("#new").click(function () {
+        $("#id").val("0");
+        $("#storage_name").val("");
+        $("#storage_code").val("");
+        $("#table_name").val("");
+        $("#storage_type").val("");
+        $("#valid_time").val("");
+        $("#sort").val("");
+    });
+
+    $('#save').click(function () {
         var table = $('#sample_1').DataTable();
-        table.ajax.url("../target_data?search_adminapp=" + $('#search_adminapp').val() + "&search_app=" + $('#search_app').val() + "&search_operationtype=" + $('#search_operationtype').val() + "&search_cycletype=" + $('#search_cycletype').val() + "&search_businesstype=" + $('#search_businesstype').val() + "&search_unit=" + $('#search_unit').val()).load();
+
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../storage_save/",
+            data:
+                {
+                    id: $("#id").val(),
+                    storage_name: $("#storage_name").val(),
+                    storage_code: $("#storage_code").val(),
+                    table_name: $("#table_name").val(),
+                    storage_type: $("#storage_type").val(),
+                    valid_time: $("#valid_time").val(),
+                    sort: $("#sort").val(),
+                },
+            success: function (data) {
+                var myres = data["res"];
+                var mydata = data["data"];
+                if (myres == "保存成功。") {
+                    $("#id").val(data["data"]);
+                    $('#static').modal('hide');
+                    table.ajax.reload();
+                }
+                alert(myres);
+            },
+            error: function (e) {
+                alert("页面出现错误，请于管理员联系。");
+            }
+        });
     })
 
     $('#error').click(function () {

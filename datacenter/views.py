@@ -374,20 +374,22 @@ def storage_data(request):
         result = []
         all_storage = Storage.objects.exclude(state="9").order_by("sort")
         for storage in all_storage:
-
-            storagetype_dict_list = DictList.objects.filter(id=int(storage.storagetype))
-            if storagetype_dict_list.exists():
-                storagetype_dict_list = storagetype_dict_list[0]
-                storagetype = storagetype_dict_list.name
-            else:
-                storagetype = ""
-
-            validtime_dict_list = DictList.objects.filter(id=int(storage.validtime))
-            if validtime_dict_list.exists():
-                validtime_dict_list = validtime_dict_list[0]
-                validtime = validtime_dict_list.name
-            else:
-                validtime = ""   
+            storagetype = storage.storagetype
+            try:
+                storagetype_dict_list = DictList.objects.filter(id=int(storage.storagetype))
+                if storagetype_dict_list.exists():
+                    storagetype_dict_list = storagetype_dict_list[0]
+                    storagetype = storagetype_dict_list.name
+            except:
+                pass
+            storagetype = storage.validtime
+            try:
+                validtime_dict_list = DictList.objects.filter(id=int(storage.validtime))
+                if validtime_dict_list.exists():
+                    validtime_dict_list = validtime_dict_list[0]
+                    validtime = validtime_dict_list.name
+            except:
+                pass
 
             result.append({
                 "id": storage.id,
@@ -1024,17 +1026,105 @@ def target_data(request):
         if search_unit != "":
             all_target = all_target.filter(unit=search_unit)
 
-        # for cycle in all_cycle:
-        #     result.append({
-        #         "id": cycle.id,
-        #         "name": cycle.name,
-        #         "code": cycle.code,
-        #         "minutes": cycle.minutes,
-        #         "create_date": cycle.creatdate.strftime('%Y-%m-%d %H:%M:%S') if cycle.creatdate else "",
-        #         "sort": cycle.sort,
-        #     })
+        for target in all_target:
+            operationtype = target.operationtype
+            try:
+                operationtype_dict_list = DictList.objects.filter(id=int(target.operationtype))
+                if operationtype_dict_list.exists():
+                    operationtype_dict_list = operationtype_dict_list[0]
+                    operationtype = operationtype_dict_list.name
+            except:
+                pass
+
+            cycletype = target.cycletype
+            try:
+                cycletype_dict_list = DictList.objects.filter(id=int(target.cycletype))
+                if cycletype_dict_list.exists():
+                    cycletype_dict_list = cycletype_dict_list[0]
+                    cycletype = cycletype_dict_list.name
+            except:
+                pass
+
+            businesstype=target.businesstype
+            try:
+                businesstype_dict_list = DictList.objects.filter(id=int(target.businesstype))
+                if businesstype_dict_list.exists():
+                    businesstype_dict_list = businesstype_dict_list[0]
+                    businesstype = businesstype_dict_list.name
+            except:
+                pass
+
+            unit = target.unit
+            try:
+                unit_dict_list = DictList.objects.filter(id=int(target.unit))
+                if unit_dict_list.exists():
+                    unit_dict_list = unit_dict_list[0]
+                    unit = unit_dict_list.name
+            except:
+                pass
+
+            adminapp = target.adminapp
+            try:
+                adminapp_list = App.objects.filter(id=int(target.adminapp))
+                if adminapp_list.exists():
+                    adminapp_list = adminapp_list[0]
+                    adminapp = adminapp_list.name
+            except:
+                pass
+
+            result.append({
+                "operationtype_name":operationtype,
+                "cycletype_name":cycletype,
+                "businesstype_name":businesstype,
+                "unit_name":unit,
+                "adminapp_name":adminapp,
+                "id":target.id,
+                "name":target.name,
+                "code":target.code,
+                "operationtype":target.operationtype,
+                "cycletype":target.cycletype,
+                "businesstype":target.businesstype,
+                "unit":target.unit,
+                "adminapp":target.adminapp,
+                "app":target.app,
+                "magnification":target.magnification,
+                "digit":target.digit,
+                "cumulative":target.cumulative,
+                "upperlimit":target.upperlimit ,
+                "lowerlimit":target.lowerlimit,
+                "formula":target.formula,
+                "cycle":target.cycle,
+                "source":target.source,
+                "sourcetable":target.sourcetable,
+                "sourcefields":target.sourcefields,
+                "sourceconditions":target.sourceconditions,
+                "sourcesis":target.sourcesis,
+                "storage":target.storage,
+                "storagefields":target.storagefields,
+                "storagetag":target.storagetag,
+                "sort":target.sort,
+                "state":target.state,
+                "remark":target.remark,
+            })
 
         return JsonResponse({"data": result})
+
+
+def target_del(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            id = request.POST.get('id', '')
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+            target = Target.objects.get(id=id)
+            target.state = "9"
+            target.save()
+
+            return HttpResponse(1)
+        else:
+            return HttpResponse(0)
 
 
 def getfun(myfunlist, fun):
