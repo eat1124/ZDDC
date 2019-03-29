@@ -119,3 +119,27 @@ class Target(models.Model):
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
     remark = models.CharField("说明", blank=True, null=True, max_length=2000)
+
+
+class ReportModel(models.Model):
+    """
+    报表模板
+    """
+    app = models.ForeignKey(App)
+    name = models.CharField("报表名称", max_length=100)
+    code = models.CharField("报表编码", blank=True, max_length=50)
+    file_name = models.CharField("文件名称", blank=True, null=True, max_length=50)
+    report_type = models.CharField("报表类型", blank=True, null=True, max_length=20)
+    sort = models.IntegerField("排序", blank=True, null=True)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+
+
+class ReportInfo(models.Model):
+    """
+    报表所需信息
+    """
+    report_model = models.ForeignKey(ReportModel)
+    name = models.CharField("信息名称", max_length=100)
+    default_value = models.CharField("默认值", max_length=100)
+    sort = models.IntegerField("排序", blank=True, null=True)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)

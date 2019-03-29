@@ -74,6 +74,10 @@ urlpatterns = [
     url(r'^target_save/$', storage_save),
     url(r'^target_del/$', target_del),
 
+    url(r'^report/$', report_index, {'funid': '24'}),
+    url(r'^report_data/$', report_data),
+    url(r'^report_del/$', report_del),
+
     # 场景管理
     url(r'^scene/$', scene, {'funid': '70'}),
     url(r'^scenedel/$', scenedel),

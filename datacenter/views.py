@@ -48,6 +48,210 @@ info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Ad
         "lastlogin": 0}
 
 
+def report_index(request, funid):
+    """
+    存储配置
+    """
+    if request.user.is_authenticated():
+        errors = []
+        id = ""
+        report_type_list = []
+
+        c_dict_index_1 = DictIndex.objects.filter(
+            id=10).exclude(state='9')
+        if c_dict_index_1.exists():
+            c_dict_index_1 = c_dict_index_1[0]
+            dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
+            for i in dict_list1:
+                report_type_list.append({
+                    "report_name": i.name,
+                    "report_type_id": i.id,
+                })
+        # 所有应用
+        all_app = App.objects.exclude(state="9")
+        all_app_list = []
+        for app in all_app:
+            all_app_list.append({
+                "app_id": app.id,
+                "app_name": app.name,
+            })
+        if request.method == "POST":
+            id = request.POST.get("id", "")
+            name = request.POST.get("name", "")
+            code = request.POST.get("code", "")
+            report_type = request.POST.get("report_type", "")
+            app = request.POST.get("app", "")
+            sort = request.POST.get("sort", "")
+            my_file = request.FILES.get("report_file", None)
+            file_name = my_file.name if my_file else ""
+
+            report_info_num = 0
+            for key in request.POST.keys():
+                if "report_info_" in key:
+                    report_info_num += 1
+
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+
+            if not my_file:
+                errors.append("请选择要导入的文件。")
+            else:
+                if if_contains_sign(my_file.name):
+                    errors.append(r"""请注意文件命名格式，'\/"*?<>'符号文件不允许上传。""")
+                else:
+                    myfilepath = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + my_file.name
+                    # 需要修改：判断服务器上是否存在该文件
+                    c_exist_model = ReportModel.objects.filter(file_name=my_file.name).exclude(state="9")
+
+                    if os.path.exists(myfilepath) or c_exist_model.exists():
+                        errors.append("该文件已存在,请勿重复上传。")
+                    else:
+                        if name.strip() == '':
+                            errors.append('报表名称不能为空。')
+                        else:
+                            if code.strip() == '':
+                                errors.append('报表编码不能为空。')
+                            else:
+                                if report_type.strip() == '':
+                                    errors.append('报表类别不能为空。')
+                                else:
+                                    if app.strip() == '':
+                                        errors.append('关联应用不能为空。')
+                                    else:
+                                        # 上传文件
+                                        with open(myfilepath, 'wb+') as f:
+                                            for chunk in my_file.chunks():  # 分块写入文件
+                                                f.write(chunk)
+                                        # 在修改上传文件时需要做些操作
+                                        if id == 0:
+                                            all_report = ReportModel.objects.filter(
+                                                code=code).exclude(state="9")
+                                            if all_report.exists():
+                                                errors.append('报表编码:' + code + '已存在。')
+                                            else:
+                                                report_save = ReportModel()
+                                                report_save.name = name
+                                                report_save.code = code
+                                                report_save.report_type = report_type
+                                                report_save.app_id = int(app)
+                                                report_save.file_name = file_name
+                                                report_save.sort = int(sort) if sort else None
+                                                report_save.save()
+
+                                                if report_info_num:
+                                                    range_num = int(report_info_num / 2)
+                                                    for i in range(0, range_num):
+                                                        report_info = ReportInfo()
+                                                        report_info.name = request.POST.get(
+                                                            "report_info_name_%d" % (i + 1), "")
+                                                        report_info.default_value = request.POST.get(
+                                                            "report_info_value_%d" % (i + 1), "")
+                                                        report_info.report_model = report_save
+                                                        report_info.save()
+
+                                                errors.append("保存成功。")
+                                                id = report_save.id
+                                        else:
+                                            all_report = ReportModel.objects.filter(code=code).exclude(
+                                                id=id).exclude(state="9")
+                                            if all_report.exists():
+                                                errors.append('存储编码:' + code + '已存在。')
+                                            else:
+                                                try:
+                                                    report_save = ReportModel.objects.get(
+                                                        id=id)
+                                                    report_save.name = name
+                                                    report_save.code = code
+                                                    report_save.report_type = report_type
+                                                    report_save.app_id = int(app)
+                                                    report_save.file_name = file_name
+                                                    report_save.sort = int(sort) if sort else None
+                                                    report_save.save()
+
+                                                    if report_info_num:
+                                                        range_num = int(report_info_num / 2)
+                                                        for i in range(0, range_num):
+                                                            report_info = ReportInfo()
+                                                            report_info.name = request.POST.get(
+                                                                "report_info_name_%d" % (i + 1), "")
+                                                            report_info.default_value = request.POST.get(
+                                                                "report_info_value_%d" % (i + 1), "")
+                                                            report_info.report_model = report_save
+                                                            report_info.save()
+
+                                                    errors.append("保存成功。")
+                                                    id = report_save.id
+                                                except:
+                                                    errors.append("修改失败。")
+
+        return render(request, 'report.html',
+                      {'username': request.user.userinfo.fullname,
+                       "report_type_list": report_type_list,
+                       "all_app_list": all_app_list,
+                       "errors": errors,
+                       "id": id,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def report_data(request):
+    if request.user.is_authenticated():
+        result = []
+        all_report = ReportModel.objects.exclude(state="9").order_by("sort")
+        for report in all_report:
+            # 报表类型
+            report_type = report.report_type
+            try:
+                report_type_dict_list = DictList.objects.filter(id=int(report.report_type))
+                if report_type_dict_list.exists():
+                    report_type_dict_list = report_type_dict_list[0]
+                    report_type = report_type_dict_list.name
+            except:
+                pass
+
+            result.append({
+                "id": report.id,
+                "name": report.name,
+                "code": report.code,
+                "file_name": report.file_name,
+                "report_type": report_type,
+                "report_type_id": int(report.report_type) if report.report_type else "",
+                "app": report.app.name,
+                "app_id": report.app.id,
+                "report_type_num": report.report_type,
+                "sort": report.sort,
+            })
+
+        return JsonResponse({"data": result})
+
+
+def report_del(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            id = request.POST.get('id', '')
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+            report = ReportModel.objects.get(id=id)
+            report.state = "9"
+            report.save()
+
+            report_info_list = report.reportinfo_set.exclude(state="9")
+            for report_info in report_info_list:
+                report_info.state = "9"
+                report_info.save()
+
+            # 删除远程服务器文件
+
+            return HttpResponse(1)
+        else:
+            return HttpResponse(0)
+
+
 def app_save(request):
     if request.user.is_authenticated():
         id = request.POST.get("id", "")
@@ -346,9 +550,9 @@ def storage_index(request, funid):
             dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
             for i in dict_list1:
                 storage_type_list.append({
-                        "storage_name":i.name,
-                        "storage_type_id": i.id,
-                    })
+                    "storage_name": i.name,
+                    "storage_type_id": i.id,
+                })
 
         c_dict_index_2 = DictIndex.objects.filter(
             id=5).exclude(state='9')
@@ -357,9 +561,9 @@ def storage_index(request, funid):
             dict_list2 = c_dict_index_2.dictlist_set.exclude(state="9")
             for i in dict_list2:
                 valid_time_list.append({
-                        "valid_time":i.name,
-                        "valid_time_id": i.id,
-                    })
+                    "valid_time": i.name,
+                    "valid_time_id": i.id,
+                })
         return render(request, 'storage.html',
                       {'username': request.user.userinfo.fullname,
                        "storage_type_list": storage_type_list,
@@ -443,7 +647,7 @@ def storage_save(request):
                                     code=storage_code).exclude(state="9")
                                 if (len(all_storage) > 0):
                                     result["res"] = '存储代码:' + \
-                                        storage_code + '已存在。'
+                                                    storage_code + '已存在。'
                                 else:
                                     storage_save = Storage()
                                     storage_save.name = storage_name
@@ -460,7 +664,7 @@ def storage_save(request):
                                     id=id).exclude(state="9")
                                 if (len(all_storage) > 0):
                                     result["res"] = '存储代码:' + \
-                                        storage_code + '已存在。'
+                                                    storage_code + '已存在。'
                                 else:
                                     try:
                                         storage_save = Storage.objects.get(
@@ -949,9 +1153,9 @@ def target_index(request, funid):
             dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
             for i in dict_list1:
                 operation_type_list.append({
-                        "operation_type_name":i.name,
-                        "operation_type_id": i.id,
-                    })
+                    "operation_type_name": i.name,
+                    "operation_type_id": i.id,
+                })
 
         c_dict_index_2 = DictIndex.objects.filter(
             id=7).exclude(state='9')
@@ -982,12 +1186,12 @@ def target_index(request, funid):
             dict_list4 = c_dict_index_4.dictlist_set.exclude(state="9")
             for i in dict_list4:
                 unit_list.append({
-                        "unit_name":i.name,
-                        "unit_id": i.id,
-                    })
+                    "unit_name": i.name,
+                    "unit_id": i.id,
+                })
         return render(request, 'target.html',
                       {'username': request.user.userinfo.fullname,
-                       "app_list":app_list,
+                       "app_list": app_list,
                        "operation_type_list": operation_type_list,
                        "cycle_type_list": cycle_type_list,
                        "business_type_list": business_type_list,
@@ -1001,7 +1205,7 @@ def target_data(request):
     if request.user.is_authenticated():
 
         result = []
-        search_adminapp = request.POST.getlist('search_adminapp','')
+        search_adminapp = request.POST.getlist('search_adminapp', '')
         search_app = request.GET.get('search_app', '')
         search_operationtype = request.GET.get('search_operationtype', '')
         search_cycletype = request.GET.get('search_cycletype', '')
@@ -1009,11 +1213,11 @@ def target_data(request):
         search_unit = request.GET.get('search_unit', '')
 
         all_target = Target.objects.exclude(state="9").order_by("sort")
-        if search_adminapp!="":
+        if search_adminapp != "":
             all_target = all_target.filter(adminapp=int(search_adminapp))
-        if search_app!="" and search_app!="null":
-            apps=[]
-            search_app=search_app.split(',')
+        if search_app != "" and search_app != "null":
+            apps = []
+            search_app = search_app.split(',')
             for app in search_app:
                 apps.append(int(app))
             all_target = all_target.filter(app__in=apps)
@@ -1045,7 +1249,7 @@ def target_data(request):
             except:
                 pass
 
-            businesstype=target.businesstype
+            businesstype = target.businesstype
             try:
                 businesstype_dict_list = DictList.objects.filter(id=int(target.businesstype))
                 if businesstype_dict_list.exists():
@@ -1073,38 +1277,38 @@ def target_data(request):
                 pass
 
             result.append({
-                "operationtype_name":operationtype,
-                "cycletype_name":cycletype,
-                "businesstype_name":businesstype,
-                "unit_name":unit,
-                "adminapp_name":adminapp,
-                "id":target.id,
-                "name":target.name,
-                "code":target.code,
-                "operationtype":target.operationtype,
-                "cycletype":target.cycletype,
-                "businesstype":target.businesstype,
-                "unit":target.unit,
-                "adminapp":target.adminapp,
-                "app":target.app,
-                "magnification":target.magnification,
-                "digit":target.digit,
-                "cumulative":target.cumulative,
-                "upperlimit":target.upperlimit ,
-                "lowerlimit":target.lowerlimit,
-                "formula":target.formula,
-                "cycle":target.cycle,
-                "source":target.source,
-                "sourcetable":target.sourcetable,
-                "sourcefields":target.sourcefields,
-                "sourceconditions":target.sourceconditions,
-                "sourcesis":target.sourcesis,
-                "storage":target.storage,
-                "storagefields":target.storagefields,
-                "storagetag":target.storagetag,
-                "sort":target.sort,
-                "state":target.state,
-                "remark":target.remark,
+                "operationtype_name": operationtype,
+                "cycletype_name": cycletype,
+                "businesstype_name": businesstype,
+                "unit_name": unit,
+                "adminapp_name": adminapp,
+                "id": target.id,
+                "name": target.name,
+                "code": target.code,
+                "operationtype": target.operationtype,
+                "cycletype": target.cycletype,
+                "businesstype": target.businesstype,
+                "unit": target.unit,
+                "adminapp": target.adminapp,
+                "app": target.app,
+                "magnification": target.magnification,
+                "digit": target.digit,
+                "cumulative": target.cumulative,
+                "upperlimit": target.upperlimit,
+                "lowerlimit": target.lowerlimit,
+                "formula": target.formula,
+                "cycle": target.cycle,
+                "source": target.source,
+                "sourcetable": target.sourcetable,
+                "sourcefields": target.sourcefields,
+                "sourceconditions": target.sourceconditions,
+                "sourcesis": target.sourcesis,
+                "storage": target.storage,
+                "storagefields": target.storagefields,
+                "storagetag": target.storagetag,
+                "sort": target.sort,
+                "state": target.state,
+                "remark": target.remark,
             })
 
         return JsonResponse({"data": result})
@@ -1310,7 +1514,7 @@ def get_process_index_data(request):
                             percent = "100"
                         else:
                             percent = "%02d" % (
-                                c_step_run_index / len(all_steps) * 100)
+                                    c_step_run_index / len(all_steps) * 100)
                         # type 当前运行子流程  *************************************
                         # 流程结束后的当前步骤 >> 最后一个步骤
                         type = ""
@@ -1464,7 +1668,7 @@ def get_process_index_data(request):
             else:
                 done_num = 0
             process_rate = "%02d" % (
-                done_num / len(current_processrun.steprun_set.all()) * 100)
+                    done_num / len(current_processrun.steprun_set.all()) * 100)
 
             current_time = datetime.datetime.now()
             c_step_run_data = {
@@ -1569,7 +1773,7 @@ def get_daily_processrun(request):
                 process_run_id = process_run.id
                 # 进程url
                 processrun_url = "/processindex/" + \
-                    str(process_run.id) + "?s=true"
+                                 str(process_run.id) + "?s=true"
 
                 process_run_dict = {
                     "process_name": process_name,
@@ -1870,7 +2074,8 @@ def function(request, funid):
                             selectid = id
                         else:
                             funsave = Fun.objects.get(id=id)
-                            if funsave.funtype == "node" and mytype == "fun" and len(funsave.children.exclude(state="9")) > 0:
+                            if funsave.funtype == "node" and mytype == "fun" and len(
+                                    funsave.children.exclude(state="9")) > 0:
                                 errors.append('节点下还有其他节点或功能，无法修改为功能。')
                             elif mytype == "node" and funsave.app.exists():
                                 errors.append('功能下有关联应用，无法修改为节点。')
@@ -1928,9 +2133,9 @@ def function(request, funid):
 
                     root["data"] = {"url": rootnode.url,
                                     "icon": rootnode.icon,
-                                     "pname": "无",
-                                     "app_list": app_select_list,
-                                     "app_div_show": True if rootnode.funtype == "fun" else False
+                                    "pname": "无",
+                                    "app_list": app_select_list,
+                                    "app_div_show": True if rootnode.funtype == "fun" else False
                                     }
                     try:
                         if int(selectid) == rootnode.id:
@@ -1947,7 +2152,7 @@ def function(request, funid):
                           {'username': request.user.userinfo.fullname, 'errors': errors, "id": id,
                            "pid": pid, "pname": pname, "name": name, "url": url, "icon": icon, "title": title,
                            "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata,
-                           "app_select_list": pre_app_select_list, "app_hidden_div":app_hidden_div,
+                           "app_select_list": pre_app_select_list, "app_hidden_div": app_hidden_div,
                            "pagefuns": getpagefuns(funid, request=request)})
         except Exception as e:
             print(e)
@@ -3145,7 +3350,7 @@ def scriptsave(request):
                                                     state="9").filter(step_id=None)
                                                 if (len(allscript) > 0):
                                                     result["res"] = '脚本编码:' + \
-                                                        code + '已存在。'
+                                                                    code + '已存在。'
                                                 else:
                                                     scriptsave = Script()
                                                     scriptsave.code = code
@@ -3180,7 +3385,7 @@ def scriptsave(request):
                                                     id=id).exclude(state="9").filter(step_id=None)
                                                 if (len(allscript) > 0):
                                                     result["res"] = '脚本编码:' + \
-                                                        code + '已存在。'
+                                                                    code + '已存在。'
                                                 else:
                                                     try:
                                                         scriptsave = Script.objects.get(
@@ -3331,7 +3536,7 @@ def processscriptsave(request):
                                                     state="9").filter(step_id=pid)
                                                 if (len(allscript) > 0):
                                                     result["res"] = '脚本编码:' + \
-                                                        code + '已存在。'
+                                                                    code + '已存在。'
                                                 else:
                                                     steplist = Step.objects.filter(
                                                         drwaid=pid, process_id=processid)
@@ -3359,7 +3564,7 @@ def processscriptsave(request):
                                                     id=id).exclude(state="9").filter(step_id=pid)
                                                 if (len(allscript) > 0):
                                                     result["res"] = '脚本编码:' + \
-                                                        code + '已存在。'
+                                                                    code + '已存在。'
                                                 else:
                                                     try:
                                                         scriptsave = Script.objects.get(
@@ -3852,14 +4057,14 @@ def custom_step_tree(request):
                 script_string = ""
                 for script in scripts:
                     id_code_plus = str(script.id) + "+" + \
-                        str(script.name) + "&"
+                                   str(script.name) + "&"
                     script_string += id_code_plus
 
                 verify_items_string = ""
                 verify_items = rootnode.verifyitems_set.exclude(state="9")
                 for verify_item in verify_items:
                     id_name_plus = str(verify_item.id) + \
-                        "+" + str(verify_item.name) + "&"
+                                   "+" + str(verify_item.name) + "&"
                     verify_items_string += id_name_plus
                 root["text"] = rootnode.name
                 root["id"] = rootnode.id
@@ -4225,7 +4430,8 @@ def processdraw(request, offset, funid):
             state="9").filter(type="falconstor", level=2)
         allgroup = Group.objects.exclude(state="9")
         return render(request, 'processdraw.html',
-                      {'username': request.user.last_name + request.user.first_name, "allprocess": allprocess, "allgroup": allgroup, "pagefuns": getpagefuns(funid),
+                      {'username': request.user.last_name + request.user.first_name, "allprocess": allprocess,
+                       "allgroup": allgroup, "pagefuns": getpagefuns(funid),
                        "name": process.name, "id": process.id, "offset": offset, "sidebarclosed": True})
     else:
         return HttpResponseRedirect("/login")
@@ -4618,7 +4824,7 @@ def processdrawsave(request):
             to_node = int(line_step.tonode.split("demo_node_")[1])
             current_step = \
                 myprocess.step_set.filter(state="1", drwaid=to_node, intertype__in=[
-                                          "node", "task", "complex"])
+                    "node", "task", "complex"])
 
             if current_step.exists():
                 current_step = current_step[0]
@@ -4852,7 +5058,7 @@ def falconstorrun(request):
                                 exec_process.delay(myprocessrun.id)
                                 result["res"] = "新增成功。"
                                 result["data"] = "/processindex/" + \
-                                    str(myprocessrun.id)
+                                                 str(myprocessrun.id)
         return HttpResponse(json.dumps(result))
 
 
@@ -4937,7 +5143,7 @@ def falconstor_run_invited(request):
                         exec_process.delay(current_process_run.id)
                         result["res"] = "新增成功。"
                         result["data"] = process[0].url + \
-                            "/" + str(current_process_run.id)
+                                         "/" + str(current_process_run.id)
         else:
             result["res"] = '流程启动异常，请联系客服。'
 
@@ -5008,7 +5214,7 @@ def getrunsetps(request):
                 if process_state == "DONE" or process_state == "STOP":
                     try:
                         current_delta_time = (
-                            processruns[0].endtime - processruns[0].starttime).total_seconds()
+                                processruns[0].endtime - processruns[0].starttime).total_seconds()
                         m, s = divmod(current_delta_time, 60)
                         h, m = divmod(m, 60)
                         process_rto = "%d时%02d分%02d秒" % (h, m, s)
@@ -5018,7 +5224,7 @@ def getrunsetps(request):
                     start_time = processruns[0].starttime.replace(tzinfo=None)
                     current_time = datetime.datetime.now()
                     current_delta_time = (
-                        current_time - start_time).total_seconds()
+                            current_time - start_time).total_seconds()
                     m, s = divmod(current_delta_time, 60)
                     h, m = divmod(m, 60)
                     process_rto = "%d时%02d分%02d秒" % (h, m, s)
@@ -5033,7 +5239,7 @@ def getrunsetps(request):
                 else:
                     done_num = 0
                 process_rate = "%02d" % (
-                    done_num / len(processruns[0].steprun_set.all()) * 100)
+                        done_num / len(processruns[0].steprun_set.all()) * 100)
 
                 processresult["process_rate"] = process_rate
                 processresult[
@@ -5073,7 +5279,7 @@ def getrunsetps(request):
                         if c_process.exists():
                             c_process = c_process[0]
                             steps = c_process.step_set.filter(state="1", intertype__in=[
-                                                              "node", "task", "complex"])
+                                "node", "task", "complex"])
                             done_num = 0
                             run_num = 0
                             edit_num = 0
@@ -5118,7 +5324,7 @@ def getrunsetps(request):
                             if steprunlist[0].state == "DONE":
                                 try:
                                     current_delta_time = (
-                                        steprunlist[0].endtime - steprunlist[0].starttime).total_seconds()
+                                            steprunlist[0].endtime - steprunlist[0].starttime).total_seconds()
                                     m, s = divmod(current_delta_time, 60)
                                     h, m = divmod(m, 60)
                                     rto = "%d时%02d分%02d秒" % (h, m, s)
@@ -5129,7 +5335,7 @@ def getrunsetps(request):
                                     0].starttime else ""
                                 current_time = datetime.datetime.now()
                                 current_delta_time = (
-                                    current_time - start_time).total_seconds() if current_time and start_time else 0
+                                        current_time - start_time).total_seconds() if current_time and start_time else 0
                                 m, s = divmod(current_delta_time, 60)
                                 h, m = divmod(m, 60)
                                 rto = "%d时%02d分%02d秒" % (h, m, s)
@@ -5477,7 +5683,7 @@ def reload_task_nums(request):
                 task_nums = len(allprosstasks)
                 process_color = task.processrun.process.color
                 process_url = task.processrun.process.url + \
-                    "/" + str(task.processrun.id)
+                              "/" + str(task.processrun.id)
                 time = task.starttime
 
                 # 图标与颜色
@@ -6271,7 +6477,7 @@ def custom_pdf_report(request):
         if sys.platform.startswith("win"):
             # 指定wkhtmltopdf运行程序路径
             wkhtmltopdf_path = current_path + os.sep + "faconstor" + os.sep + "static" + os.sep + \
-                "process" + os.sep + "wkhtmltopdf" + os.sep + "bin" + os.sep + "wkhtmltopdf.exe"
+                               "process" + os.sep + "wkhtmltopdf" + os.sep + "bin" + os.sep + "wkhtmltopdf.exe"
             config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
         else:
             config = None
@@ -6286,7 +6492,7 @@ def custom_pdf_report(request):
             'no-outline': None
         }
         css_path = current_path + os.sep + "faconstor" + os.sep + "static" + \
-            os.sep + "new" + os.sep + "css" + os.sep + "bootstrap.css"
+                   os.sep + "new" + os.sep + "css" + os.sep + "bootstrap.css"
         css = [r"{0}".format(css_path)]
 
         pdfkit.from_string(t.content.decode(encoding="utf-8"), r"falconstor.pdf", configuration=config,
@@ -6536,7 +6742,7 @@ def downloadlist(request, funid):
                     errors.append(r"""请注意文件命名格式，'\/"*?<>'符号文件不允许上传。""")
                 else:
                     myfilepath = settings.BASE_DIR + os.sep + "faconstor" + os.sep + \
-                        "upload" + os.sep + "knowledgefiles" + os.sep + my_file.name
+                                 "upload" + os.sep + "knowledgefiles" + os.sep + my_file.name
 
                     c_exist_model = KnowledgeFileDownload.objects.filter(
                         file_name=my_file.name).exclude(state="9")
@@ -6594,7 +6800,7 @@ def knowledge_file_del(request):
             c_file.delete()
             c_file_name = c_file.file_name
             the_file_name = settings.BASE_DIR + os.sep + "faconstor" + os.sep + \
-                "upload" + os.sep + "knowledgefiles" + os.sep + c_file_name
+                            "upload" + os.sep + "knowledgefiles" + os.sep + c_file_name
             if os.path.exists(the_file_name):
                 os.remove(the_file_name)
             result = "删除成功。"
@@ -6618,7 +6824,7 @@ def download(request):
             raise Http404()
         try:
             the_file_name = settings.BASE_DIR + os.sep + "faconstor" + os.sep + \
-                "upload" + os.sep + "knowledgefiles" + os.sep + c_file_name
+                            "upload" + os.sep + "knowledgefiles" + os.sep + c_file_name
             response = StreamingHttpResponse(file_iterator(the_file_name))
             response['Content-Type'] = 'application/octet-stream; charset=unicode'
             response['Content-Disposition'] = 'attachment;filename="{0}"'.format(
@@ -6834,7 +7040,7 @@ def invite(request):
         if sys.platform.startswith("win"):
             # 指定wkhtmltopdf运行程序路径
             wkhtmltopdf_path = current_path + os.sep + "faconstor" + os.sep + "static" + os.sep + \
-                "process" + os.sep + "wkhtmltopdf" + os.sep + "bin" + os.sep + "wkhtmltopdf.exe"
+                               "process" + os.sep + "wkhtmltopdf" + os.sep + "bin" + os.sep + "wkhtmltopdf.exe"
             config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
         else:
             config = None
@@ -6849,14 +7055,14 @@ def invite(request):
             'no-outline': None
         }
         css_path = current_path + os.sep + "faconstor" + \
-            os.sep + "static" + os.sep + "new" + os.sep + "css"
+                   os.sep + "static" + os.sep + "new" + os.sep + "css"
         css_01 = css_path + os.sep + "bootstrap.css"
         # css_02 = css_path + os.sep + "font-awesome.min.css"
         css_03 = css_path + os.sep + "icon.css"
         # css_04 = css_path + os.sep + "font.css"
         css_05 = css_path + os.sep + "app.css"
         css_06 = current_path + os.sep + "faconstor" + os.sep + "static" + os.sep + \
-            "assets" + os.sep + "global" + os.sep + "css" + os.sep + "components.css"
+                 "assets" + os.sep + "global" + os.sep + "css" + os.sep + "components.css"
 
         css = [r"{0}".format(mycss)
                for mycss in [css_01, css_03, css_05, css_06]]
