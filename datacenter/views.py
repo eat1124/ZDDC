@@ -212,6 +212,15 @@ def report_data(request):
             except:
                 pass
 
+            report_info_list = []
+            current_report_info_set = report.reportinfo_set.exclude(state="9")
+            if current_report_info_set.exists():
+                for report_info in current_report_info_set:
+                    report_info_list.append({
+                            "report_info_name": report_info.name,
+                            "report_info_value": report_info.default_value,
+                            })                
+
             result.append({
                 "id": report.id,
                 "name": report.name,
@@ -223,6 +232,7 @@ def report_data(request):
                 "app_id": report.app.id,
                 "report_type_num": report.report_type,
                 "sort": report.sort,
+                "report_info_list":report_info_list,
             })
 
         return JsonResponse({"data": result})
