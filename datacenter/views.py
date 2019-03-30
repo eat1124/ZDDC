@@ -144,12 +144,15 @@ def report_index(request, funid):
                                                     range_num = int(report_info_num / 2)
                                                     for i in range(0, range_num):
                                                         report_info = ReportInfo()
-                                                        report_info.name = request.POST.get(
+                                                        report_info_name = request.POST.get(
                                                             "report_info_name_%d" % (i + 1), "")
-                                                        report_info.default_value = request.POST.get(
+                                                        report_info_default_value = request.POST.get(
                                                             "report_info_value_%d" % (i + 1), "")
-                                                        report_info.report_model = report_save
-                                                        report_info.save()
+                                                        if report_info_name:
+                                                            report_info.name = report_info_name
+                                                            report_info.default_value = report_info_default_value
+                                                            report_info.report_model = report_save
+                                                            report_info.save()
 
                                                 errors.append("保存成功。")
                                                 id = report_save.id
@@ -174,12 +177,15 @@ def report_index(request, funid):
                                                         range_num = int(report_info_num / 2)
                                                         for i in range(0, range_num):
                                                             report_info = ReportInfo()
-                                                            report_info.name = request.POST.get(
+                                                            report_info_name = request.POST.get(
                                                                 "report_info_name_%d" % (i + 1), "")
-                                                            report_info.default_value = request.POST.get(
+                                                            report_info_default_value = request.POST.get(
                                                                 "report_info_value_%d" % (i + 1), "")
-                                                            report_info.report_model = report_save
-                                                            report_info.save()
+                                                            if report_info_name:
+                                                                report_info.name = report_info_name
+                                                                report_info.default_value = report_info_default_value
+                                                                report_info.report_model = report_save
+                                                                report_info.save()
 
                                                     errors.append("保存成功。")
                                                     id = report_save.id
@@ -246,18 +252,21 @@ def report_del(request):
                 id = int(id)
             except:
                 raise Http404()
-            report = ReportModel.objects.get(id=id)
-            report.state = "9"
-            report.save()
+            report = ReportModel.objects.filter(id=id)
 
-            report_info_list = report.reportinfo_set.exclude(state="9")
-            for report_info in report_info_list:
-                report_info.state = "9"
-                report_info.save()
+            # 修改：删除远程服务器文件
+            if report.exists():
+                report = report[0]
+                report.state = "9"
+                report.save()
 
-            # 删除远程服务器文件
-
-            return HttpResponse(1)
+                c_file_name = report.file_name
+                the_file_name = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + c_file_name
+                if os.path.exists(the_file_name):
+                    os.remove(the_file_name)
+                return HttpResponse(1)
+            else:
+                return HttpResponse(0)
         else:
             return HttpResponse(0)
 
