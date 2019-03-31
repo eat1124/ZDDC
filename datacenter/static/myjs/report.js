@@ -1,18 +1,18 @@
-$(document).ready(function() {
+$(document).ready(function () {
     $('#sample_1').dataTable({
         "bAutoWidth": true,
         "bSort": false,
         "bProcessing": true,
         "ajax": "../report_data/",
         "columns": [
-            { "data": "id" },
-            { "data": "name" },
-            { "data": "code" },
-            { "data": "file_name" },
-            { "data": "report_type" },
-            { "data": "app" },
-            { "data": "sort" },
-            { "data": null }
+            {"data": "id"},
+            {"data": "name"},
+            {"data": "code"},
+            {"data": "file_name"},
+            {"data": "report_type"},
+            {"data": "app"},
+            {"data": "sort"},
+            {"data": null}
         ],
 
         "columnDefs": [{
@@ -38,7 +38,7 @@ $(document).ready(function() {
         }
     });
     // 行按钮
-    $('#sample_1 tbody').on('click', 'button#delrow', function() {
+    $('#sample_1 tbody').on('click', 'button#delrow', function () {
         if (confirm("确定要删除该条数据？")) {
             var table = $('#sample_1').DataTable();
             var data = table.row($(this).parents('tr')).data();
@@ -48,21 +48,21 @@ $(document).ready(function() {
                 data: {
                     id: data.id,
                 },
-                success: function(data) {
+                success: function (data) {
                     if (data == 1) {
                         table.ajax.reload();
                         alert("删除成功！");
                     } else
                         alert("删除失败，请于管理员联系。");
                 },
-                error: function(e) {
+                error: function (e) {
                     alert("删除失败，请于管理员联系。");
                 }
             });
 
         }
     });
-    $('#sample_1 tbody').on('click', 'button#edit', function() {
+    $('#sample_1 tbody').on('click', 'button#edit', function () {
         var table = $('#sample_1').DataTable();
         var data = table.row($(this).parents('tr')).data();
         $("#id").val(data.id);
@@ -96,7 +96,7 @@ $(document).ready(function() {
         // ...
     });
 
-    $("#new").click(function() {
+    $("#new").click(function () {
         $("#id").val(0);
         $("#name").val("");
         $("#code").val("");
@@ -104,8 +104,10 @@ $(document).ready(function() {
         $("#report_type").val("");
         $("#app").val("");
         $("#sort").val("");
+        $("#node_del").css("visibility", "hidden");
+
         $("#report_info_div").empty();
-                $("#report_info_div").append('<div class="col-md-12" style="margin-bottom:9px;">\n' +
+        $("#report_info_div").append('<div class="col-md-12" style="margin-bottom:9px;">\n' +
             '    <label class="col-md-2 control-label"><span style="color:red;"></span>名称:</label>\n' +
             '    <div class="col-md-4">\n' +
             '        <input type="text" class="form-control" name="report_info_name_1" placeholder="">\n' +
@@ -117,20 +119,20 @@ $(document).ready(function() {
             '        <div class="form-control-focus"></div>\n' +
             '    </div>\n' +
             '</div>');
+
     });
 
-    var report_info_list = 1;
-    $("#node_new").click(function() {
-        report_info_list++;
+    $("#node_new").click(function () {
+        var cNum = $("#report_info_div").children().length + 1;
         $("#report_info_div").append('<div class="col-md-12" style="margin-bottom:9px;">\n' +
             '    <label class="col-md-2 control-label"><span style="color:red;"></span>名称:</label>\n' +
             '    <div class="col-md-4">\n' +
-            '        <input type="text" class="form-control" name="report_info_name_' + report_info_list + '" placeholder="">\n' +
+            '        <input type="text" class="form-control" name="report_info_name_' + cNum + '" placeholder="">\n' +
             '        <div class="form-control-focus"></div>\n' +
             '    </div>\n' +
             '    <label class="col-md-2 control-label"><span style="color:red;"></span>值:</label>\n' +
             '    <div class="col-md-4">\n' +
-            '        <input type="text" class="form-control" name="report_info_value_' + report_info_list + '" placeholder="">\n' +
+            '        <input type="text" class="form-control" name="report_info_value_' + cNum + '" placeholder="">\n' +
             '        <div class="form-control-focus"></div>\n' +
             '    </div>\n' +
             '</div>');
@@ -141,8 +143,7 @@ $(document).ready(function() {
         }
     });
 
-    $("#node_del").click(function() {
-        report_info_list--;
+    $("#node_del").click(function () {
         $("#report_info_div").children("div:last-child").remove();
         // 删除最后一个子元素
         if ($("#report_info_div").children().length > 1) {
@@ -152,7 +153,7 @@ $(document).ready(function() {
         }
     });
 
-    $('#error').click(function() {
+    $('#error').click(function () {
         $(this).hide()
     })
 });
