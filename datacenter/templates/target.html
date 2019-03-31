@@ -25,7 +25,7 @@
                                         <select class="form-control" id="search_adminapp" name="search_adminapp">
                                             <option selected value="">全部</option>
                                             {% for app in app_list %}
-                                                <option value="{{ app.app_id }}">{{ app.app_name }} </option>
+                                                <option value="{{ app.app_id }}">{{ app.app_name }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -37,7 +37,7 @@
                                     <div class="col-md-7">
                                         <select  id="search_app" name="search_app" placeholder="testt test" class="form-control select2" multiple>
                                             {% for app in app_list %}
-                                                <option value="{{ app.app_id }}">{{ app.app_name }} </option>
+                                                <option value="{{ app.app_id }}">{{ app.app_name }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -53,7 +53,7 @@
                                         <select class="form-control" id="search_operationtype" name="search_operationtype">
                                             <option selected value="">全部</option>
                                             {% for operation_type in operation_type_list %}
-                                                <option value="{{ operation_type.operation_type_id }}">{{ operation_type.operation_type_name }} </option>
+                                                <option value="{{ operation_type.operation_type_id }}">{{ operation_type.operation_type_name }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -66,7 +66,7 @@
                                         <select class="form-control" id="search_cycletype" name="search_cycletype">
                                             <option selected value="">全部</option>
                                             {% for cycle_type in cycle_type_list %}
-                                                <option value="{{ cycle_type.cycle_type_id }}">{{ cycle_type.cycle_type_name }} </option>
+                                                <option value="{{ cycle_type.cycle_type_id }}">{{ cycle_type.cycle_type_name }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -82,7 +82,7 @@
                                         <select class="form-control" id="search_businesstype" name="search_businesstype">
                                             <option selected value="">全部</option>
                                             {% for business_type in business_type_list %}
-                                                <option value="{{ business_type.business_type_id }}">{{ business_type.business_type_name }} </option>
+                                                <option value="{{ business_type.business_type_id }}">{{ business_type.business_type_name }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -95,7 +95,7 @@
                                         <select class="form-control" id="search_unit" name="search_unit">
                                             <option selected value="">全部</option>
                                             {% for unit in unit_list %}
-                                                <option value="{{  unit.unit_id }}">{{  unit.unit_name }} </option>
+                                                <option value="{{  unit.unit_id }}">{{  unit.unit_name }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -141,11 +141,11 @@
     </tbody>
 </table>
 <div id="static" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="width:900px;">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-                <h4 class="modal-title">存储管理</h4>
+                <h4 class="modal-title">指标管理</h4>
                 <input hidden id="id" type="text" name="id">
             </div>
             <div class="panel-body">
@@ -155,71 +155,219 @@
                     <div class="form-body">
                         <div class="form-group">
                             <label class="col-md-2 control-label"><span
-                                    style="color:red; ">*</span>存储名称</label>
-                            <div class="col-md-10">
-                                <input id="storage_name" type="text" name="storage_name" class="form-control "
+                                    style="color:red; ">*</span>指标名称</label>
+                            <div class="col-md-4">
+                                <input id="name" type="text" name="name" class="form-control "
                                        placeholder="">
                                 <div class="form-control-focus"></div>
 
                             </div>
-                        </div>
-                        <div class="form-group">
                             <label class="col-md-2 control-label"><span
-                                    style="color:red; ">*</span>存储代码</label>
-                            <div class="col-md-10">
-                                <input id="storage_code" type="text" name="storage_code" class="form-control "
-                                       placeholder="">
-                                <div class="form-control-focus"></div>
-
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-md-2 control-label"><span
-                                    style="color:red; ">*</span>表名</label>
-                            <div class="col-md-10">
-                                <input id="table_name" type="text" name="table_name" class="form-control "
+                                    style="color:red; ">*</span>指标代码</label>
+                            <div class="col-md-4">
+                                <input id="code" type="text" name="code" class="form-control "
                                        placeholder="">
                                 <div class="form-control-focus"></div>
 
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group ">
                             <label class="col-md-2 control-label"><span
-                                    style="color:red; ">*</span>存储类型</label>
-                            <div class="col-md-10">
-                                <select class="form-control" id="storage_type" name="storage_type">
-                                    {% for storage_type in storage_type_list %}
-                                    <option value="{{storage_type}}">{{storage_type}}</option>
+                                    style="color:red; ">*</span>操作类型</label>
+                            <div class="col-md-4">
+                                <select class="form-control" id="operationtype" name="operationtype">
+                                    {% for operation_type in operation_type_list %}
+                                        <option value="{{ operation_type.operation_type_id }}">{{ operation_type.operation_type_name }}</option>
                                     {% endfor %}
                                 </select>
-                                <div class="form-control-focus"></div>
-
                             </div>
-                        </div>
-
-
-                        <div class="form-group">
                             <label class="col-md-2 control-label"><span
-                                    style="color:red; ">*</span>有效时间</label>
-                            <div class="col-md-10">
-                                <select class="form-control" id="valid_time" name="valid_time">
-                                    {% for vt in valid_time_list %}
-                                    <option value="{{vt}}">{{vt}}</option>
+                                    style="color:red; ">*</span>周期类型</label>
+                            <div class="col-md-4">
+                                <select class="form-control" id="cycletype" name="cycletype">
+                                    {% for cycle_type in cycle_type_list %}
+                                        <option value="{{ cycle_type.cycle_type_id }}">{{ cycle_type.cycle_type_name }}</option>
                                     {% endfor %}
                                 </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group ">
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>业务类型</label>
+                            <div class="col-md-4">
+                                <select class="form-control" id="businesstype" name="businesstype">
+                                    {% for business_type in business_type_list %}
+                                        <option value="{{ business_type.business_type_id }}">{{ business_type.business_type_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>机组</label>
+                            <div class="col-md-4">
+                                <select class="form-control" id="unit" name="unit">
+                                    {% for unit in unit_list %}
+                                        <option value="{{  unit.unit_id }}">{{  unit.unit_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>倍率</label>
+                            <div class="col-md-4">
+                                <input id="magnification" type="number" name="magnification" class="form-control "
+                                       placeholder="1" >
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>保留位数</label>
+                            <div class="col-md-4">
+                                <input id="digit" type="number" name="digit" class="form-control "
+                                       placeholder="2">
                                 <div class="form-control-focus"></div>
 
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-md-2 control-label"><span
-                                    style="color:red; "></span>排序</label>
-                            <div class="col-md-10">
+                            <label class="col-md-2 control-label">上限</label>
+                            <div class="col-md-4">
+                                <input id="upperlimit" type="number" name="upperlimit" class="form-control "
+                                       placeholder="" >
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                            <label class="col-md-2 control-label">下限</label>
+                            <div class="col-md-4">
+                                <input id="lowerlimit" type="number" name="lowerlimit" class="form-control "
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group ">
+                            <label class="col-md-2 control-label">管理应用</label>
+                            <div class="col-md-4">
+                                <select class="form-control" id="adminapp" name="adminapp">
+                                    {% for app in app_list %}
+                                        <option value="{{ app.app_id }}">{{ app.app_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <label class="col-md-2 control-label">查询应用</label>
+                            <div class="col-md-4">
+                                <select  id="app" name="app" placeholder="testt test" class="form-control select2" multiple>
+                                    {% for app in app_list %}
+                                        <option value="{{ app.app_id }}">{{ app.app_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">是否累积</label>
+                            <div class="col-md-4">
+                                <select class="form-control" id="cumulative" name="cumulative">
+                                    <option value="是" selected>是</option>
+                                    <option value="否" >否</option>
+                                </select>
+                            </div>
+                            <label class="col-md-2 control-label">排序</label>
+                            <div class="col-md-4">
                                 <input id="sort" type="number" name="sort" class="form-control"
                                        placeholder="">
                                 <div class="form-control-focus"></div>
 
+                            </div>
+                        </div>
+
+                        <div id="calculate">
+                            <hr style="height:1px;border:none;border-top:1px solid #87cefa;" />
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">公式</label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control" placeholder="" rows="4" id="formula" name="formula"></textarea>
+                                                <div class="form-control-focus"> </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div id="extract">
+                            <hr style="height:1px;border:none;border-top:1px solid #87cefa;" />
+                            <div class="form-group ">
+                                <label class="col-md-2 control-label">周期</label>
+                                <div class="col-md-4">
+                                    <select class="form-control" id="cycle" name="cycle">
+                                        {% for cycle in cycle_list %}
+                                            <option value="{{ cycle.cycle_id }}">{{ cycle.cycle_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <label class="col-md-2 control-label">数据源</label>
+                                <div class="col-md-4">
+                                    <select class="form-control" id="source" name="source">
+                                        {% for source in source_list %}
+                                            <option value="{{  source.source_id }}">{{  source.source_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">数据源表</label>
+                                <div class="col-md-4">
+                                    <input id="sourcetable" type="text" name="sourcetable" class="form-control "
+                                           placeholder="" >
+                                    <div class="form-control-focus"></div>
+
+                                </div>
+                                <label class="col-md-2 control-label">数据源sis点</label>
+                                <div class="col-md-4">
+                                    <input id="sourcesis" type="text" name="sourcesis" class="form-control "
+                                           placeholder="">
+                                    <div class="form-control-focus"></div>
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">数据源字段</label>
+                                <div class="col-md-4">
+                                    <textarea class="form-control" placeholder="" rows="4" id="sourcefields" name="sourcefields"></textarea>
+                                                <div class="form-control-focus"> </div>
+
+                                </div>
+                                <label class="col-md-2 control-label">数据源条件</label>
+                                <div class="col-md-4">
+                                    <textarea class="form-control" placeholder="" rows="4" id="sourceconditions" name="sourceconditions"></textarea>
+                                                <div class="form-control-focus"> </div>
+
+                                </div>
+                            </div>
+                            <div class="form-group ">
+                                <label class="col-md-2 control-label">存储位置</label>
+                                <div class="col-md-4">
+                                    <select class="form-control" id="storage" name="storage">
+                                        {% for storage in storage_list %}
+                                            <option value="{{ storage.storage_id }}">{{ storage.storage_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <label class="col-md-2 control-label">存储标识</label>
+                                <div class="col-md-4">
+                                    <input id="storagetag" type="text" name="storagetag" class="form-control "
+                                           placeholder="">
+                                    <div class="form-control-focus"></div>
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">存储字段</label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control" placeholder="" rows="4" id="storagefields" name="storagefields"></textarea>
+                                                <div class="form-control-focus"> </div>
+
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -250,7 +398,7 @@
 <link href="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet"
       type="text/css"/>
 <link href="/static/assets/global/plugins/jquery-multi-select/css/multi-select.css" rel="stylesheet" type="text/css" />
-<link href="/static/assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="/static/assets/global/plugins/select2/css/select2.css" rel="stylesheet" type="text/css" />
 <link href="/static/assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
 
 <script src="/static/assets/global/scripts/app.min.js" type="text/javascript"></script>
