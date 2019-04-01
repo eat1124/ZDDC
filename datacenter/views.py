@@ -174,7 +174,7 @@ def report_index(request, funid):
                                                     if my_file:
                                                         report_save.file_name = file_name
                                                     report_save.sort = int(sort) if sort else None
-                                                    report_save.save()
+                                                    report_save.save() 
 
                                                     # 修改报表信息关联 多/少/等
                                                     if report_info_num:
