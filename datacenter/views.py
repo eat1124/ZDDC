@@ -103,35 +103,69 @@ def report_index(request, funid):
                 else:
                     myfilepath = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + my_file.name
                     # 需要修改：判断服务器上是否存在该文件
-                    c_exist_model = ReportModel.objects.filter(file_name=my_file.name).exclude(state="9")
+                    # c_exist_model = ReportModel.objects.filter(file_name=my_file.name).exclude(state="9")
 
-                    if os.path.exists(myfilepath) or c_exist_model.exists():
-                        errors.append("该文件已存在,请勿重复上传。")
+                    # # 覆盖
+                    # if os.path.exists(myfilepath) or c_exist_model.exists():
+                    #     errors.append("该文件已存在,请勿重复上传。")
+                    # else:
+                    if name.strip() == '':
+                        errors.append('报表名称不能为空。')
                     else:
-                        if name.strip() == '':
-                            errors.append('报表名称不能为空。')
+                        if code.strip() == '':
+                            errors.append('报表编码不能为空。')
                         else:
-                            if code.strip() == '':
-                                errors.append('报表编码不能为空。')
+                            if report_type.strip() == '':
+                                errors.append('报表类别不能为空。')
                             else:
-                                if report_type.strip() == '':
-                                    errors.append('报表类别不能为空。')
+                                if app.strip() == '':
+                                    errors.append('关联应用不能为空。')
                                 else:
-                                    if app.strip() == '':
-                                        errors.append('关联应用不能为空。')
+                                    # 上传文件
+                                    with open(myfilepath, 'wb+') as f:
+                                        for chunk in my_file.chunks():  # 分块写入文件
+                                            f.write(chunk)
+                                    # 在修改上传文件时需要做些操作
+                                    if id == 0:
+                                        all_report = ReportModel.objects.filter(
+                                            code=code).exclude(state="9")
+                                        if all_report.exists():
+                                            errors.append('报表编码:' + code + '已存在。')
+                                        else:
+                                            report_save = ReportModel()
+                                            report_save.name = name
+                                            report_save.code = code
+                                            report_save.report_type = report_type
+                                            report_save.app_id = int(app)
+                                            report_save.file_name = file_name
+                                            report_save.sort = int(sort) if sort else None
+                                            report_save.save()
+
+                                            if report_info_num:
+                                                range_num = int(report_info_num / 2)
+                                                for i in range(0, range_num):
+                                                    report_info = ReportInfo()
+                                                    report_info_name = request.POST.get(
+                                                        "report_info_name_%d" % (i + 1), "")
+                                                    report_info_default_value = request.POST.get(
+                                                        "report_info_value_%d" % (i + 1), "")
+                                                    if report_info_name:
+                                                        report_info.name = report_info_name
+                                                        report_info.default_value = report_info_default_value
+                                                        report_info.report_model = report_save
+                                                        report_info.save()
+
+                                            errors.append("保存成功。")
+                                            id = report_save.id
                                     else:
-                                        # 上传文件
-                                        with open(myfilepath, 'wb+') as f:
-                                            for chunk in my_file.chunks():  # 分块写入文件
-                                                f.write(chunk)
-                                        # 在修改上传文件时需要做些操作
-                                        if id == 0:
-                                            all_report = ReportModel.objects.filter(
-                                                code=code).exclude(state="9")
-                                            if all_report.exists():
-                                                errors.append('报表编码:' + code + '已存在。')
-                                            else:
-                                                report_save = ReportModel()
+                                        all_report = ReportModel.objects.filter(code=code).exclude(
+                                            id=id).exclude(state="9")
+                                        if all_report.exists():
+                                            errors.append('存储编码:' + code + '已存在。')
+                                        else:
+                                            try:
+                                                report_save = ReportModel.objects.get(
+                                                    id=id)
                                                 report_save.name = name
                                                 report_save.code = code
                                                 report_save.report_type = report_type
@@ -156,41 +190,8 @@ def report_index(request, funid):
 
                                                 errors.append("保存成功。")
                                                 id = report_save.id
-                                        else:
-                                            all_report = ReportModel.objects.filter(code=code).exclude(
-                                                id=id).exclude(state="9")
-                                            if all_report.exists():
-                                                errors.append('存储编码:' + code + '已存在。')
-                                            else:
-                                                try:
-                                                    report_save = ReportModel.objects.get(
-                                                        id=id)
-                                                    report_save.name = name
-                                                    report_save.code = code
-                                                    report_save.report_type = report_type
-                                                    report_save.app_id = int(app)
-                                                    report_save.file_name = file_name
-                                                    report_save.sort = int(sort) if sort else None
-                                                    report_save.save()
-
-                                                    if report_info_num:
-                                                        range_num = int(report_info_num / 2)
-                                                        for i in range(0, range_num):
-                                                            report_info = ReportInfo()
-                                                            report_info_name = request.POST.get(
-                                                                "report_info_name_%d" % (i + 1), "")
-                                                            report_info_default_value = request.POST.get(
-                                                                "report_info_value_%d" % (i + 1), "")
-                                                            if report_info_name:
-                                                                report_info.name = report_info_name
-                                                                report_info.default_value = report_info_default_value
-                                                                report_info.report_model = report_save
-                                                                report_info.save()
-
-                                                    errors.append("保存成功。")
-                                                    id = report_save.id
-                                                except:
-                                                    errors.append("修改失败。")
+                                            except:
+                                                errors.append("修改失败。")
 
         return render(request, 'report.html',
                       {'username': request.user.userinfo.fullname,

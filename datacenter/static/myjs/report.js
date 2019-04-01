@@ -19,7 +19,7 @@ $(document).ready(function () {
             "targets": -1,
             "data": null,
             "width": "100px",
-            "defaultContent": "<button  id='edit' title='编辑' data-toggle='modal'  data-target='#static'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button><button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>"
+            "defaultContent": "<button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>"
         }],
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",
@@ -95,7 +95,6 @@ $(document).ready(function () {
         // 请求文件,展示
         // ...
     });
-
     $("#new").click(function () {
         $("#id").val(0);
         $("#name").val("");
@@ -119,7 +118,6 @@ $(document).ready(function () {
             '        <div class="form-control-focus"></div>\n' +
             '    </div>\n' +
             '</div>');
-
     });
 
     $("#node_new").click(function () {
