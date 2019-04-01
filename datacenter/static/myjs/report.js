@@ -82,19 +82,20 @@ $(document).ready(function () {
             $("#report_info_div").append('<div class="col-md-12" style="margin-bottom:9px;">\n' +
                 '    <label class="col-md-2 control-label"><span style="color:red;"></span>名称:</label>\n' +
                 '    <div class="col-md-4">\n' +
-                '        <input type="text" class="form-control" name="report_info_name_' + i + 1 + '" value="' + data.report_info_list[i].report_info_name + '" placeholder="">\n' +
+                '        <input type="text" class="form-control" name="report_info_name_' + (i + 1) + '" value="' + data.report_info_list[i].report_info_name + '" placeholder="">\n' +
                 '        <div class="form-control-focus"></div>\n' +
                 '    </div>\n' +
                 '    <label class="col-md-2 control-label"><span style="color:red;"></span>值:</label>\n' +
                 '    <div class="col-md-4">\n' +
-                '        <input type="text" class="form-control" name="report_info_value_' + i + 1 + '" value="' + data.report_info_list[i].report_info_value + '" placeholder="">\n' +
+                '        <input type="text" class="form-control" name="report_info_value_' + (i + 1) + '" value="' + data.report_info_list[i].report_info_value + '" placeholder="">\n' +
                 '        <div class="form-control-focus"></div>\n' +
-                '    </div>\n' +
-                '</div>' +
-                '<input type="text" class="form-control" name="report_info_id_' + i + 1 + '" value="' + data.report_info_list[i].report_info_id + '" placeholder="">'
+                '<span hidden>\n' +
+                '    <input type="text" class="form-control" name="report_info_id_' + (i + 1) + '" value="' + data.report_info_list[i].report_info_id + '" placeholder="">\n' +
+                '</span>' +
+                '    </div>\n'
             );
         }
-        if ($("#report_info_div").children().length > 1) {
+        if ($("#report_info_div").children("div").length > 1) {
             $("#node_del").css("visibility", "visible");
         } else {
             $("#node_del").css("visibility", "hidden");
@@ -128,13 +129,15 @@ $(document).ready(function () {
             '        <input type="text" class="form-control" name="report_info_value_1" placeholder="">\n' +
             '        <div class="form-control-focus"></div>\n' +
             '    </div>\n' +
-            '</div>' +
-            '<input type="text" class="form-control" name="report_info_id_1" placeholder="">'
+            '<span hidden>\n' +
+            '    <input type="text" class="form-control" name="report_info_id_1" placeholder="">\n' +
+            '</span>' +
+            '</div>'
         );
     });
 
     $("#node_new").click(function () {
-        var cNum = $("#report_info_div").children().length + 1;
+        var cNum = $("#report_info_div").children("div").length + 1;
         $("#report_info_div").append('<div class="col-md-12" style="margin-bottom:9px;">\n' +
             '    <label class="col-md-2 control-label"><span style="color:red;"></span>名称:</label>\n' +
             '    <div class="col-md-4">\n' +
@@ -146,9 +149,12 @@ $(document).ready(function () {
             '        <input type="text" class="form-control" name="report_info_value_' + cNum + '" placeholder="">\n' +
             '        <div class="form-control-focus"></div>\n' +
             '    </div>\n' +
-            '</div>' +
-            '<input type="text" class="form-control" name="report_info_id_' + cNum + '" placeholder="">');
-        if ($("#report_info_div").children().length > 1) {
+            '<span hidden>\n' +
+            '    <input type="text" class="form-control" name="report_info_id_' + cNum + '" placeholder="">\n' +
+            '</span>' +
+            '</div>'
+        );
+        if ($("#report_info_div").children("div").length > 1) {
             $("#node_del").css("visibility", "visible");
         } else {
             $("#node_del").css("visibility", "hidden");
@@ -158,7 +164,7 @@ $(document).ready(function () {
     $("#node_del").click(function () {
         $("#report_info_div").children("div:last-child").remove();
         // 删除最后一个子元素
-        if ($("#report_info_div").children().length > 1) {
+        if ($("#report_info_div").children("div").length > 1) {
             $("#node_del").css("visibility", "visible");
         } else {
             $("#node_del").css("visibility", "hidden");

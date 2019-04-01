@@ -84,7 +84,6 @@ def report_index(request, funid):
             sort = request.POST.get("sort", "")
             my_file = request.FILES.get("report_file", None)
             file_status_val = request.POST.get("file_status_val", "")
-
             file_name = my_file.name if my_file else ""
             report_info_num = 0
             for key in request.POST.keys():
@@ -124,7 +123,6 @@ def report_index(request, funid):
                                     else:
                                         # 上传文件
                                         if not file_status_val:
-                                            print("覆盖了")
                                             with open(myfilepath, 'wb+') as f:
                                                 for chunk in my_file.chunks():  # 分块写入文件
                                                     f.write(chunk)
@@ -158,7 +156,6 @@ def report_index(request, funid):
                                                             report_info.report_model = report_save
                                                             report_info.save()
 
-                                                errors.append("保存成功。")
                                                 id = report_save.id
                                         else:
                                             all_report = ReportModel.objects.filter(code=code).exclude(
@@ -169,11 +166,13 @@ def report_index(request, funid):
                                                 try:
                                                     report_save = ReportModel.objects.get(
                                                         id=id)
+
                                                     report_save.name = name
                                                     report_save.code = code
                                                     report_save.report_type = report_type
                                                     report_save.app_id = int(app)
-                                                    report_save.file_name = file_name
+                                                    if my_file:
+                                                        report_save.file_name = file_name
                                                     report_save.sort = int(sort) if sort else None
                                                     report_save.save()
 
@@ -192,22 +191,21 @@ def report_index(request, funid):
                                                                     "report_info_value_%d" % (i + 1), "")
                                                                 report_info_id = request.POST.get(
                                                                     "report_info_id_%d" % (i + 1), "")
-                                                                try:
-                                                                    report_info_id = int(report_info_id)
-                                                                except:
-                                                                    raise Http404()
-                                                                update_id_list.append(report_info_id)
-                                                                report_info = ReportInfo.objects.filter(
-                                                                    id=report_info_id)
-                                                                if report_info.exists() and report_info_name:
-                                                                    report_info = report_info[0]
-                                                                    report_info.name = report_info_name
-                                                                    report_info.default_value = report_info_default_value
-                                                                    report_info.report_model = report_save
-                                                                    # report_info.save()
+                                                                report_info_id = int(
+                                                                    report_info_id) if report_info_id else ""
+
+                                                                if report_info_id:
+                                                                    update_id_list.append(report_info_id)
+                                                                    report_info = ReportInfo.objects.filter(
+                                                                        id=report_info_id)
+                                                                    if report_info.exists() and report_info_name:
+                                                                        report_info = report_info[0]
+                                                                        report_info.name = report_info_name
+                                                                        report_info.default_value = report_info_default_value
+                                                                        report_info.report_model = report_save
+                                                                        report_info.save()
                                                             current_report_info.exclude(id__in=update_id_list).update(
                                                                 state="9")
-
                                                         # 多
                                                         elif len(current_report_info) < range_num:
                                                             update_id_list = []
@@ -218,14 +216,11 @@ def report_index(request, funid):
                                                                     "report_info_value_%d" % (i + 1), "")
                                                                 report_info_id = request.POST.get(
                                                                     "report_info_id_%d" % (i + 1), "")
-                                                                try:
-                                                                    report_info_id = int(report_info_id)
-                                                                except:
-                                                                    raise Http404()
-                                                                update_id_list.append(report_info_id)
-
-                                                                # 超出重建
-                                                                if i + 1 <= len(current_report_info):
+                                                                report_info_id = int(
+                                                                    report_info_id) if report_info_id else ""
+                                                                # 有id修改-->update_list，无id重建
+                                                                if report_info_id:
+                                                                    update_id_list.append(report_info_id)
                                                                     report_info = ReportInfo.objects.filter(
                                                                         id=report_info_id)
                                                                     if report_info.exists() and report_info_name:
@@ -233,17 +228,21 @@ def report_index(request, funid):
                                                                         report_info.name = report_info_name
                                                                         report_info.default_value = report_info_default_value
                                                                         report_info.report_model = report_save
-                                                                        # report_info.save()
+                                                                        report_info.save()
                                                                 else:
                                                                     report_info = ReportInfo()
                                                                     if report_info_name:
-                                                                        report_info = report_info[0]
                                                                         report_info.name = report_info_name
                                                                         report_info.default_value = report_info_default_value
                                                                         report_info.report_model = report_save
-                                                                        # report_info.save()
+                                                                        report_info.save()
+                                                                        update_id_list.append(report_info.id)
+                                                            current_report_info.exclude(
+                                                                id__in=update_id_list).update(
+                                                                state="9")
                                                         # 等
                                                         else:
+                                                            update_id_list = []
                                                             for i in range(0, range_num):
                                                                 report_info_name = request.POST.get(
                                                                     "report_info_name_%d" % (i + 1), "")
@@ -251,22 +250,33 @@ def report_index(request, funid):
                                                                     "report_info_value_%d" % (i + 1), "")
                                                                 report_info_id = request.POST.get(
                                                                     "report_info_id_%d" % (i + 1), "")
-                                                                try:
-                                                                    report_info_id = int(report_info_id)
-                                                                except:
-                                                                    raise Http404()
-                                                                report_info = ReportInfo.objects.filter(
-                                                                    id=report_info_id)
-                                                                if report_info_name and report_info.exists():
-                                                                    report_info = report_info[0]
-                                                                    report_info.name = report_info_name
-                                                                    report_info.default_value = report_info_default_value
-                                                                    report_info.report_model = report_save
-                                                                    # report_info.save()
 
-                                                    errors.append("保存成功。")
-                                                    id = report_save.id
-                                                except:
+                                                                report_info_id = int(
+                                                                    report_info_id) if report_info_id else ""
+                                                                if report_info_id:
+                                                                    update_id_list.append(report_info_id)
+                                                                    report_info = ReportInfo.objects.filter(
+                                                                        id=report_info_id)
+                                                                    if report_info_name and report_info.exists():
+                                                                        report_info = report_info[0]
+                                                                        report_info.name = report_info_name
+                                                                        report_info.default_value = report_info_default_value
+                                                                        report_info.report_model = report_save
+                                                                        report_info.save()
+                                                                else:
+                                                                    report_info = ReportInfo()
+                                                                    if report_info_name:
+                                                                        report_info.name = report_info_name
+                                                                        report_info.default_value = report_info_default_value
+                                                                        report_info.report_model = report_save
+                                                                        report_info.save()
+                                                                        update_id_list.append(report_info.id)
+
+                                                            current_report_info.exclude(
+                                                                id__in=update_id_list).update(
+                                                                state="9")
+                                                        id = report_save.id
+                                                except Exception as e:
                                                     errors.append("修改失败。")
 
         return render(request, 'report.html',
@@ -302,9 +312,8 @@ def report_data(request):
                     report_info_list.append({
                         "report_info_name": report_info.name,
                         "report_info_value": report_info.default_value,
-                        "report_info_id": report_info.id,
+                        "report_info_id": int(report_info.id),
                     })
-
             result.append({
                 "id": report.id,
                 "name": report.name,
@@ -337,6 +346,13 @@ def report_del(request):
                 report = report[0]
                 report.state = "9"
                 report.save()
+
+                # 删除关联report_info
+                report_info_set = report.reportinfo_set.exclude(state="9")
+                if report_info_set.exists():
+                    for i in report_info_set:
+                        i.state = "9"
+                        i.save()
 
                 c_file_name = report.file_name
                 the_file_name = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + c_file_name
