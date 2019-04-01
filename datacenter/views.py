@@ -1717,15 +1717,18 @@ def childfun(myfun, funid):
     for fun in funs:
         if fun in funlist:
             isselected = False
+            url = fun.url if fun.url else ""
+            if len(fun.app.all())>0:
+                url = fun.url + str(fun.id) + "/" if fun.url else ""
             if str(fun.id) == funid:
                 isselected = True
                 pisselected = True
                 mychildfun.append(
-                    {"id": fun.id, "name": fun.name, "url": fun.url, "icon": fun.icon, "isselected": isselected,
+                    {"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon, "isselected": isselected,
                      "child": []})
             else:
                 returnfuns = childfun(fun, funid)
-                mychildfun.append({"id": fun.id, "name": fun.name, "url": fun.url, "icon": fun.icon,
+                mychildfun.append({"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
                                    "isselected": returnfuns["isselected"], "child": returnfuns["fun"]})
                 if returnfuns["isselected"]:
                     pisselected = returnfuns["isselected"]
@@ -1741,14 +1744,17 @@ def getpagefuns(funid, request=""):
     for fun in funlist:
         if fun.pnode_id == 15:
             isselected = False
+            url = fun.url if fun.url else ""
+            if len(fun.app.all())>0:
+                url = fun.url + str(fun.id) + "/" if fun.url else ""
             if str(fun.id) == funid:
                 isselected = True
                 pagefuns.append(
-                    {"id": fun.id, "name": fun.name, "url": fun.url, "icon": fun.icon, "isselected": isselected,
+                    {"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon, "isselected": isselected,
                      "child": []})
             else:
                 returnfuns = childfun(fun, funid)
-                pagefuns.append({"id": fun.id, "name": fun.name, "url": fun.url if fun.url else "", "icon": fun.icon,
+                pagefuns.append({"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
                                  "isselected": returnfuns["isselected"], "child": returnfuns["fun"]})
     curfun = Fun.objects.filter(id=int(funid))
     if len(curfun) > 0:
