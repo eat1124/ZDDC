@@ -1157,6 +1157,9 @@ def target_index(request, funid):
         cycle_type_list = []
         business_type_list = []
         unit_list = []
+        source_list =[]
+        cycle_list = []
+        storage_list = []
 
         applist = App.objects.all().exclude(state='9')
         for i in applist:
@@ -1208,6 +1211,28 @@ def target_index(request, funid):
                     "unit_name": i.name,
                     "unit_id": i.id,
                 })
+
+        sourcelist = Source.objects.all().exclude(state='9')
+        for i in sourcelist:
+            source_list.append({
+                "source_name": i.name,
+                "source_id": i.id,
+            })
+
+        cyclelist = Cycle.objects.all().exclude(state='9')
+        for i in cyclelist:
+            cycle_list.append({
+                "cycle_name": i.name,
+                "cycle_id": i.id,
+            })
+
+        storagelist = Storage.objects.all().exclude(state='9')
+        for i in storagelist:
+            storage_list.append({
+                "storage_name": i.name,
+                "storage_id": i.id,
+            })
+
         return render(request, 'target.html',
                       {'username': request.user.userinfo.fullname,
                        "app_list": app_list,
@@ -1215,6 +1240,9 @@ def target_index(request, funid):
                        "cycle_type_list": cycle_type_list,
                        "business_type_list": business_type_list,
                        "unit_list": unit_list,
+                       "source_list": source_list,
+                       "cycle_list": cycle_list,
+                       "storage_list": storage_list,
                        "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
@@ -1286,21 +1314,16 @@ def target_data(request):
             except:
                 pass
 
-            adminapp = target.adminapp
-            try:
-                adminapp_list = App.objects.filter(id=int(target.adminapp))
-                if adminapp_list.exists():
-                    adminapp_list = adminapp_list[0]
-                    adminapp = adminapp_list.name
-            except:
-                pass
+            applist=[]
+            for my_app in target.app.all():
+                applist.append(my_app.id)
 
             result.append({
                 "operationtype_name": operationtype,
                 "cycletype_name": cycletype,
                 "businesstype_name": businesstype,
                 "unit_name": unit,
-                "adminapp_name": adminapp,
+                "adminapp_name": target.adminapp.name,
                 "id": target.id,
                 "name": target.name,
                 "code": target.code,
@@ -1308,29 +1331,256 @@ def target_data(request):
                 "cycletype": target.cycletype,
                 "businesstype": target.businesstype,
                 "unit": target.unit,
-                "adminapp": target.adminapp,
-                "app": target.app,
+                "adminapp": target.adminapp_id,
+                "app": applist,
                 "magnification": target.magnification,
                 "digit": target.digit,
                 "cumulative": target.cumulative,
                 "upperlimit": target.upperlimit,
                 "lowerlimit": target.lowerlimit,
                 "formula": target.formula,
-                "cycle": target.cycle,
-                "source": target.source,
+                "cycle": target.cycle_id,
+                "source": target.source_id,
                 "sourcetable": target.sourcetable,
                 "sourcefields": target.sourcefields,
                 "sourceconditions": target.sourceconditions,
                 "sourcesis": target.sourcesis,
-                "storage": target.storage,
+                "storage": target.storage_id,
                 "storagefields": target.storagefields,
                 "storagetag": target.storagetag,
                 "sort": target.sort,
                 "state": target.state,
                 "remark": target.remark,
             })
-
         return JsonResponse({"data": result})
+
+
+def target_save(request):
+    if request.user.is_authenticated():
+        id = request.POST.get("id", "")
+        name = request.POST.get("name", "")
+        code = request.POST.get("code", "")
+        operationtype = request.POST.get("operationtype", "")
+        cycletype = request.POST.get("cycletype", "")
+        businesstype = request.POST.get("businesstype", "")
+        unit = request.POST.get("unit", "")
+        magnification = request.POST.get("magnification", "")
+        digit = request.POST.get("digit", "")
+        upperlimit = request.POST.get("upperlimit", "")
+        lowerlimit = request.POST.get("lowerlimit", "")
+        adminapp = request.POST.get("adminapp", "")
+        app_list = request.POST.getlist('app[]')
+        cumulative = request.POST.get("cumulative", "")
+        sort = request.POST.get("sort", "")
+
+        formula = request.POST.get("formula", "")
+
+        cycle = request.POST.get("cycle", "")
+        source = request.POST.get("source", "")
+        sourcetable = request.POST.get("sourcetable", "")
+        sourcesis = request.POST.get("sourcesis", "")
+        sourcefields = request.POST.get("sourcefields", "")
+        sourceconditions = request.POST.get("sourceconditions", "")
+        storage = request.POST.get("storage", "")
+        storagetag = request.POST.get("storagetag", "")
+        storagefields = request.POST.get("storagefields", "")
+
+        all_app = App.objects.exclude(state="9")
+        all_cycle = Cycle.objects.exclude(state="9")
+        all_source = Source.objects.exclude(state="9")
+        all_storage = Storage.objects.exclude(state="9")
+
+        try:
+            id = int(id)
+        except:
+            raise Http404()
+
+        result = {}
+
+        if name.strip() == '':
+            result["res"] = '指标名称不能为空。'
+        else:
+            if code.strip() == '':
+                result["res"] = '指标代码不能为空。'
+            else:
+                if operationtype.strip() == '':
+                    result["res"] = '操作类型不能为空。'
+                else:
+                    if cycletype.strip() == '':
+                        result["res"] = '周期类型不能为空。'
+                    else:
+                        if businesstype.strip() == '':
+                            result["res"] = '业务类型不能为空。'
+                        else:
+                            if unit.strip() == '':
+                                result["res"] = '机组不能为空。'
+                            else:
+                                if id == 0:
+                                    all_target = Target.objects.filter(
+                                        code=code).exclude(state="9")
+                                    if (len(all_target) > 0):
+                                        result["res"] = '指标代码:' + \
+                                                        code + '已存在。'
+                                    else:
+                                        all_target = Target.objects.filter(
+                                            name=name).exclude(state="9")
+                                        if (len(all_target) > 0):
+                                            result["res"] = '指标名称:' + \
+                                                            code + '已存在。'
+                                        else:
+                                            target_save = Target()
+                                            target_save.name = name
+                                            target_save.code = code
+                                            target_save.operationtype = operationtype
+                                            target_save.cycletype = cycletype
+                                            target_save.businesstype = businesstype
+                                            target_save.unit = unit
+                                            try:
+                                                target_save.magnification = magnification
+                                            except:
+                                                pass
+                                            try:
+                                                target_save.digit = digit
+                                            except:
+                                                pass
+                                            target_save.upperlimit = upperlimit
+                                            target_save.lowerlimit = lowerlimit
+                                            try:
+                                                app_id = int(adminapp)
+                                                my_app = all_app.get(id=app_id)
+                                                target_save.adminapp = my_app
+                                            except ValueError:
+                                                raise Http404()
+                                            target_save.cumulative = cumulative
+                                            try:
+                                                target_save.sort = sort
+                                            except:
+                                                pass
+                                            if operationtype=='12':
+                                                target_save.formula = formula
+                                            if operationtype == '11':
+                                                try:
+                                                    cycle_id = int(cycle)
+                                                    my_cycle = all_cycle.get(id=cycle_id)
+                                                    target_save.cycle = my_cycle
+                                                except ValueError:
+                                                    raise Http404()
+                                                try:
+                                                    source_id = int(source)
+                                                    my_source = all_source.get(id=source_id)
+                                                    target_save.source = my_source
+                                                except ValueError:
+                                                    raise Http404()
+                                                target_save.sourcetable = sourcetable
+                                                target_save.sourcesis = sourcesis
+                                                target_save.sourcefields = sourcefields
+                                                target_save.sourceconditions = sourceconditions
+                                                try:
+                                                    storage_id = int(storage)
+                                                    my_storage = all_storage.get(id=storage_id)
+                                                    target_save.storage = my_storage
+                                                except ValueError:
+                                                    raise Http404()
+                                                target_save.storagetag = storagetag
+                                                target_save.storagefields = storagefields
+                                            target_save.save()
+                                            # 存入多对多app
+                                            for app_id in app_list:
+                                                try:
+                                                    app_id = int(app_id)
+                                                    my_app = all_app.get(id=app_id)
+                                                    target_save.app.add(my_app)
+                                                except ValueError:
+                                                    raise Http404()
+                                            result["res"] = "保存成功。"
+                                            result["data"] = target_save.id
+                                else:
+                                    all_target = Target.objects.filter(code=code).exclude(
+                                        id=id).exclude(state="9")
+                                    if (len(all_target) > 0):
+                                        result["res"] = '指标代码:' + \
+                                                        code + '已存在。'
+                                    else:
+                                        all_target = Target.objects.filter(name=name).exclude(
+                                            id=id).exclude(state="9")
+                                        if (len(all_target) > 0):
+                                            result["res"] = '指标名称:' + \
+                                                            code + '已存在。'
+                                        else:
+                                            try:
+                                                target_save = Target.objects.get(
+                                                    id=id)
+                                                target_save.name = name
+                                                target_save.code = code
+                                                target_save.operationtype = operationtype
+                                                target_save.cycletype = cycletype
+                                                target_save.businesstype = businesstype
+                                                target_save.unit = unit
+                                                try:
+                                                    target_save.magnification = magnification
+                                                except:
+                                                    pass
+                                                try:
+                                                    target_save.digit = digit
+                                                except:
+                                                    pass
+                                                target_save.upperlimit = upperlimit
+                                                target_save.lowerlimit = lowerlimit
+                                                try:
+                                                    app_id = int(adminapp)
+                                                    my_app = all_app.get(id=app_id)
+                                                    target_save.adminapp = my_app
+                                                except ValueError:
+                                                    raise Http404()
+                                                target_save.cumulative = cumulative
+                                                try:
+                                                    target_save.sort = sort
+                                                except:
+                                                    pass
+                                                if operationtype == '12':
+                                                    target_save.formula = formula
+                                                if operationtype == '11':
+                                                    try:
+                                                        cycle_id = int(cycle)
+                                                        my_cycle = all_cycle.get(id=cycle_id)
+                                                        target_save.cycle = my_cycle
+                                                    except ValueError:
+                                                        raise Http404()
+                                                    try:
+                                                        source_id = int(source)
+                                                        my_source = all_source.get(id=source_id)
+                                                        target_save.source = my_source
+                                                    except ValueError:
+                                                        raise Http404()
+                                                    target_save.sourcetable = sourcetable
+                                                    target_save.sourcesis = sourcesis
+                                                    target_save.sourcefields = sourcefields
+                                                    target_save.sourceconditions = sourceconditions
+                                                    try:
+                                                        storage_id = int(storage)
+                                                        my_storage = all_storage.get(id=storage_id)
+                                                        target_save.storage = my_storage
+                                                    except ValueError:
+                                                        raise Http404()
+                                                    target_save.storagetag = storagetag
+                                                    target_save.storagefields = storagefields
+                                                target_save.save()
+                                                # 存入多对多app
+                                                target_save.app.clear()
+                                                for app_id in app_list:
+                                                    try:
+                                                        app_id = int(app_id)
+                                                        my_app = all_app.get(id=app_id)
+                                                        target_save.app.add(my_app)
+                                                    except ValueError:
+                                                        raise Http404()
+                                                result["res"] = "保存成功。"
+                                                result["data"] = target_save.id
+                                            except Exception as e:
+                                                print(e)
+                                                result["res"] = "修改失败。"
+
+    return JsonResponse(result)
 
 
 def target_del(request):

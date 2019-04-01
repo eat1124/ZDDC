@@ -70,6 +70,10 @@
   .select2-results__option[aria-selected] {
     cursor: pointer; }
 
+  .select2-container--open{
+      z-index: 16000;!important;
+  }
+
 .select2-container--open .select2-dropdown {
   left: 0; }
 

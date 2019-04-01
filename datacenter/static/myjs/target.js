@@ -68,41 +68,129 @@ $(document).ready(function () {
     $('#sample_1 tbody').on('click', 'button#edit', function () {
         var table = $('#sample_1').DataTable();
         var data = table.row($(this).parents('tr')).data();
+
         $("#id").val(data.id);
-        $("#storage_name").val(data.name);
-        $("#storage_code").val(data.code);
-        $("#table_name").val(data.tablename);
-        $("#storage_type").val(data.storagetype_num);
-        $("#valid_time").val(data.validtime_num);
+        $("#name").val(data.name);
+        $("#code").val(data.code);
+        $("#operationtype").val(data.operationtype);
+        $("#cycletype").val(data.cycletype);
+        $("#businesstype").val(data.businesstype);
+        $("#unit").val(data.unit);
+        $("#magnification").val(data.magnification);
+        $("#digit").val(data.digit);
+        $("#upperlimit").val(data.upperlimit);
+        $("#lowerlimit").val(data.lowerlimit);
+        $("#adminapp").val(data.adminapp);
+        $("#app").val(data.app).trigger("change");
+        $("#cumulative").val(data.cumulative);
         $("#sort").val(data.sort);
+
+        $("#formula").val(data.formula);
+
+        $("#cycle").val(data.cycle);
+        $("#source").val(data.source);
+        $("#sourcetable").val(data.sourcetable);
+        $("#sourcesis").val(data.sourcesis);
+        $("#sourcefields").val(data.sourcefields);
+        $("#sourceconditions").val(data.sourceconditions);
+        $("#storage").val(data.storage);
+        $("#storagetag").val(data.storagetag);
+        $("#storagefields").val(data.storagefields);
+
+        $('#calculate').hide();
+        $('#extract').hide();
+        if($('#operationtype option:selected').text()=='计算'){
+            $('#calculate').show();
+        }
+        if($('#operationtype option:selected').text()=='提取'){
+            $('#extract').show();
+        }
     });
 
+    $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit').change(function () {
+        var table = $('#sample_1').DataTable();
+        table.ajax.url("../target_data?search_adminapp=" + $('#search_adminapp').val() + "&search_app=" + $('#search_app').val() + "&search_operationtype=" + $('#search_operationtype').val() + "&search_cycletype=" + $('#search_cycletype').val() + "&search_businesstype=" + $('#search_businesstype').val() + "&search_unit=" + $('#search_unit').val()).load();
+    })
+
+    $('#operationtype').change(function () {
+        $('#calculate').hide();
+        $('#extract').hide();
+        if($('#operationtype option:selected').text()=='计算'){
+            $('#calculate').show();
+        }
+        if($('#operationtype option:selected').text()=='提取'){
+            $('#extract').show();
+        }
+    })
+
     $("#new").click(function () {
+        $('#calculate').hide();
+        $('#extract').hide();
+
         $("#id").val("0");
-        $("#storage_name").val("");
-        $("#storage_code").val("");
-        $("#table_name").val("");
-        $("#storage_type").val("");
-        $("#valid_time").val("");
+        $("#name").val("");
+        $("#code").val("");
+        $("#operationtype").val("");
+        $("#cycletype").val("");
+        $("#businesstype").val("");
+        $("#unit").val("");
+        $("#magnification").val("1");
+        $("#digit").val("2");
+        $("#upperlimit").val("");
+        $("#lowerlimit").val("");
+        $("#adminapp").val("");
+        $("#app").select2("val", "");
+        $("#cumulative").val("是");
         $("#sort").val("");
+
+        $("#formula").val("");
+
+        $("#cycle").val("");
+        $("#source").val("");
+        $("#sourcetable").val("");
+        $("#sourcesis").val("");
+        $("#sourcefields").val("");
+        $("#sourceconditions").val("");
+        $("#storage").val("");
+        $("#storagetag").val("");
+        $("#storagefields").val("");
     });
 
     $('#save').click(function () {
         var table = $('#sample_1').DataTable();
-
         $.ajax({
             type: "POST",
             dataType: 'json',
-            url: "../storage_save/",
+            url: "../target_save/",
             data:
                 {
                     id: $("#id").val(),
-                    storage_name: $("#storage_name").val(),
-                    storage_code: $("#storage_code").val(),
-                    table_name: $("#table_name").val(),
-                    storage_type: $("#storage_type").val(),
-                    valid_time: $("#valid_time").val(),
+                    name: $("#name").val(),
+                    code: $("#code").val(),
+                    operationtype: $("#operationtype").val(),
+                    cycletype: $("#cycletype").val(),
+                    businesstype: $("#businesstype").val(),
+                    unit: $("#unit").val(),
+                    magnification: $("#magnification").val(),
+                    digit: $("#digit").val(),
+                    upperlimit: $("#upperlimit").val(),
+                    lowerlimit: $("#lowerlimit").val(),
+                    adminapp: $("#adminapp").val(),
+                    app: $("#app").val(),
+                    cumulative: $("#cumulative").val(),
                     sort: $("#sort").val(),
+
+                    formula: $("#formula").val(),
+
+                    cycle: $("#cycle").val(),
+                    source: $("#source").val(),
+                    sourcetable: $("#sourcetable").val(),
+                    sourcesis: $("#sourcesis").val(),
+                    sourcefields: $("#sourcefields").val(),
+                    sourceconditions: $("#sourceconditions").val(),
+                    storage: $("#storage").val(),
+                    storagetag: $("#storagetag").val(),
+                    storagefields: $("#storagefields").val(),
                 },
             success: function (data) {
                 var myres = data["res"];

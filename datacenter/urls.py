@@ -71,7 +71,7 @@ urlpatterns = [
     # 指标管理
     url(r'^target/$', target_index, {'funid': '23'}),
     url(r'^target_data/$', target_data),
-    url(r'^target_save/$', storage_save),
+    url(r'^target_save/$', target_save),
     url(r'^target_del/$', target_del),
 
     url(r'^report/$', report_index, {'funid': '24'}),
