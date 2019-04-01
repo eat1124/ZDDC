@@ -23,7 +23,7 @@ from django.utils.timezone import localtime
 from django.shortcuts import render
 from django.contrib import auth
 from django.template import RequestContext
-from django.http import HttpResponseRedirect, Http404, HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect, Http404, HttpResponse, JsonResponse, FileResponse
 from django.http import StreamingHttpResponse
 from django.db.models import Q
 from django.db.models import Count
@@ -46,6 +46,16 @@ funlist = []
 
 info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Admin@2017", "token": "",
         "lastlogin": 0}
+
+@csrf_exempt
+def download_file(request):
+    file_name = request.GET.get("file_name", "")
+    c_file_path = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + file_name
+    file=open(c_file_path,'rb')
+    response =FileResponse(file)
+    response['Content-Type']='application/octet-stream'
+    response['Content-Disposition']='attachment;filename="requirements.txt"'
+    return response
 
 
 def report_index(request, funid):
@@ -126,159 +136,174 @@ def report_index(request, funid):
                                             with open(myfilepath, 'wb+') as f:
                                                 for chunk in my_file.chunks():  # 分块写入文件
                                                     f.write(chunk)
-                                        # 在修改上传文件时需要做些操作
-                                        if id == 0:
-                                            all_report = ReportModel.objects.filter(
-                                                code=code).exclude(state="9")
-                                            if all_report.exists():
-                                                errors.append('报表编码:' + code + '已存在。')
-                                            else:
-                                                report_save = ReportModel()
-                                                report_save.name = name
-                                                report_save.code = code
-                                                report_save.report_type = report_type
-                                                report_save.app_id = int(app)
-                                                report_save.file_name = file_name
-                                                report_save.sort = int(sort) if sort else None
-                                                report_save.save()
 
-                                                if report_info_num:
-                                                    range_num = int(report_info_num / 3)
-                                                    for i in range(0, range_num):
-                                                        report_info = ReportInfo()
-                                                        report_info_name = request.POST.get(
-                                                            "report_info_name_%d" % (i + 1), "")
-                                                        report_info_default_value = request.POST.get(
-                                                            "report_info_value_%d" % (i + 1), "")
-                                                        if report_info_name:
-                                                            report_info.name = report_info_name
-                                                            report_info.default_value = report_info_default_value
-                                                            report_info.report_model = report_save
-                                                            report_info.save()
-
-                                                id = report_save.id
-                                        else:
-                                            all_report = ReportModel.objects.filter(code=code).exclude(
-                                                id=id).exclude(state="9")
-                                            if all_report.exists():
-                                                errors.append('存储编码:' + code + '已存在。')
-                                            else:
-                                                try:
-                                                    report_save = ReportModel.objects.get(
-                                                        id=id)
-
-                                                    report_save.name = name
-                                                    report_save.code = code
-                                                    report_save.report_type = report_type
-                                                    report_save.app_id = int(app)
-                                                    if my_file:
+                                            # 远程执行命令，发送请求下载文件
+                                            script_dir = r"C:\Users\Administrator\Desktop\test.ps1"
+                                            remote_file_dir = 'C:\\Users\\Administrator\\Desktop\\{0}'.format(file_name)
+                                            url_visited = 'http://192.168.100.223:8000/download_file?file_name="{0}"'.format(file_name)
+                                            remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(script_dir, remote_file_dir, url_visited)
+                                            remote_ip = "192.168.100.151"
+                                            remote_user = "Administrator"
+                                            remote_password = "tesunet@2017"
+                                            remote_platform = "Windows"
+                                            server_obj = ServerByPara(r"{0}".format(remote_cmd), remote_ip, remote_user, remote_password,remote_platform)
+                                            result = server_obj.run("")
+                                            print(result["exec_tag"], type(result["exec_tag"]))
+                                            if result["exec_tag"] == 0:
+                                                # 在修改上传文件时需要做些操作
+                                                if id == 0:
+                                                    all_report = ReportModel.objects.filter(
+                                                        code=code).exclude(state="9")
+                                                    if all_report.exists():
+                                                        errors.append('报表编码:' + code + '已存在。')
+                                                    else:
+                                                        report_save = ReportModel()
+                                                        report_save.name = name
+                                                        report_save.code = code
+                                                        report_save.report_type = report_type
+                                                        report_save.app_id = int(app)
                                                         report_save.file_name = file_name
-                                                    report_save.sort = int(sort) if sort else None
-                                                    report_save.save() 
+                                                        report_save.sort = int(sort) if sort else None
+                                                        report_save.save()
 
-                                                    # 修改报表信息关联 多/少/等
-                                                    if report_info_num:
-                                                        range_num = int(report_info_num / 3)
-                                                        current_report_info = report_save.reportinfo_set.exclude(
-                                                            state="9")
-                                                        # 少
-                                                        if len(current_report_info) > range_num:
-                                                            update_id_list = []
+                                                        if report_info_num:
+                                                            range_num = int(report_info_num / 3)
                                                             for i in range(0, range_num):
+                                                                report_info = ReportInfo()
                                                                 report_info_name = request.POST.get(
                                                                     "report_info_name_%d" % (i + 1), "")
                                                                 report_info_default_value = request.POST.get(
                                                                     "report_info_value_%d" % (i + 1), "")
-                                                                report_info_id = request.POST.get(
-                                                                    "report_info_id_%d" % (i + 1), "")
-                                                                report_info_id = int(
-                                                                    report_info_id) if report_info_id else ""
+                                                                if report_info_name:
+                                                                    report_info.name = report_info_name
+                                                                    report_info.default_value = report_info_default_value
+                                                                    report_info.report_model = report_save
+                                                                    report_info.save()
 
-                                                                if report_info_id:
-                                                                    update_id_list.append(report_info_id)
-                                                                    report_info = ReportInfo.objects.filter(
-                                                                        id=report_info_id)
-                                                                    if report_info.exists() and report_info_name:
-                                                                        report_info = report_info[0]
-                                                                        report_info.name = report_info_name
-                                                                        report_info.default_value = report_info_default_value
-                                                                        report_info.report_model = report_save
-                                                                        report_info.save()
-                                                            current_report_info.exclude(id__in=update_id_list).update(
-                                                                state="9")
-                                                        # 多
-                                                        elif len(current_report_info) < range_num:
-                                                            update_id_list = []
-                                                            for i in range(0, range_num):
-                                                                report_info_name = request.POST.get(
-                                                                    "report_info_name_%d" % (i + 1), "")
-                                                                report_info_default_value = request.POST.get(
-                                                                    "report_info_value_%d" % (i + 1), "")
-                                                                report_info_id = request.POST.get(
-                                                                    "report_info_id_%d" % (i + 1), "")
-                                                                report_info_id = int(
-                                                                    report_info_id) if report_info_id else ""
-                                                                # 有id修改-->update_list，无id重建
-                                                                if report_info_id:
-                                                                    update_id_list.append(report_info_id)
-                                                                    report_info = ReportInfo.objects.filter(
-                                                                        id=report_info_id)
-                                                                    if report_info.exists() and report_info_name:
-                                                                        report_info = report_info[0]
-                                                                        report_info.name = report_info_name
-                                                                        report_info.default_value = report_info_default_value
-                                                                        report_info.report_model = report_save
-                                                                        report_info.save()
-                                                                else:
-                                                                    report_info = ReportInfo()
-                                                                    if report_info_name:
-                                                                        report_info.name = report_info_name
-                                                                        report_info.default_value = report_info_default_value
-                                                                        report_info.report_model = report_save
-                                                                        report_info.save()
-                                                                        update_id_list.append(report_info.id)
-                                                            current_report_info.exclude(
-                                                                id__in=update_id_list).update(
-                                                                state="9")
-                                                        # 等
-                                                        else:
-                                                            update_id_list = []
-                                                            for i in range(0, range_num):
-                                                                report_info_name = request.POST.get(
-                                                                    "report_info_name_%d" % (i + 1), "")
-                                                                report_info_default_value = request.POST.get(
-                                                                    "report_info_value_%d" % (i + 1), "")
-                                                                report_info_id = request.POST.get(
-                                                                    "report_info_id_%d" % (i + 1), "")
-
-                                                                report_info_id = int(
-                                                                    report_info_id) if report_info_id else ""
-                                                                if report_info_id:
-                                                                    update_id_list.append(report_info_id)
-                                                                    report_info = ReportInfo.objects.filter(
-                                                                        id=report_info_id)
-                                                                    if report_info_name and report_info.exists():
-                                                                        report_info = report_info[0]
-                                                                        report_info.name = report_info_name
-                                                                        report_info.default_value = report_info_default_value
-                                                                        report_info.report_model = report_save
-                                                                        report_info.save()
-                                                                else:
-                                                                    report_info = ReportInfo()
-                                                                    if report_info_name:
-                                                                        report_info.name = report_info_name
-                                                                        report_info.default_value = report_info_default_value
-                                                                        report_info.report_model = report_save
-                                                                        report_info.save()
-                                                                        update_id_list.append(report_info.id)
-
-                                                            current_report_info.exclude(
-                                                                id__in=update_id_list).update(
-                                                                state="9")
                                                         id = report_save.id
-                                                except Exception as e:
-                                                    errors.append("修改失败。")
+                                                else:
+                                                    all_report = ReportModel.objects.filter(code=code).exclude(
+                                                        id=id).exclude(state="9")
+                                                    if all_report.exists():
+                                                        errors.append('存储编码:' + code + '已存在。')
+                                                    else:
+                                                        try:
+                                                            report_save = ReportModel.objects.get(
+                                                                id=id)
 
+                                                            report_save.name = name
+                                                            report_save.code = code
+                                                            report_save.report_type = report_type
+                                                            report_save.app_id = int(app)
+                                                            if my_file:
+                                                                report_save.file_name = file_name
+                                                            report_save.sort = int(sort) if sort else None
+                                                            report_save.save()
+
+                                                            # 修改报表信息关联 多/少/等
+                                                            if report_info_num:
+                                                                range_num = int(report_info_num / 3)
+                                                                current_report_info = report_save.reportinfo_set.exclude(
+                                                                    state="9")
+                                                                # 少
+                                                                if len(current_report_info) > range_num:
+                                                                    update_id_list = []
+                                                                    for i in range(0, range_num):
+                                                                        report_info_name = request.POST.get(
+                                                                            "report_info_name_%d" % (i + 1), "")
+                                                                        report_info_default_value = request.POST.get(
+                                                                            "report_info_value_%d" % (i + 1), "")
+                                                                        report_info_id = request.POST.get(
+                                                                            "report_info_id_%d" % (i + 1), "")
+                                                                        report_info_id = int(
+                                                                            report_info_id) if report_info_id else ""
+
+                                                                        if report_info_id:
+                                                                            update_id_list.append(report_info_id)
+                                                                            report_info = ReportInfo.objects.filter(
+                                                                                id=report_info_id)
+                                                                            if report_info.exists() and report_info_name:
+                                                                                report_info = report_info[0]
+                                                                                report_info.name = report_info_name
+                                                                                report_info.default_value = report_info_default_value
+                                                                                report_info.report_model = report_save
+                                                                                report_info.save()
+                                                                    current_report_info.exclude(id__in=update_id_list).update(
+                                                                        state="9")
+                                                                # 多
+                                                                elif len(current_report_info) < range_num:
+                                                                    update_id_list = []
+                                                                    for i in range(0, range_num):
+                                                                        report_info_name = request.POST.get(
+                                                                            "report_info_name_%d" % (i + 1), "")
+                                                                        report_info_default_value = request.POST.get(
+                                                                            "report_info_value_%d" % (i + 1), "")
+                                                                        report_info_id = request.POST.get(
+                                                                            "report_info_id_%d" % (i + 1), "")
+                                                                        report_info_id = int(
+                                                                            report_info_id) if report_info_id else ""
+                                                                        # 有id修改-->update_list，无id重建
+                                                                        if report_info_id:
+                                                                            update_id_list.append(report_info_id)
+                                                                            report_info = ReportInfo.objects.filter(
+                                                                                id=report_info_id)
+                                                                            if report_info.exists() and report_info_name:
+                                                                                report_info = report_info[0]
+                                                                                report_info.name = report_info_name
+                                                                                report_info.default_value = report_info_default_value
+                                                                                report_info.report_model = report_save
+                                                                                report_info.save()
+                                                                        else:
+                                                                            report_info = ReportInfo()
+                                                                            if report_info_name:
+                                                                                report_info.name = report_info_name
+                                                                                report_info.default_value = report_info_default_value
+                                                                                report_info.report_model = report_save
+                                                                                report_info.save()
+                                                                                update_id_list.append(report_info.id)
+                                                                    current_report_info.exclude(
+                                                                        id__in=update_id_list).update(
+                                                                        state="9")
+                                                                # 等
+                                                                else:
+                                                                    update_id_list = []
+                                                                    for i in range(0, range_num):
+                                                                        report_info_name = request.POST.get(
+                                                                            "report_info_name_%d" % (i + 1), "")
+                                                                        report_info_default_value = request.POST.get(
+                                                                            "report_info_value_%d" % (i + 1), "")
+                                                                        report_info_id = request.POST.get(
+                                                                            "report_info_id_%d" % (i + 1), "")
+
+                                                                        report_info_id = int(
+                                                                            report_info_id) if report_info_id else ""
+                                                                        if report_info_id:
+                                                                            update_id_list.append(report_info_id)
+                                                                            report_info = ReportInfo.objects.filter(
+                                                                                id=report_info_id)
+                                                                            if report_info_name and report_info.exists():
+                                                                                report_info = report_info[0]
+                                                                                report_info.name = report_info_name
+                                                                                report_info.default_value = report_info_default_value
+                                                                                report_info.report_model = report_save
+                                                                                report_info.save()
+                                                                        else:
+                                                                            report_info = ReportInfo()
+                                                                            if report_info_name:
+                                                                                report_info.name = report_info_name
+                                                                                report_info.default_value = report_info_default_value
+                                                                                report_info.report_model = report_save
+                                                                                report_info.save()
+                                                                                update_id_list.append(report_info.id)
+
+                                                                    current_report_info.exclude(
+                                                                        id__in=update_id_list).update(
+                                                                        state="9")
+                                                                id = report_save.id
+                                                        except Exception as e:
+                                                            errors.append("修改失败。")
+                                            else:
+                                                errors.append('文件上传失败!')                    
         return render(request, 'report.html',
                       {'username': request.user.userinfo.fullname,
                        "report_type_list": report_type_list,

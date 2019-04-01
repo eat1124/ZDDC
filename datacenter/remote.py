@@ -8,6 +8,7 @@ import winrm
 import json
 from paramiko import py3compat
 
+
 class ServerByPara(object):
     def __init__(self, cmd, host, user, password, system_choice):
         self.cmd = cmd
@@ -117,10 +118,18 @@ class ServerByPara(object):
         print(result)
         return result
 
-# if __name__ == '__main__':
-# server_obj = ServerByPara(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-#     server_obj = ServerByPara(r"C:\Users\Administrator\Desktop\test_python.bat", "192.168.100.151", "administrator","tesunet@2017", "Windows")
-# server_obj = ServerByPara(r"/root/Desktop/test06.sh hello", "47.95.195.90", "root","!zxcvbn123", "Linux")
-#     server_obj = ServerByPara(r"cat /root/Desktop/script_log.txt", "47.95.195.90", "root","!zxcvbn123", "Linux")
-#
-    # server_obj.run("")
+
+if __name__ == '__main__':
+    script_dir = r"C:\Users\Administrator\Desktop\test.ps1"
+    remote_file_dir = 'C:\\Users\\Administrator\\Desktop\\test.py'
+    url_visited = 'http://192.168.100.223:8000/download_file/?file_name="{0}"'.format("test.py")
+    remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(script_dir,
+                                                                                                remote_file_dir,
+                                                                                                url_visited)
+    remote_ip = "192.168.100.151"
+    remote_user = "Administrator"
+    remote_password = "tesunet@2017"
+    remote_platform = "Windows"
+    server_obj = ServerByPara(r"{0}".format(remote_cmd), remote_ip, remote_user, remote_password, remote_platform)
+    result = server_obj.run("")
+    print(result)
