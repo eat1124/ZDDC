@@ -50,7 +50,7 @@
                         <div class="form-group">
                             <label class="col-md-2 control-label"><span style="color:red; ">*</span>文件</label>
                             <div class="col-md-10">
-                                <div class="fileinput fileinput-new" data-provides="fileinput" style="margin-bottom:0">
+                                <div id="file_status" class="fileinput fileinput-new" data-provides="fileinput" style="margin-bottom:0">
                                     <div class="input-group input-large">
                                         <div class="form-control uneditable-input input-fixed input-medium" data-trigger="fileinput">
                                             <i class="fa fa-file fileinput-exists"></i>&nbsp;
@@ -60,6 +60,7 @@
                                             <span class="fileinput-new"> 选择文件 </span>
                                             <span class="fileinput-exists"> 重新选择 </span>
                                             <input type="file" name="report_file" id="report_file">
+                                            <input type="text" id="file_status_val" name="file_status_val">
                                         </span>
                                         <a href="javascript:;" class="input-group-addon btn red fileinput-exists" data-dismiss="fileinput"> 移除 </a>
                                     </div>
@@ -137,7 +138,7 @@
                                         <div class="form-control-focus"></div>
                                     </div>
                                 </div>
-
+                                <input type="text" class="form-control" name="report_info_id_1" placeholder="">
                             </div>
                         </div>
                     </div>

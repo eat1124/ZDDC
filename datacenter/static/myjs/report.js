@@ -19,7 +19,7 @@ $(document).ready(function () {
             "targets": -1,
             "data": null,
             "width": "100px",
-            "defaultContent": "<button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>"
+            "defaultContent": "<button  id='edit' title='编辑' data-toggle='modal'  data-target='#static'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button><button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>"
         }],
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",
@@ -71,8 +71,13 @@ $(document).ready(function () {
         $("#report_type").val(data.report_type_num);
         $("#app").val(data.app_id);
         $("#sort").val(data.sort);
+        // $("#report_file").val(data.file_name);
+        $("span.fileinput-filename").text(data.file_name);
+        $("#file_status").attr("class", "fileinput fileinput-exists");
+        $("#file_status_val").val("exists");
+
         // 报表信息加载
-        $("#report_info_div").empty()
+        $("#report_info_div").empty();
         for (i = 0; i < data.report_info_list.length; i++) {
             $("#report_info_div").append('<div class="col-md-12" style="margin-bottom:9px;">\n' +
                 '    <label class="col-md-2 control-label"><span style="color:red;"></span>名称:</label>\n' +
@@ -85,7 +90,9 @@ $(document).ready(function () {
                 '        <input type="text" class="form-control" name="report_info_value_' + i + 1 + '" value="' + data.report_info_list[i].report_info_value + '" placeholder="">\n' +
                 '        <div class="form-control-focus"></div>\n' +
                 '    </div>\n' +
-                '</div>');
+                '</div>' +
+                '<input type="text" class="form-control" name="report_info_id_' + i + 1 + '" value="' + data.report_info_list[i].report_info_id + '" placeholder="">'
+            );
         }
         if ($("#report_info_div").children().length > 1) {
             $("#node_del").css("visibility", "visible");
@@ -96,6 +103,10 @@ $(document).ready(function () {
         // ...
     });
     $("#new").click(function () {
+        $("span.fileinput-filename").empty();
+        $("#file_status").attr("class", "fileinput fileinput-new");
+        $("#file_status_val").val("");
+
         $("#id").val(0);
         $("#name").val("");
         $("#code").val("");
@@ -117,7 +128,9 @@ $(document).ready(function () {
             '        <input type="text" class="form-control" name="report_info_value_1" placeholder="">\n' +
             '        <div class="form-control-focus"></div>\n' +
             '    </div>\n' +
-            '</div>');
+            '</div>' +
+            '<input type="text" class="form-control" name="report_info_id_1" placeholder="">'
+        );
     });
 
     $("#node_new").click(function () {
@@ -133,7 +146,8 @@ $(document).ready(function () {
             '        <input type="text" class="form-control" name="report_info_value_' + cNum + '" placeholder="">\n' +
             '        <div class="form-control-focus"></div>\n' +
             '    </div>\n' +
-            '</div>');
+            '</div>' +
+            '<input type="text" class="form-control" name="report_info_id_' + cNum + '" placeholder="">');
         if ($("#report_info_div").children().length > 1) {
             $("#node_del").css("visibility", "visible");
         } else {
