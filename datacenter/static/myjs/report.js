@@ -74,7 +74,6 @@ $(document).ready(function () {
         // $("#report_file").val(data.file_name);
         $("span.fileinput-filename").text(data.file_name);
         $("#file_status").attr("class", "fileinput fileinput-exists");
-        $("#file_status_val").val("exists");
 
         // 报表信息加载
         $("#report_info_div").empty();
@@ -106,7 +105,6 @@ $(document).ready(function () {
     $("#new").click(function () {
         $("span.fileinput-filename").empty();
         $("#file_status").attr("class", "fileinput fileinput-new");
-        $("#file_status_val").val("");
 
         $("#id").val(0);
         $("#name").val("");
