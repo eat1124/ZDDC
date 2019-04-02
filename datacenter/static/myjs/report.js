@@ -160,9 +160,10 @@ $(document).ready(function () {
     });
 
     $("#node_del").click(function () {
-        $("#report_info_div").children("div:last-child").remove();
         // 删除最后一个子元素
         if ($("#report_info_div").children("div").length > 1) {
+            $("#report_info_div").children("div:last-child").remove();
+
             $("#node_del").css("visibility", "visible");
         } else {
             $("#node_del").css("visibility", "hidden");
