@@ -2,10 +2,10 @@ from django.conf.urls import url
 from datacenter.views import *
 
 urlpatterns = [
-    url(r'^$', index, {'funid': '1'}),
+    url(r'^$', index, {'funid': '2'}),
     url(r'^test/$', test),
     url(r'^processindex/(\d+)/$', processindex),
-    url(r'^index/$', index, {'funid': '1'}),
+    url(r'^index/$', index, {'funid': '2'}),
     url(r'^get_process_rto/$', get_process_rto),
     url(r'^get_daily_processrun/$', get_daily_processrun),
     url(r'^get_process_index_data/$', get_process_index_data),
@@ -21,23 +21,23 @@ urlpatterns = [
     url(r'^userpassword/$', userpassword),
 
     # 系统维护
-    url(r'^organization/$', organization, {'funid': '8'}),
+    url(r'^organization/$', organization, {'funid': '5'}),
     url(r'^orgdel/$', orgdel),
     url(r'^orgmove/$', orgmove),
     url(r'^orgpassword/$', orgpassword),
-    url(r'^group/$', group, {'funid': '9'}),
+    url(r'^group/$', group, {'funid': '6'}),
     url(r'^groupsave/$', groupsave),
     url(r'^groupdel/$', groupdel),
     url(r'^getusertree/$', getusertree),
     url(r'^groupsaveusertree/$', groupsaveusertree),
     url(r'^getfuntree/$', getfuntree),
     url(r'^groupsavefuntree/$', groupsavefuntree),
-    url(r'^function/$', function, {'funid': '10'}),
+    url(r'^function/$', function, {'funid': '8'}),
     url(r'^fundel/$', fundel),
     url(r'^funmove/$', funmove),
 
     # 字典维护
-    url(r'^dict/$', dictindex, {'funid': '11'}),
+    url(r'^dict/$', dictindex, {'funid': '9'}),
     url(r'^dictsave/$', dictsave),
     url(r'^dictselect/$', dictselect),
     url(r'^dictlistsave/$', dictlistsave),
@@ -45,36 +45,36 @@ urlpatterns = [
     url(r'^dictlistdel/$', dictlistdel),
 
     # 存储配置
-    url(r'^storage/$', storage_index, {'funid': '12'}),
+    url(r'^storage/$', storage_index, {'funid': '10'}),
     url(r'^storage_data/$', storage_data),
     url(r'^storage_save/$', storage_save),
     url(r'^storage_del/$', storage_del),
 
     # 周期配置
-    url(r'^cycle/$', cycle_index, {'funid': '13'}),
+    url(r'^cycle/$', cycle_index, {'funid': '11'}),
     url(r'^cycle_data/$', cycle_data),
     url(r'^cycle_save/$', cycle_save),
     url(r'^cycle_del/$', cycle_del),
 
     # 数据源配置
-    url(r'^source/$', source_index, {'funid': '14'}),
+    url(r'^source/$', source_index, {'funid': '12'}),
     url(r'^get_source_tree/$', get_source_tree),
     url(r'^del_source/$', del_source),
     url(r'^move_source/$', move_source),
 
     # 应用管理
-    url(r'^app/$', app_index, {'funid': '22'}),
+    url(r'^app/$', app_index, {'funid': '7'}),
     url(r'^app_data/$', app_data),
     url(r'^app_save/$', app_save),
     url(r'^app_del/$', app_del),
 
     # 指标管理
-    url(r'^target/$', target_index, {'funid': '23'}),
+    url(r'^target/$', target_index, {'funid': '13'}),
     url(r'^target_data/$', target_data),
     url(r'^target_save/$', target_save),
     url(r'^target_del/$', target_del),
 
-    url(r'^report/$', report_index, {'funid': '24'}),
+    url(r'^report/$', report_index, {'funid': '14'}),
     url(r'^report_data/$', report_data),
     url(r'^report_del/$', report_del),
     url(r'^report/(?P<funid>\d+)/$', report_index),

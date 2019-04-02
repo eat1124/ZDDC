@@ -70,7 +70,7 @@ def report_index(request, funid):
 
         # 下拉框选项
         c_dict_index_1 = DictIndex.objects.filter(
-            id=10).exclude(state='9')
+            id=7).exclude(state='9')
         if c_dict_index_1.exists():
             c_dict_index_1 = c_dict_index_1[0]
             dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
@@ -643,7 +643,7 @@ def storage_index(request, funid):
         valid_time_list = []
 
         c_dict_index_1 = DictIndex.objects.filter(
-            id=6).exclude(state='9')
+            id=4).exclude(state='9')
         if c_dict_index_1.exists():
             c_dict_index_1 = c_dict_index_1[0]
             dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
@@ -654,7 +654,7 @@ def storage_index(request, funid):
                 })
 
         c_dict_index_2 = DictIndex.objects.filter(
-            id=5).exclude(state='9')
+            id=3).exclude(state='9')
         if c_dict_index_2.exists():
             c_dict_index_2 = c_dict_index_2[0]
             dict_list2 = c_dict_index_2.dictlist_set.exclude(state="9")
@@ -1260,7 +1260,7 @@ def target_index(request, funid):
                 })
 
         c_dict_index_2 = DictIndex.objects.filter(
-            id=7).exclude(state='9')
+            id=12).exclude(state='9')
         if c_dict_index_2.exists():
             c_dict_index_2 = c_dict_index_2[0]
             dict_list2 = c_dict_index_2.dictlist_set.exclude(state="9")
@@ -1271,7 +1271,7 @@ def target_index(request, funid):
                 })
 
         c_dict_index_3 = DictIndex.objects.filter(
-            id=8).exclude(state='9')
+            id=5).exclude(state='9')
         if c_dict_index_3.exists():
             c_dict_index_3 = c_dict_index_3[0]
             dict_list3 = c_dict_index_3.dictlist_set.exclude(state="9")
@@ -1282,7 +1282,7 @@ def target_index(request, funid):
                 })
 
         c_dict_index_4 = DictIndex.objects.filter(
-            id=9).exclude(state='9')
+            id=6).exclude(state='9')
         if c_dict_index_4.exists():
             c_dict_index_4 = c_dict_index_4[0]
             dict_list4 = c_dict_index_4.dictlist_set.exclude(state="9")
@@ -1291,13 +1291,13 @@ def target_index(request, funid):
                     "unit_name": i.name,
                     "unit_id": i.id,
                 })
-
-        sourcelist = Source.objects.all().exclude(state='9')
+        sourcelist = Source.objects.all().exclude(state='9').exclude(pnode=None)
         for i in sourcelist:
             source_list.append({
                 "source_name": i.name,
                 "source_id": i.id,
             })
+        print(len(sourcelist))
 
         cyclelist = Cycle.objects.all().exclude(state='9')
         for i in cyclelist:
@@ -1701,7 +1701,8 @@ def childfun(myfun, funid):
         if fun in funlist:
             isselected = False
             url = fun.url if fun.url else ""
-            if len(fun.app.all()) > 0:
+            # if len(fun.app.all()) > 0:
+            if fun.app:
                 url = fun.url + str(fun.id) + "/" if fun.url else ""
             if str(fun.id) == funid:
                 isselected = True
@@ -1725,10 +1726,11 @@ def getpagefuns(funid, request=""):
     task_nums = 0
 
     for fun in funlist:
-        if fun.pnode_id == 15:
+        if fun.pnode_id == 1:
             isselected = False
             url = fun.url if fun.url else ""
-            if len(fun.app.all()) > 0:
+            # if len(fun.app.all()) > 0:
+            if fun.app:
                 url = fun.url + str(fun.id) + "/" if fun.url else ""
             if str(fun.id) == funid:
                 isselected = True
@@ -2315,7 +2317,7 @@ def get_fun_tree(parent, selectid, all_app):
         node["type"] = child.funtype
         # app应用
         # 当前节点的所有外键
-        all_app_list = child.app.select_related().exclude(state="9")
+        all_app_list = child.app_set.exclude(state="9")
         c_app_list = []
         for c_app in all_app_list:
             c_app_list.append(c_app.id)
