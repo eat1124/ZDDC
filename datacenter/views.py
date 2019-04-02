@@ -51,12 +51,15 @@ info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Ad
 @csrf_exempt
 def download_file(request):
     file_name = request.GET.get("file_name", "")
-    c_file_path = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + file_name
-    file = open(c_file_path, 'rb')
-    response = FileResponse(file)
-    response['Content-Type'] = 'application/octet-stream'
-    response['Content-Disposition'] = 'attachment;filename="requirements.txt"'
-    return response
+    try:
+        c_file_path = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + file_name
+        file = open(c_file_path, 'rb')
+        response = FileResponse(file)
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = 'attachment;filename="{0}"'.format(escape_uri_path(file_name))  # escape_uri_path()解决中文名文件
+        return response
+    except:
+        return HttpResponseRedirect("/report")
 
 
 def report_index(request, funid):
@@ -2317,17 +2320,23 @@ def get_fun_tree(parent, selectid, all_app):
         node["type"] = child.funtype
         # app应用
         # 当前节点的所有外键
-        all_app_list = child.app_set.exclude(state="9")
-        c_app_list = []
-        for c_app in all_app_list:
-            c_app_list.append(c_app.id)
+        current_app = child.app
+        if current_app:
+            current_app_id = current_app.id
+        else:
+            current_app_id = ""
 
         app_select_list = []
+        app_select_list.append({
+            "app_name": "",
+            "id": "",
+            "app_state": "",
+        })
         for app in all_app:
             app_select_list.append({
                 "app_name": app.name,
                 "id": app.id,
-                "app_state": "selected" if app.id in c_app_list else ""
+                "app_state": "selected" if app.id == current_app_id else ""
             })
 
         node["data"] = {"url": child.url,
@@ -2375,7 +2384,7 @@ def function(request, funid):
                 mytype = request.POST.get('radio2')
                 url = request.POST.get('url')
                 icon = request.POST.get('icon')
-                app_list = request.POST.getlist('app', '')
+                app = request.POST.get('app', '')
                 try:
                     id = int(id)
                 except:
@@ -2406,6 +2415,7 @@ def function(request, funid):
                                 maxfun = Fun.objects.filter(
                                     pnode=pfun).latest('sort')
                                 sort = maxfun.sort + 1
+                                sort = maxfun.sort + 1
                             except:
                                 pass
                             funsave = Fun()
@@ -2415,16 +2425,8 @@ def function(request, funid):
                             funsave.url = url
                             funsave.icon = icon
                             funsave.sort = sort if sort else None
+                            funsave.app_id = int(app) if app else None
                             funsave.save()
-
-                            # 存入多对多app
-                            for app_id in app_list:
-                                try:
-                                    app_id = int(app_id)
-                                    my_app = all_app.get(id=app_id)
-                                    funsave.app.add(my_app)
-                                except ValueError:
-                                    raise Http404()
 
                             title = name
                             id = funsave.id
@@ -2434,30 +2436,23 @@ def function(request, funid):
                             if funsave.funtype == "node" and mytype == "fun" and len(
                                     funsave.children.exclude(state="9")) > 0:
                                 errors.append('节点下还有其他节点或功能，无法修改为功能。')
-                            elif mytype == "node" and funsave.app.exists():
+                            elif mytype == "node" and funsave.app_set.exists():
                                 errors.append('功能下有关联应用，无法修改为节点。')
                             else:
                                 funsave.name = name
                                 funsave.funtype = mytype
                                 funsave.url = url
                                 funsave.icon = icon
+                                funsave.app_id = int(app) if app else None
                                 funsave.save()
 
-                                funsave.app.clear()
-                                for app_id in app_list:
-                                    try:
-                                        app_id = int(app_id)
-                                        my_app = all_app.get(id=app_id)
-                                        funsave.app.add(my_app)
-                                    except ValueError:
-                                        raise Http404()
                                 title = name
                         # 保存成功后，重新刷新页面，重新构造app_select_list
                         for c_app in all_app:
                             pre_app_select_list.append({
                                 "app_name": c_app.name,
                                 "id": c_app.id,
-                                "app_state": "selected" if str(c_app.id) in app_list else ""
+                                "app_state": "selected" if str(c_app.id) == app else ""
                             })
                         if mytype == "node":
                             app_hidden_div = "hidden"
@@ -2476,16 +2471,22 @@ def function(request, funid):
                     root["type"] = "node"
 
                     # 当前节点的所有外键
-                    all_app_list = rootnode.app.select_related().exclude(state="9")
-                    c_app_list = []
-                    for c_app in all_app_list:
-                        c_app_list.append(c_app.id)
+                    current_app = rootnode.app
+                    if current_app:
+                        current_app_id = current_app.id
+                    else:
+                        current_app_id = ""
                     app_select_list = []
+                    app_select_list.append({
+                        "app_name": "",
+                        "id": "",
+                        "app_state": "",
+                    })
                     for app in all_app:
                         app_select_list.append({
                             "app_name": app.name,
                             "id": app.id,
-                            "app_state": "selected" if app.id in c_app_list else ""
+                            "app_state": "selected" if app.id == current_app_id else ""
                         })
 
                     root["data"] = {"url": rootnode.url,

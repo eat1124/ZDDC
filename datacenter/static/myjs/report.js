@@ -19,7 +19,9 @@ $(document).ready(function () {
             "targets": -1,
             "data": null,
             "width": "100px",
-            "defaultContent": "<button  id='edit' title='编辑' data-toggle='modal'  data-target='#static'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button><button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>"
+            "render": function (data, type, full) {
+                return "<td><button class='btn btn-xs btn-primary' type='button'><a href='/download_file/?file_name'><i class='fa fa-arrow-circle-down' style='color: white'></i></a></button><button  id='edit' title='编辑' data-toggle='modal'  data-target='#static'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button><button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button></td>".replace("file_name", "file_name=" + full.file_name)
+            },
         }],
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",
