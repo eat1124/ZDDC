@@ -500,7 +500,13 @@ def report_app_index(request, funid):
 def report_data(request):
     if request.user.is_authenticated():
         result = []
+        search_app = request.GET.get('search_app', '')
+
         all_report = ReportModel.objects.exclude(state="9").order_by("sort")
+        if search_app != "":
+            curadminapp = App.objects.get(id=int(search_app))
+            all_report = all_report.filter(app=curadminapp)
+
         for report in all_report:
             # 报表类型
             report_type = report.report_type

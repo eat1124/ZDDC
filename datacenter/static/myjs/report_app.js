@@ -3,7 +3,7 @@ $(document).ready(function () {
         "bAutoWidth": true,
         "bSort": false,
         "bProcessing": true,
-        "ajax": "../../report_data/",
+        "ajax": "../../report_data/?search_app=" + $('#app').val(),
         "columns": [
             {"data": "id"},
             {"data": "name"},
