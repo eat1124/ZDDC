@@ -2066,10 +2066,10 @@ def index(request, funid):
         else:
             cursor = connection.cursor()
             cursor.execute(
-                "select dbom_fun.id from dbom_group,dbom_fun,dbom_userinfo,dbom_userinfo_group,dbom_group_fun "
-                "where dbom_group.id=dbom_userinfo_group.group_id and dbom_group.id=dbom_group_fun.group_id and "
-                "dbom_group_fun.fun_id=dbom_fun.id and dbom_userinfo.id=dbom_userinfo_group.userinfo_id and userinfo_id= "
-                + str(request.user.userinfo.id) + " order by dbom_fun.sort"
+                "select datacenter_fun.id from datacenter_group,datacenter_fun,datacenter_userinfo,datacenter_userinfo_group,datacenter_group_fun "
+                "where datacenter_group.id=datacenter_userinfo_group.group_id and datacenter_group.id=datacenter_group_fun.group_id and "
+                "datacenter_group_fun.fun_id=datacenter_fun.id and datacenter_userinfo.id=datacenter_userinfo_group.userinfo_id and userinfo_id= "
+                + str(request.user.userinfo.id) + " order by datacenter_fun.sort"
             )
 
             rows = cursor.fetchall()
