@@ -276,6 +276,227 @@ def report_index(request, funid):
         return HttpResponseRedirect("/login")
 
 
+def report_app_index(request, funid):
+    """
+    存储配置
+    """
+    if request.user.is_authenticated():
+        errors = []
+        id = ""
+        report_type_list = []
+        adminapp =""
+        try:
+            cur_fun=Fun.objects.filter(id=int(funid)).exclude(state='9')
+            adminapp=cur_fun[0].app_id
+        except:
+            return HttpResponseRedirect("/index")
+
+        # 下拉框选项
+        c_dict_index_1 = DictIndex.objects.filter(
+            id=7).exclude(state='9')
+        if c_dict_index_1.exists():
+            c_dict_index_1 = c_dict_index_1[0]
+            dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
+            for i in dict_list1:
+                report_type_list.append({
+                    "report_name": i.name,
+                    "report_type_id": i.id,
+                })
+        all_app = App.objects.exclude(state="9")
+        all_app_list = []
+        for app in all_app:
+            all_app_list.append({
+                "app_id": app.id,
+                "app_name": app.name,
+            })
+
+        # 新增/修改报表模型
+        if request.method == "POST":
+            id = request.POST.get("id", "")
+            name = request.POST.get("name", "")
+            code = request.POST.get("code", "")
+            report_type = request.POST.get("report_type", "")
+            app = request.POST.get("app", "")
+            sort = request.POST.get("sort", "")
+            # 二进制文件数据
+            my_file = request.FILES.get("report_file", None)
+
+            file_name = my_file.name if my_file else ""
+
+            # 报表信息组(键值对)的数量
+            report_info_num = 0
+            for key in request.POST.keys():
+                if "report_info_" in key:
+                    report_info_num += 1
+
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+
+            # 新增时提示导入文件
+            if not my_file and id == 0:
+                errors.append("请选择要导入的文件。")
+            else:
+                if if_contains_sign(file_name):
+                    errors.append(r"""请注意文件命名格式，'\/"*?<>'符号文件不允许上传。""")
+                else:
+                    # 报表存储位置
+                    myfilepath = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + file_name
+                    # 判断数据库中文件存储记录
+                    c_exist_model = ReportModel.objects.filter(file_name=file_name).exclude(state="9")
+
+                    # 新增时判断是否存在，修改时覆盖，不需要判断
+                    if c_exist_model.exists() and id == 0:
+                        errors.append("该文件已存在,请勿重复上传。")
+                    else:
+                        if name.strip() == '':
+                            errors.append('报表名称不能为空。')
+                        else:
+                            if code.strip() == '':
+                                errors.append('报表编码不能为空。')
+                            else:
+                                if report_type.strip() == '':
+                                    errors.append('报表类别不能为空。')
+                                else:
+                                    if app.strip() == '':
+                                        errors.append('关联应用不能为空。')
+                                    else:
+                                        write_tag = True
+                                        # 新增 或者 修改(且有my_file存在) 时写入文件
+                                        if id == 0 or id != 0 and my_file:
+                                            with open(myfilepath, 'wb+') as f:
+                                                for chunk in my_file.chunks():
+                                                    f.write(chunk)
+                                            # 只要有文件写入，就发送请求
+                                            # 远程执行命令，令远程windows发送请求下载文件
+                                            local_script_dir = "C:\\Users\\Administrator\\Desktop\\test.ps1"
+                                            remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
+                                            url_visited = "http://192.168.100.220:8000/download_file?file_name={0}".format(
+                                                file_name)
+                                            remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                local_script_dir, remote_file_dir, url_visited)
+                                            remote_ip = "192.168.100.151"
+                                            remote_user = "Administrator"
+                                            remote_password = "tesunet@2017"
+                                            remote_platform = "Windows"
+                                            server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
+                                                                      remote_password, remote_platform)
+                                            result = server_obj.run("")
+                                            if result["exec_tag"] != 0:
+                                                write_tag = False
+
+                                            # 远程文件下载成功
+                                        if write_tag:
+                                            # 新增报表模板
+                                            if id == 0:
+                                                all_report = ReportModel.objects.filter(
+                                                    code=code).exclude(state="9")
+                                                if all_report.exists():
+                                                    errors.append('报表编码:' + code + '已存在。')
+                                                else:
+                                                    try:
+                                                        report_save = ReportModel()
+                                                        report_save.name = name
+                                                        report_save.code = code
+                                                        report_save.report_type = report_type
+                                                        report_save.app_id = int(app)
+                                                        report_save.file_name = file_name
+                                                        report_save.sort = int(sort) if sort else None
+                                                        report_save.save()
+
+                                                        # 关联存储报表模板信息
+                                                        if report_info_num:
+                                                            range_num = int(report_info_num / 3)
+                                                            for i in range(0, range_num):
+                                                                report_info = ReportInfo()
+                                                                report_info_name = request.POST.get(
+                                                                    "report_info_name_%d" % (i + 1), "")
+                                                                report_info_default_value = request.POST.get(
+                                                                    "report_info_value_%d" % (i + 1), "")
+                                                                if report_info_name:
+                                                                    report_info.name = report_info_name
+                                                                    report_info.default_value = report_info_default_value
+                                                                    report_info.report_model = report_save
+                                                                    report_info.save()
+
+                                                        id = report_save.id
+                                                    except:
+                                                        errors.append('数据异常，请联系管理员!')
+                                            # 修改报表模板
+                                            else:
+                                                all_report = ReportModel.objects.filter(code=code).exclude(
+                                                    id=id).exclude(state="9")
+                                                if all_report.exists():
+                                                    errors.append('存储编码:' + code + '已存在。')
+                                                else:
+                                                    try:
+                                                        report_save = ReportModel.objects.get(
+                                                            id=id)
+                                                        report_save.name = name
+                                                        report_save.code = code
+                                                        report_save.report_type = report_type
+                                                        report_save.app_id = int(app)
+                                                        if my_file:
+                                                            report_save.file_name = file_name
+                                                        report_save.sort = int(sort) if sort else None
+                                                        report_save.save()
+
+                                                        # 修改报表信息关联
+                                                        # 情况：报表信息组相对数据库中存储树，增加/减少/相同 一样
+                                                        if report_info_num:
+                                                            range_num = int(report_info_num / 3)
+                                                            current_report_info = report_save.reportinfo_set.exclude(
+                                                                state="9")
+
+                                                            update_id_list = []
+                                                            for i in range(0, range_num):
+                                                                report_info_name = request.POST.get(
+                                                                    "report_info_name_%d" % (i + 1), "")
+                                                                report_info_default_value = request.POST.get(
+                                                                    "report_info_value_%d" % (i + 1), "")
+                                                                report_info_id = request.POST.get(
+                                                                    "report_info_id_%d" % (i + 1), "")
+                                                                report_info_id = int(
+                                                                    report_info_id) if report_info_id else ""
+
+                                                                if report_info_id:
+                                                                    update_id_list.append(report_info_id)
+                                                                    report_info = ReportInfo.objects.filter(
+                                                                        id=report_info_id)
+                                                                    if report_info.exists() and report_info_name:
+                                                                        report_info = report_info[0]
+                                                                        report_info.name = report_info_name
+                                                                        report_info.default_value = report_info_default_value
+                                                                        report_info.report_model = report_save
+                                                                        report_info.save()
+                                                                else:
+                                                                    report_info = ReportInfo()
+                                                                    if report_info_name:
+                                                                        report_info.name = report_info_name
+                                                                        report_info.default_value = report_info_default_value
+                                                                        report_info.report_model = report_save
+                                                                        report_info.save()
+                                                                        update_id_list.append(report_info.id)
+                                                            current_report_info.exclude(
+                                                                id__in=update_id_list).update(
+                                                                state="9")
+
+                                                            id = report_save.id
+                                                    except Exception as e:
+                                                        errors.append("修改失败。")
+        return render(request, 'report_app.html',
+                      {'username': request.user.userinfo.fullname,
+                       "report_type_list": report_type_list,
+                       "all_app_list": all_app_list,
+                       "errors": errors,
+                       "id": id,
+                       "adminapp":adminapp,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
 def report_data(request):
     if request.user.is_authenticated():
         result = []
@@ -1335,22 +1556,30 @@ def target_data(request):
     if request.user.is_authenticated():
 
         result = []
-        search_adminapp = request.POST.getlist('search_adminapp', '')
+        search_adminapp = request.GET.get('search_adminapp', '')
         search_app = request.GET.get('search_app', '')
         search_operationtype = request.GET.get('search_operationtype', '')
         search_cycletype = request.GET.get('search_cycletype', '')
         search_businesstype = request.GET.get('search_businesstype', '')
         search_unit = request.GET.get('search_unit', '')
+        search_app_noselect = request.GET.get('search_app_noselect', '')
 
         all_target = Target.objects.exclude(state="9").order_by("sort")
         if search_adminapp != "":
-            all_target = all_target.filter(adminapp=int(search_adminapp))
-        if search_app != "" and search_app != "null":
-            apps = []
-            search_app = search_app.split(',')
-            for app in search_app:
-                apps.append(int(app))
-            all_target = all_target.filter(app__in=apps)
+            if search_adminapp=='null':
+                all_target = all_target.filter(adminapp=None)
+            else:
+                curadminapp = App.objects.get(id=int(search_adminapp))
+                all_target = all_target.filter(adminapp=curadminapp)
+        if search_app != "":
+            curadminapp = App.objects.get(id=int(search_app))
+            curapp = App.objects.filter(id=int(search_app))
+            all_target = all_target.exclude(adminapp=curadminapp).filter(app__in=curapp)
+        if search_app_noselect != "":
+            curadminapp = App.objects.get(id=int(search_app_noselect))
+            curapp = App.objects.filter(id=int(search_app_noselect))
+            all_target = all_target.exclude(adminapp=curadminapp).exclude(app__in=curapp)
+
         if search_operationtype != "":
             all_target = all_target.filter(operationtype=search_operationtype)
         if search_cycletype != "":
@@ -1401,12 +1630,18 @@ def target_data(request):
             for my_app in target.app.all():
                 applist.append(my_app.id)
 
+            adminapp_name=""
+            try:
+                adminapp_name=target.adminapp.name
+            except:
+                pass
+
             result.append({
                 "operationtype_name": operationtype,
                 "cycletype_name": cycletype,
                 "businesstype_name": businesstype,
                 "unit_name": unit,
-                "adminapp_name": target.adminapp.name,
+                "adminapp_name": adminapp_name,
                 "id": target.id,
                 "name": target.name,
                 "code": target.code,
@@ -1468,6 +1703,8 @@ def target_save(request):
         storagetag = request.POST.get("storagetag", "")
         storagefields = request.POST.get("storagefields", "")
 
+        savetype = request.POST.get("savetype", "")
+
         all_app = App.objects.exclude(state="9")
         all_cycle = Cycle.objects.exclude(state="9")
         all_source = Source.objects.exclude(state="9")
@@ -1519,24 +1756,30 @@ def target_save(request):
                                             target_save.businesstype = businesstype
                                             target_save.unit = unit
                                             try:
-                                                target_save.magnification = magnification
+                                                target_save.magnification = float(magnification)
                                             except:
                                                 pass
                                             try:
-                                                target_save.digit = digit
+                                                target_save.digit = int(digit)
                                             except:
                                                 pass
-                                            target_save.upperlimit = upperlimit
-                                            target_save.lowerlimit = lowerlimit
+                                            try:
+                                                target_save.upperlimit = float(upperlimit)
+                                            except:
+                                                pass
+                                            try:
+                                                target_save.lowerlimit = float(lowerlimit)
+                                            except:
+                                                pass
                                             try:
                                                 app_id = int(adminapp)
                                                 my_app = all_app.get(id=app_id)
                                                 target_save.adminapp = my_app
-                                            except ValueError:
-                                                raise Http404()
+                                            except:
+                                                pass
                                             target_save.cumulative = cumulative
                                             try:
-                                                target_save.sort = sort
+                                                target_save.sort = int(sort)
                                             except:
                                                 pass
                                             if operationtype == '12':
@@ -1568,13 +1811,14 @@ def target_save(request):
                                                 target_save.storagefields = storagefields
                                             target_save.save()
                                             # 存入多对多app
-                                            for app_id in app_list:
-                                                try:
-                                                    app_id = int(app_id)
-                                                    my_app = all_app.get(id=app_id)
-                                                    target_save.app.add(my_app)
-                                                except ValueError:
-                                                    raise Http404()
+                                            if savetype!='app':
+                                                for app_id in app_list:
+                                                    try:
+                                                        app_id = int(app_id)
+                                                        my_app = all_app.get(id=app_id)
+                                                        target_save.app.add(my_app)
+                                                    except:
+                                                        pass
                                             result["res"] = "保存成功。"
                                             result["data"] = target_save.id
                                 else:
@@ -1600,24 +1844,30 @@ def target_save(request):
                                                 target_save.businesstype = businesstype
                                                 target_save.unit = unit
                                                 try:
-                                                    target_save.magnification = magnification
+                                                    target_save.magnification = float(magnification)
                                                 except:
                                                     pass
                                                 try:
-                                                    target_save.digit = digit
+                                                    target_save.digit = int(digit)
                                                 except:
                                                     pass
-                                                target_save.upperlimit = upperlimit
-                                                target_save.lowerlimit = lowerlimit
+                                                try:
+                                                    target_save.upperlimit = float(upperlimit)
+                                                except:
+                                                    pass
+                                                try:
+                                                    target_save.lowerlimit = float(lowerlimit)
+                                                except:
+                                                    pass
                                                 try:
                                                     app_id = int(adminapp)
                                                     my_app = all_app.get(id=app_id)
                                                     target_save.adminapp = my_app
-                                                except ValueError:
-                                                    raise Http404()
+                                                except:
+                                                    pass
                                                 target_save.cumulative = cumulative
                                                 try:
-                                                    target_save.sort = sort
+                                                    target_save.sort = int(sort)
                                                 except:
                                                     pass
                                                 if operationtype == '12':
@@ -1649,14 +1899,15 @@ def target_save(request):
                                                     target_save.storagefields = storagefields
                                                 target_save.save()
                                                 # 存入多对多app
-                                                target_save.app.clear()
-                                                for app_id in app_list:
-                                                    try:
-                                                        app_id = int(app_id)
-                                                        my_app = all_app.get(id=app_id)
-                                                        target_save.app.add(my_app)
-                                                    except ValueError:
-                                                        raise Http404()
+                                                if savetype != 'app':
+                                                    target_save.app.clear()
+                                                    for app_id in app_list:
+                                                        try:
+                                                            app_id = int(app_id)
+                                                            my_app = all_app.get(id=app_id)
+                                                            target_save.app.add(my_app)
+                                                        except:
+                                                            pass
                                                 result["res"] = "保存成功。"
                                                 result["data"] = target_save.id
                                             except Exception as e:
@@ -1676,6 +1927,276 @@ def target_del(request):
                 raise Http404()
             target = Target.objects.get(id=id)
             target.state = "9"
+            target.save()
+
+            return HttpResponse(1)
+        else:
+            return HttpResponse(0)
+
+
+def target_app_index(request, funid):
+    """
+    指标管理
+    """
+    if request.user.is_authenticated():
+        operation_type_list = []
+        cycle_type_list = []
+        business_type_list = []
+        unit_list = []
+        source_list = []
+        cycle_list = []
+        storage_list = []
+        adminapp =""
+        try:
+            cur_fun=Fun.objects.filter(id=int(funid)).exclude(state='9')
+            adminapp=cur_fun[0].app_id
+        except:
+            return HttpResponseRedirect("/index")
+
+        c_dict_index_1 = DictIndex.objects.filter(
+            id=1).exclude(state='9')
+        if c_dict_index_1.exists():
+            c_dict_index_1 = c_dict_index_1[0]
+            dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
+            for i in dict_list1:
+                operation_type_list.append({
+                    "operation_type_name": i.name,
+                    "operation_type_id": i.id,
+                })
+
+        c_dict_index_2 = DictIndex.objects.filter(
+            id=12).exclude(state='9')
+        if c_dict_index_2.exists():
+            c_dict_index_2 = c_dict_index_2[0]
+            dict_list2 = c_dict_index_2.dictlist_set.exclude(state="9")
+            for i in dict_list2:
+                cycle_type_list.append({
+                    "cycle_type_name": i.name,
+                    "cycle_type_id": i.id,
+                })
+
+        c_dict_index_3 = DictIndex.objects.filter(
+            id=5).exclude(state='9')
+        if c_dict_index_3.exists():
+            c_dict_index_3 = c_dict_index_3[0]
+            dict_list3 = c_dict_index_3.dictlist_set.exclude(state="9")
+            for i in dict_list3:
+                business_type_list.append({
+                    "business_type_name": i.name,
+                    "business_type_id": i.id,
+                })
+
+        c_dict_index_4 = DictIndex.objects.filter(
+            id=6).exclude(state='9')
+        if c_dict_index_4.exists():
+            c_dict_index_4 = c_dict_index_4[0]
+            dict_list4 = c_dict_index_4.dictlist_set.exclude(state="9")
+            for i in dict_list4:
+                unit_list.append({
+                    "unit_name": i.name,
+                    "unit_id": i.id,
+                })
+
+        sourcelist = Source.objects.all().exclude(state='9')
+        for i in sourcelist:
+            source_list.append({
+                "source_name": i.name,
+                "source_id": i.id,
+            })
+
+        cyclelist = Cycle.objects.all().exclude(state='9')
+        for i in cyclelist:
+            cycle_list.append({
+                "cycle_name": i.name,
+                "cycle_id": i.id,
+            })
+
+        storagelist = Storage.objects.all().exclude(state='9')
+        for i in storagelist:
+            storage_list.append({
+                "storage_name": i.name,
+                "storage_id": i.id,
+            })
+        return render(request, 'target_app.html',
+                      {'username': request.user.userinfo.fullname,
+                       "operation_type_list": operation_type_list,
+                       "cycle_type_list": cycle_type_list,
+                       "business_type_list": business_type_list,
+                       "unit_list": unit_list,
+                       "source_list": source_list,
+                       "cycle_list": cycle_list,
+                       "storage_list": storage_list,
+                       "adminapp":adminapp,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def target_importadminapp(request):
+    if request.user.is_authenticated():
+        adminapp = request.POST.get("adminapp", "")
+        selectedtarget = request.POST.getlist('selectedtarget[]')
+
+        result ={}
+        try:
+            app_id = int(adminapp)
+        except:
+            result["res"] = '数据异常，请重新打开页面。'
+        my_app = App.objects.exclude(state="9").filter(id=app_id)
+        if len(my_app)>0:
+            curapp = my_app[0]
+            for target in selectedtarget:
+                try:
+                    my_target = Target.objects.exclude(state="9").get(id=int(target))
+                    my_target.adminapp = curapp
+                    my_target.save()
+                except:
+                    pass
+            result["res"] = '导入完成。'
+        else:
+            result["res"] = '当前应用不存在。'
+
+    return JsonResponse(result)
+
+
+def target_app_search_index(request, funid):
+    """
+    指标管理
+    """
+    if request.user.is_authenticated():
+        operation_type_list = []
+        cycle_type_list = []
+        business_type_list = []
+        unit_list = []
+        source_list = []
+        cycle_list = []
+        storage_list = []
+        adminapp =""
+        try:
+            cur_fun=Fun.objects.filter(id=int(funid)).exclude(state='9')
+            adminapp=cur_fun[0].app_id
+        except:
+            return HttpResponseRedirect("/index")
+
+        c_dict_index_1 = DictIndex.objects.filter(
+            id=1).exclude(state='9')
+        if c_dict_index_1.exists():
+            c_dict_index_1 = c_dict_index_1[0]
+            dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
+            for i in dict_list1:
+                operation_type_list.append({
+                    "operation_type_name": i.name,
+                    "operation_type_id": i.id,
+                })
+
+        c_dict_index_2 = DictIndex.objects.filter(
+            id=12).exclude(state='9')
+        if c_dict_index_2.exists():
+            c_dict_index_2 = c_dict_index_2[0]
+            dict_list2 = c_dict_index_2.dictlist_set.exclude(state="9")
+            for i in dict_list2:
+                cycle_type_list.append({
+                    "cycle_type_name": i.name,
+                    "cycle_type_id": i.id,
+                })
+
+        c_dict_index_3 = DictIndex.objects.filter(
+            id=5).exclude(state='9')
+        if c_dict_index_3.exists():
+            c_dict_index_3 = c_dict_index_3[0]
+            dict_list3 = c_dict_index_3.dictlist_set.exclude(state="9")
+            for i in dict_list3:
+                business_type_list.append({
+                    "business_type_name": i.name,
+                    "business_type_id": i.id,
+                })
+
+        c_dict_index_4 = DictIndex.objects.filter(
+            id=6).exclude(state='9')
+        if c_dict_index_4.exists():
+            c_dict_index_4 = c_dict_index_4[0]
+            dict_list4 = c_dict_index_4.dictlist_set.exclude(state="9")
+            for i in dict_list4:
+                unit_list.append({
+                    "unit_name": i.name,
+                    "unit_id": i.id,
+                })
+
+        sourcelist = Source.objects.all().exclude(state='9')
+        for i in sourcelist:
+            source_list.append({
+                "source_name": i.name,
+                "source_id": i.id,
+            })
+
+        cyclelist = Cycle.objects.all().exclude(state='9')
+        for i in cyclelist:
+            cycle_list.append({
+                "cycle_name": i.name,
+                "cycle_id": i.id,
+            })
+
+        storagelist = Storage.objects.all().exclude(state='9')
+        for i in storagelist:
+            storage_list.append({
+                "storage_name": i.name,
+                "storage_id": i.id,
+            })
+        return render(request, 'target_app_search.html',
+                      {'username': request.user.userinfo.fullname,
+                       "operation_type_list": operation_type_list,
+                       "cycle_type_list": cycle_type_list,
+                       "business_type_list": business_type_list,
+                       "unit_list": unit_list,
+                       "source_list": source_list,
+                       "cycle_list": cycle_list,
+                       "storage_list": storage_list,
+                       "adminapp":adminapp,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def target_importapp(request):
+    if request.user.is_authenticated():
+        adminapp = request.POST.get("adminapp", "")
+        selectedtarget = request.POST.getlist('selectedtarget[]')
+
+        result ={}
+        try:
+            app_id = int(adminapp)
+        except:
+            result["res"] = '数据异常，请重新打开页面。'
+        my_app = App.objects.exclude(state="9").filter(id=app_id)
+        if len(my_app)>0:
+            curapp = my_app[0]
+            for target in selectedtarget:
+                try:
+                    my_target = Target.objects.exclude(state="9").get(id=int(target))
+                    my_target.app.add(curapp)
+                    my_target.save()
+                except:
+                    pass
+            result["res"] = '导入完成。'
+        else:
+            result["res"] = '当前应用不存在。'
+
+    return JsonResponse(result)
+
+
+def target_app_del(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            adminapp = request.POST.get("adminapp", "")
+            id = request.POST.get('id', '')
+            try:
+                id = int(id)
+                app_id = int(adminapp)
+            except:
+                raise Http404()
+            my_app = App.objects.exclude(state="9").get(id=app_id)
+            target = Target.objects.get(id=id)
+            target.app.remove(my_app)
             target.save()
 
             return HttpResponse(1)

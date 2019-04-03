@@ -74,11 +74,21 @@ urlpatterns = [
     url(r'^target_save/$', target_save),
     url(r'^target_del/$', target_del),
 
+    # 应用指标管理
+    url(r'^target_app/(?P<funid>\d+)/$', target_app_index),
+    url(r'^target_importadminapp/$', target_importadminapp),
+    url(r'^target_app_search/(?P<funid>\d+)/$', target_app_search_index),
+    url(r'^target_importapp/$', target_importapp),
+    url(r'^target_app_del/$', target_app_del),
+
+    #报表模板管理
     url(r'^report/$', report_index, {'funid': '14'}),
     url(r'^report_data/$', report_data),
     url(r'^report_del/$', report_del),
-    url(r'^report/(?P<funid>\d+)/$', report_index),
     url(r'^download_file/$', download_file),
+
+    # 应用报表模板管理
+    url(r'^report_app/(?P<funid>\d+)/$', report_app_index),
 
 
     # 场景管理

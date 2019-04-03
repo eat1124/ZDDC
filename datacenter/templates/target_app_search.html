@@ -20,35 +20,6 @@
                         <div class="col-md-12">
                             <div class="col-md-6">
                                 <div class="form-group ">
-                                    <label class="col-md-3 control-label">管理应用</label>
-                                    <div class="col-md-7">
-                                        <select class="form-control" id="search_adminapp" name="search_adminapp">
-                                            <option selected value="">全部</option>
-                                            {% for app in app_list %}
-                                                <option value="{{ app.app_id }}">{{ app.app_name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group ">
-                                    <label class="col-md-3 control-label">查询应用</label>
-                                    <div class="col-md-7">
-                                        <select class="form-control" id="search_app" name="search_app">
-                                            <option selected value="">全部</option>
-                                            {% for app in app_list %}
-                                                <option value="{{ app.app_id }}">{{ app.app_name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                        <div class="col-md-12">
-                            <div class="col-md-6">
-                                <div class="form-group ">
                                     <label class="col-md-3 control-label">操作类型</label>
                                     <div class="col-md-7">
                                         <select class="form-control" id="search_operationtype" name="search_operationtype">
@@ -112,8 +83,8 @@
     <div class="row">
         <div class="col-md-6">
             <div>
-                <button id="new" type="button" data-toggle="modal" data-target="#static" class="btn  green">
-                    新增
+                <button id="addapp" type="button" data-toggle="modal" data-target="#static1" class="btn  green">
+                    导入查询指标
                     <i class="fa fa-plus"></i>
                 </button>
             </div>
@@ -148,6 +119,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
                 <h4 class="modal-title">指标管理</h4>
                 <input hidden id="id" type="text" name="id">
+                <input hidden id="adminapp" type="text" name="adminapp" value="{{ adminapp }}">
             </div>
             <div class="panel-body">
 
@@ -158,7 +130,7 @@
                             <label class="col-md-2 control-label"><span
                                     style="color:red; ">*</span>指标名称</label>
                             <div class="col-md-4">
-                                <input id="name" type="text" name="name" class="form-control "
+                                <input readonly id="name" type="text" name="name" class="form-control "
                                        placeholder="">
                                 <div class="form-control-focus"></div>
 
@@ -166,7 +138,7 @@
                             <label class="col-md-2 control-label"><span
                                     style="color:red; ">*</span>指标代码</label>
                             <div class="col-md-4">
-                                <input id="code" type="text" name="code" class="form-control "
+                                <input readonly id="code" type="text" name="code" class="form-control "
                                        placeholder="">
                                 <div class="form-control-focus"></div>
 
@@ -177,7 +149,7 @@
                             <label class="col-md-2 control-label"><span
                                     style="color:red; ">*</span>操作类型</label>
                             <div class="col-md-4">
-                                <select class="form-control" id="operationtype" name="operationtype">
+                                <select disabled class="form-control" id="operationtype" name="operationtype">
                                     {% for operation_type in operation_type_list %}
                                         <option value="{{ operation_type.operation_type_id }}">{{ operation_type.operation_type_name }}</option>
                                     {% endfor %}
@@ -186,7 +158,7 @@
                             <label class="col-md-2 control-label"><span
                                     style="color:red; ">*</span>周期类型</label>
                             <div class="col-md-4">
-                                <select class="form-control" id="cycletype" name="cycletype">
+                                <select disabled class="form-control" id="cycletype" name="cycletype">
                                     {% for cycle_type in cycle_type_list %}
                                         <option value="{{ cycle_type.cycle_type_id }}">{{ cycle_type.cycle_type_name }}</option>
                                     {% endfor %}
@@ -198,7 +170,7 @@
                             <label class="col-md-2 control-label"><span
                                     style="color:red; ">*</span>业务类型</label>
                             <div class="col-md-4">
-                                <select class="form-control" id="businesstype" name="businesstype">
+                                <select disabled class="form-control" id="businesstype" name="businesstype">
                                     {% for business_type in business_type_list %}
                                         <option value="{{ business_type.business_type_id }}">{{ business_type.business_type_name }}</option>
                                     {% endfor %}
@@ -207,7 +179,7 @@
                             <label class="col-md-2 control-label"><span
                                     style="color:red; ">*</span>机组</label>
                             <div class="col-md-4">
-                                <select class="form-control" id="unit" name="unit">
+                                <select disabled class="form-control" id="unit" name="unit">
                                     {% for unit in unit_list %}
                                         <option value="{{  unit.unit_id }}">{{  unit.unit_name }}</option>
                                     {% endfor %}
@@ -218,7 +190,7 @@
                             <label class="col-md-2 control-label"><span
                                     style="color:red; ">*</span>倍率</label>
                             <div class="col-md-4">
-                                <input id="magnification" type="number" name="magnification" class="form-control "
+                                <input readonly id="magnification" type="number" name="magnification" class="form-control "
                                        placeholder="1" >
                                 <div class="form-control-focus"></div>
 
@@ -226,7 +198,7 @@
                             <label class="col-md-2 control-label"><span
                                     style="color:red; ">*</span>保留位数</label>
                             <div class="col-md-4">
-                                <input id="digit" type="number" name="digit" class="form-control "
+                                <input readonly id="digit" type="number" name="digit" class="form-control "
                                        placeholder="2">
                                 <div class="form-control-focus"></div>
 
@@ -235,49 +207,31 @@
                         <div class="form-group">
                             <label class="col-md-2 control-label">上限</label>
                             <div class="col-md-4">
-                                <input id="upperlimit" type="number" name="upperlimit" class="form-control "
+                                <input readonly id="upperlimit" type="number" name="upperlimit" class="form-control "
                                        placeholder="" >
                                 <div class="form-control-focus"></div>
 
                             </div>
                             <label class="col-md-2 control-label">下限</label>
                             <div class="col-md-4">
-                                <input id="lowerlimit" type="number" name="lowerlimit" class="form-control "
+                                <input readonly id="lowerlimit" type="number" name="lowerlimit" class="form-control "
                                        placeholder="">
                                 <div class="form-control-focus"></div>
 
                             </div>
                         </div>
 
-                        <div class="form-group ">
-                            <label class="col-md-2 control-label">管理应用</label>
-                            <div class="col-md-4">
-                                <select class="form-control" id="adminapp" name="adminapp">
-                                    {% for app in app_list %}
-                                        <option value="{{ app.app_id }}">{{ app.app_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <label class="col-md-2 control-label">查询应用</label>
-                            <div class="col-md-4">
-                                <select  id="app" name="app" placeholder="testt test" class="form-control select2" multiple>
-                                    {% for app in app_list %}
-                                        <option value="{{ app.app_id }}">{{ app.app_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
                         <div class="form-group">
                             <label class="col-md-2 control-label">是否累积</label>
                             <div class="col-md-4">
-                                <select class="form-control" id="cumulative" name="cumulative">
+                                <select disabled class="form-control" id="cumulative" name="cumulative">
                                     <option value="是" selected>是</option>
                                     <option value="否" >否</option>
                                 </select>
                             </div>
                             <label class="col-md-2 control-label">排序</label>
                             <div class="col-md-4">
-                                <input id="sort" type="number" name="sort" class="form-control"
+                                <input readonly id="sort" type="number" name="sort" class="form-control"
                                        placeholder="">
                                 <div class="form-control-focus"></div>
 
@@ -289,7 +243,7 @@
                             <div class="form-group">
                                 <label class="col-md-2 control-label">公式</label>
                                 <div class="col-md-10">
-                                    <textarea class="form-control" placeholder="" rows="4" id="formula" name="formula"></textarea>
+                                    <textarea readonly class="form-control" placeholder="" rows="4" id="formula" name="formula"></textarea>
                                                 <div class="form-control-focus"> </div>
 
                                 </div>
@@ -300,7 +254,7 @@
                             <div class="form-group ">
                                 <label class="col-md-2 control-label">周期</label>
                                 <div class="col-md-4">
-                                    <select class="form-control" id="cycle" name="cycle">
+                                    <select disabled class="form-control" id="cycle" name="cycle">
                                         {% for cycle in cycle_list %}
                                             <option value="{{ cycle.cycle_id }}">{{ cycle.cycle_name }}</option>
                                         {% endfor %}
@@ -308,7 +262,7 @@
                                 </div>
                                 <label class="col-md-2 control-label">数据源</label>
                                 <div class="col-md-4">
-                                    <select class="form-control" id="source" name="source">
+                                    <select disabled class="form-control" id="source" name="source">
                                         {% for source in source_list %}
                                             <option value="{{  source.source_id }}">{{  source.source_name }}</option>
                                         {% endfor %}
@@ -318,14 +272,14 @@
                             <div class="form-group">
                                 <label class="col-md-2 control-label">数据源表</label>
                                 <div class="col-md-4">
-                                    <input id="sourcetable" type="text" name="sourcetable" class="form-control "
+                                    <input readonly id="sourcetable" type="text" name="sourcetable" class="form-control "
                                            placeholder="" >
                                     <div class="form-control-focus"></div>
 
                                 </div>
                                 <label class="col-md-2 control-label">数据源sis点</label>
                                 <div class="col-md-4">
-                                    <input id="sourcesis" type="text" name="sourcesis" class="form-control "
+                                    <input readonly id="sourcesis" type="text" name="sourcesis" class="form-control "
                                            placeholder="">
                                     <div class="form-control-focus"></div>
 
@@ -334,13 +288,13 @@
                             <div class="form-group">
                                 <label class="col-md-2 control-label">数据源字段</label>
                                 <div class="col-md-4">
-                                    <textarea class="form-control" placeholder="" rows="4" id="sourcefields" name="sourcefields"></textarea>
+                                    <textarea readonly class="form-control" placeholder="" rows="4" id="sourcefields" name="sourcefields"></textarea>
                                                 <div class="form-control-focus"> </div>
 
                                 </div>
                                 <label class="col-md-2 control-label">数据源条件</label>
                                 <div class="col-md-4">
-                                    <textarea class="form-control" placeholder="" rows="4" id="sourceconditions" name="sourceconditions"></textarea>
+                                    <textarea readonly class="form-control" placeholder="" rows="4" id="sourceconditions" name="sourceconditions"></textarea>
                                                 <div class="form-control-focus"> </div>
 
                                 </div>
@@ -348,7 +302,7 @@
                             <div class="form-group ">
                                 <label class="col-md-2 control-label">存储位置</label>
                                 <div class="col-md-4">
-                                    <select class="form-control" id="storage" name="storage">
+                                    <select disabled class="form-control" id="storage" name="storage">
                                         {% for storage in storage_list %}
                                             <option value="{{ storage.storage_id }}">{{ storage.storage_name }}</option>
                                         {% endfor %}
@@ -356,7 +310,7 @@
                                 </div>
                                 <label class="col-md-2 control-label">存储标识</label>
                                 <div class="col-md-4">
-                                    <input id="storagetag" type="text" name="storagetag" class="form-control "
+                                    <input readonly id="storagetag" type="text" name="storagetag" class="form-control "
                                            placeholder="">
                                     <div class="form-control-focus"></div>
 
@@ -365,7 +319,7 @@
                             <div class="form-group">
                                 <label class="col-md-2 control-label">存储字段</label>
                                 <div class="col-md-10">
-                                    <textarea class="form-control" placeholder="" rows="4" id="storagefields" name="storagefields"></textarea>
+                                    <textarea readonly class="form-control" placeholder="" rows="4" id="storagefields" name="storagefields"></textarea>
                                                 <div class="form-control-focus"> </div>
 
                                 </div>
@@ -376,10 +330,125 @@
                         <div class="modal-footer">
                             <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭
                             </button>
-                            <button type="button" id="save" name="save" class="btn green">保存</button>
                         </div>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="static1" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" style="width:900px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">选择指标</h4>
+                <input hidden id="id" type="text" name="id">
+                <input hidden id="adminapp" type="text" name="adminapp" value="{{ adminapp }}">
+            </div>
+            <div class="panel-body">
+                <div class="table-toolbar">
+                    <div id="error">
+                        {% if errors %}
+                        {% for error in errors %}
+                        <div class="alert alert-danger ">{{ error }}</div>
+                        <span> {% endfor %}</span>
+
+                        {% endif %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel-body">
+                                <div class="bs-example form-horizontal activate-form">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="col-md-6">
+                                                <div class="form-group ">
+                                                    <label class="col-md-3 control-label">操作类型</label>
+                                                    <div class="col-md-7">
+                                                        <select class="form-control" id="search_operationtype1" name="search_operationtype1">
+                                                            <option selected value="">全部</option>
+                                                            {% for operation_type in operation_type_list %}
+                                                                <option value="{{ operation_type.operation_type_id }}">{{ operation_type.operation_type_name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group ">
+                                                    <label class="col-md-3 control-label">周期类型</label>
+                                                    <div class="col-md-7">
+                                                        <select class="form-control" id="search_cycletype1" name="search_cycletype1">
+                                                            <option selected value="">全部</option>
+                                                            {% for cycle_type in cycle_type_list %}
+                                                                <option value="{{ cycle_type.cycle_type_id }}">{{ cycle_type.cycle_type_name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+
+                                            <div class="col-md-6">
+                                                <div class="form-group ">
+                                                    <label class="col-md-3 control-label">业务类型</label>
+                                                    <div class="col-md-7">
+                                                        <select class="form-control" id="search_businesstype1" name="search_businesstype1">
+                                                            <option selected value="">全部</option>
+                                                            {% for business_type in business_type_list %}
+                                                                <option value="{{ business_type.business_type_id }}">{{ business_type.business_type_name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group ">
+                                                    <label class="col-md-3 control-label">机组</label>
+                                                    <div class="col-md-7">
+                                                        <select class="form-control" id="search_unit1" name="search_unit1">
+                                                            <option selected value="">全部</option>
+                                                            {% for unit in unit_list %}
+                                                                <option value="{{  unit.unit_id }}">{{  unit.unit_name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table class="table table-striped table-bordered table-hover table-checkable order-column" id="sample_2">
+                    <thead>
+                    <tr>
+                        <th style="width:40px;"> 选择</th>
+                        <th style="width:40px;"> 序号</th>
+                        <th> 指标名称</th>
+                        <th> 指标代码</th>
+                        <th> 操作类型</th>
+                        <th> 周期类型</th>
+                        <th> 业务类型</th>
+                        <th> 机组</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭
+                </button>
+                <button type="button" id="addapp_save" name="addapp_save" class="btn green">导入</button>
             </div>
         </div>
     </div>
