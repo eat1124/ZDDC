@@ -17,6 +17,8 @@ import pdfkit
 import sys
 import requests
 from operator import itemgetter
+import subprocess
+import multiprocessing
 
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
@@ -48,6 +50,135 @@ info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Ad
         "lastlogin": 0}
 
 
+def process_monitor_index(request, funid):
+    """
+    进程监控
+    """
+    if request.user.is_authenticated():
+        return render(request, 'process_monitor.html',
+                      {'username': request.user.userinfo.fullname,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def process_monitor_data(request):
+    if request.user.is_authenticated():
+        result = []
+
+        all_process_monitor = ProcessMonitor.objects.exclude(state="9")
+        for process_monitor in all_process_monitor:
+            result.append({
+                "id": process_monitor.id,
+                "name": process_monitor.name,
+                "process_path": process_monitor.process_path,
+                "create_time": process_monitor.create_time.strftime(
+                    '%Y-%m-%d %H:%M:%S') if process_monitor.create_time else "未启动",
+                "status": process_monitor.status if process_monitor.status else "",
+            })
+
+        return JsonResponse({"data": result})
+
+
+def create_process(request):
+    if request.user.is_authenticated():
+        process_id = request.POST.get("id", "")
+        process_path = request.POST.get("process_path", "")
+        try:
+            process_id = int(process_id)
+        except:
+            raise Http404()
+        result = {}
+        if process_path.strip() == '':
+            result["res"] = '程序路径不能为空。'
+        else:
+            process_name = process_path.split("\\")[-1].split(".")[0]
+            if process_id == 0:
+                all_process_monitor = ProcessMonitor.objects.filter(process_path=process_path).exclude(state="9")
+                if all_process_monitor.exists():
+                    result["res"] = '执行程序路径:' + process_path + '已存在。'
+                else:
+                    try:
+                        process_monitor_save = ProcessMonitor()
+                        process_monitor_save.name = process_name
+                        process_monitor_save.process_path = process_path
+                        process_monitor_save.status = ""
+                        process_monitor_save.save()
+
+                        result["res"] = "保存成功。"
+                    except Exception as e:
+                        print(e)
+                        result["res"] = "保存失败。"
+            else:
+                current_process_monitor = ProcessMonitor.objects.filter(id=process_id).exclude(state="9")
+                if current_process_monitor.exists():
+                    current_process_monitor = current_process_monitor[0]
+                    try:
+                        current_process_monitor.process_path = process_path
+                        current_process_monitor.save()
+                        result["res"] = "保存成功。"
+                    except Exception as e:
+                        print(e)
+                        result["res"] = "保存失败。"
+                else:
+                    result["res"] = "程序不存在。"
+        return JsonResponse(result)
+
+
+def process_run(request):
+    if request.user.is_authenticated():
+        p_id = request.POST.get("id", "")
+        result = {}
+        # 异步开启程序
+        current_process = ProcessMonitor.objects.filter(id=p_id, status__in=["已关闭", ""])
+        if current_process.exists():
+            try:
+                # <ProcessMonitor: ProcessMonitor object> is not JSON serializable
+                handle_process.delay(p_id, handle_type="RUN")
+                result["res"] = "程序启动成功。"
+            except Exception as e:
+                print(e)
+                result["res"] = "程序启动失败。"
+        else:
+            result["res"] = "请勿重复执行该程序。"
+        return JsonResponse(result)
+
+
+def process_destroy(request):
+    if request.user.is_authenticated():
+        p_id = request.POST.get("id", "")
+        current_process = ProcessMonitor.objects.filter(id=p_id).exclude(status="已关闭", state="9")
+        result = {}
+
+        if current_process.exists():
+            # 异步开启程序
+            try:
+                handle_process.delay(p_id, handle_type="DESTROY")
+                result["res"] = "程序终止成功。"
+            except:
+                result["res"] = "程序终止失败。"
+        else:
+            result["res"] = "该程序未运行。"
+        return JsonResponse(result)
+
+
+def process_delele(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            id = request.POST.get('id', '')
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+            process_minitor = ProcessMonitor.objects.get(id=id)
+            process_minitor.state = "9"
+            process_minitor.save()
+
+            return HttpResponse(1)
+        else:
+            return HttpResponse(0)
+
+
 @csrf_exempt
 def download_file(request):
     file_name = request.GET.get("file_name", "")
@@ -56,7 +187,8 @@ def download_file(request):
         file = open(c_file_path, 'rb')
         response = FileResponse(file)
         response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = 'attachment;filename="{0}"'.format(escape_uri_path(file_name))  # escape_uri_path()解决中文名文件
+        response['Content-Disposition'] = 'attachment;filename="{0}"'.format(
+            escape_uri_path(file_name))  # escape_uri_path()解决中文名文件
         return response
     except:
         return HttpResponseRedirect("/report")
@@ -284,10 +416,10 @@ def report_app_index(request, funid):
         errors = []
         id = ""
         report_type_list = []
-        adminapp =""
+        adminapp = ""
         try:
-            cur_fun=Fun.objects.filter(id=int(funid)).exclude(state='9')
-            adminapp=cur_fun[0].app_id
+            cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
+            adminapp = cur_fun[0].app_id
         except:
             return HttpResponseRedirect("/index")
 
@@ -491,7 +623,7 @@ def report_app_index(request, funid):
                        "all_app_list": all_app_list,
                        "errors": errors,
                        "id": id,
-                       "adminapp":adminapp,
+                       "adminapp": adminapp,
                        "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
@@ -1572,7 +1704,7 @@ def target_data(request):
 
         all_target = Target.objects.exclude(state="9").order_by("sort")
         if search_adminapp != "":
-            if search_adminapp=='null':
+            if search_adminapp == 'null':
                 all_target = all_target.filter(adminapp=None)
             else:
                 curadminapp = App.objects.get(id=int(search_adminapp))
@@ -1636,9 +1768,9 @@ def target_data(request):
             for my_app in target.app.all():
                 applist.append(my_app.id)
 
-            adminapp_name=""
+            adminapp_name = ""
             try:
-                adminapp_name=target.adminapp.name
+                adminapp_name = target.adminapp.name
             except:
                 pass
 
@@ -1817,7 +1949,7 @@ def target_save(request):
                                                 target_save.storagefields = storagefields
                                             target_save.save()
                                             # 存入多对多app
-                                            if savetype!='app':
+                                            if savetype != 'app':
                                                 for app_id in app_list:
                                                     try:
                                                         app_id = int(app_id)
@@ -1952,10 +2084,10 @@ def target_app_index(request, funid):
         source_list = []
         cycle_list = []
         storage_list = []
-        adminapp =""
+        adminapp = ""
         try:
-            cur_fun=Fun.objects.filter(id=int(funid)).exclude(state='9')
-            adminapp=cur_fun[0].app_id
+            cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
+            adminapp = cur_fun[0].app_id
         except:
             return HttpResponseRedirect("/index")
 
@@ -2032,7 +2164,7 @@ def target_app_index(request, funid):
                        "source_list": source_list,
                        "cycle_list": cycle_list,
                        "storage_list": storage_list,
-                       "adminapp":adminapp,
+                       "adminapp": adminapp,
                        "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
@@ -2043,13 +2175,13 @@ def target_importadminapp(request):
         adminapp = request.POST.get("adminapp", "")
         selectedtarget = request.POST.getlist('selectedtarget[]')
 
-        result ={}
+        result = {}
         try:
             app_id = int(adminapp)
         except:
             result["res"] = '数据异常，请重新打开页面。'
         my_app = App.objects.exclude(state="9").filter(id=app_id)
-        if len(my_app)>0:
+        if len(my_app) > 0:
             curapp = my_app[0]
             for target in selectedtarget:
                 try:
@@ -2077,10 +2209,10 @@ def target_app_search_index(request, funid):
         source_list = []
         cycle_list = []
         storage_list = []
-        adminapp =""
+        adminapp = ""
         try:
-            cur_fun=Fun.objects.filter(id=int(funid)).exclude(state='9')
-            adminapp=cur_fun[0].app_id
+            cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
+            adminapp = cur_fun[0].app_id
         except:
             return HttpResponseRedirect("/index")
 
@@ -2157,7 +2289,7 @@ def target_app_search_index(request, funid):
                        "source_list": source_list,
                        "cycle_list": cycle_list,
                        "storage_list": storage_list,
-                       "adminapp":adminapp,
+                       "adminapp": adminapp,
                        "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
@@ -2168,13 +2300,13 @@ def target_importapp(request):
         adminapp = request.POST.get("adminapp", "")
         selectedtarget = request.POST.getlist('selectedtarget[]')
 
-        result ={}
+        result = {}
         try:
             app_id = int(adminapp)
         except:
             result["res"] = '数据异常，请重新打开页面。'
         my_app = App.objects.exclude(state="9").filter(id=app_id)
-        if len(my_app)>0:
+        if len(my_app) > 0:
             curapp = my_app[0]
             for target in selectedtarget:
                 try:

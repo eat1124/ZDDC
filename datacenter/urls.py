@@ -20,6 +20,14 @@ urlpatterns = [
     url(r'^password/$', password),
     url(r'^userpassword/$', userpassword),
 
+    # 应用管理
+    url(r'^process_monitor/$', process_monitor_index, {'funid': '21'}),
+    url(r'^process_monitor_data/$', process_monitor_data),
+    url(r'^create_process/$', create_process),
+    url(r'^process_delele/$', process_delele),
+    url(r'^process_run/$', process_run),
+    url(r'^process_destroy/$', process_destroy),
+
     # 系统维护
     url(r'^organization/$', organization, {'funid': '5'}),
     url(r'^orgdel/$', orgdel),

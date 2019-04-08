@@ -10,6 +10,84 @@ from .funcs import *
 import datetime
 from django.db.models import Q
 import time
+import os
+import psutil
+
+
+@shared_task
+def handle_process(p_id, handle_type=None):
+    """
+    开启程序
+    """
+    current_process = ProcessMonitor.objects.filter(id=p_id)
+    if current_process.exists():
+        current_process = current_process[0]
+    process_path = current_process.process_path
+    process_name = current_process.name
+    if handle_type == "RUN":
+        try:
+            # 修改数据库进程状态
+            current_process.status = "开启中"
+            current_process.create_time = datetime.datetime.now()
+            current_process.save()
+            os.system(r"{0}".format(process_path))
+        except:
+            print("执行失败")
+    elif handle_type == "DESTROY":
+        all_process = psutil.process_iter()
+        for p in all_process:
+            if process_name in p.name():
+                try:
+                    p.terminate()
+
+                    # 修改数据库进程状态
+                    current_process.status = "已关闭"
+                    current_process.create_time = None
+                    current_process.save()
+                except:
+                    print("程序终止失败。")
+    else:
+        print("程序执行类型不符合。")
+
+
+@shared_task
+def monitor_process():
+    """
+    监控程序
+    """
+    all_term_process = psutil.process_iter()
+    all_db_process = ProcessMonitor.objects.exclude(state="9")
+    if all_db_process.exists():
+        for db_process in all_db_process:
+            for term_process in all_term_process:
+                if db_process.name in term_process.name():
+                    db_process.status = term_process.status()
+                    db_process.create_time = term_process.create_time()
+                    db_process.save()
+                    break
+
+    # process_name_list = []
+    # for p in all_process:
+    #     try:
+    #         process_info_list.append({
+    #             "id": p.pid,
+    #             "name": p.name(),  # 进程名
+    #             # "exe": p.exe(),
+    #             # "cwd": p.cwd(),
+    #             "status": p.status(),
+    #             "create_time": p.create_time(),
+    #             # "uids": p.uids(),
+    #             # "gids": p.gids(),
+    #             # "cpu_times": p.cpu_times(),
+    #             # "cpu_affinity": p.cpu_affinity(),
+    #             "memory_percent": p.memory_percent(),
+    #             # "memory_info": p.memory_info(),
+    #             # "io_counters": p.io_counters(),
+    #             # "connectios": p.connectios(),
+    #             "num_threads": p.num_threads(),
+    #         })
+    #     except:
+    #         pass
 
 
 def is_connection_usable():
