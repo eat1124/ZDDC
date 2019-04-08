@@ -31,8 +31,8 @@ def handle_process(p_id, handle_type=None):
             current_process.create_time = datetime.datetime.now()
             current_process.save()
             os.system(r"{0}".format(process_path))
-        except:
-            print("执行失败")
+        except Exception as e:
+            print("执行失败，原因：", e)
     elif handle_type == "DESTROY":
         all_process = psutil.process_iter()
         for p in all_process:

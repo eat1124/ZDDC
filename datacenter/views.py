@@ -91,6 +91,8 @@ def create_process(request):
         result = {}
         if process_path.strip() == '':
             result["res"] = '程序路径不能为空。'
+        elif not os.path.exists(r"{0}".format(process_path)):
+            result["res"] = '当前系统不存在该程序，无法添加。'
         else:
             process_name = process_path.split("\\")[-1].split(".")[0]
             if process_id == 0:
