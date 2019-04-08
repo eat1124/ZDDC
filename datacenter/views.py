@@ -134,13 +134,19 @@ def process_run(request):
         # 异步开启程序
         current_process = ProcessMonitor.objects.filter(id=p_id, status__in=["已关闭", ""])
         if current_process.exists():
-            try:
-                # <ProcessMonitor: ProcessMonitor object> is not JSON serializable
-                handle_process.delay(p_id, handle_type="RUN")
-                result["res"] = "程序启动成功。"
-            except Exception as e:
-                print(e)
-                result["res"] = "程序启动失败。"
+            current_process = current_process[0]
+            process_path = current_process.process_path
+
+            if os.path.exists(r"{0}".format(process_path)):
+                try:
+                    # <ProcessMonitor: ProcessMonitor object> is not JSON serializable
+                    handle_process.delay(p_id, handle_type="RUN")
+                    result["res"] = "程序启动成功。"
+                except Exception as e:
+                    print(e)
+                    result["res"] = "程序启动失败。"
+            else:
+                result["res"] = '当前系统不存在该程序，无法启动。'
         else:
             result["res"] = "请勿重复执行该程序。"
         return JsonResponse(result)
