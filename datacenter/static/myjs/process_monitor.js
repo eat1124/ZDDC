@@ -2,7 +2,7 @@ $(document).ready(function () {
     $('#sample_1').dataTable({
         "bAutoWidth": true,
         "bSort": false,
-        "bProcessing": true,
+        "bProcessing": false,
         "ajax": "../process_monitor_data/",
         "columns": [
             {"data": "id"},
@@ -115,7 +115,6 @@ $(document).ready(function () {
         }
     });
 
-
     $("#new").click(function () {
         $("#id").val(0);
         $("#process_path").val("");
@@ -149,4 +148,10 @@ $(document).ready(function () {
     $('#error').click(function () {
         $(this).hide()
     });
+
+    setInterval(function () {
+        var table = $('#sample_1').DataTable();
+        table.ajax.reload();
+        console.log("refresh")
+    }, 2000);
 });
