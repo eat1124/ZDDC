@@ -10,7 +10,7 @@ from .funcs import *
 import datetime
 from django.db.models import Q
 import time
-import os
+import subprocess
 import psutil
 
 
@@ -30,7 +30,7 @@ def handle_process(p_id, handle_type=None):
             current_process.status = "开启中"
             current_process.create_time = datetime.datetime.now()
             current_process.save()
-            os.system(r"{0}".format(process_path))
+            subprocess.run(r"{0}".format(process_path))
         except Exception as e:
             print("执行失败，原因：", e)
     elif handle_type == "DESTROY":
