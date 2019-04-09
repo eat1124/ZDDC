@@ -57,16 +57,31 @@ def monitor_process():
         1.处理进程异常关闭提示。
     """
     all_term_process = psutil.process_iter()
+    process_info_list = []
+    for p in all_term_process:
+        try:
+            process_info_list.append({
+                "id": p.pid,
+                "name": p.name(),  # 进程名
+                "status": p.status(),
+                "create_time": p.create_time(),
+            })
+        except:
+            pass
+
     all_db_process = ProcessMonitor.objects.exclude(state="9")
     if all_db_process.exists():
         for db_process in all_db_process:
             error_running = True
-            for term_process in all_term_process:
-                if db_process.name in term_process.name():
+            db_process_name = db_process.name
+
+            for term_process in process_info_list:
+
+                if db_process_name in term_process["name"]:
                     error_running = False
                     try:
-                        db_process.status = term_process.status()
-                        db_process.create_time = datetime.datetime.fromtimestamp(term_process.create_time())
+                        db_process.status = term_process["status"]
+                        db_process.create_time = datetime.datetime.fromtimestamp(term_process["create_time"])
                         db_process.save()
                         break
                     except Exception as e:
