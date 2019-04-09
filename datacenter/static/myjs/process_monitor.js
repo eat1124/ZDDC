@@ -164,12 +164,12 @@ $(document).ready(function () {
             // 处理时对end标志进行修改，end=True表示停止（取消定时器）。
             console.log("refresh");
             if (window.location.href.indexOf("process_monitor") != -1) {
+                var table = $('#sample_process_monitor').DataTable();
+                table.ajax.reload();
                 end = false
             } else {
                 end = true
             }
-            var table = $('#sample_process_monitor').DataTable();
-            table.ajax.reload();
 
             if (!end) {
                 // 循环(arguments.callee获取当前执行函数的引用)
