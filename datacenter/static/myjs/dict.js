@@ -2,6 +2,8 @@ $('#se_1').contextmenu({
     target: '#context-menu2',
     onItem: function (context, e) {
         if ($(e.target).text() == "新增") {
+            $("#dict_id_display_div").hide();
+
             $("#dictname").val("");
             $("#dictsort").val("");
             $("#dictid").val("0");
@@ -14,6 +16,9 @@ $('#se_1').contextmenu({
                 if ($("#se_1").find('option:selected').length > 1)
                     alert("修改时请不要选择多条记录。");
                 else {
+                    $("#dict_id_display_div").show();
+                    $("#dict_id_display").val($("#se_1").find('option:selected').attr('id'));
+
                     $("#dictname").val($("#se_1").find('option:selected').text());
                     $("#dictsort").val($("#se_1").find('option:selected').attr('sort'));
                     $("#dictid").val($("#se_1").find('option:selected').attr('id'));
@@ -60,6 +65,8 @@ $('#se_2').contextmenu({
             if ($("#se_1").find('option:selected').length == 0)
                 alert("请选择字典。");
             else {
+                $("#list_id_display_div").hide();
+
                 $("#listname").val("");
                 $("#listsort").val("");
                 $("#listid").val("0");
@@ -73,6 +80,9 @@ $('#se_2').contextmenu({
                 if ($("#se_2").find('option:selected').length > 1)
                     alert("修改时请不要选择多条记录。");
                 else {
+                    $("#list_id_display_div").show();
+                    $("#list_id_display").val($("#se_2").find('option:selected').attr('id'));
+
                     $("#listname").val($("#se_2").find('option:selected').text());
                     $("#listsort").val($("#se_2").find('option:selected').attr('sort'));
                     $("#listid").val($("#se_2").find('option:selected').attr('id'));
@@ -151,8 +161,8 @@ $('#save').click(function () {
                 $('#static').modal('hide');
             }
             if (myres == "修改成功。") {
-                $("#" + $("#dictid").val()).text($("#dictname").val())
-                $("#" + $("#dictid").val()).attr('sort', $("#dictsort").val())
+                $("#" + $("#dictid").val()).text($("#dictname").val());
+                $("#" + $("#dictid").val()).attr('sort', $("#dictsort").val());
                 $('#static').modal('hide');
             }
             alert(myres);
@@ -184,8 +194,8 @@ $('#listsave').click(function () {
                 $('#static1').modal('hide');
             }
             if (myres == "修改成功。") {
-                $("#" + $("#listid").val()).text($("#listname").val())
-                $("#" + $("#listid").val()).attr('sort', $("#listsort").val())
+                $("#" + $("#listid").val()).text($("#listname").val());
+                $("#" + $("#listid").val()).attr('sort', $("#listsort").val());
                 $('#static1').modal('hide');
             }
             alert(myres);
