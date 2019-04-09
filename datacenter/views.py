@@ -132,7 +132,7 @@ def process_run(request):
         p_id = request.POST.get("id", "")
         result = {}
         # 异步开启程序
-        current_process = ProcessMonitor.objects.filter(id=p_id, status__in=["已关闭", ""])
+        current_process = ProcessMonitor.objects.filter(id=p_id, status__in=["已关闭", "", "进程异常关闭，请重新启动。"])
         if current_process.exists():
             current_process = current_process[0]
             process_path = current_process.process_path

@@ -54,13 +54,16 @@ def handle_process(p_id, handle_type=None):
 def monitor_process():
     """
     监控程序
+        1.处理进程异常关闭提示。
     """
     all_term_process = psutil.process_iter()
     all_db_process = ProcessMonitor.objects.exclude(state="9")
     if all_db_process.exists():
         for db_process in all_db_process:
+            error_running = True
             for term_process in all_term_process:
                 if db_process.name in term_process.name():
+                    error_running = False
                     try:
                         db_process.status = term_process.status()
                         db_process.create_time = datetime.datetime.fromtimestamp(term_process.create_time())
@@ -68,6 +71,14 @@ def monitor_process():
                         break
                     except Exception as e:
                         print("保存失败，原因", e)
+
+            if error_running and db_process.status == "running":
+                try:
+                    db_process.status = "进程异常关闭，请重新启动。"
+                    db_process.save()
+                    break
+                except Exception as e:
+                    print("保存失败，原因", e)
     # process_name_list = []
     # for p in all_process:
     #     try:
