@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    $('#sample_1').dataTable({
+    $('#sample_process_monitor').dataTable({
         "bAutoWidth": true,
         "bSort": false,
         "bProcessing": false,
@@ -37,9 +37,9 @@ $(document).ready(function () {
         }
     });
     // 行按钮
-    $('#sample_1 tbody').on('click', 'button#delrow', function () {
+    $('#sample_process_monitor tbody').on('click', 'button#delrow', function () {
         if (confirm("确定要删除该条数据？")) {
-            var table = $('#sample_1').DataTable();
+            var table = $('#sample_process_monitor').DataTable();
             var data = table.row($(this).parents('tr')).data();
             $.ajax({
                 type: "POST",
@@ -61,15 +61,15 @@ $(document).ready(function () {
 
         }
     });
-    $('#sample_1 tbody').on('click', 'button#edit', function () {
-        var table = $('#sample_1').DataTable();
+    $('#sample_process_monitor tbody').on('click', 'button#edit', function () {
+        var table = $('#sample_process_monitor').DataTable();
         var data = table.row($(this).parents('tr')).data();
         $("#id").val(data.id);
         $("#process_path").val(data.process_path);
     });
-    $('#sample_1 tbody').on('click', 'button#create', function () {
+    $('#sample_process_monitor tbody').on('click', 'button#create', function () {
         if (confirm("确定要启动该程序吗？")) {
-            var table = $('#sample_1').DataTable();
+            var table = $('#sample_process_monitor').DataTable();
             var data = table.row($(this).parents('tr')).data();
             $.ajax({
                 type: "POST",
@@ -91,9 +91,9 @@ $(document).ready(function () {
 
         }
     });
-    $('#sample_1 tbody').on('click', 'button#destroy', function () {
+    $('#sample_process_monitor tbody').on('click', 'button#destroy', function () {
         if (confirm("确定要终止该进程吗？")) {
-            var table = $('#sample_1').DataTable();
+            var table = $('#sample_process_monitor').DataTable();
             var data = table.row($(this).parents('tr')).data();
             $.ajax({
                 type: "POST",
@@ -121,7 +121,7 @@ $(document).ready(function () {
     });
 
     $('#save').click(function () {
-        var table = $('#sample_1').DataTable();
+        var table = $('#sample_process_monitor').DataTable();
 
         $.ajax({
             type: "POST",
@@ -150,7 +150,7 @@ $(document).ready(function () {
     });
 
     setInterval(function () {
-        var table = $('#sample_1').DataTable();
+        var table = $('#sample_process_monitor').DataTable();
         table.ajax.reload();
         console.log("refresh")
     }, 2000);
