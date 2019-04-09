@@ -149,9 +149,37 @@ $(document).ready(function () {
         $(this).hide()
     });
 
-    setInterval(function () {
-        var table = $('#sample_process_monitor').DataTable();
-        table.ajax.reload();
-        console.log("refresh")
-    }, 2000);
+    // setInterval(function () {
+    //     var table = $('#sample_process_monitor').DataTable();
+    //     table.ajax.reload();
+    //     console.log("refresh")
+    // }, 2000);
+
+    var end = false;
+
+    function customOurInterval() {
+        // body...
+        setTimeout(function () {
+            // do something 定时任务
+            // 处理时对end标志进行修改，end=True表示停止（取消定时器）。
+            console.log("refresh");
+            if (window.location.href.indexOf("process_monitor") != -1) {
+                end = false
+            } else {
+                end = true
+            }
+            var table = $('#sample_process_monitor').DataTable();
+            table.ajax.reload();
+
+            if (!end) {
+                // 循环(arguments.callee获取当前执行函数的引用)
+                setTimeout(arguments.callee, 2000);
+            } else {
+                end = false;
+            }
+        }, 2000);
+    }
+
+    customOurInterval();
+
 });
