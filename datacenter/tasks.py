@@ -62,10 +62,9 @@ def monitor_process():
             for term_process in all_term_process:
                 if db_process.name in term_process.name():
                     db_process.status = term_process.status()
-                    db_process.create_time = term_process.create_time()
+                    db_process.create_time = datetime.datetime.fromtimestamp(term_process.create_time())
                     db_process.save()
                     break
-
     # process_name_list = []
     # for p in all_process:
     #     try:
