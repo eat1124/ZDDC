@@ -117,6 +117,7 @@ def create_process(request):
                     current_process_monitor = current_process_monitor[0]
                     try:
                         current_process_monitor.process_path = process_path
+                        current_process_monitor.name = process_name
                         current_process_monitor.save()
                         result["res"] = "保存成功。"
                     except Exception as e:
