@@ -3102,7 +3102,7 @@ def function(request, funid):
                             if funsave.funtype == "node" and mytype == "fun" and len(
                                     funsave.children.exclude(state="9")) > 0:
                                 errors.append('节点下还有其他节点或功能，无法修改为功能。')
-                            elif mytype == "node" and funsave.app_set.exists():
+                            elif mytype == "node" and funsave.app:
                                 errors.append('功能下有关联应用，无法修改为节点。')
                             else:
                                 funsave.name = name
@@ -3124,8 +3124,8 @@ def function(request, funid):
                             app_hidden_div = "hidden"
                         else:
                             app_hidden_div = ""
-
-                    except:
+                    except Exception as e:
+                        print(e)
                         errors.append('保存失败。')
             treedata = []
             rootnodes = Fun.objects.order_by("sort").filter(pnode=None)
