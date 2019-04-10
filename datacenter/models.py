@@ -154,3 +154,43 @@ class ProcessMonitor(models.Model):
     create_time = models.DateTimeField("进程启动时间", blank=True, null=True)
     status = models.CharField("进程状态", blank=True, null=True, max_length=20)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
+
+class Entrydata(models.Model):
+    """
+    录入数据
+    """
+    target = models.ForeignKey(Target)
+    datadate = models.DateTimeField("开始时间", blank=True, null=True)
+    curvalue = models.DecimalField("当前值", null=True, max_digits=20, decimal_places=5)
+    cumulativemonth  = models.DecimalField("月累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativequarter = models.DecimalField("季累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+
+class Extractdata(models.Model):
+    """
+    提取数据
+    """
+    target = models.ForeignKey(Target)
+    datadate = models.DateTimeField("开始时间", blank=True, null=True)
+    curvalue = models.DecimalField("当前值", null=True, max_digits=20, decimal_places=5)
+    cumulativemonth  = models.DecimalField("月累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativequarter = models.DecimalField("季累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+
+class Calculatedata(models.Model):
+    """
+    计算数据
+    """
+    target = models.ForeignKey(Target)
+    datadate = models.DateTimeField("开始时间", blank=True, null=True)
+    curvalue = models.DecimalField("当前值", null=True, max_digits=20, decimal_places=5)
+    cumulativemonth  = models.DecimalField("月累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativequarter = models.DecimalField("季累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
+    formula = models.CharField("公式", blank=True, null=True, max_length=2000)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)

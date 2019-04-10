@@ -639,7 +639,7 @@ def report_app_index(request, funid):
 def report_data(request):
     if request.user.is_authenticated():
         result = []
-        search_app = request.GET.get('search_app', '')
+        search_app  = request.GET.get('search_app', '')
 
         all_report = ReportModel.objects.exclude(state="9").order_by("sort")
         if search_app != "":
@@ -2349,6 +2349,456 @@ def target_app_del(request):
             return HttpResponse(0)
 
 
+def reporting_index(request,cycletype, funid):
+    """
+    数据填报
+    """
+    if request.user.is_authenticated():
+        app =""
+        try:
+            cur_fun=Fun.objects.filter(id=int(funid)).exclude(state='9')
+            app=cur_fun[0].app_id
+        except:
+            return HttpResponseRedirect("/index")
+        now = datetime.datetime.now().replace(hour=0,minute=0,second=0,microsecond=0) + datetime.timedelta(days=-1)
+        date=now.strftime("%Y-%m-%d")
+        if cycletype=='10':
+            now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+                days=-1)
+            date = now.strftime("%Y-%m-%d")
+        if cycletype == '11':
+            now = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0,
+                                                   microsecond=0) + datetime.timedelta(
+                days=-1)).replace(day=1)
+            date = now.strftime("%Y-%m")
+        if cycletype == '12':
+            now = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0,
+                                                   microsecond=0) + datetime.timedelta(
+                days=-1)).replace(day=1)
+            date = now.strftime("%Y-%m")
+        if cycletype == '13':
+            now = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0,
+                                                   microsecond=0) + datetime.timedelta(
+                days=-1)).replace(day=1)
+            date = now.strftime("%Y-%m")
+        if cycletype == '14':
+            now = (datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0,
+                                                   microsecond=0) + datetime.timedelta(
+                days=-1)).replace(month=1, day=1)
+            date = now.strftime("%Y")
+
+        entrytag=""
+        extracttag=""
+        calculatetag=""
+
+        entrynew=""
+        extractnew=""
+        calculatenew=""
+
+        entryreset=""
+        extractreset=""
+        calculatereset=""
+
+        entry_target = Target.objects.exclude(state='9').filter(cycletype=cycletype,adminapp_id=app,operationtype='15')
+        extract_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, operationtype='16')
+        calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, operationtype='17')
+
+        entry_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=date)
+        extract_data= Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=date)
+        calculate_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=date)
+        if len(entry_target)<=0 and len(entry_data)<=0:
+            entrytag= "display: none;"
+        if len(extract_target) <=0 and len(extract_data)<=0:
+            extracttag = "display: none;"
+        if len(calculate_target) <=0 and len(calculate_data)<=0:
+            calculatetag = "display: none;"
+        if len(entry_data) <= 0:
+            entryreset = "display: none;"
+        else:
+            entrynew="display: none;"
+        if len(extract_data) <= 0:
+            extractreset = "display: none;"
+        else:
+            extractnew = "display: none;"
+        if len(calculate_data) <= 0:
+            calculatereset = "display: none;"
+        else:
+            calculatenew="display: none;"
+
+
+
+        return render(request, 'reporting.html',
+                      {'username': request.user.userinfo.fullname,
+                       "cycletype":cycletype,
+                       "app":app,
+                       "date": date,
+                       "entrytag":entrytag,
+                       "extracttag":extracttag,
+                       "calculatetag":calculatetag,
+                       "entrynew": entrynew,
+                       "extractnew": extractnew,
+                       "calculatenew": calculatenew,
+                       "entryreset": entryreset,
+                       "extractreset": extractreset,
+                       "calculatereset": calculatereset,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def reporting_data(request):
+    if request.user.is_authenticated():
+
+        result = []
+        app = request.GET.get('app', '')
+        cycletype = request.GET.get('cycletype', '')
+        reporting_date = request.GET.get('reporting_date', '')
+        operationtype = request.GET.get('operationtype', '')
+        try:
+            app = int(app)
+            if cycletype =="10":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
+            if cycletype =="11":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="12":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="13":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="14":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+        except:
+            raise Http404()
+
+
+        all_data = []
+        if operationtype == "0":
+            curapp = App.objects.get(id=app)
+            all_data = Entrydata.objects.exclude(state="9").filter(target__app=curapp, target__cycletype=cycletype,datadate=reporting_date)
+        if operationtype =="15":
+            all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
+        if operationtype =="16":
+            all_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
+        if operationtype =="17":
+            all_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
+        for data in all_data:
+            businesstypename=data.target.businesstype
+            unitname=data.target.unit
+            try:
+                businesstype_dict_list = DictList.objects.filter(id=int(data.target.businesstype))
+                if businesstype_dict_list.exists():
+                    businesstype_dict_list = businesstype_dict_list[0]
+                    businesstypename = businesstype_dict_list.name
+            except:
+                pass
+            try:
+                unit_dict_list = DictList.objects.filter(id=int(data.target.unit))
+                if unit_dict_list.exists():
+                    unit_dict_list = unit_dict_list[0]
+                    unitname = unit_dict_list.name
+            except:
+                pass
+            cumulativemonth = ""
+            cumulativequarter = ""
+            cumulativehalfyear = ""
+            cumulativeyear = ""
+            if data.target.cumulative=='是':
+                cumulativemonth = round(data.cumulativemonth,data.target.digit)
+                cumulativequarter = round(data.cumulativequarter,data.target.digit)
+                cumulativehalfyear = round(data.cumulativehalfyear,data.target.digit)
+                cumulativeyear = round(data.cumulativeyear,data.target.digit)
+            result.append({
+                "id": data.id,
+                "curvalue": round(data.curvalue,data.target.digit),
+                "cumulativemonth": cumulativemonth,
+                "cumulativequarter": cumulativequarter,
+                "cumulativehalfyear": cumulativehalfyear,
+                "cumulativeyear":cumulativeyear,
+                "target_id": data.target.id,
+                "target_name": data.target.name,
+                "target_code": data.target.code,
+                "target_businesstype": data.target.businesstype,
+                "target_unit": data.target.unit,
+                "target_businesstypename": businesstypename,
+                "target_unitname": unitname,
+                "target_cumulative": data.target.cumulative,
+                "target_upperlimit": data.target.upperlimit,
+                "target_lowerlimit": data.target.lowerlimit,
+            })
+
+        return JsonResponse({"data": result})
+
+
+def getcumulative(target,date,value):
+    """
+    数据累计
+    """
+    cumulativemonth = value
+    cumulativequarter = value
+    cumulativehalfyear = value
+    cumulativeyear = value
+    lastg_date = datetime.datetime.strptime('2000-01-01', "%Y-%m-%d")
+    if target.cycletype == "10":
+        lastg_date = date + datetime.timedelta(days=-1)
+    if target.cycletype == "11":
+        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0,microsecond=0) + datetime.timedelta(days=-1)).replace(day=1)
+    if target.cycletype == "12":
+        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)).replace(day=1)
+    if target.cycletype == "13":
+        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)).replace(day=1)
+    if target.cycletype == "14":
+        lastg_date = (date.replace(month=1,day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)).replace(month=1,day=1)
+
+    all_data = []
+    if target.operationtype == "15":
+        all_data = Entrydata.objects.exclude(state="9").filter(target=target,datadate=lastg_date)
+    if target.operationtype == "16":
+        all_data = Extractdata.objects.exclude(state="9").filter(target=target,datadate=lastg_date)
+    if target.operationtype == "17":
+        all_data = Calculatedata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
+    if len(all_data)>0:
+        cumulativemonth = all_data[0].cumulativemonth + value
+        cumulativequarter = all_data[0].cumulativequarter + value
+        cumulativehalfyear = all_data[0].cumulativehalfyear + value
+        cumulativeyear = all_data[0].cumulativeyear + value
+    return {"cumulativemonth":cumulativemonth,"cumulativequarter":cumulativequarter,"cumulativehalfyear":cumulativehalfyear,"cumulativeyear":cumulativeyear}
+
+
+def getextractdata(target,date):
+    """
+    数据提取
+    """
+    curvalue = 0
+    return curvalue
+
+
+def getcalculatedata(target,date):
+    """
+    数据计算
+    """
+    curvalue = 0
+    return curvalue
+
+
+def reporting_entrynew(request):
+    if request.user.is_authenticated():
+        app = request.POST.get('app', '')
+        cycletype = request.POST.get('cycletype', '')
+        reporting_date = request.POST.get('reporting_date', '')
+        operationtype = request.POST.get('operationtype', '')
+        try:
+            app = int(app)
+            if cycletype =="10":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
+            if cycletype =="11":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="12":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="13":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="14":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+        except:
+            return HttpResponse(0)
+
+
+        all_target = Target.objects.exclude(state="9").filter(adminapp_id=app,cycletype=cycletype,operationtype=operationtype)
+        for target in all_target:
+            if operationtype == "15":
+                entrydata = Entrydata()
+                entrydata.target = target
+                entrydata.datadate = reporting_date
+                entrydata.curvalue = 0
+                if target.cumulative =="是":
+                    cumulative=getcumulative(target,reporting_date)
+                    entrydata.cumulativemonth = cumulative["cumulativemonth"]
+                    entrydata.cumulativequarter = cumulative["cumulativequarter"]
+                    entrydata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                    entrydata.cumulativeyear = cumulative["cumulativeyear"]
+                entrydata.save()
+            if operationtype == "16":
+                extractdata = Extractdata.objects.filter(state="8",target=target,datadate=reporting_date)
+                if len(extractdata)>0:
+                    extractdata = extractdata[0]
+                    extractdata.state=""
+                    extractdata.save()
+                else:
+                    extractdata = Extractdata()
+                    extractdata.target = target
+                    extractdata.datadate = reporting_date
+                    extractdata.curvalue = getextractdata(target, reporting_date)
+                    if target.cumulative == "是":
+                        cumulative = getcumulative(target, reporting_date, extractdata.curvalue)
+                        extractdata.cumulativemonth = cumulative["cumulativemonth"]
+                        extractdata.cumulativequarter = cumulative["cumulativequarter"]
+                        extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                        extractdata.cumulativeyear = cumulative["cumulativeyear"]
+                    extractdata.save()
+            if operationtype == "17":
+                calculatedata = Calculatedata()
+                calculatedata.target = target
+                calculatedata.datadate = reporting_date
+                calculatedata.curvalue = getcalculatedata(target, reporting_date)
+                if target.cumulative == "是":
+                    cumulative = getcumulative(target, reporting_date, calculatedata.curvalue)
+                    calculatedata.cumulativemonth = cumulative["cumulativemonth"]
+                    calculatedata.cumulativequarter = cumulative["cumulativequarter"]
+                    calculatedata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                    calculatedata.cumulativeyear = cumulative["cumulativeyear"]
+                calculatedata.formula=target.formula
+                calculatedata.save()
+
+        return HttpResponse(1)
+
+
+def reporting_new(request):
+    if request.user.is_authenticated():
+        app = request.POST.get('app', '')
+        cycletype = request.POST.get('cycletype', '')
+        reporting_date = request.POST.get('reporting_date', '')
+        operationtype = request.POST.get('operationtype', '')
+        try:
+            app = int(app)
+            if cycletype =="10":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
+            if cycletype =="11":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="12":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="13":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="14":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+        except:
+            return HttpResponse(0)
+
+
+        all_target = Target.objects.exclude(state="9").filter(adminapp_id=app,cycletype=cycletype,operationtype=operationtype)
+        for target in all_target:
+            if operationtype == "15":
+                entrydata = Entrydata()
+                entrydata.target = target
+                entrydata.datadate = reporting_date
+                entrydata.curvalue = 0
+                if target.cumulative =="是":
+                    cumulative=getcumulative(target,reporting_date,0)
+                    entrydata.cumulativemonth = cumulative["cumulativemonth"]
+                    entrydata.cumulativequarter = cumulative["cumulativequarter"]
+                    entrydata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                    entrydata.cumulativeyear = cumulative["cumulativeyear"]
+                entrydata.save()
+            if operationtype == "16":
+                extractdata = Extractdata.objects.filter(state="8",target=target,datadate=reporting_date)
+                if len(extractdata)>0:
+                    extractdata = extractdata[0]
+                    extractdata.state=""
+                    extractdata.save()
+                else:
+                    extractdata = Extractdata()
+                    extractdata.target = target
+                    extractdata.datadate = reporting_date
+                    extractdata.curvalue = 0
+                    extractdata.cumulativemonth = 0
+                    extractdata.cumulativequarter = 0
+                    extractdata.cumulativehalfyear = 0
+                    extractdata.cumulativeyear = 0
+                    extractdata.save()
+            if operationtype == "17":
+                calculatedata = Calculatedata()
+                calculatedata.target = target
+                calculatedata.datadate = reporting_date
+                calculatedata.curvalue = 0
+                calculatedata.cumulativemonth = 0
+                calculatedata.cumulativequarter = 0
+                calculatedata.cumulativehalfyear = 0
+                calculatedata.cumulativeyear = 0
+                calculatedata.formula=target.formula
+                calculatedata.save()
+
+        return HttpResponse(1)
+
+
+def reporting_del(request):
+    if request.user.is_authenticated():
+        app = request.POST.get('app', '')
+        cycletype = request.POST.get('cycletype', '')
+        reporting_date = request.POST.get('reporting_date', '')
+        operationtype = request.POST.get('operationtype', '')
+        try:
+            app = int(app)
+            if cycletype =="10":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
+            if cycletype =="11":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="12":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="13":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype =="14":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+        except:
+            return HttpResponse(0)
+
+        all_data = []
+        if operationtype =="15":
+            all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
+        if operationtype =="16":
+            all_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
+        if operationtype =="17":
+            all_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
+        for data in all_data:
+           data.state="9"
+           data.save()
+
+        return HttpResponse(1)
+
+
+def reporting_save(request):
+    if request.user.is_authenticated():
+        result = {}
+        savedata = request.POST.get('savedata')
+        operationtype = request.POST.get('operationtype')
+        savedata = json.loads(savedata)
+        for curdata in savedata:
+            if operationtype == "15":
+                savedata = Entrydata.objects.exclude(state="9").get(id=int(curdata["id"]))
+            if operationtype == "16":
+                savedata = Extractdata.objects.exclude(state="9").get(id=int(curdata["id"]))
+            if operationtype == "17":
+                savedata = Calculatedata.objects.exclude(state="9").get(id=int(curdata["id"]))
+            try:
+                savedata.curvalue = float(curdata["curvalue"])
+            except:
+                pass
+            try:
+                savedata.cumulativemonth = float(curdata["cumulativemonth"])
+            except:
+                pass
+
+            try:
+                savedata.cumulativequarter = float(curdata["cumulativequarter"])
+            except:
+                pass
+
+            try:
+                savedata.cumulativehalfyear = float(curdata["cumulativehalfyear"])
+            except:
+                pass
+
+            try:
+                savedata.cumulativeyear = float(curdata["cumulativeyear"])
+            except:
+                pass
+            savedata.save()
+
+
+        result["res"] = "保存成功。"
+
+    return JsonResponse(result)
+
+
 def getfun(myfunlist, fun):
     try:
         if (fun.pnode_id is not None):
@@ -2416,10 +2866,13 @@ def getpagefuns(funid, request=""):
         jsurl = curfun[0].url  # /falconstorswitch/24
         if myurl:
             myurl = myurl[:-1]
-            jsurl = jsurl[:-1]
-            if "falconstorswitch" in myurl:
-                compile_obj = re.compile(r"/.*/")
-                jsurl = compile_obj.findall(myurl)[0][:-1]
+            jsurl = jsurl[1:-1]
+            curjsurl = jsurl.split('/')
+            jsurl = '/' + curjsurl[0]
+            #
+            # if "falconstorswitch" in myurl:
+            #     compile_obj = re.compile(r"/.*/")
+            #     jsurl = compile_obj.findall(myurl)[0][:-1]
         mycurfun = {
             "id": curfun[0].id, "name": curfun[0].name, "url": myurl, "jsurl": jsurl}
     return {"pagefuns": pagefuns, "curfun": mycurfun, "task_nums": task_nums}
