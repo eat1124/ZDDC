@@ -107,6 +107,7 @@ class Target(models.Model):
     upperlimit = models.DecimalField("上限", null=True, max_digits=20, decimal_places=5)
     lowerlimit = models.DecimalField("下限", null=True, max_digits=20, decimal_places=5)
     formula = models.CharField("公式", blank=True, null=True, max_length=2000)
+    calculateguid = models.CharField(u"计算GUID", null=True, max_length=50)
     cycle = models.ForeignKey(Cycle, null=True)
     source = models.ForeignKey(Source, null=True)
     sourcetable = models.CharField("数据源表", blank=True, null=True, max_length=2000)
@@ -193,5 +194,4 @@ class Calculatedata(models.Model):
     cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
     cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
     formula = models.CharField("公式", blank=True, null=True, max_length=2000)
-    calculateguid = models.CharField(u"计算GUID", null=True, max_length=50)
     state = models.CharField("状态", blank=True, null=True, max_length=20)

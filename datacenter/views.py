@@ -2576,7 +2576,7 @@ def getextractdata(target,date):
     return curvalue
 
 
-def getcalculatedata(target,date):
+def getcalculatedata(target,date,guid):
     """
     数据计算
     """
@@ -2709,7 +2709,7 @@ def reporting_new(request):
                 calculatedata = Calculatedata()
                 calculatedata.target = target
                 calculatedata.datadate = reporting_date
-                calculatedata.curvalue = getcalculatedata(target, reporting_date)
+                calculatedata.curvalue = getcalculatedata(target, reporting_date,uuid.uuid1())
                 if target.cumulative == "是":
                     cumulative = getcumulative(target, reporting_date, calculatedata.curvalue)
                     calculatedata.cumulativemonth = cumulative["cumulativemonth"]
