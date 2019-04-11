@@ -19,6 +19,7 @@ import requests
 from operator import itemgetter
 import subprocess
 import multiprocessing
+import decimal
 
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
@@ -1929,21 +1930,21 @@ def target_save(request):
                                                 target_save.sort = int(sort)
                                             except:
                                                 pass
-                                            if operationtype == '12':
+                                            if operationtype == '17':
                                                 target_save.formula = formula
-                                            if operationtype == '11':
+                                            if operationtype == '16':
                                                 try:
                                                     cycle_id = int(cycle)
                                                     my_cycle = all_cycle.get(id=cycle_id)
                                                     target_save.cycle = my_cycle
-                                                except ValueError:
-                                                    raise Http404()
+                                                except :
+                                                    pass
                                                 try:
                                                     source_id = int(source)
                                                     my_source = all_source.get(id=source_id)
                                                     target_save.source = my_source
-                                                except ValueError:
-                                                    raise Http404()
+                                                except:
+                                                    pass
                                                 target_save.sourcetable = sourcetable
                                                 target_save.sourcesis = sourcesis
                                                 target_save.sourcefields = sourcefields
@@ -1952,8 +1953,8 @@ def target_save(request):
                                                     storage_id = int(storage)
                                                     my_storage = all_storage.get(id=storage_id)
                                                     target_save.storage = my_storage
-                                                except ValueError:
-                                                    raise Http404()
+                                                except:
+                                                    pass
                                                 target_save.storagetag = storagetag
                                                 target_save.storagefields = storagefields
                                             target_save.save()
@@ -2017,21 +2018,21 @@ def target_save(request):
                                                     target_save.sort = int(sort)
                                                 except:
                                                     pass
-                                                if operationtype == '12':
+                                                if operationtype == '17':
                                                     target_save.formula = formula
-                                                if operationtype == '11':
+                                                if operationtype == '16':
                                                     try:
                                                         cycle_id = int(cycle)
                                                         my_cycle = all_cycle.get(id=cycle_id)
                                                         target_save.cycle = my_cycle
-                                                    except ValueError:
-                                                        raise Http404()
+                                                    except:
+                                                        pass
                                                     try:
                                                         source_id = int(source)
                                                         my_source = all_source.get(id=source_id)
                                                         target_save.source = my_source
-                                                    except ValueError:
-                                                        raise Http404()
+                                                    except:
+                                                        pass
                                                     target_save.sourcetable = sourcetable
                                                     target_save.sourcesis = sourcesis
                                                     target_save.sourcefields = sourcefields
@@ -2040,8 +2041,8 @@ def target_save(request):
                                                         storage_id = int(storage)
                                                         my_storage = all_storage.get(id=storage_id)
                                                         target_save.storage = my_storage
-                                                    except ValueError:
-                                                        raise Http404()
+                                                    except:
+                                                        pass
                                                     target_save.storagetag = storagetag
                                                     target_save.storagefields = storagefields
                                                 target_save.save()
@@ -2058,7 +2059,6 @@ def target_save(request):
                                                 result["res"] = "保存成功。"
                                                 result["data"] = target_save.id
                                             except Exception as e:
-                                                print(e)
                                                 result["res"] = "修改失败。"
 
     return JsonResponse(result)
@@ -2405,9 +2405,9 @@ def reporting_index(request,cycletype, funid):
         extract_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, operationtype='16')
         calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, operationtype='17')
 
-        entry_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=date)
-        extract_data= Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=date)
-        calculate_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=date)
+        entry_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=now)
+        extract_data= Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=now)
+        calculate_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=now)
         if len(entry_target)<=0 and len(entry_data)<=0:
             entrytag= "display: none;"
         if len(extract_target) <=0 and len(extract_data)<=0:
@@ -2581,74 +2581,96 @@ def getcalculatedata(target,date,guid):
     数据计算
     """
     curvalue = 0
-    formula = target.formula.replace(" ", "")
+    formula = ""
+    if target.formula is not None:
+        formula = target.formula.replace(" ", "")
     members=formula.split('>')
     for member in members:
-        if member.Replace(" ", "") !="":
+        if member.replace(" ", "") !="":
             col = "d";
             cond = "D";
-            membertarget = member[member.index('<') + 1:]
-            th=membertarget
-            if membertarget.index(':')>0:
-                col = membertarget[membertarget.index(':') + 1:]
-                membertarget = membertarget[0:membertarget.index(':')]
-                if col.index(':')>0:
-                    cond = col[membertarget.index(':') + 1:]
-                    col = col[0:col.index(':')]
-            membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
-            if len(membertarget<=0):
-                return 0
-            else:
-                queryset = Entrydata.objects
-                membertarget=membertarget[0]
-                operationtype = membertarget.operationtype
-                if operationtype=="15":
-                    queryset = Entrydata.objects
-                if operationtype=="16":
-                    queryset = Entrydata.objects
-                if operationtype=="17":
-                    queryset = Entrydata.objects
-                condtions: {'datadate': date}
-                if cond == "D":
-                    condtions: {'datadate': date}
-                if cond == "M":
-                    condtions: {'datadate__year': date.year,'datadate__month': date.month}
-                if cond == "Y":
-                    condtions: {'datadate__year': date.year}
-                if cond == "ME":
-                    year = date.year
-                    month = date.month
-                    a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
-                    date_now = datetime.datetime(year=year, month=month, day=b)  # 构造本月1号datetime
-                    newdate = date_now + datetime.timedelta(days=1)  # 上月datetime
-                    condtions: {'datadate': newdate}
-                if cond == "YE":
-                    newdate = date.replace(month=12, day=31)
-                    condtions: {'datadate': newdate}
-                if cond == "MS":
-                    newdate = date.replace(day=1)
-                    condtions: {'datadate': newdate}
-                if cond == "YS":
-                    newdate = date.replace(month=1,day=1)
-                    condtions: {'datadate': newdate}
-                query_res = queryset.filter(**condtions).exclude(state="9")
-                if len(query_res<=0):
-                    return 0
+            if(member.find('<')>=0):
+                membertarget = member[member.find('<') + 1:]
+                th=membertarget
+                if membertarget.find(':')>0:
+                    col = membertarget[membertarget.find(':') + 1:]
+                    membertarget = membertarget[0:membertarget.find(':')]
+                    if col.find(':')>0:
+                        cond = col[col.find(':') + 1:]
+                        col = col[0:col.find(':')]
+                membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
+                if len(membertarget)<=0:
+                    curvalue=0
                 else:
-                    value =0
-                    if col=='d':
-                        value = query_res[0].curvalue
-                    if col == 'm':
-                        value = query_res[0].cumulativemonth
-                    if col == 's':
-                        value = query_res[0].cumulativequarter
-                    if col == 'h':
-                        value = query_res[0].cumulativehalfyear
-                    if col == 'y':
-                        value = query_res[0].cumulativeyear
-                    formula = formula.replace("<" + th + ">", value);
-    curvalue = eval(formula)
-    return curvalue
+                    queryset = Entrydata.objects
+                    membertarget=membertarget[0]
+                    if membertarget.operationtype==target.operationtype and membertarget.adminapp_id==target.adminapp_id and membertarget.cycletype==target.cycletype and membertarget.calculateguid != guid:
+                        getcalculatedata(membertarget,date,guid)
+                    operationtype = membertarget.operationtype
+                    if operationtype=="15":
+                        queryset = Entrydata.objects
+                    if operationtype=="16":
+                        queryset = Extractdata.objects
+                    if operationtype=="17":
+                        queryset = Calculatedata.objects
+                    condtions= {'datadate': date}
+                    if cond == "D":
+                        condtions = {'datadate': date}
+                    if cond == "M":
+                        condtions = {'datadate__year': date.year,'datadate__month': date.month}
+                    if cond == "Y":
+                        condtions = {'datadate__year': date.year}
+                    if cond == "ME":
+                        year = date.year
+                        month = date.month
+                        a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
+                        date_now = datetime.datetime(year=year, month=month, day=b)  # 构造本月1号datetime
+                        newdate = date_now + datetime.timedelta(days=1)  # 上月datetime
+                        condtions={'datadate': newdate}
+                    if cond == "YE":
+                        newdate = date.replace(month=12, day=31)
+                        condtions = {'datadate': newdate}
+                    if cond == "MS":
+                        newdate = date.replace(day=1)
+                        condtions = {'datadate': newdate}
+                    if cond == "YS":
+                        newdate = date.replace(month=1,day=1)
+                        condtions = {'datadate': newdate}
+                    query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9")
+                    if len(query_res)<=0:
+                        curvalue=0
+                    else:
+                        value =0
+                        if col=='d':
+                            value = query_res[0].curvalue
+                        if col == 'm':
+                            value = query_res[0].cumulativemonth
+                        if col == 's':
+                            value = query_res[0].cumulativequarter
+                        if col == 'h':
+                            value = query_res[0].cumulativehalfyear
+                        if col == 'y':
+                            value = query_res[0].cumulativeyear
+                        formula = formula.replace("<" + th + ">", str(value));
+
+    try:
+        curvalue = eval(formula)
+    except:
+        pass
+    calculatedata = Calculatedata()
+    calculatedata.target = target
+    calculatedata.datadate = date
+    calculatedata.curvalue = curvalue
+    if target.cumulative == "是":
+        cumulative = getcumulative(target, date, decimal.Decimal(str(calculatedata.curvalue)))
+        calculatedata.cumulativemonth = cumulative["cumulativemonth"]
+        calculatedata.cumulativequarter = cumulative["cumulativequarter"]
+        calculatedata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+        calculatedata.cumulativeyear = cumulative["cumulativeyear"]
+    calculatedata.formula = target.formula
+    calculatedata.save()
+    target.calculateguid=guid
+    target.save()
 
 
 def reporting_new(request):
@@ -2672,7 +2694,7 @@ def reporting_new(request):
         except:
             return HttpResponse(0)
 
-
+        guid=uuid.uuid1()
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app,cycletype=cycletype,operationtype=operationtype)
         for target in all_target:
             if operationtype == "15":
@@ -2681,7 +2703,7 @@ def reporting_new(request):
                 entrydata.datadate = reporting_date
                 entrydata.curvalue = 0
                 if target.cumulative =="是":
-                    cumulative=getcumulative(target,reporting_date)
+                    cumulative=getcumulative(target,reporting_date,entrydata.curvalue)
                     entrydata.cumulativemonth = cumulative["cumulativemonth"]
                     entrydata.cumulativequarter = cumulative["cumulativequarter"]
                     entrydata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -2706,19 +2728,9 @@ def reporting_new(request):
                         extractdata.cumulativeyear = cumulative["cumulativeyear"]
                     extractdata.save()
             if operationtype == "17":
-                calculatedata = Calculatedata()
-                calculatedata.target = target
-                calculatedata.datadate = reporting_date
-                calculatedata.curvalue = getcalculatedata(target, reporting_date,uuid.uuid1())
-                if target.cumulative == "是":
-                    cumulative = getcumulative(target, reporting_date, calculatedata.curvalue)
-                    calculatedata.cumulativemonth = cumulative["cumulativemonth"]
-                    calculatedata.cumulativequarter = cumulative["cumulativequarter"]
-                    calculatedata.cumulativehalfyear = cumulative["cumulativehalfyear"]
-                    calculatedata.cumulativeyear = cumulative["cumulativeyear"]
-                calculatedata.formula=target.formula
-                calculatedata.save()
-
+                target = Target.objects.get(id=target.id)
+                if target.calculateguid!=str(guid):
+                    getcalculatedata(target, reporting_date,str(guid))
         return HttpResponse(1)
 
 
