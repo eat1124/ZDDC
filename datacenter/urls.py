@@ -103,7 +103,7 @@ urlpatterns = [
     url(r'^reporting_data/$', reporting_data),
     url(r'^reporting_del/$', reporting_del),
     url(r'^reporting_save/$', reporting_save),
-    url(r'^reporting_new/$', reporting_entrynew),
+    url(r'^reporting_new/$', reporting_new),
 
 
 
