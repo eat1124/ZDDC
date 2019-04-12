@@ -255,16 +255,12 @@ $(document).ready(function() {
     });
 
 
-    var url = window.location.href;
-
     $("#save").click(function() {
-        $("#report_submit_form").attr("action", url);
         $("#report_submit_form").submit();
     });
 
     $("#submit_btn").click(function() {
         $("#post_type").val("submit")
-        $("#report_submit_form").attr("action", url);
         $("#report_submit_form").submit();
     });
 
