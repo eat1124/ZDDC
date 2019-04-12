@@ -41,7 +41,7 @@ from django.template.response import TemplateResponse
 import calendar
 
 from datacenter.tasks import *
-from .models import App, Fun, Group, UserInfo, DictIndex, DictList, Source, Cycle, Storage, Target
+from .models import *
 from .remote import ServerByPara
 from ZDDC import settings
 from .funcs import *
@@ -135,7 +135,8 @@ def process_run(request):
         p_id = request.POST.get("id", "")
         result = {}
         # 异步开启程序
-        current_process = ProcessMonitor.objects.filter(id=p_id, status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(state="9")
+        current_process = ProcessMonitor.objects.filter(id=p_id, status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(
+            state="9")
         if current_process.exists():
             current_process = current_process[0]
             process_path = current_process.process_path
@@ -158,7 +159,8 @@ def process_run(request):
 def process_destroy(request):
     if request.user.is_authenticated():
         p_id = request.POST.get("id", "")
-        current_process = ProcessMonitor.objects.filter(id=p_id).exclude(status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(state="9")
+        current_process = ProcessMonitor.objects.filter(id=p_id).exclude(
+            status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(state="9")
         result = {}
         if current_process.exists():
             # 异步开启程序
@@ -206,7 +208,7 @@ def download_file(request):
 
 def report_index(request, funid):
     """
-    存储配置
+    报表管理
     """
     if request.user.is_authenticated():
         errors = []
@@ -308,7 +310,7 @@ def report_index(request, funid):
                                             if result["exec_tag"] != 0:
                                                 write_tag = False
 
-                                            # 远程文件下载成功
+                                        # 远程文件下载成功
                                         if write_tag:
                                             # 新增报表模板
                                             if id == 0:
@@ -420,7 +422,7 @@ def report_index(request, funid):
 
 def report_app_index(request, funid):
     """
-    存储配置
+    应用报表管理
     """
     if request.user.is_authenticated():
         errors = []
@@ -642,7 +644,7 @@ def report_app_index(request, funid):
 def report_data(request):
     if request.user.is_authenticated():
         result = []
-        search_app  = request.GET.get('search_app', '')
+        search_app = request.GET.get('search_app', '')
 
         all_report = ReportModel.objects.exclude(state="9").order_by("sort")
         if search_app != "":
@@ -1937,7 +1939,7 @@ def target_save(request):
                                                     cycle_id = int(cycle)
                                                     my_cycle = all_cycle.get(id=cycle_id)
                                                     target_save.cycle = my_cycle
-                                                except :
+                                                except:
                                                     pass
                                                 try:
                                                     source_id = int(source)
@@ -2351,20 +2353,20 @@ def target_app_del(request):
             return HttpResponse(0)
 
 
-def reporting_index(request,cycletype, funid):
+def reporting_index(request, cycletype, funid):
     """
     数据填报
     """
     if request.user.is_authenticated():
-        app =""
+        app = ""
         try:
-            cur_fun=Fun.objects.filter(id=int(funid)).exclude(state='9')
-            app=cur_fun[0].app_id
+            cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
+            app = cur_fun[0].app_id
         except:
             return HttpResponseRedirect("/index")
-        now = datetime.datetime.now().replace(hour=0,minute=0,second=0,microsecond=0) + datetime.timedelta(days=-1)
-        date=now.strftime("%Y-%m-%d")
-        if cycletype=='10':
+        now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1)
+        date = now.strftime("%Y-%m-%d")
+        if cycletype == '10':
             now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
                 days=-1)
             date = now.strftime("%Y-%m-%d")
@@ -2389,35 +2391,41 @@ def reporting_index(request,cycletype, funid):
                 days=-1)).replace(month=1, day=1)
             date = now.strftime("%Y")
 
-        entrytag=""
-        extracttag=""
-        calculatetag=""
+        entrytag = ""
+        extracttag = ""
+        calculatetag = ""
 
-        entrynew=""
-        extractnew=""
-        calculatenew=""
+        entrynew = ""
+        extractnew = ""
+        calculatenew = ""
 
-        entryreset=""
-        extractreset=""
-        calculatereset=""
+        entryreset = ""
+        extractreset = ""
+        calculatereset = ""
 
-        entry_target = Target.objects.exclude(state='9').filter(cycletype=cycletype,adminapp_id=app,operationtype='15')
-        extract_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, operationtype='16')
-        calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, operationtype='17')
+        entry_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+                                                                operationtype='15')
+        extract_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+                                                                  operationtype='16')
+        calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+                                                                    operationtype='17')
 
-        entry_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=now)
-        extract_data= Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=now)
-        calculate_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=now)
-        if len(entry_target)<=0 and len(entry_data)<=0:
-            entrytag= "display: none;"
-        if len(extract_target) <=0 and len(extract_data)<=0:
+        entry_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+                                                                 datadate=now)
+        extract_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,
+                                                                     target__cycletype=cycletype, datadate=now)
+        calculate_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,
+                                                                         target__cycletype=cycletype, datadate=now)
+        if len(entry_target) <= 0 and len(entry_data) <= 0:
+            entrytag = "display: none;"
+        if len(extract_target) <= 0 and len(extract_data) <= 0:
             extracttag = "display: none;"
-        if len(calculate_target) <=0 and len(calculate_data)<=0:
+        if len(calculate_target) <= 0 and len(calculate_data) <= 0:
             calculatetag = "display: none;"
         if len(entry_data) <= 0:
             entryreset = "display: none;"
         else:
-            entrynew="display: none;"
+            entrynew = "display: none;"
         if len(extract_data) <= 0:
             extractreset = "display: none;"
         else:
@@ -2425,18 +2433,16 @@ def reporting_index(request,cycletype, funid):
         if len(calculate_data) <= 0:
             calculatereset = "display: none;"
         else:
-            calculatenew="display: none;"
-
-
+            calculatenew = "display: none;"
 
         return render(request, 'reporting.html',
                       {'username': request.user.userinfo.fullname,
-                       "cycletype":cycletype,
-                       "app":app,
+                       "cycletype": cycletype,
+                       "app": app,
                        "date": date,
-                       "entrytag":entrytag,
-                       "extracttag":extracttag,
-                       "calculatetag":calculatetag,
+                       "entrytag": entrytag,
+                       "extracttag": extracttag,
+                       "calculatetag": calculatetag,
                        "entrynew": entrynew,
                        "extractnew": extractnew,
                        "calculatenew": calculatenew,
@@ -2458,33 +2464,38 @@ def reporting_data(request):
         operationtype = request.GET.get('operationtype', '')
         try:
             app = int(app)
-            if cycletype =="10":
+            if cycletype == "10":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype =="11":
+            if cycletype == "11":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype =="12":
+            if cycletype == "12":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype =="13":
+            if cycletype == "13":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype =="14":
+            if cycletype == "14":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
         except:
             raise Http404()
 
-
         all_data = []
         if operationtype == "0":
             curapp = App.objects.get(id=app)
-            all_data = Entrydata.objects.exclude(state="9").filter(target__app=curapp, target__cycletype=cycletype,datadate=reporting_date)
-        if operationtype =="15":
-            all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
-        if operationtype =="16":
-            all_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
-        if operationtype =="17":
-            all_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
+            all_data = Entrydata.objects.exclude(state="9").filter(target__app=curapp, target__cycletype=cycletype,
+                                                                   datadate=reporting_date)
+        if operationtype == "15":
+            all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+                                                                   datadate=reporting_date)
+        if operationtype == "16":
+            all_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,
+                                                                     target__cycletype=cycletype,
+                                                                     datadate=reporting_date)
+        if operationtype == "17":
+            all_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,
+                                                                       target__cycletype=cycletype,
+                                                                       datadate=reporting_date)
         for data in all_data:
-            businesstypename=data.target.businesstype
-            unitname=data.target.unit
+            businesstypename = data.target.businesstype
+            unitname = data.target.unit
             try:
                 businesstype_dict_list = DictList.objects.filter(id=int(data.target.businesstype))
                 if businesstype_dict_list.exists():
@@ -2503,18 +2514,18 @@ def reporting_data(request):
             cumulativequarter = ""
             cumulativehalfyear = ""
             cumulativeyear = ""
-            if data.target.cumulative=='是':
-                cumulativemonth = round(data.cumulativemonth,data.target.digit)
-                cumulativequarter = round(data.cumulativequarter,data.target.digit)
-                cumulativehalfyear = round(data.cumulativehalfyear,data.target.digit)
-                cumulativeyear = round(data.cumulativeyear,data.target.digit)
+            if data.target.cumulative == '是':
+                cumulativemonth = round(data.cumulativemonth, data.target.digit)
+                cumulativequarter = round(data.cumulativequarter, data.target.digit)
+                cumulativehalfyear = round(data.cumulativehalfyear, data.target.digit)
+                cumulativeyear = round(data.cumulativeyear, data.target.digit)
             result.append({
                 "id": data.id,
-                "curvalue": round(data.curvalue,data.target.digit),
+                "curvalue": round(data.curvalue, data.target.digit),
                 "cumulativemonth": cumulativemonth,
                 "cumulativequarter": cumulativequarter,
                 "cumulativehalfyear": cumulativehalfyear,
-                "cumulativeyear":cumulativeyear,
+                "cumulativeyear": cumulativeyear,
                 "target_id": data.target.id,
                 "target_name": data.target.name,
                 "target_code": data.target.code,
@@ -2530,7 +2541,7 @@ def reporting_data(request):
         return JsonResponse({"data": result})
 
 
-def getcumulative(target,date,value):
+def getcumulative(target, date, value):
     """
     数据累计
     """
@@ -2542,7 +2553,8 @@ def getcumulative(target,date,value):
     if target.cycletype == "10":
         lastg_date = date + datetime.timedelta(days=-1)
     if target.cycletype == "11":
-        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0,microsecond=0) + datetime.timedelta(days=-1)).replace(day=1)
+        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)).replace(day=1)
     if target.cycletype == "12":
         lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
             days=-1)).replace(day=1)
@@ -2550,25 +2562,26 @@ def getcumulative(target,date,value):
         lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
             days=-1)).replace(day=1)
     if target.cycletype == "14":
-        lastg_date = (date.replace(month=1,day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(month=1,day=1)
+        lastg_date = (date.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)).replace(month=1, day=1)
 
     all_data = []
     if target.operationtype == "15":
-        all_data = Entrydata.objects.exclude(state="9").filter(target=target,datadate=lastg_date)
+        all_data = Entrydata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
     if target.operationtype == "16":
-        all_data = Extractdata.objects.exclude(state="9").filter(target=target,datadate=lastg_date)
+        all_data = Extractdata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
     if target.operationtype == "17":
         all_data = Calculatedata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
-    if len(all_data)>0:
+    if len(all_data) > 0:
         cumulativemonth = all_data[0].cumulativemonth + value
         cumulativequarter = all_data[0].cumulativequarter + value
         cumulativehalfyear = all_data[0].cumulativehalfyear + value
         cumulativeyear = all_data[0].cumulativeyear + value
-    return {"cumulativemonth":cumulativemonth,"cumulativequarter":cumulativequarter,"cumulativehalfyear":cumulativehalfyear,"cumulativeyear":cumulativeyear}
+    return {"cumulativemonth": cumulativemonth, "cumulativequarter": cumulativequarter,
+            "cumulativehalfyear": cumulativehalfyear, "cumulativeyear": cumulativeyear}
 
 
-def getextractdata(target,date):
+def getextractdata(target, date):
     """
     数据提取
     """
@@ -2576,7 +2589,7 @@ def getextractdata(target,date):
     return curvalue
 
 
-def getcalculatedata(target,date,guid):
+def getcalculatedata(target, date, guid):
     """
     数据计算
     """
@@ -2584,40 +2597,40 @@ def getcalculatedata(target,date,guid):
     formula = ""
     if target.formula is not None:
         formula = target.formula.replace(" ", "")
-    members=formula.split('>')
+    members = formula.split('>')
     for member in members:
-        if member.replace(" ", "") !="":
+        if member.replace(" ", "") != "":
             col = "d";
             cond = "D";
-            if(member.find('<')>=0):
+            if (member.find('<') >= 0):
                 membertarget = member[member.find('<') + 1:]
-                th=membertarget
-                if membertarget.find(':')>0:
+                th = membertarget
+                if membertarget.find(':') > 0:
                     col = membertarget[membertarget.find(':') + 1:]
                     membertarget = membertarget[0:membertarget.find(':')]
-                    if col.find(':')>0:
+                    if col.find(':') > 0:
                         cond = col[col.find(':') + 1:]
                         col = col[0:col.find(':')]
                 membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
-                if len(membertarget)<=0:
-                    curvalue=0
+                if len(membertarget) <= 0:
+                    curvalue = 0
                 else:
                     queryset = Entrydata.objects
-                    membertarget=membertarget[0]
-                    if membertarget.operationtype==target.operationtype and membertarget.adminapp_id==target.adminapp_id and membertarget.cycletype==target.cycletype and membertarget.calculateguid != guid:
-                        getcalculatedata(membertarget,date,guid)
+                    membertarget = membertarget[0]
+                    if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id and membertarget.cycletype == target.cycletype and membertarget.calculateguid != guid:
+                        getcalculatedata(membertarget, date, guid)
                     operationtype = membertarget.operationtype
-                    if operationtype=="15":
+                    if operationtype == "15":
                         queryset = Entrydata.objects
-                    if operationtype=="16":
+                    if operationtype == "16":
                         queryset = Extractdata.objects
-                    if operationtype=="17":
+                    if operationtype == "17":
                         queryset = Calculatedata.objects
-                    condtions= {'datadate': date}
+                    condtions = {'datadate': date}
                     if cond == "D":
                         condtions = {'datadate': date}
                     if cond == "M":
-                        condtions = {'datadate__year': date.year,'datadate__month': date.month}
+                        condtions = {'datadate__year': date.year, 'datadate__month': date.month}
                     if cond == "Y":
                         condtions = {'datadate__year': date.year}
                     if cond == "ME":
@@ -2626,7 +2639,7 @@ def getcalculatedata(target,date,guid):
                         a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
                         date_now = datetime.datetime(year=year, month=month, day=b)  # 构造本月1号datetime
                         newdate = date_now + datetime.timedelta(days=1)  # 上月datetime
-                        condtions={'datadate': newdate}
+                        condtions = {'datadate': newdate}
                     if cond == "YE":
                         newdate = date.replace(month=12, day=31)
                         condtions = {'datadate': newdate}
@@ -2634,14 +2647,14 @@ def getcalculatedata(target,date,guid):
                         newdate = date.replace(day=1)
                         condtions = {'datadate': newdate}
                     if cond == "YS":
-                        newdate = date.replace(month=1,day=1)
+                        newdate = date.replace(month=1, day=1)
                         condtions = {'datadate': newdate}
                     query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9")
-                    if len(query_res)<=0:
-                        curvalue=0
+                    if len(query_res) <= 0:
+                        curvalue = 0
                     else:
-                        value =0
-                        if col=='d':
+                        value = 0
+                        if col == 'd':
                             value = query_res[0].curvalue
                         if col == 'm':
                             value = query_res[0].cumulativemonth
@@ -2669,7 +2682,7 @@ def getcalculatedata(target,date,guid):
         calculatedata.cumulativeyear = cumulative["cumulativeyear"]
     calculatedata.formula = target.formula
     calculatedata.save()
-    target.calculateguid=guid
+    target.calculateguid = guid
     target.save()
 
 
@@ -2681,39 +2694,40 @@ def reporting_new(request):
         operationtype = request.POST.get('operationtype', '')
         try:
             app = int(app)
-            if cycletype =="10":
+            if cycletype == "10":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype =="11":
+            if cycletype == "11":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype =="12":
+            if cycletype == "12":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype =="13":
+            if cycletype == "13":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype =="14":
+            if cycletype == "14":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
         except:
             return HttpResponse(0)
 
-        guid=uuid.uuid1()
-        all_target = Target.objects.exclude(state="9").filter(adminapp_id=app,cycletype=cycletype,operationtype=operationtype)
+        guid = uuid.uuid1()
+        all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
+                                                              operationtype=operationtype)
         for target in all_target:
             if operationtype == "15":
                 entrydata = Entrydata()
                 entrydata.target = target
                 entrydata.datadate = reporting_date
                 entrydata.curvalue = 0
-                if target.cumulative =="是":
-                    cumulative=getcumulative(target,reporting_date,entrydata.curvalue)
+                if target.cumulative == "是":
+                    cumulative = getcumulative(target, reporting_date, entrydata.curvalue)
                     entrydata.cumulativemonth = cumulative["cumulativemonth"]
                     entrydata.cumulativequarter = cumulative["cumulativequarter"]
                     entrydata.cumulativehalfyear = cumulative["cumulativehalfyear"]
                     entrydata.cumulativeyear = cumulative["cumulativeyear"]
                 entrydata.save()
             if operationtype == "16":
-                extractdata = Extractdata.objects.filter(state="8",target=target,datadate=reporting_date)
-                if len(extractdata)>0:
+                extractdata = Extractdata.objects.filter(state="8", target=target, datadate=reporting_date)
+                if len(extractdata) > 0:
                     extractdata = extractdata[0]
-                    extractdata.state=""
+                    extractdata.state = ""
                     extractdata.save()
                 else:
                     extractdata = Extractdata()
@@ -2729,8 +2743,8 @@ def reporting_new(request):
                     extractdata.save()
             if operationtype == "17":
                 target = Target.objects.get(id=target.id)
-                if target.calculateguid!=str(guid):
-                    getcalculatedata(target, reporting_date,str(guid))
+                if target.calculateguid != str(guid):
+                    getcalculatedata(target, reporting_date, str(guid))
         return HttpResponse(1)
 
 
@@ -2742,29 +2756,34 @@ def reporting_del(request):
         operationtype = request.POST.get('operationtype', '')
         try:
             app = int(app)
-            if cycletype =="10":
+            if cycletype == "10":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype =="11":
+            if cycletype == "11":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype =="12":
+            if cycletype == "12":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype =="13":
+            if cycletype == "13":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype =="14":
+            if cycletype == "14":
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
         except:
             return HttpResponse(0)
 
         all_data = []
-        if operationtype =="15":
-            all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
-        if operationtype =="16":
-            all_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
-        if operationtype =="17":
-            all_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,target__cycletype=cycletype,datadate=reporting_date)
+        if operationtype == "15":
+            all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+                                                                   datadate=reporting_date)
+        if operationtype == "16":
+            all_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,
+                                                                     target__cycletype=cycletype,
+                                                                     datadate=reporting_date)
+        if operationtype == "17":
+            all_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,
+                                                                       target__cycletype=cycletype,
+                                                                       datadate=reporting_date)
         for data in all_data:
-           data.state="9"
-           data.save()
+            data.state = "9"
+            data.save()
 
         return HttpResponse(1)
 
@@ -2807,10 +2826,281 @@ def reporting_save(request):
                 pass
             savedata.save()
 
-
         result["res"] = "保存成功。"
 
     return JsonResponse(result)
+
+
+def report_submit_index(request, funid):
+    """
+    报表上报
+    """
+    if request.user.is_authenticated():
+        errors = []
+        id = ""
+        report_type_list = []
+        adminapp = ""
+        try:
+            cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
+            adminapp = cur_fun[0].app_id
+        except:
+            return HttpResponseRedirect("/index")
+
+        # 下拉框选项
+        c_dict_index_1 = DictIndex.objects.filter(
+            id=7).exclude(state='9')
+        if c_dict_index_1.exists():
+            c_dict_index_1 = c_dict_index_1[0]
+            dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
+            for i in dict_list1:
+                report_type_list.append({
+                    "report_name": i.name,
+                    "report_type_id": i.id,
+                })
+        all_app = App.objects.exclude(state="9")
+        all_app_list = []
+        for app in all_app:
+            all_app_list.append({
+                "app_id": app.id,
+                "app_name": app.name,
+            })
+
+        # datetimepicker
+        date1 = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)
+        date2 = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)).replace(day=1)
+        date3 = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)).replace(day=1)
+        date4 = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)).replace(day=1)
+        date5 = (datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0,
+                                                 microsecond=0) + datetime.timedelta(
+            days=-1)).replace(month=1, day=1)
+
+        temp_dict = {
+            "22": date1.strftime("%Y-%m-%d"),
+            "23": date2.strftime("%Y-%m"),
+            "24": date3.strftime("%Y-%m"),
+            "25": date4.strftime("%Y-%m"),
+            "26": date5.strftime("%Y"),
+        }
+
+        # 新增/修改报表模型
+        if request.method == "POST":
+            person = request.POST.get("person", "")
+            write_time = request.POST.get("write_time", "")
+            report_model = request.POST.get("report_model", "")
+            app = request.POST.get("app", "")
+            post_type = request.POST.get("post_type", "")
+            report_time = request.POST.get("report_time", "")
+
+            write_time = datetime.datetime.strptime(write_time, "%Y-%m-%d") if write_time else None
+
+            length_tag = report_time.count("-")
+            if length_tag == 0:
+                report_time = datetime.datetime.strptime(report_time, "%Y") if report_time else None
+            elif length_tag == 1:
+                report_time = datetime.datetime.strptime(report_time, "%Y-%m") if report_time else None
+            elif length_tag == 2:
+                report_time = datetime.datetime.strptime(report_time, "%Y-%m-%d") if report_time else None
+            else:
+                raise Http404()
+
+            report_info_num = 0
+            for key in request.POST.keys():
+                if "report_info_" in key:
+                    report_info_num += 1
+
+            if report_model:
+                report_model = int(report_model)
+
+                current_report_submit = ReportSubmit.objects.exclude(state="9").filter(report_model_id=report_model)
+                # 新增
+                if not current_report_submit.exists():
+                    try:
+                        report_submit_add = ReportSubmit()
+                        report_submit_add.report_model_id = report_model
+                        report_submit_add.app_id = app
+                        report_submit_add.person = person
+                        report_submit_add.state = "0"
+                        report_submit_add.write_time = write_time
+                        report_submit_add.report_time = report_time
+                        if post_type == "submit":
+                            report_submit_add.state = "1"
+                        report_submit_add.save()
+
+                        # report_info
+                        if report_info_num:
+                            range_num = int(report_info_num / 3)
+                            for i in range(0, range_num):
+                                report_submit_info = ReportSubmitInfo()
+                                report_info_name = request.POST.get(
+                                    "report_info_name_%d" % (i + 1), "")
+                                report_info_default_value = request.POST.get(
+                                    "report_info_value_%d" % (i + 1), "")
+                                if report_info_name:
+                                    report_submit_info.name = report_info_name
+                                    report_submit_info.value = report_info_default_value
+                                    report_submit_info.report_submit = report_submit_add
+                                    report_submit_info.save()
+                    except Exception as e:
+                        print(e)
+                        errors.append("保存失败。")
+                # 修改
+                if current_report_submit.exists():
+                    current_report_submit = current_report_submit[0]
+                    try:
+                        if post_type == "submit":
+                            current_report_submit.state = "1"
+                        current_report_submit.person = person
+                        current_report_submit.write_time = write_time
+                        current_report_submit.report_time = report_time
+                        current_report_submit.save()
+                        if report_info_num:
+                            range_num = int(report_info_num / 3)
+                            for i in range(0, range_num):
+                                report_info_id = request.POST.get(
+                                    "report_info_id_%d" % (i + 1), "")
+                                report_info_name = request.POST.get(
+                                    "report_info_name_%d" % (i + 1), "")
+                                report_info_value = request.POST.get(
+                                    "report_info_value_%d" % (i + 1), "")
+
+                                temp_report_submit_info = ReportSubmitInfo.objects.exclude(state="9").filter(
+                                    id=int(report_info_id))
+                                if temp_report_submit_info.exists():
+                                    temp_report_submit_info = temp_report_submit_info[0]
+                                    temp_report_submit_info.name = report_info_name
+                                    temp_report_submit_info.value = report_info_value
+                                    temp_report_submit_info.save()
+                    except Exception as e:
+                        print(e)
+                        errors.append("保存失败。")
+
+        return render(request, 'report_submit.html',
+                      {'username': request.user.userinfo.fullname,
+                       "report_type_list": report_type_list,
+                       "all_app_list": all_app_list,
+                       "errors": errors,
+                       "id": id,
+                       "date": json.dumps(temp_dict),
+                       "adminapp": adminapp,
+                       "funid": funid,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def report_submit_data(request):
+    if request.user.is_authenticated():
+        result = []
+        search_app = request.GET.get('search_app', '')
+        search_date = request.GET.get('search_date', '')
+        search_report_type = request.GET.get('search_report_type', '')
+        print("search_app, search_date, search_report_type", search_app, search_date, search_report_type)
+        state_dict = {
+            "0": "未发布",
+            "1": "已发布",
+            "": "未创建",
+        }
+
+        # 时间的过滤
+        if search_date:
+            if search_report_type == "22":
+                search_date = datetime.datetime.strptime(search_date, "%Y-%m-%d")
+            elif search_report_type in ["23", "24", "25"]:
+                search_date = datetime.datetime.strptime(search_date, "%Y-%m")
+            elif search_report_type == "26":
+                search_date = datetime.datetime.strptime(datetime.datetime.strptime(search_date, "%Y").strftime("%Y-%m-%d"), "%Y-%m-%d")
+
+            all_report = ReportModel.objects.exclude(state="9").order_by("sort").filter(report_type=search_report_type,
+                                                                                        reportsubmit__report_time=search_date)
+            print("length",len(all_report))
+        else:
+            # now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            #     days=-1)
+            # search_date = now.strftime("%Y-%m-%d")
+            all_report = ReportModel.objects.exclude(state="9").order_by("sort").filter(report_type=search_report_type)
+
+        if search_app != "":
+            curadminapp = App.objects.get(id=int(search_app))
+            all_report = all_report.filter(app=curadminapp)
+        for report in all_report:
+            # report_submit
+            report_submit = report.reportsubmit_set.exclude(state="9")
+            if report_submit.exists():
+                report_submit = report_submit[0]
+            else:
+                report_submit = ""
+
+            # 报表类型
+            report_type = report.report_type
+            try:
+                report_type_dict_list = DictList.objects.filter(id=int(report.report_type))
+                if report_type_dict_list.exists():
+                    report_type_dict_list = report_type_dict_list[0]
+                    report_type = report_type_dict_list.name
+            except:
+                pass
+
+            report_info_list = []
+
+            report_time = ""
+            # 区分是否保存/发布
+            if report_submit:
+                current_report_submit = report.reportsubmit_set.exclude(state="9")
+                if current_report_submit.exists():
+                    current_report_submit = current_report_submit[0]
+
+                    # 存在report_time
+                    report_time = current_report_submit.report_time
+                    if report.report_type == "22":
+                        report_time = report_time.strftime("%Y-%m-%d")
+                    elif report.report_type in ["23", "24", "25"]:
+                        report_time = report_time.strftime("%Y-%m")
+                    elif report.report_type == "26":
+                        report_time = report_time.strftime("%Y")
+
+                    current_report_submit_info_set = current_report_submit.reportsubmitinfo_set.exclude(state="9")
+                    if current_report_submit_info_set.exists():
+                        for report_submit_info in current_report_submit_info_set:
+                            report_info_list.append({
+                                "report_info_name": report_submit_info.name,
+                                "report_info_value": report_submit_info.value,
+                                "report_info_id": int(report_submit_info.id),
+                            })
+            else:
+                current_report_info_set = report.reportinfo_set.exclude(state="9")
+                if current_report_info_set.exists():
+                    for report_info in current_report_info_set:
+                        report_info_list.append({
+                            "report_info_name": report_info.name,
+                            "report_info_value": report_info.default_value,
+                            "report_info_id": int(report_info.id),
+                        })
+
+            result.append({
+                "id": report.id,
+                "name": report.name,
+                "code": report.code,
+                "file_name": report.file_name,
+                "report_type": report_type,
+                "report_type_id": int(report.report_type) if report.report_type else "",
+                "app": report.app.name,
+                "app_id": report.app.id,
+                "report_type_num": report.report_type,
+                "sort": report.sort,
+                "report_info_list": report_info_list,
+                "person": report_submit.person if report_submit else str(request.user),
+                "write_time": report_submit.write_time.strftime(
+                    '%Y-%m-%d') if report_submit else datetime.datetime.now().strftime('%Y-%m-%d'),
+                "state": report_submit.state if report_submit else "",
+                "state_desc": state_dict[report_submit.state] if report_submit else state_dict[""],
+                "report_time": report_time,
+            })
+
+        return JsonResponse({"data": result})
 
 
 def getfun(myfunlist, fun):

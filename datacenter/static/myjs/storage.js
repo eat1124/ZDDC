@@ -117,7 +117,7 @@ $(document).ready(function () {
                 alert("页面出现错误，请于管理员联系。");
             }
         });
-    })
+    });
 
     $('#error').click(function () {
         $(this).hide()

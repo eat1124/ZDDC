@@ -156,6 +156,7 @@ class ProcessMonitor(models.Model):
     status = models.CharField("进程状态", blank=True, null=True, max_length=20)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
+
 class Entrydata(models.Model):
     """
     录入数据
@@ -163,11 +164,12 @@ class Entrydata(models.Model):
     target = models.ForeignKey(Target)
     datadate = models.DateTimeField("开始时间", blank=True, null=True)
     curvalue = models.DecimalField("当前值", null=True, max_digits=20, decimal_places=5)
-    cumulativemonth  = models.DecimalField("月累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativemonth = models.DecimalField("月累计值", null=True, max_digits=20, decimal_places=5)
     cumulativequarter = models.DecimalField("季累计值", null=True, max_digits=20, decimal_places=5)
     cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
     cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
+
 
 class Extractdata(models.Model):
     """
@@ -176,11 +178,12 @@ class Extractdata(models.Model):
     target = models.ForeignKey(Target)
     datadate = models.DateTimeField("开始时间", blank=True, null=True)
     curvalue = models.DecimalField("当前值", null=True, max_digits=20, decimal_places=5)
-    cumulativemonth  = models.DecimalField("月累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativemonth = models.DecimalField("月累计值", null=True, max_digits=20, decimal_places=5)
     cumulativequarter = models.DecimalField("季累计值", null=True, max_digits=20, decimal_places=5)
     cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
     cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
+
 
 class Calculatedata(models.Model):
     """
@@ -189,9 +192,31 @@ class Calculatedata(models.Model):
     target = models.ForeignKey(Target)
     datadate = models.DateTimeField("开始时间", blank=True, null=True)
     curvalue = models.DecimalField("当前值", null=True, max_digits=20, decimal_places=5)
-    cumulativemonth  = models.DecimalField("月累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativemonth = models.DecimalField("月累计值", null=True, max_digits=20, decimal_places=5)
     cumulativequarter = models.DecimalField("季累计值", null=True, max_digits=20, decimal_places=5)
     cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
     cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
     formula = models.CharField("公式", blank=True, null=True, max_length=2000)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+
+
+class ReportSubmit(models.Model):
+    """
+    报表上报
+    """
+    app = models.ForeignKey(App)
+    report_model = models.ForeignKey(ReportModel)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+    person = models.CharField("填报人", blank=True, null=True, max_length=100)
+    write_time = models.DateTimeField("更新日期", blank=True, null=True)
+    report_time = models.DateTimeField("报表时间", blank=True, null=True)
+
+
+class ReportSubmitInfo(models.Model):
+    """
+    报表所需信息
+    """
+    report_submit = models.ForeignKey(ReportSubmit)
+    name = models.CharField("信息名称", max_length=100)
+    value = models.CharField("默认值", max_length=100)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
