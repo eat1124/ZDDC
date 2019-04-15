@@ -63,7 +63,7 @@ urlpatterns = [
     url(r'^cycle_data/$', cycle_data),
     url(r'^cycle_save/$', cycle_save),
     url(r'^cycle_del/$', cycle_del),
-  
+
     # 数据源配置
     url(r'^source/$', source_index, {'funid': '12'}),
     url(r'^get_source_tree/$', get_source_tree),
