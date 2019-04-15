@@ -105,6 +105,10 @@ urlpatterns = [
     url(r'^reporting_save/$', reporting_save),
     url(r'^reporting_new/$', reporting_new),
 
+    # 报表上报
+    url(r'^report_submit/(?P<funid>\d+)/$', report_submit_index),
+    url(r'^report_submit_data/$', report_submit_data),
+    url(r'^report_submit_save/$', report_submit_save),
 
 
     # 场景管理

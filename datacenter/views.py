@@ -2886,98 +2886,6 @@ def report_submit_index(request, funid):
             "26": date5.strftime("%Y"),
         }
 
-        # 新增/修改报表模型
-        if request.method == "POST":
-            person = request.POST.get("person", "")
-            write_time = request.POST.get("write_time", "")
-            report_model = request.POST.get("report_model", "")
-            app = request.POST.get("app", "")
-            post_type = request.POST.get("post_type", "")
-            report_time = request.POST.get("report_time", "")
-
-            write_time = datetime.datetime.strptime(write_time, "%Y-%m-%d") if write_time else None
-
-            length_tag = report_time.count("-")
-            if length_tag == 0:
-                report_time = datetime.datetime.strptime(report_time, "%Y") if report_time else None
-            elif length_tag == 1:
-                report_time = datetime.datetime.strptime(report_time, "%Y-%m") if report_time else None
-            elif length_tag == 2:
-                report_time = datetime.datetime.strptime(report_time, "%Y-%m-%d") if report_time else None
-            else:
-                raise Http404()
-
-            report_info_num = 0
-            for key in request.POST.keys():
-                if "report_info_" in key:
-                    report_info_num += 1
-
-            if report_model:
-                report_model = int(report_model)
-
-                current_report_submit = ReportSubmit.objects.exclude(state="9").filter(report_model_id=report_model)
-                # 新增
-                if not current_report_submit.exists():
-                    try:
-                        report_submit_add = ReportSubmit()
-                        report_submit_add.report_model_id = report_model
-                        report_submit_add.app_id = app
-                        report_submit_add.person = person
-                        report_submit_add.state = "0"
-                        report_submit_add.write_time = write_time
-                        report_submit_add.report_time = report_time
-                        if post_type == "submit":
-                            report_submit_add.state = "1"
-                        report_submit_add.save()
-
-                        # report_info
-                        if report_info_num:
-                            range_num = int(report_info_num / 3)
-                            for i in range(0, range_num):
-                                report_submit_info = ReportSubmitInfo()
-                                report_info_name = request.POST.get(
-                                    "report_info_name_%d" % (i + 1), "")
-                                report_info_default_value = request.POST.get(
-                                    "report_info_value_%d" % (i + 1), "")
-                                if report_info_name:
-                                    report_submit_info.name = report_info_name
-                                    report_submit_info.value = report_info_default_value
-                                    report_submit_info.report_submit = report_submit_add
-                                    report_submit_info.save()
-                    except Exception as e:
-                        print(e)
-                        errors.append("保存失败。")
-                # 修改
-                if current_report_submit.exists():
-                    current_report_submit = current_report_submit[0]
-                    try:
-                        if post_type == "submit":
-                            current_report_submit.state = "1"
-                        current_report_submit.person = person
-                        current_report_submit.write_time = write_time
-                        current_report_submit.report_time = report_time
-                        current_report_submit.save()
-                        if report_info_num:
-                            range_num = int(report_info_num / 3)
-                            for i in range(0, range_num):
-                                report_info_id = request.POST.get(
-                                    "report_info_id_%d" % (i + 1), "")
-                                report_info_name = request.POST.get(
-                                    "report_info_name_%d" % (i + 1), "")
-                                report_info_value = request.POST.get(
-                                    "report_info_value_%d" % (i + 1), "")
-
-                                temp_report_submit_info = ReportSubmitInfo.objects.exclude(state="9").filter(
-                                    id=int(report_info_id))
-                                if temp_report_submit_info.exists():
-                                    temp_report_submit_info = temp_report_submit_info[0]
-                                    temp_report_submit_info.name = report_info_name
-                                    temp_report_submit_info.value = report_info_value
-                                    temp_report_submit_info.save()
-                    except Exception as e:
-                        print(e)
-                        errors.append("保存失败。")
-
         return render(request, 'report_submit.html',
                       {'username': request.user.userinfo.fullname,
                        "report_type_list": report_type_list,
@@ -2998,13 +2906,11 @@ def report_submit_data(request):
         search_app = request.GET.get('search_app', '')
         search_date = request.GET.get('search_date', '')
         search_report_type = request.GET.get('search_report_type', '')
-        print("search_app, search_date, search_report_type", search_app, search_date, search_report_type)
         state_dict = {
             "0": "未发布",
             "1": "已发布",
             "": "未创建",
         }
-
         # 时间的过滤
         if search_date:
             if search_report_type == "22":
@@ -3013,19 +2919,15 @@ def report_submit_data(request):
                 search_date = datetime.datetime.strptime(search_date, "%Y-%m")
             elif search_report_type == "26":
                 search_date = datetime.datetime.strptime(datetime.datetime.strptime(search_date, "%Y").strftime("%Y-%m-%d"), "%Y-%m-%d")
-
-            all_report = ReportModel.objects.exclude(state="9").order_by("sort").filter(report_type=search_report_type,
-                                                                                        reportsubmit__report_time=search_date)
-            print("length",len(all_report))
+            all_report = ReportModel.objects.exclude(state="9").order_by("sort").filter(report_type=search_report_type, reportsubmit__report_time=search_date, reportsubmit__state__in=["1", "0", ""])
         else:
             # now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
             #     days=-1)
             # search_date = now.strftime("%Y-%m-%d")
             all_report = ReportModel.objects.exclude(state="9").order_by("sort").filter(report_type=search_report_type)
 
-        if search_app != "":
-            curadminapp = App.objects.get(id=int(search_app))
-            all_report = all_report.filter(app=curadminapp)
+        curadminapp = App.objects.get(id=int(search_app))
+        all_report = all_report.filter(app=curadminapp)
         for report in all_report:
             # report_submit
             report_submit = report.reportsubmit_set.exclude(state="9")
@@ -3099,9 +3001,112 @@ def report_submit_data(request):
                 "state_desc": state_dict[report_submit.state] if report_submit else state_dict[""],
                 "report_time": report_time,
             })
-
         return JsonResponse({"data": result})
 
+
+def report_submit_save(request):
+    if request.user.is_authenticated():
+        print(11111111111111)
+        # 新增/修改报表模型
+        if request.method == "POST":
+            print(request.POST)
+            result = {}
+            person = request.POST.get("person", "")
+            write_time = request.POST.get("write_time", "")
+            report_model = request.POST.get("report_model", "")
+            app = request.POST.get("app", "")
+            post_type = request.POST.get("post_type", "")
+            report_time = request.POST.get("report_time", "")
+
+            write_time = datetime.datetime.strptime(write_time, "%Y-%m-%d") if write_time else None
+            print("+++++",person, write_time, report_model, app, post_type, report_time)
+            length_tag = report_time.count("-")
+            if length_tag == 0:
+                report_time = datetime.datetime.strptime(report_time, "%Y") if report_time else None
+            elif length_tag == 1:
+                report_time = datetime.datetime.strptime(report_time, "%Y-%m") if report_time else None
+            elif length_tag == 2:
+                report_time = datetime.datetime.strptime(report_time, "%Y-%m-%d") if report_time else None
+            else:
+                result["res"] = "网络异常。"
+                return JsonResponse(result)
+
+            report_info_num = 0
+            for key in request.POST.keys():
+                if "report_info_" in key:
+                    report_info_num += 1
+
+            if report_model:
+                report_model = int(report_model)
+
+                current_report_submit = ReportSubmit.objects.exclude(state="9").filter(report_model_id=report_model)
+                # 新增
+                if not current_report_submit.exists():
+                    try:
+                        report_submit_add = ReportSubmit()
+                        report_submit_add.report_model_id = report_model
+                        report_submit_add.app_id = app
+                        report_submit_add.person = person
+                        report_submit_add.state = "0"
+                        report_submit_add.write_time = write_time
+                        report_submit_add.report_time = report_time
+                        if post_type == "submit":
+                            report_submit_add.state = "1"
+                        report_submit_add.save()
+
+                        # report_info
+                        if report_info_num:
+                            range_num = int(report_info_num / 3)
+                            for i in range(0, range_num):
+                                report_submit_info = ReportSubmitInfo()
+                                report_info_name = request.POST.get(
+                                    "report_info_name_%d" % (i + 1), "")
+                                report_info_default_value = request.POST.get(
+                                    "report_info_value_%d" % (i + 1), "")
+                                if report_info_name:
+                                    report_submit_info.name = report_info_name
+                                    report_submit_info.value = report_info_default_value
+                                    report_submit_info.report_submit = report_submit_add
+                                    report_submit_info.save()
+                        result["res"] = "保存成功。"
+                    except Exception as e:
+                        result["res"] = "网络异常。"
+                        return JsonResponse(result)
+                # 修改
+                else:
+                    current_report_submit = current_report_submit[0]
+                    try:
+                        if post_type == "submit":
+                            current_report_submit.state = "1"
+                        current_report_submit.person = person
+                        current_report_submit.write_time = write_time
+                        current_report_submit.report_time = report_time
+                        current_report_submit.save()
+                        if report_info_num:
+                            range_num = int(report_info_num / 3)
+                            for i in range(0, range_num):
+                                report_info_id = request.POST.get(
+                                    "report_info_id_%d" % (i + 1), "")
+                                report_info_name = request.POST.get(
+                                    "report_info_name_%d" % (i + 1), "")
+                                report_info_value = request.POST.get(
+                                    "report_info_value_%d" % (i + 1), "")
+
+                                temp_report_submit_info = ReportSubmitInfo.objects.exclude(state="9").filter(
+                                    id=int(report_info_id))
+                                if temp_report_submit_info.exists():
+                                    temp_report_submit_info = temp_report_submit_info[0]
+                                    temp_report_submit_info.name = report_info_name
+                                    temp_report_submit_info.value = report_info_value
+                                    temp_report_submit_info.save()
+                        result["res"] = "保存成功。"
+                    except Exception as e:
+                        result["res"] = "网络异常。"
+                        return JsonResponse(result)
+            else:
+                result["res"] = "网络异常。"
+            print(result["res"])
+            return JsonResponse(result)
 
 def getfun(myfunlist, fun):
     try:

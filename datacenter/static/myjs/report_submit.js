@@ -244,28 +244,65 @@ $(document).ready(function() {
                 minView: 4,
             });
         }
-        var table01 = $('#sample_1').DataTable();
-        table01.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
+        var table = $('#sample_1').DataTable();
+        table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
     });
 
     // 根据时间过滤报表
     $('#reporting_date').change(function() {
-        var table02 = $('#sample_1').DataTable();
-        table02.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
+        var table = $('#sample_1').DataTable();
+        table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
     });
 
 
     $("#save").click(function() {
-        $("#report_submit_form").submit();
+        $("#post_type").val("")
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../report_submit_save/",
+            data: $("#report_submit_form").serialize(),
+            success: function(data) {
+                var myres = data["res"];
+                if (myres == "保存成功。") {
+                    $('#static').modal('hide');
+                    var table = $('#sample_1').DataTable();
+                    table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
+                }
+                alert(myres);
+            },
+            error: function(e) {
+                alert("页面出现错误，请于管理员联系。");
+            }
+        });
+
+
     });
 
     $("#submit_btn").click(function() {
         $("#post_type").val("submit")
-        $("#report_submit_form").submit();
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../report_submit_save/",
+            data: $("#report_submit_form").serialize(),
+            success: function(data) {
+                var myres = data["res"];
+                if (myres == "保存成功。") {
+                    $('#static').modal('hide');
+                    var table = $('#sample_1').DataTable();
+                    table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
+                }
+                alert(myres);
+            },
+            error: function(e) {
+                alert("页面出现错误，请于管理员联系。");
+            }
+        });
     });
 
     $('#error').click(function() {
         $(this).hide()
     })
-    
+
 });
