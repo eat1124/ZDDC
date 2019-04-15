@@ -65,6 +65,20 @@ $(document).ready(function () {
                 "sLast": "尾页"
             },
             "sZeroRecords": "没有检索到数据",
+        },
+        "fnDrawCallback": function( data ) {
+            if(data.aoData.length>0)
+            {
+                $("#new1").hide();
+                $("#save1").show();
+                $("#del1").show();
+            }
+            else
+            {
+                $("#new1").show();
+                $("#save1").hide();
+                $("#del1").hide();
+            }
         }
     });
     // 行按钮
@@ -152,6 +166,22 @@ $(document).ready(function () {
                 "sLast": "尾页"
             },
             "sZeroRecords": "没有检索到数据",
+        },
+        "fnDrawCallback": function( data ) {
+            if(data.aoData.length>0)
+            {
+                $("#new2").hide();
+                $("#save2").show();
+                $("#del2").show();
+                $("#reset2").show();
+            }
+            else
+            {
+                $("#new2").show();
+                $("#save2").hide();
+                $("#del2").hide();
+                $("#reset2").hide();
+            }
         }
     });
     // 行按钮
@@ -239,6 +269,22 @@ $(document).ready(function () {
                 "sLast": "尾页"
             },
             "sZeroRecords": "没有检索到数据",
+        },
+        "fnDrawCallback": function( data ) {
+            if(data.aoData.length>0)
+            {
+                $("#new3").hide();
+                $("#save3").show();
+                $("#del3").show();
+                $("#reset3").show();
+            }
+            else
+            {
+                $("#new3").show();
+                $("#save3").hide();
+                $("#del3").hide();
+                $("#reset3").hide();
+            }
         }
     });
     // 行按钮
@@ -287,13 +333,18 @@ $(document).ready(function () {
                 "sLast": "尾页"
             },
             "sZeroRecords": "没有检索到数据",
-        }
+        },
     });
 
     $('#reporting_date').change(function () {
-        var table = $('#sample_1').DataTable();
-        table.ajax.url("../../../reporting_data?app=" + $('#app').val()  + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=15").load();
-        table.ajax.url("../../../reporting_data?app=" + $('#app').val()  + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=0").load();
+        var table1 = $('#sample_1').DataTable();
+        table1.ajax.url("../../../reporting_data?app=" + $('#app').val()  + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=15").load();
+        var table2 = $('#sample_2').DataTable();
+        table2.ajax.url("../../../reporting_data?app=" + $('#app').val()  + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=16").load();
+        var table3 = $('#sample_3').DataTable();
+        table3.ajax.url("../../../reporting_data?app=" + $('#app').val()  + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=17").load();
+        var table4 = $('#sample_4').DataTable();
+        table4.ajax.url("../../../reporting_data?app=" + $('#app').val()  + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=0").load();
     })
 
 

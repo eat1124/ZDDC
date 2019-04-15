@@ -20,6 +20,7 @@ from operator import itemgetter
 import subprocess
 import multiprocessing
 import decimal
+import pymysql
 
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
@@ -514,9 +515,11 @@ def report_app_index(request, funid):
                                                     f.write(chunk)
                                             # 只要有文件写入，就发送请求
                                             # 远程执行命令，令远程windows发送请求下载文件
+
                                             local_script_dir = "C:\\Users\\Administrator\\Desktop\\test.ps1"
-                                            remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
-                                            url_visited = "http://192.168.100.220:8000/download_file?file_name={0}".format(
+                                            remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(file_name)
+                                            #remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
+                                            url_visited = "http://192.168.100.223:8000/download_file?file_name={0}".format(
                                                 file_name)
                                             remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                 local_script_dir, remote_file_dir, url_visited)
@@ -2537,7 +2540,6 @@ def reporting_data(request):
                 "target_upperlimit": data.target.upperlimit,
                 "target_lowerlimit": data.target.lowerlimit,
             })
-
         return JsonResponse({"data": result})
 
 
@@ -2586,6 +2588,18 @@ def getextractdata(target, date):
     数据提取
     """
     curvalue = 0
+
+    con = target.source.connection
+    con = json.loads(con)
+    db = pymysql.connect(con[0]["host"], con[0]["user"],con[0]["passwd"], con[0]["db"])
+    cursor = db.cursor()
+    strsql = "select " + target.sourcefields + " from " + target.sourcetable + " where " + target.sourceconditions
+    cursor.execute(strsql)
+    data = cursor.fetchall()
+    if len(data)>0:
+        curvalue = data[0][0]
+    print("Database version : %s " % curvalue)
+
     return curvalue
 
 

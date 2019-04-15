@@ -15,7 +15,7 @@ $(document).ready(function() {
         "columnDefs": [{
             "targets": -4,
             "mRender": function(data, type, full) {
-                return "<a href='?file_name=\"" + full.file_name + "\"&date=\"" + full.write_time + "\"'>" + full.name + "</a>"
+                return "<a href='http://192.168.100.151:8075/webroot/decision/view/report?viewlet=" + full.file_name + "&curdate=" + full.write_time + "'>" + full.name + "</a>"
             }
         }, {
             "targets": -2,
@@ -244,14 +244,14 @@ $(document).ready(function() {
                 minView: 4,
             });
         }
-        var table = $('#sample_1').DataTable();
-        table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
+        var table01 = $('#sample_1').DataTable();
+        table01.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
     });
 
     // 根据时间过滤报表
     $('#reporting_date').change(function() {
-        var table = $('#sample_1').DataTable();
-        table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
+        var table02 = $('#sample_1').DataTable();
+        table02.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val() ).load();
     });
 
 
