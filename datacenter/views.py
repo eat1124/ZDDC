@@ -410,6 +410,8 @@ def report_index(request, funid):
                                                             id = report_save.id
                                                     except Exception as e:
                                                         errors.append("修改失败。")
+                                        else:
+                                            errors.append('远程文件下载失败。')
         return render(request, 'report.html',
                       {'username': request.user.userinfo.fullname,
                        "report_type_list": report_type_list,
@@ -518,7 +520,7 @@ def report_app_index(request, funid):
 
                                             local_script_dir = "C:\\Users\\Administrator\\Desktop\\test.ps1"
                                             remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(file_name)
-                                            #remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
+                                            # remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
                                             url_visited = "http://192.168.100.223:8000/download_file?file_name={0}".format(
                                                 file_name)
                                             remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
@@ -533,7 +535,7 @@ def report_app_index(request, funid):
                                             if result["exec_tag"] != 0:
                                                 write_tag = False
 
-                                            # 远程文件下载成功
+                                        # 远程文件下载成功
                                         if write_tag:
                                             # 新增报表模板
                                             if id == 0:
@@ -632,6 +634,8 @@ def report_app_index(request, funid):
                                                             id = report_save.id
                                                     except Exception as e:
                                                         errors.append("修改失败。")
+                                        else:
+                                            errors.append('远程文件下载失败。')
         return render(request, 'report_app.html',
                       {'username': request.user.userinfo.fullname,
                        "report_type_list": report_type_list,
@@ -2591,12 +2595,12 @@ def getextractdata(target, date):
 
     con = target.source.connection
     con = json.loads(con)
-    db = pymysql.connect(con[0]["host"], con[0]["user"],con[0]["passwd"], con[0]["db"])
+    db = pymysql.connect(con[0]["host"], con[0]["user"], con[0]["passwd"], con[0]["db"])
     cursor = db.cursor()
     strsql = "select " + target.sourcefields + " from " + target.sourcetable + " where " + target.sourceconditions
     cursor.execute(strsql)
     data = cursor.fetchall()
-    if len(data)>0:
+    if len(data) > 0:
         curvalue = data[0][0]
     print("Database version : %s " % curvalue)
 
@@ -2932,16 +2936,15 @@ def report_submit_data(request):
             elif search_report_type in ["23", "24", "25"]:
                 search_date = datetime.datetime.strptime(search_date, "%Y-%m")
             elif search_report_type == "26":
-                search_date = datetime.datetime.strptime(datetime.datetime.strptime(search_date, "%Y").strftime("%Y-%m-%d"), "%Y-%m-%d")
-            all_report = ReportModel.objects.exclude(state="9").order_by("sort").filter(report_type=search_report_type, reportsubmit__report_time=search_date, reportsubmit__state__in=["1", "0", ""])
+                search_date = datetime.datetime.strptime(
+                    datetime.datetime.strptime(search_date, "%Y").strftime("%Y-%m-%d"), "%Y-%m-%d")
         else:
-            # now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            #     days=-1)
-            # search_date = now.strftime("%Y-%m-%d")
-            all_report = ReportModel.objects.exclude(state="9").order_by("sort").filter(report_type=search_report_type)
+            pass
 
+        all_report = ReportModel.objects.exclude(state="9").order_by("sort").filter(report_type=search_report_type)
         curadminapp = App.objects.get(id=int(search_app))
         all_report = all_report.filter(app=curadminapp)
+
         for report in all_report:
             # report_submit
             report_submit = report.reportsubmit_set.exclude(state="9")
@@ -2965,7 +2968,10 @@ def report_submit_data(request):
             report_time = ""
             # 区分是否保存/发布
             if report_submit:
-                current_report_submit = report.reportsubmit_set.exclude(state="9")
+                if search_date:
+                    current_report_submit = report.reportsubmit_set.exclude(state="9").filter(report_time=search_date)
+                else:
+                    current_report_submit = report.reportsubmit_set.exclude(state="9")
                 if current_report_submit.exists():
                     current_report_submit = current_report_submit[0]
 
@@ -2986,6 +2992,25 @@ def report_submit_data(request):
                                 "report_info_value": report_submit_info.value,
                                 "report_info_id": int(report_submit_info.id),
                             })
+                    result.append({
+                        "id": report.id,
+                        "name": report.name,
+                        "code": report.code,
+                        "file_name": report.file_name,
+                        "report_type": report_type,
+                        "report_type_id": int(report.report_type) if report.report_type else "",
+                        "app": report.app.name,
+                        "app_id": report.app.id,
+                        "report_type_num": report.report_type,
+                        "sort": report.sort,
+                        "report_info_list": report_info_list,
+                        "person": report_submit.person if report_submit else str(request.user),
+                        "write_time": report_submit.write_time.strftime(
+                            '%Y-%m-%d') if report_submit else datetime.datetime.now().strftime('%Y-%m-%d'),
+                        "state": report_submit.state if report_submit else "",
+                        "state_desc": state_dict[report_submit.state] if report_submit else state_dict[""],
+                        "report_time": report_time,
+                    })
             else:
                 current_report_info_set = report.reportinfo_set.exclude(state="9")
                 if current_report_info_set.exists():
@@ -2996,34 +3021,32 @@ def report_submit_data(request):
                             "report_info_id": int(report_info.id),
                         })
 
-            result.append({
-                "id": report.id,
-                "name": report.name,
-                "code": report.code,
-                "file_name": report.file_name,
-                "report_type": report_type,
-                "report_type_id": int(report.report_type) if report.report_type else "",
-                "app": report.app.name,
-                "app_id": report.app.id,
-                "report_type_num": report.report_type,
-                "sort": report.sort,
-                "report_info_list": report_info_list,
-                "person": report_submit.person if report_submit else str(request.user),
-                "write_time": report_submit.write_time.strftime(
-                    '%Y-%m-%d') if report_submit else datetime.datetime.now().strftime('%Y-%m-%d'),
-                "state": report_submit.state if report_submit else "",
-                "state_desc": state_dict[report_submit.state] if report_submit else state_dict[""],
-                "report_time": report_time,
-            })
+                result.append({
+                    "id": report.id,
+                    "name": report.name,
+                    "code": report.code,
+                    "file_name": report.file_name,
+                    "report_type": report_type,
+                    "report_type_id": int(report.report_type) if report.report_type else "",
+                    "app": report.app.name,
+                    "app_id": report.app.id,
+                    "report_type_num": report.report_type,
+                    "sort": report.sort,
+                    "report_info_list": report_info_list,
+                    "person": report_submit.person if report_submit else str(request.user),
+                    "write_time": report_submit.write_time.strftime(
+                        '%Y-%m-%d') if report_submit else datetime.datetime.now().strftime('%Y-%m-%d'),
+                    "state": report_submit.state if report_submit else "",
+                    "state_desc": state_dict[report_submit.state] if report_submit else state_dict[""],
+                    "report_time": report_time,
+                })
         return JsonResponse({"data": result})
 
 
 def report_submit_save(request):
     if request.user.is_authenticated():
-        print(11111111111111)
         # 新增/修改报表模型
         if request.method == "POST":
-            print(request.POST)
             result = {}
             person = request.POST.get("person", "")
             write_time = request.POST.get("write_time", "")
@@ -3033,7 +3056,6 @@ def report_submit_save(request):
             report_time = request.POST.get("report_time", "")
 
             write_time = datetime.datetime.strptime(write_time, "%Y-%m-%d") if write_time else None
-            print("+++++",person, write_time, report_model, app, post_type, report_time)
             length_tag = report_time.count("-")
             if length_tag == 0:
                 report_time = datetime.datetime.strptime(report_time, "%Y") if report_time else None
@@ -3119,8 +3141,37 @@ def report_submit_save(request):
                         return JsonResponse(result)
             else:
                 result["res"] = "网络异常。"
-            print(result["res"])
             return JsonResponse(result)
+
+
+def report_submit_del(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            id = request.POST.get('id', '')
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+            report = ReportModel.objects.filter(id=id)
+
+            if report.exists():
+                report = report[0]
+                # 删除关联report_submit
+                report_submit_set = report.reportsubmit_set.exclude(state="9")
+                if report_submit_set.exists():
+                    for i in report_submit_set:
+                        i.state = "9"
+                        i.save()
+                else:
+                    # 未创建，不需要删除
+                    return HttpResponse(2)
+
+                return HttpResponse(1)
+            else:
+                return HttpResponse(0)
+        else:
+            return HttpResponse(0)
+
 
 def getfun(myfunlist, fun):
     try:

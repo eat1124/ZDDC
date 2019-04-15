@@ -109,7 +109,7 @@ urlpatterns = [
     url(r'^report_submit/(?P<funid>\d+)/$', report_submit_index),
     url(r'^report_submit_data/$', report_submit_data),
     url(r'^report_submit_save/$', report_submit_save),
-
+    url(r'^report_submit_del/$', report_submit_del),
 
     # 场景管理
     url(r'^scene/$', scene, {'funid': '70'}),
