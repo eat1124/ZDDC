@@ -74,7 +74,7 @@ class Source(models.Model):
     create_time = models.DateTimeField("启动时间", blank=True, null=True)
     last_time = models.DateTimeField("最近取数时间", blank=True, null=True)
     status = models.CharField("状态", blank=True, max_length=50, default="")
-
+    p_id = models.CharField("进程ID", blank=True, max_length=50, default="")
 
 class Cycle(models.Model):
     name = models.CharField("周期名称", max_length=100)

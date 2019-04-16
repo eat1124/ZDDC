@@ -145,15 +145,24 @@ def create_process(request):
 
 def process_run(request):
     if request.user.is_authenticated():
-        p_id = request.POST.get("id", "")
+        source_id = request.POST.get("id", "")
+
+        try:
+            source_id = int(source_id)
+        except:
+            return JsonResponse({
+                "res": "该数据源不存在。"
+            })
+
         result = {}
         # 异步开启程序
-        current_process = Source.objects.filter(id=p_id, status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(
+        current_process = Source.objects.filter(id=source_id, status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(
             state="9")
         if current_process.exists():
             try:
                 # <ProcessMonitor: ProcessMonitor object> is not JSON serializable
-                handle_process.delay(p_id, handle_type="RUN")
+                handle_process.delay(source_id, handle_type="RUN")
+
                 result["res"] = "程序启动成功。"
             except Exception as e:
                 print(e)
