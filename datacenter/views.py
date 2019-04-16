@@ -68,66 +68,78 @@ def process_monitor_index(request, funid):
 def process_monitor_data(request):
     if request.user.is_authenticated():
         result = []
+        p_source = Source.objects.filter(pnode=None).exclude(state="9") 
+        if p_source.exists():
+            p_source = p_source[0]
+        else:
+            return JsonResponse({"data": []})
+        all_source = Source.objects.exclude(state="9").filter(pnode=p_source)
+        for source in all_source:
+            source_type = source.sourcetype
+            if source_type:
+                source_type = int(source_type)
+                try:
+                    temp_dict_list = DictList.objects.exclude(state="9").get(id=source_type)
+                    source_type_list = get_select_source_type(temp_source_type=source_type)
 
-        all_process_monitor = ProcessMonitor.objects.exclude(state="9")
-        for process_monitor in all_process_monitor:
-            result.append({
-                "id": process_monitor.id,
-                "name": process_monitor.name,
-                "process_path": process_monitor.process_path,
-                "create_time": process_monitor.create_time.strftime(
-                    '%Y-%m-%d %H:%M:%S') if process_monitor.create_time else "未启动",
-                "status": process_monitor.status if process_monitor.status else "",
-            })
+                    result.append({
+                        "id": source.id,
+                        "name": source.name,
+                        "code": source.code,
+                        "sourcetype": source_type,
+                        "sourcetype_name": temp_dict_list.name,
+                        "source_type_list": source_type_list,
+                        "create_time": source.create_time.strftime(
+                            '%Y-%m-%d %H:%M:%S') if source.create_time else "未启动",
+                        "last_time": source.last_time.strftime(
+                            '%Y-%m-%d %H:%M:%S') if source.last_time else "未启动",
+                        "status": source.status if source.status else "",
+                    })
+                except Exception as e:
+                    print(e)
 
         return JsonResponse({"data": result})
 
 
 def create_process(request):
+    """
+    修改数据源
+    :param request:
+    :return:
+    """
     if request.user.is_authenticated():
         process_id = request.POST.get("id", "")
-        process_path = request.POST.get("process_path", "")
+        name = request.POST.get("name", "")
+        code = request.POST.get("code", "")
+        source_type = request.POST.get("sourcetype", "")
         try:
             process_id = int(process_id)
         except:
             raise Http404()
         result = {}
-        if process_path.strip() == '':
-            result["res"] = '程序路径不能为空。'
-        elif not os.path.exists(r"{0}".format(process_path)):
-            result["res"] = '当前系统不存在该程序，无法添加。'
-        else:
-            process_name = process_path.split("\\")[-1].split(".")[0]
-            if process_id == 0:
-                all_process_monitor = ProcessMonitor.objects.filter(process_path=process_path).exclude(state="9")
-                if all_process_monitor.exists():
-                    result["res"] = '执行程序路径:' + process_path + '已存在。'
-                else:
-                    try:
-                        process_monitor_save = ProcessMonitor()
-                        process_monitor_save.name = process_name
-                        process_monitor_save.process_path = process_path
-                        process_monitor_save.status = ""
-                        process_monitor_save.save()
 
-                        result["res"] = "保存成功。"
-                    except Exception as e:
-                        print(e)
-                        result["res"] = "保存失败。"
+        if code.strip() == '':
+            result["res"] = '数据源代码不能为空。'
+        else:
+            if name.strip() == '':
+                result["res"] = '数据源名称不能为空。'
             else:
-                current_process_monitor = ProcessMonitor.objects.filter(id=process_id).exclude(state="9")
-                if current_process_monitor.exists():
-                    current_process_monitor = current_process_monitor[0]
+                if source_type.strip() == '':
+                    result["res"] = '数据源类型不能为空。'
+                else:
                     try:
-                        current_process_monitor.process_path = process_path
-                        current_process_monitor.name = process_name
-                        current_process_monitor.save()
-                        result["res"] = "保存成功。"
+                        source = Source.objects.filter(id=process_id)
+                        if source.exists():
+                            source = source[0]
+                            source.name = name
+                            source.code = code
+                            source.sourcetype = source_type
+                            source.save()
+                            result["res"] = "保存成功。"
                     except Exception as e:
                         print(e)
                         result["res"] = "保存失败。"
-                else:
-                    result["res"] = "程序不存在。"
+
         return JsonResponse(result)
 
 
@@ -136,22 +148,17 @@ def process_run(request):
         p_id = request.POST.get("id", "")
         result = {}
         # 异步开启程序
-        current_process = ProcessMonitor.objects.filter(id=p_id, status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(
+        current_process = Source.objects.filter(id=p_id, status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(
             state="9")
         if current_process.exists():
-            current_process = current_process[0]
-            process_path = current_process.process_path
+            try:
+                # <ProcessMonitor: ProcessMonitor object> is not JSON serializable
+                handle_process.delay(p_id, handle_type="RUN")
+                result["res"] = "程序启动成功。"
+            except Exception as e:
+                print(e)
+                result["res"] = "程序启动失败。"
 
-            if os.path.exists(r"{0}".format(process_path)):
-                try:
-                    # <ProcessMonitor: ProcessMonitor object> is not JSON serializable
-                    handle_process.delay(p_id, handle_type="RUN")
-                    result["res"] = "程序启动成功。"
-                except Exception as e:
-                    print(e)
-                    result["res"] = "程序启动失败。"
-            else:
-                result["res"] = '当前系统不存在该程序，无法启动。'
         else:
             result["res"] = "请勿重复执行该程序。"
         return JsonResponse(result)
@@ -160,7 +167,7 @@ def process_run(request):
 def process_destroy(request):
     if request.user.is_authenticated():
         p_id = request.POST.get("id", "")
-        current_process = ProcessMonitor.objects.filter(id=p_id).exclude(
+        current_process = Source.objects.filter(id=p_id).exclude(
             status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(state="9")
         result = {}
         if current_process.exists():
@@ -173,23 +180,6 @@ def process_destroy(request):
         else:
             result["res"] = "该程序未运行。"
         return JsonResponse(result)
-
-
-def process_delele(request):
-    if request.user.is_authenticated():
-        if 'id' in request.POST:
-            id = request.POST.get('id', '')
-            try:
-                id = int(id)
-            except:
-                raise Http404()
-            process_minitor = ProcessMonitor.objects.get(id=id)
-            process_minitor.state = "9"
-            process_minitor.save()
-
-            return HttpResponse(1)
-        else:
-            return HttpResponse(0)
 
 
 @csrf_exempt

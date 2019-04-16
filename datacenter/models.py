@@ -71,6 +71,9 @@ class Source(models.Model):
     connection = models.CharField("连接串", blank=True, null=True, max_length=500)
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
+    create_time = models.DateTimeField("启动时间", blank=True, null=True)
+    last_time = models.DateTimeField("最近取数时间", blank=True, null=True)
+    status = models.CharField("状态", blank=True, max_length=50, default="")
 
 
 class Cycle(models.Model):

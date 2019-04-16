@@ -1,38 +1,43 @@
 {% extends "base1.html" %}
 
 {% block content %}
+<!--
 
 <div style="height:10px"></div>
-<div class="table-toolbar">
-    <div id="error">
-        {% if errors %}
-        {% for error in errors %}
-        <div class="alert alert-danger ">{{ error }}</div>
-        <span> {% endfor %}</span>
 
-        {% endif %}
-    </div>
-    <div class="row">
-        <div class="col-md-6">
-            <div>
-                <button id="new" type="button" data-toggle="modal" data-target="#static" class="btn  green">
-                    添加程序
-                    <i class="fa fa-plus"></i>
-                </button>
-            </div>
+<div class="table-toolbar">
+<div id="error">
+    {% if errors %}
+    {% for error in errors %}
+    <div class="alert alert-danger ">{{ error }}</div>
+    <span> {% endfor %}</span>
+
+    {% endif %}
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div>
+            <button id="new" type="button" data-toggle="modal" data-target="#static" class="btn  green">
+                添加程序
+                <i class="fa fa-plus"></i>
+            </button>
         </div>
     </div>
-
 </div>
+</div>
+-->
 
 <table class="table table-striped table-bordered table-hover table-checkable order-column" id="sample_process_monitor">
     <thead>
     <tr>
         <th style="width:40px;"> 序号</th>
-        <th> 进程名称</th>
-        <th> 程序路径</th>
-        <th> 开启时间</th>
+        <th> 数据源名称</th>
+        <th> 数据源编号</th>
+        <th> 数据源类型</th>
+        <th> 启动时间</th>
+        <th> 最新取数时间</th>
         <th> 进程状态</th>
+        <th> 数据源字典</th>
         <th style="width:50px;"> 操作</th>
     </tr>
     </thead>
@@ -54,14 +59,29 @@
                 <form class="bs-example form-horizontal activate-form">{% csrf_token %}
 
                     <div class="form-body">
-                        <div class="form-group">
-                            <label class="col-md-2 control-label"><span
-                                    style="color:red; ">*</span>程序路径</label>
-                            <div class="col-md-10">
-                                <input id="process_path" type="text" name="process_path" class="form-control "
-                                       placeholder="例如：D:\EditPlus\EditPlus.exe">
+                        <div class="form-group ">
+                            <label class="col-md-3 control-label" id="d_name"><span
+                                    style="color:red; ">*</span>数据源名称</label>
+                            <div class="col-md-9">
+                                <input id="name" autocomplete="off" type="text" name="name" class="form-control"
+                                       value="{{name}}" placeholder="">
                                 <div class="form-control-focus"></div>
+                            </div>
+                        </div>
+                        <div class="form-group ">
+                            <label class="col-md-3 control-label"><span style="color:red; ">*</span>数据源代码</label>
+                            <div class="col-md-9">
+                                <input id="code" autocomplete="off" type="text" name="code" class="form-control"
+                                       placeholder="" value={{code}}>
+                                <div class="form-control-focus"></div>
+                            </div>
+                        </div>
+                        <div class="form-group ">
+                            <label class="col-md-3 control-label"><span style="color:red; ">*</span>数据源类型</label>
+                            <div class="col-md-9">
+                                <select class="form-control" id="sourcetype" name="sourcetype">
 
+                                </select>
                             </div>
                         </div>
                     </div>
