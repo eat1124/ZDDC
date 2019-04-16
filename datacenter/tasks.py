@@ -48,6 +48,7 @@ def handle_process(source_id, handle_type=None):
                             # 修改数据库进程状态
                             current_process.status = "已关闭"
                             current_process.create_time = None
+                            current_process.p_id = ""
                             current_process.save()
                         except:
                             print("程序终止失败。")
