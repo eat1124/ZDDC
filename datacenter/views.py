@@ -2972,11 +2972,7 @@ def report_submit_data(request):
         search_app = request.GET.get('search_app', '')
         search_date = request.GET.get('search_date', '')
         search_report_type = request.GET.get('search_report_type', '')
-        state_dict = {
-            "0": "未发布",
-            "1": "已发布",
-            "": "未创建",
-        }
+
         # 时间的过滤
         if search_date:
             if search_report_type == "22":
@@ -2994,12 +2990,6 @@ def report_submit_data(request):
         all_report = all_report.filter(app=curadminapp)
 
         for report in all_report:
-            # report_submit
-            report_submit = report.reportsubmit_set.exclude(state="9")
-            if report_submit.exists():
-                report_submit = report_submit[0]
-            else:
-                report_submit = ""
 
             # 报表类型
             report_type = report.report_type
@@ -3013,81 +3003,84 @@ def report_submit_data(request):
 
             report_info_list = []
 
-            report_time = ""
-            # 区分是否保存/发布
-            if report_submit:
-                if search_date:
-                    current_report_submit = report.reportsubmit_set.exclude(state="9").filter(report_time=search_date)
-                else:
-                    current_report_submit = report.reportsubmit_set.exclude(state="9")
-                if current_report_submit.exists():
-                    current_report_submit = current_report_submit[0]
-
-                    # 存在report_time
-                    report_time = current_report_submit.report_time
-                    if report.report_type == "22":
-                        report_time = report_time.strftime("%Y-%m-%d")
-                    elif report.report_type in ["23", "24", "25"]:
-                        report_time = report_time.strftime("%Y-%m")
-                    elif report.report_type == "26":
-                        report_time = report_time.strftime("%Y")
-
-                    current_report_submit_info_set = current_report_submit.reportsubmitinfo_set.exclude(state="9")
-                    if current_report_submit_info_set.exists():
-                        for report_submit_info in current_report_submit_info_set:
-                            report_info_list.append({
-                                "report_info_name": report_submit_info.name,
-                                "report_info_value": report_submit_info.value,
-                                "report_info_id": int(report_submit_info.id),
-                            })
-                    result.append({
-                        "id": report.id,
-                        "name": report.name,
-                        "code": report.code,
-                        "file_name": report.file_name,
-                        "report_type": report_type,
-                        "report_type_id": int(report.report_type) if report.report_type else "",
-                        "app": report.app.name,
-                        "app_id": report.app.id,
-                        "report_type_num": report.report_type,
-                        "sort": report.sort,
-                        "report_info_list": report_info_list,
-                        "person": report_submit.person if report_submit else str(request.user),
-                        "write_time": report_submit.write_time.strftime(
-                            '%Y-%m-%d') if report_submit else datetime.datetime.now().strftime('%Y-%m-%d'),
-                        "state": report_submit.state if report_submit else "",
-                        "state_desc": state_dict[report_submit.state] if report_submit else state_dict[""],
-                        "report_time": report_time,
+            current_report_info_set = report.reportinfo_set.exclude(state="9")
+            if current_report_info_set.exists():
+                for report_info in current_report_info_set:
+                    report_info_list.append({
+                        "report_info_name": report_info.name,
+                        "report_info_value": report_info.default_value,
+                        "report_info_id": int(report_info.id),
                     })
-            else:
-                current_report_info_set = report.reportinfo_set.exclude(state="9")
-                if current_report_info_set.exists():
-                    for report_info in current_report_info_set:
-                        report_info_list.append({
-                            "report_info_name": report_info.name,
-                            "report_info_value": report_info.default_value,
-                            "report_info_id": int(report_info.id),
-                        })
 
-                result.append({
-                    "id": report.id,
-                    "name": report.name,
-                    "code": report.code,
-                    "file_name": report.file_name,
-                    "report_type": report_type,
-                    "report_type_id": int(report.report_type) if report.report_type else "",
-                    "app": report.app.name,
-                    "app_id": report.app.id,
-                    "report_type_num": report.report_type,
-                    "sort": report.sort,
-                    "report_info_list": report_info_list,
-                    "person": report_submit.person if report_submit else str(request.user),
-                    "write_time": report_submit.write_time.strftime(
-                        '%Y-%m-%d') if report_submit else datetime.datetime.now().strftime('%Y-%m-%d'),
-                    "state": report_submit.state if report_submit else "",
-                    "state_desc": state_dict[report_submit.state] if report_submit else state_dict[""],
-                    "report_time": report_time,
-                })
+            # state判断  report_time/state==1
+            report_submit_1 = report.reportsubmit_set.exclude(state="9").filter(report_time=search_date, state="1")
+            report_submit_0 = report.reportsubmit_set.exclude(state="9").filter(report_time=search_date, state="0")
+
+            if report_submit_1.exists():
+                state = "已发布"
+                person = report_submit_1[0].person
+                write_time = report_submit_1[0].write_time.strftime('%Y-%m-%d')
+
+                c_report_time = report_submit_1[0].report_time
+                if c_report_time:
+                    if c_report_time.month == 0 and c_report_time.day == 1:
+                        report_time = c_report_time.strftime('%Y')
+                    if c_report_time.month != 0 and c_report_time.day == 1:
+                        report_time = c_report_time.strftime('%Y-%m')
+                    if c_report_time.month != 0 and c_report_time.day != 1:
+                        report_time = c_report_time.strftime('%Y-%m-%d')
+                c_report_info_list = []
+                current_report_submit_info_set = report_submit_1[0].reportsubmitinfo_set.exclude(state="9")
+                for report_submit_info in current_report_submit_info_set:
+                    c_report_info_list.append({
+                        "report_info_name": report_submit_info.name,
+                        "report_info_value": report_submit_info.value,
+                        "report_info_id": int(report_submit_info.id),
+                    })
+                report_info_list = c_report_info_list
+            elif report_submit_0.exists():
+                state = "未发布"
+                person = report_submit_0[0].person
+                write_time = report_submit_0[0].write_time.strftime('%Y-%m-%d')
+                c_report_time = report_submit_0[0].report_time
+                if c_report_time.month == 0 and c_report_time.day == 1:
+                    report_time = c_report_time.strftime('%Y')
+                if c_report_time.month != 0 and c_report_time.day == 1:
+                    report_time = c_report_time.strftime('%Y-%m')
+                if c_report_time.month != 0 and c_report_time.day != 1:
+                    report_time = c_report_time.strftime('%Y-%m-%d')
+                c_report_info_list = []
+                current_report_submit_info_set = report_submit_0[0].reportsubmitinfo_set.exclude(state="9")
+                for report_submit_info in current_report_submit_info_set:
+                    c_report_info_list.append({
+                        "report_info_name": report_submit_info.name,
+                        "report_info_value": report_submit_info.value,
+                        "report_info_id": int(report_submit_info.id),
+                    })
+                report_info_list = c_report_info_list
+            else:
+                state = "未创建"
+                person = str(request.user)
+                write_time = datetime.datetime.now().strftime('%Y-%m-%d')
+                report_time = ""
+
+            result.append({
+                "id": report.id,
+                "name": report.name,
+                "code": report.code,
+                "file_name": report.file_name,
+                "report_type": report_type,
+                "report_type_id": int(report.report_type) if report.report_type else "",
+                "app": report.app.name,
+                "app_id": report.app.id,
+                "report_type_num": report.report_type,
+                "sort": report.sort,
+                "report_info_list": report_info_list,
+                "person": person,
+                "write_time": write_time,
+                "state": state,
+                "report_time": report_time,
+            })
         return JsonResponse({"data": result})
 
 
@@ -3123,7 +3116,7 @@ def report_submit_save(request):
             if report_model:
                 report_model = int(report_model)
 
-                current_report_submit = ReportSubmit.objects.exclude(state="9").filter(report_model_id=report_model)
+                current_report_submit = ReportSubmit.objects.exclude(state="9").filter(report_model_id=report_model, report_time=report_time)
                 # 新增
                 if not current_report_submit.exists():
                     try:
@@ -3175,7 +3168,6 @@ def report_submit_save(request):
                                     "report_info_name_%d" % (i + 1), "")
                                 report_info_value = request.POST.get(
                                     "report_info_value_%d" % (i + 1), "")
-
                                 temp_report_submit_info = ReportSubmitInfo.objects.exclude(state="9").filter(
                                     id=int(report_info_id))
                                 if temp_report_submit_info.exists():
@@ -3196,6 +3188,18 @@ def report_submit_del(request):
     if request.user.is_authenticated():
         if 'id' in request.POST:
             id = request.POST.get('id', '')
+            report_time = request.POST.get("report_time", "")
+
+            length_tag = report_time.count("-")
+            if length_tag == 0:
+                report_time = datetime.datetime.strptime(report_time, "%Y") if report_time else None
+            elif length_tag == 1:
+                report_time = datetime.datetime.strptime(report_time, "%Y-%m") if report_time else None
+            elif length_tag == 2:
+                report_time = datetime.datetime.strptime(report_time, "%Y-%m-%d") if report_time else None
+            else:
+                return HttpResponse(0)
+
             try:
                 id = int(id)
             except:
@@ -3205,7 +3209,7 @@ def report_submit_del(request):
             if report.exists():
                 report = report[0]
                 # 删除关联report_submit
-                report_submit_set = report.reportsubmit_set.exclude(state="9")
+                report_submit_set = report.reportsubmit_set.exclude(state="9").filter(report_time=report_time)
                 if report_submit_set.exists():
                     for i in report_submit_set:
                         i.state = "9"

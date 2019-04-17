@@ -1,33 +1,33 @@
-$(document).ready(function () {
+$(document).ready(function() {
     $('#sample_1').dataTable({
         "bAutoWidth": true,
         "bSort": false,
         "bProcessing": true,
         "ajax": "../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(),
         "columns": [
-            {"data": "id"},
-            {"data": "name"},
-            {"data": "code"},
-            {"data": "state"},
-            {"data": null}
+            { "data": "id" },
+            { "data": "name" },
+            { "data": "code" },
+            { "data": "state" },
+            { "data": null }
         ],
 
         "columnDefs": [{
             "targets": -4,
-            "mRender": function (data, type, full) {
+            "mRender": function(data, type, full) {
                 return "<a href='http://192.168.100.151:8075/webroot/decision/view/report?viewlet=" + full.file_name + "&curdate=" + $('#reporting_date').val() + "' target='_blank'>" + full.name + "</a>"
             }
         }, {
             "targets": -2,
-            "mRender": function (data, type, full) {
-                if (full.state == "1") {
-                    return "<span style='color:green;'>" + full.state_desc + "</span>"
+            "mRender": function(data, type, full) {
+                if (full.state == "已发布") {
+                    return "<span style='color:green;'>" + full.state + "</span>"
                 }
-                if (full.state == "0") {
-                    return "<span style='color:yellow;'>" + full.state_desc + "</span>"
+                if (full.state == "未发布") {
+                    return "<span style='color:yellow;'>" + full.state + "</span>"
                 }
-                if (full.state == "") {
-                    return "<span style='color:red;'>" + full.state_desc + "</span>"
+                if (full.state == "未创建") {
+                    return "<span style='color:red;'>" + full.state + "</span>"
                 }
             }
         }, {
@@ -53,7 +53,7 @@ $(document).ready(function () {
         }
     });
     // 行按钮
-    $('#sample_1 tbody').on('click', 'button#edit', function () {
+    $('#sample_1 tbody').on('click', 'button#edit', function() {
         var table = $('#sample_1').DataTable();
         var data = table.row($(this).parents('tr')).data();
         $("#id").val(data.id);
@@ -117,7 +117,7 @@ $(document).ready(function () {
 
         $("#look").attr("href", "http://192.168.100.151:8075/webroot/decision/view/report?viewlet=" + data.file_name + "&curdate=" + $('#reporting_date').val())
     });
-    $('#sample_1 tbody').on('click', 'button#delrow', function () {
+    $('#sample_1 tbody').on('click', 'button#delrow', function() {
         if (confirm("确定要删除该条发布数据？")) {
             var table = $('#sample_1').DataTable();
             var data = table.row($(this).parents('tr')).data();
@@ -126,8 +126,9 @@ $(document).ready(function () {
                 url: "../../report_submit_del/",
                 data: {
                     id: data.id,
+                    report_time: data.report_time,
                 },
-                success: function (data) {
+                success: function(data) {
                     if (data == 1) {
                         table.ajax.reload();
                         alert("删除成功！");
@@ -139,7 +140,7 @@ $(document).ready(function () {
                         alert("删除失败，请于管理员联系。");
                     }
                 },
-                error: function (e) {
+                error: function(e) {
                     alert("删除失败，请于管理员联系。");
                 }
             });
@@ -158,7 +159,7 @@ $(document).ready(function () {
     });
 
     // 根据报表类型change
-    $("#search_report_type").change(function () {
+    $("#search_report_type").change(function() {
         $('#reporting_date').datetimepicker("remove");
         var report_type = $("#search_report_type").val();
         $('#reporting_date').val(temp_json_date[report_type]);
@@ -234,61 +235,61 @@ $(document).ready(function () {
             });
         }
         var table01 = $('#sample_1').DataTable();
-        table01.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
+        table01.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
     });
 
     // 根据时间过滤报表
-    $('#reporting_date').change(function () {
+    $('#reporting_date').change(function() {
         var table02 = $('#sample_1').DataTable();
         table02.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
     });
 
 
-    $("#save").click(function () {
+    $("#save").click(function() {
         $("#post_type").val("");
         $.ajax({
             type: "POST",
             dataType: 'json',
             url: "../../report_submit_save/",
             data: $("#report_submit_form").serialize(),
-            success: function (data) {
+            success: function(data) {
                 var myres = data["res"];
                 if (myres == "保存成功。") {
                     $('#static').modal('hide');
                     var table = $('#sample_1').DataTable();
-                    table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(),).load();
+                    table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
                 }
                 alert(myres);
             },
-            error: function (e) {
+            error: function(e) {
                 alert("页面出现错误，请于管理员联系。");
             }
         });
     });
 
-    $("#submit_btn").click(function () {
+    $("#submit_btn").click(function() {
         $("#post_type").val("submit")
         $.ajax({
             type: "POST",
             dataType: 'json',
             url: "../../report_submit_save/",
             data: $("#report_submit_form").serialize(),
-            success: function (data) {
+            success: function(data) {
                 var myres = data["res"];
                 if (myres == "保存成功。") {
                     $('#static').modal('hide');
                     var table = $('#sample_1').DataTable();
-                    table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(),).load();
+                    table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
                 }
                 alert(myres);
             },
-            error: function (e) {
+            error: function(e) {
                 alert("页面出现错误，请于管理员联系。");
             }
         });
     });
 
-    $('#error').click(function () {
+    $('#error').click(function() {
         $(this).hide()
     })
 
