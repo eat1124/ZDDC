@@ -355,6 +355,7 @@ def report_index(request, funid):
                                             server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
                                                                       remote_password, remote_platform)
                                             result = server_obj.run("")
+                                            print(result)
                                             if result["exec_tag"] != 0:
                                                 write_tag = False
 
@@ -3022,12 +3023,13 @@ def report_submit_data(request):
                 write_time = report_submit_1[0].write_time.strftime('%Y-%m-%d')
 
                 c_report_time = report_submit_1[0].report_time
+                # 年 月 日  2019-01-01
                 if c_report_time:
-                    if c_report_time.month == 0 and c_report_time.day == 1:
+                    if report_type=="年报":
                         report_time = c_report_time.strftime('%Y')
-                    if c_report_time.month != 0 and c_report_time.day == 1:
+                    if report_type in ["月报", "半年报","季报"]:
                         report_time = c_report_time.strftime('%Y-%m')
-                    if c_report_time.month != 0 and c_report_time.day != 1:
+                    if report_type=="日报":
                         report_time = c_report_time.strftime('%Y-%m-%d')
                 c_report_info_list = []
                 current_report_submit_info_set = report_submit_1[0].reportsubmitinfo_set.exclude(state="9")
@@ -3043,12 +3045,13 @@ def report_submit_data(request):
                 person = report_submit_0[0].person
                 write_time = report_submit_0[0].write_time.strftime('%Y-%m-%d')
                 c_report_time = report_submit_0[0].report_time
-                if c_report_time.month == 0 and c_report_time.day == 1:
-                    report_time = c_report_time.strftime('%Y')
-                if c_report_time.month != 0 and c_report_time.day == 1:
-                    report_time = c_report_time.strftime('%Y-%m')
-                if c_report_time.month != 0 and c_report_time.day != 1:
-                    report_time = c_report_time.strftime('%Y-%m-%d')
+                if c_report_time:
+                    if report_type=="年报":
+                        report_time = c_report_time.strftime('%Y')
+                    if report_type in ["月报", "半年报","季报"]:
+                        report_time = c_report_time.strftime('%Y-%m')
+                    if report_type=="日报":
+                        report_time = c_report_time.strftime('%Y-%m-%d')
                 c_report_info_list = []
                 current_report_submit_info_set = report_submit_0[0].reportsubmitinfo_set.exclude(state="9")
                 for report_submit_info in current_report_submit_info_set:
