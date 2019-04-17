@@ -10,7 +10,7 @@ import time
 
 
 def run_process(source_id):
-    # subprocess.run(r"D:\Sublime\Sublime Text Build 3200 x64\sublime_text.exe")
+    subprocess.run(r"D:\Sublime\Sublime Text Build 3200 x64\sublime_text.exe")
     # 取数 *****************************************************
 
     pid = os.getpid()
@@ -25,7 +25,7 @@ def run_process(source_id):
                                      cursorclass=pymysql.cursors.DictCursor)
         try:
             with connection.cursor() as cursor:
-                update_sql = """UPDATE datacenter.datacenter_source SET create_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
+                update_sql = """UPDATE datacenter.datacenter_source SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
                     datetime.now(), pid, source_id)
                 cursor.execute(update_sql)
             connection.commit()

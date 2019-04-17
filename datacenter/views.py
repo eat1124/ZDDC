@@ -143,6 +143,60 @@ def create_process(request):
         return JsonResponse(result)
 
 
+def handle_process(source_id, handle_type=None):
+    """
+    开启程序
+    """
+    current_process = Source.objects.filter(id=source_id)
+    tag = 0
+    res = ""
+    if current_process.exists():
+        current_process = current_process[0]
+
+        if handle_type == "RUN":
+            try:
+                process_path = BASE_DIR + os.sep + "utils" + os.sep + "handle_process.py" + " {0}".format(source_id)
+                os.popen(r"{0}".format(process_path))
+                res = "程序启动成功。"
+                tag = 1
+            except Exception as e:
+                res = "程序启动失败"
+            if tag == 1:
+                # 修改数据库进程状态
+                current_process.status = "running"
+                current_process.create_time = datetime.datetime.now()
+                current_process.save()
+        elif handle_type == "DESTROY":
+            pid = current_process.p_id
+            if pid:
+                all_process = psutil.process_iter()
+                for p in all_process:
+                    if int(pid) == p.pid:
+                        try:
+                            p.terminate()
+
+                            # 修改数据库进程状态
+                            current_process.status = "已关闭"
+                            current_process.create_time = None
+                            current_process.p_id = ""
+                            current_process.save()
+                            res = "程序终止成功。"
+                            tag = 1
+                        except:
+                            res = "程序终止失败。"
+                        break
+                    else:
+                        res = "未找到该进程"
+            else:
+                res = "该进程不存在。"
+        else:
+            res = "程序执行类型不符合。"
+    else:
+        res = "数据源不存在。"
+
+    return (tag, res)
+
+
 def process_run(request):
     if request.user.is_authenticated():
         source_id = request.POST.get("id", "")
@@ -159,16 +213,11 @@ def process_run(request):
         current_process = Source.objects.filter(id=source_id, status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(
             state="9")
         if current_process.exists():
-            try:
-                # <ProcessMonitor: ProcessMonitor object> is not JSON serializable
-                handle_process.delay(source_id, handle_type="RUN")
-
-                result["res"] = "程序启动成功。"
-            except Exception as e:
-                print(e)
-                result["res"] = "程序启动失败。"
-
+            tag, res = handle_process(source_id, handle_type="RUN")
+            result["tag"] = tag
+            result["res"] = res
         else:
+            result["tag"] = 0
             result["res"] = "请勿重复执行该程序。"
         return JsonResponse(result)
 
@@ -181,12 +230,11 @@ def process_destroy(request):
         result = {}
         if current_process.exists():
             # 异步开启程序
-            try:
-                handle_process.delay(p_id, handle_type="DESTROY")
-                result["res"] = "程序终止成功。"
-            except:
-                result["res"] = "程序终止失败。"
+            tag, res = handle_process(p_id, handle_type="DESTROY")
+            result["tag"] = tag
+            result["res"] = res
         else:
+            result["tag"] = 0
             result["res"] = "该程序未运行。"
         return JsonResponse(result)
 

@@ -71,7 +71,10 @@ $(document).ready(function () {
                 },
                 success: function (data) {
                     var myres = data["res"];
-                    if (myres === "程序启动成功。") {
+                    var mytag = data["tag"];
+                    console.log(mytag)
+                    console.log(mytag==1)
+                    if (mytag == 1) {
                         table.ajax.reload();
                     }
                     alert(myres);
@@ -95,7 +98,9 @@ $(document).ready(function () {
                 },
                 success: function (data) {
                     var myres = data["res"];
-                    if (myres === "程序终止成功。") {
+                    var mytag = data["tag"];
+
+                    if (mytag == 1) {
                         table.ajax.reload();
                     }
                     alert(myres);
@@ -138,37 +143,37 @@ $(document).ready(function () {
         $(this).hide()
     });
 
-    setInterval(function () {
-        var table = $('#sample_process_monitor').DataTable();
-        table.ajax.reload();
-        console.log("refresh")
-    }, 2000);
+    // setInterval(function () {
+    //     var table = $('#sample_process_monitor').DataTable();
+    //     table.ajax.reload();
+    //     console.log("refresh")
+    // }, 2000);
 
-    var end = false;
+    // var end = false;
 
-    function customOurInterval() {
-        // body...
-        setTimeout(function() {
-            // do something 定时任务
-            // 处理时对end标志进行修改，end=True表示停止（取消定时器）。
-            console.log("refresh");
-            if (window.location.href.indexOf("process_monitor") != -1) {
-                var table = $('#sample_process_monitor').DataTable();
-                table.ajax.reload();
-                end = false
-            } else {
-                end = true
-            }
+    // function customOurInterval() {
+    //     // body...
+    //     setTimeout(function() {
+    //         // do something 定时任务
+    //         // 处理时对end标志进行修改，end=True表示停止（取消定时器）。
+    //         console.log("refresh");
+    //         if (window.location.href.indexOf("process_monitor") != -1) {
+    //             var table = $('#sample_process_monitor').DataTable();
+    //             table.ajax.reload();
+    //             end = false
+    //         } else {
+    //             end = true
+    //         }
 
-            if (!end) {
-                // 循环(arguments.callee获取当前执行函数的引用)
-                setTimeout(arguments.callee, 2000);
-            } else {
-                end = false;
-            }
-        }, 2000);
-    }
+    //         if (!end) {
+    //             // 循环(arguments.callee获取当前执行函数的引用)
+    //             setTimeout(arguments.callee, 2000);
+    //         } else {
+    //             end = false;
+    //         }
+    //     }, 2000);
+    // }
 
-    customOurInterval();
+    // customOurInterval();
 
 });
