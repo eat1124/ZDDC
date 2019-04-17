@@ -343,8 +343,10 @@ def report_index(request, funid):
                                             # 只要有文件写入，就发送请求
                                             # 远程执行命令，令远程windows发送请求下载文件
                                             local_script_dir = "C:\\Users\\Administrator\\Desktop\\test.ps1"
-                                            remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
-                                            url_visited = "http://192.168.100.220:8000/download_file?file_name={0}".format(
+                                            remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
+                                                file_name)
+                                            # remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
+                                            url_visited = "http://192.168.100.225:8000/download_file?file_name={0}".format(
                                                 file_name)
                                             remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                 local_script_dir, remote_file_dir, url_visited)
@@ -569,7 +571,7 @@ def report_app_index(request, funid):
                                             local_script_dir = "C:\\Users\\Administrator\\Desktop\\test.ps1"
                                             remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(file_name)
                                             # remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
-                                            url_visited = "http://192.168.100.224:8000/download_file?file_name={0}".format(
+                                            url_visited = "http://192.168.100.225:8000/download_file?file_name={0}".format(
                                                 file_name)
                                             remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                 local_script_dir, remote_file_dir, url_visited)
@@ -2960,6 +2962,7 @@ def report_submit_index(request, funid):
                        "errors": errors,
                        "id": id,
                        "date": json.dumps(temp_dict),
+                       "dateday": date1.strftime("%Y-%m-%d"),
                        "adminapp": adminapp,
                        "funid": funid,
                        "pagefuns": getpagefuns(funid)})

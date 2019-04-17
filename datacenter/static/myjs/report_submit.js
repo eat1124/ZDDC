@@ -24,7 +24,7 @@ $(document).ready(function() {
                     return "<span style='color:green;'>" + full.state + "</span>"
                 }
                 if (full.state == "未发布") {
-                    return "<span style='color:yellow;'>" + full.state + "</span>"
+                    return "<span style='color:#FF9933;'>" + full.state + "</span>"
                 }
                 if (full.state == "未创建") {
                     return "<span style='color:red;'>" + full.state + "</span>"
@@ -150,7 +150,6 @@ $(document).ready(function() {
     // 默认
     var temp_date = $("#temp_date").val();
     var temp_json_date = JSON.parse(temp_date);
-    $('#reporting_date').val(temp_json_date["22"]);
     $('#reporting_date').datetimepicker({
         format: 'yyyy-mm-dd',
         autoclose: true,
@@ -241,6 +240,7 @@ $(document).ready(function() {
     // 根据时间过滤报表
     $('#reporting_date').change(function() {
         var table02 = $('#sample_1').DataTable();
+
         table02.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
     });
 
