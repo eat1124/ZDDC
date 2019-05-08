@@ -46,6 +46,7 @@ from .models import *
 from .remote import ServerByPara
 from ZDDC import settings
 from .funcs import *
+from .ftp_file_handler import *
 
 funlist = []
 
@@ -337,6 +338,17 @@ def report_index(request, funid):
                                         write_tag = True
                                         # 新增 或者 修改(且有my_file存在) 时写入文件
                                         if id == 0 or id != 0 and my_file:
+                                            # try:
+                                            #     file_handler = FileHandler()
+                                            #     ftp = file_handler.ftp_connect()
+                                            #     # file_handler.download_file(ftp, r"docker.py", r"C:\Users\Administrator\Desktop\docker.py")
+                                            #     file_handler.upload_file(ftp, file_name, fp=my_file)
+                                            #     ftp.quit()
+                                            #     write_tag = False
+                                            # except Exception as e:
+                                            #     print(e)
+                                            #     write_tag = True
+
                                             with open(myfilepath, 'wb+') as f:
                                                 for chunk in my_file.chunks():
                                                     f.write(chunk)
