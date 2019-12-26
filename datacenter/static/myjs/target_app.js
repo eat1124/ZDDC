@@ -1,3 +1,22 @@
+// 定位公式框中鼠标的位置
+function getTxt1CursorPosition(id){
+    var oTxt1 = document.getElementById(id);
+    var cursurPosition=-1;
+    try{
+        if(oTxt1.selectionStart){//非IE浏览器
+            cursurPosition= oTxt1.selectionStart;
+            }else{//IE
+
+            var range = document.selection.createRange();
+            range.moveStart("character",-oTxt1.value.length);
+            cursurPosition=range.text.length;
+            }
+        }catch(err){
+        cursurPosition=0
+     }
+    $('#formula').attr({'seat':cursurPosition})
+}
+
 $(document).ready(function () {
     $('#sample_1').dataTable({
         "bAutoWidth": true,
@@ -37,6 +56,7 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         }
     });
+
     // 行按钮
     $('#sample_1 tbody').on('click', 'button#delrow', function () {
         if (confirm("确定要删除该条数据？")) {
@@ -288,5 +308,92 @@ $(document).ready(function () {
         });
         }
 
-    })
+    });
+
+    // 右键菜单栏
+    $('#formula').contextmenu({
+        target: '#context-menu2',
+        onItem: function (context, e) {
+        }
+    });
+
+    // 点击事件提取指标
+    $('#collect').click(function () {
+        getTxt1CursorPosition("formula");
+        $('#myModal').modal('show')
+    });
+
+    // 模态框表格数据
+    $('#sample_3').dataTable({
+        "bAutoWidth": true,
+        "bSort": false,
+        "bProcessing": true,
+        "ajax": "../../target_data/?search_adminapp=" + $('#adminapp').val(),
+        "columns": [
+            {"data": "id"},
+            {"data": "name"},
+            {"data": "code"},
+            {"data": null},
+            {"data": null},
+            {"data": null}
+        ],
+        "columnDefs": [{
+            "targets": -3,
+            "data": null,
+            "defaultContent":"<select style='width:100px'><option value='d'>当日值</option><option value='m'>月累计</option>" +
+            "<option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>"
+        },
+        {
+            "targets": -2,
+            "data": null,
+            "defaultContent": "<select style='width:100px'><option value='D'>当天</option><option value='L'>前一天</option>" +
+            "<option value='MS'>月初</option><option value='ME'>月末</option><option value='LMS'>上月初</option><option value='LME'>上月末</option>" +
+            "<option value='SS'>季初</option><option value='SE'>季末</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option>" +
+            "<option value='HS'>半年初</option><option value='HE'>半年末</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
+            "<option value='YS'>年初</option><option value='YE'>年末</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option>" +
+            "<option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+        },
+        {
+            "targets": -1,
+            "data": null,
+            "defaultContent": "<button  id='select' title='选择'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-check'></i></button>"
+        }
+
+        ],
+        "oLanguage": {
+            "sLengthMenu": "每页显示 _MENU_ 条记录",
+            "sZeroRecords": "抱歉， 没有找到",
+            "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+            "sInfoEmpty": "没有数据",
+            "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+            "sSearch": "搜索",
+            "oPaginate": {
+                "sFirst": "首页",
+                "sPrevious": "前一页",
+                "sNext": "后一页",
+                "sLast": "尾页"
+            },
+            "sZeroRecords": "没有检索到数据"
+        }
+    });
+
+    $('#search_adminapp,#search_app,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3').change(function () {
+        var table = $('#sample_3').DataTable();
+        table.ajax.url("../../target_data?search_adminapp=" + $('#adminapp').val()  + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val()).load();
+    });
+
+    $('#sample_3 tbody').on('click', 'button#select', function () {
+        var table = $('#sample_3').DataTable();
+        var data1 = table.row($(this).parents('tr')).data().code;
+        var data2 =$(this).parent().prev().prev().find('option:selected').val();
+        var data3 =$(this).parent().prev().find('option:selected').val();
+        var select = data1 + ':' + data2 + ':' + data3;
+        var data =  $('#formula').val();
+        var seat = $('#formula').attr("seat");
+        data = data.slice(0,seat)+ select + data.slice(seat);
+        $('#formula').val(data);
+        $('#myModal').modal('hide')
+    });
+
 });
+
