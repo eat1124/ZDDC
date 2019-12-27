@@ -317,10 +317,11 @@ $(document).ready(function () {
         }
     });
 
-    // 点击事件提取指标
+    // 点击事件插入指标
     $('#collect').click(function () {
         getTxt1CursorPosition("formula");
         $('#myModal').modal('show')
+
     });
 
     // 模态框表格数据
@@ -340,7 +341,7 @@ $(document).ready(function () {
         "columnDefs": [{
             "targets": -3,
             "data": null,
-            "defaultContent":"<select style='width:100px'><option value='d'>当日值</option><option value='m'>月累计</option>" +
+            "defaultContent":"<select style='width:100px'><option value='d'>当前值</option><option value='m'>月累计</option>" +
             "<option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>"
         },
         {
@@ -387,7 +388,7 @@ $(document).ready(function () {
         var data1 = table.row($(this).parents('tr')).data().code;
         var data2 =$(this).parent().prev().prev().find('option:selected').val();
         var data3 =$(this).parent().prev().find('option:selected').val();
-        var select = data1 + ':' + data2 + ':' + data3;
+        var select = '<' + data1 + ':' + data2 + ':' + data3 + '>';
         var data =  $('#formula').val();
         var seat = $('#formula').attr("seat");
         data = data.slice(0,seat)+ select + data.slice(seat);
