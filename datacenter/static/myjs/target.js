@@ -3,10 +3,9 @@ function getTxt1CursorPosition(id) {
     var oTxt1 = document.getElementById(id);
     var cursurPosition = -1;
     try {
-        if (oTxt1.selectionStart) {//非IE浏览器
+        if (oTxt1.selectionStart) {
             cursurPosition = oTxt1.selectionStart;
-        } else {//IE
-
+        } else {
             var range = document.selection.createRange();
             range.moveStart("character", -oTxt1.value.length);
             cursurPosition = range.text.length;
@@ -57,8 +56,21 @@ $(document).ready(function () {
                 "sLast": "尾页"
             },
             "sZeroRecords": "没有检索到数据",
+        },
+        "initComplete": function () {
+            $.ajax({
+                type: "GET",
+                url: "../target_formula_data/",
+                data: 'formula_analysis_data',
+                dataType: 'json',
+                success: function (data) {
+                    $("#formula_analysis_data").val(JSON.stringify(data));
+                }
+            });
         }
     });
+
+
     // 行按钮
     $('#sample_1 tbody').on('click', 'button#delrow', function () {
         if (confirm("确定要删除该条数据？")) {
@@ -86,8 +98,34 @@ $(document).ready(function () {
 
         }
     });
-    $('#sample_1 tbody').on('click', 'button#edit', function () {
 
+    //公式解析函数
+    function myFunction() {
+        var formula_data = $("#formula").val();
+        var formula_analysis_data = JSON.parse($("#formula_analysis_data").val());
+        var pre_data = '';
+        String.prototype.replaceAll = function (search, replacement) {
+            var target = this;
+            return target.replace(new RegExp(search, 'g'), replacement);
+        };
+        for (var key in formula_analysis_data) {
+            if (formula_data.indexOf(key) != -1) {
+                if (pre_data) {
+                    pre_data = pre_data.replaceAll(key, formula_analysis_data[key]);
+                } else {
+                    pre_data = formula_data.replaceAll(key, formula_analysis_data[key]);
+                }
+            }
+        }
+        if (formula_data == "") {
+            $("#formula_analysis").val("");
+        } else {
+            $("#formula_analysis").val(pre_data);
+        }
+    }
+
+
+    $('#sample_1 tbody').on('click', 'button#edit', function () {
         $('#sample_3').DataTable().ajax.reload();
 
         var table = $('#sample_1').DataTable();
@@ -107,9 +145,7 @@ $(document).ready(function () {
         $("#app").val(data.app).trigger("change");
         $("#cumulative").val(data.cumulative);
         $("#sort").val(data.sort);
-
         $("#formula").val(data.formula);
-
         $("#cycle").val(data.cycle);
         $("#source").val(data.source);
         $("#sourcetable").val(data.sourcetable);
@@ -121,36 +157,49 @@ $(document).ready(function () {
         $("#storagefields").val(data.storagefields);
 
         $('#calculate').hide();
+        $('#calculate_analysis').hide();
+
         $('#extract').hide();
         if ($('#operationtype option:selected').text() == '计算') {
             $('#calculate').show();
+            $('#calculate_analysis').show();
         }
         if ($('#operationtype option:selected').text() == '提取') {
             $('#extract').show();
         }
+
+        myFunction();
+        $("#formula").change(function () {
+            myFunction();
+        });
     });
+
 
     $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit').change(function () {
         var table = $('#sample_1').DataTable();
         table.ajax.url("../target_data?search_adminapp=" + $('#search_adminapp').val() + "&search_app=" + $('#search_app').val() + "&search_operationtype=" + $('#search_operationtype').val() + "&search_cycletype=" + $('#search_cycletype').val() + "&search_businesstype=" + $('#search_businesstype').val() + "&search_unit=" + $('#search_unit').val()).load();
     })
 
+
     $('#operationtype').change(function () {
         $('#calculate').hide();
+        $('#calculate_analysis').hide();
         $('#extract').hide();
         if ($('#operationtype option:selected').text() == '计算') {
             $('#calculate').show();
+            $('#calculate_analysis').show();
         }
         if ($('#operationtype option:selected').text() == '提取') {
             $('#extract').show();
         }
     })
 
-    $("#new").click(function () {
 
+    $("#new").click(function () {
         $('#sample_3').DataTable().ajax.reload();
 
         $('#calculate').hide();
+        $('#calculate_analysis').hide();
         $('#extract').hide();
         $("#id").val("0");
         $("#name").val("");
@@ -167,9 +216,7 @@ $(document).ready(function () {
         $("#app").select2("val", "");
         $("#cumulative").val("是");
         $("#sort").val("");
-
         $("#formula").val("");
-
         $("#cycle").val("");
         $("#source").val("");
         $("#sourcetable").val("");
@@ -179,6 +226,11 @@ $(document).ready(function () {
         $("#storage").val("");
         $("#storagetag").val("");
         $("#storagefields").val("");
+
+        myFunction();
+        $("#formula").change(function () {
+            myFunction();
+        });
     });
 
     $('#save').click(function () {
@@ -233,9 +285,11 @@ $(document).ready(function () {
         });
     })
 
+
     $('#error').click(function () {
         $(this).hide()
     });
+
 
     // 右键菜单栏
     $('#formula').contextmenu({
@@ -243,6 +297,7 @@ $(document).ready(function () {
         onItem: function (context, e) {
         }
     });
+
 
     // 点击事件插入指标
     $('#collect').click(function () {
@@ -276,12 +331,12 @@ $(document).ready(function () {
         "columnDefs": [{
             "targets": -3,
             "data": null,
-            "mRender": function(data, type, full) {
+            "mRender": function (data, type, full) {
                 if (full.cumulative == "否") {
                     return "<select style='width:100px'><option value='d'>当前值</option>"
                 }
                 if (full.cumulative == "是" && full.cycletype_name == "日") {
-                    return  "<select style='width:100px'><option value='d'>当前值</option><option value='m'>月累计</option><option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
+                    return "<select style='width:100px'><option value='d'>当前值</option><option value='m'>月累计</option><option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
                 }
                 if (full.cumulative == "是" && full.cycletype_name == "月") {
                     return "<select style='width:100px'><option value='d'>当前值</option><option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
@@ -327,6 +382,7 @@ $(document).ready(function () {
         },
     });
 
+
     $('#search_adminapp3,#search_app3,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3').change(function () {
         var table = $('#sample_3').DataTable();
         table.ajax.url("../target_data?search_adminapp=" + $('#search_adminapp3').val() + "&search_app=" + $('#search_app3').val() + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val()).load();
@@ -343,8 +399,8 @@ $(document).ready(function () {
         var seat = $('#formula').attr("seat");
         data = data.slice(0, seat) + select + data.slice(seat);
         $('#formula').val(data);
+        myFunction();
         $('#myModal').modal('hide');
-
     });
 
 

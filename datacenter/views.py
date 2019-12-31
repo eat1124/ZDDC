@@ -1892,6 +1892,17 @@ def target_data(request):
         return JsonResponse({"data": result})
 
 
+def target_formula_data(request):
+    if request.user.is_authenticated():
+        all_target = Target.objects.exclude(state="9").order_by("sort")
+        formula_analysis_data = {}
+        for target in all_target:
+            analysis_code = target.code
+            analysis_name = target.name
+            formula_analysis_data[analysis_code] = analysis_name
+        return HttpResponse(json.dumps(formula_analysis_data, ensure_ascii=False))
+
+
 def target_save(request):
     if request.user.is_authenticated():
         id = request.POST.get("id", "")

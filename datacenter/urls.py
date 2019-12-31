@@ -78,6 +78,7 @@ urlpatterns = [
     # 指标管理
     url(r'^target/$', target_index, {'funid': '13'}),
     url(r'^target_data/$', target_data),
+    url(r'^target_formula_data/$', target_formula_data),
     url(r'^target_save/$', target_save),
     url(r'^target_del/$', target_del),
 
