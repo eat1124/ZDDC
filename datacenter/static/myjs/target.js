@@ -58,15 +58,7 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
         "initComplete": function () {
-            $.ajax({
-                type: "GET",
-                url: "../target_formula_data/",
-                data: 'formula_analysis_data',
-                dataType: 'json',
-                success: function (data) {
-                    $("#formula_analysis_data").val(JSON.stringify(data));
-                }
-            });
+            ajaxFunction()
         }
     });
 
@@ -96,34 +88,80 @@ $(document).ready(function () {
                 }
             });
 
+            ajaxFunction()
         }
     });
 
     //公式解析函数
-    function myFunction() {
-        var formula_data = $("#formula").val();
+    function analysisFunction() {
+        var formula_data = ($("#formula").val()).replace(/\s*/g, "");
         var formula_analysis_data = JSON.parse($("#formula_analysis_data").val());
-        var pre_data = '';
-        String.prototype.replaceAll = function (search, replacement) {
-            var target = this;
-            return target.replace(new RegExp(search, 'g'), replacement);
+        var data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积"};
+        var data_time = {
+            "D": "当天", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
+            "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
+            "YE": "年末", "LYS": "去年初", "LYE": "去年末", "MAVG": "月平均值", "SAVG": "季平均值", "HAVG": "半年平均值", "YAVG": "年均值"
         };
-        for (var key in formula_analysis_data) {
-            if (formula_data.indexOf(key) != -1) {
-                if (pre_data) {
-                    pre_data = pre_data.replaceAll(key, formula_analysis_data[key]);
-                } else {
-                    pre_data = formula_data.replaceAll(key, formula_analysis_data[key]);
+
+        var formula_data_list = formula_data.split(/[<>]/);
+        var pre_data = '';
+        var formula_data_pre1 = '';
+        var formula_data_pre2 = '';
+        var formula_data_pre3 = '';
+        for (var i = 0; i < formula_data_list.length; i++) {
+            var formula_data_pre = formula_data_list[i].split(':');
+            var formula_data_pre_list = formula_data_pre;
+            if (formula_data_pre[0] in formula_analysis_data){
+                formula_data_pre1 = formula_analysis_data[formula_data_pre[0]];
+                formula_data_pre_list[0] = formula_data_pre1
+            } else{
+                formula_data_pre1 = formula_data_pre[0]
+            }
+            if (formula_data_pre[1]){
+                if (formula_data_pre[1] in data_field){
+                    formula_data_pre2 = data_field[formula_data_pre[1]];
+                    formula_data_pre_list[1] = formula_data_pre2
+                }else{
+                     formula_data_pre2 = formula_data_pre[1]
                 }
             }
+            if (formula_data_pre[2]){
+                if (formula_data_pre[2] in data_time){
+                     formula_data_pre3 = data_time[formula_data_pre[2]];
+                     formula_data_pre_list[2] = formula_data_pre3
+                }else{
+                     formula_data_pre3 = formula_data_pre[2];
+                }
+            }
+            formula_data_pre_list = formula_data_pre_list.join(':');
+            formula_data_pre_list = '<' + formula_data_pre_list + '>';
+            if (pre_data) {
+                pre_data = pre_data.replace('<' + formula_data_list[i] + '>', formula_data_pre_list)
+            } else {
+                pre_data = formula_data.replace('<' + formula_data_list[i] + '>', formula_data_pre_list)
+            }
         }
-        if (formula_data == "") {
-            $("#formula_analysis").val("");
-        } else {
-            $("#formula_analysis").val(pre_data);
+
+        if (pre_data != ""){
+             $("#formula_analysis").val(pre_data);
         }
+        else {
+            $("#formula_analysis").val(formula_data);
+        }
+
     }
 
+    function ajaxFunction() {
+        $.ajax({
+            type: "GET",
+            url: "../target_formula_data/",
+            data: 'formula_analysis_data',
+            dataType: 'json',
+            success: function (data) {
+                $("#formula_analysis_data").val(JSON.stringify(data));
+            }
+        });
+    }
 
     $('#sample_1 tbody').on('click', 'button#edit', function () {
         $('#sample_3').DataTable().ajax.reload();
@@ -168,10 +206,12 @@ $(document).ready(function () {
             $('#extract').show();
         }
 
-        myFunction();
-        $("#formula").change(function () {
-            myFunction();
+        ajaxFunction();
+        analysisFunction();
+         $("#formula").bind('input propertychange',function () {
+            analysisFunction();
         });
+
     });
 
 
@@ -227,11 +267,14 @@ $(document).ready(function () {
         $("#storagetag").val("");
         $("#storagefields").val("");
 
-        myFunction();
-        $("#formula").change(function () {
-            myFunction();
+        ajaxFunction();
+        analysisFunction();
+         $("#formula").bind('input propertychange',function () {
+            analysisFunction();
         });
+
     });
+
 
     $('#save').click(function () {
         var table = $('#sample_1').DataTable();
@@ -283,6 +326,7 @@ $(document).ready(function () {
                 alert("页面出现错误，请于管理员联系。");
             }
         });
+        ajaxFunction()
     })
 
 
@@ -324,6 +368,8 @@ $(document).ready(function () {
             {"data": "id"},
             {"data": "name"},
             {"data": "code"},
+            {"data": "cumulative"},
+            {"data": "cycletype_name"},
             {"data": null},
             {"data": null},
             {"data": null}
@@ -399,7 +445,7 @@ $(document).ready(function () {
         var seat = $('#formula').attr("seat");
         data = data.slice(0, seat) + select + data.slice(seat);
         $('#formula').val(data);
-        myFunction();
+        analysisFunction();
         $('#myModal').modal('hide');
     });
 
