@@ -261,7 +261,23 @@
                                 </div>
                             </div>
                         </div>
-
+                        <div id="calculate_analysis">
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">公式解析</label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control" placeholder="" seat="0" rows="4" id="formula_analysis" name="formula_analysis" readonly></textarea>
+                                    <div class="form-control-focus"> </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="" hidden>
+                            <div class="form-group" >
+                                <label class="col-md-2 control-label">公式解析数据</label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control" rows="4" id="formula_analysis_data" name="formula_analysis_data" readonly></textarea>
+                                </div>
+                            </div>
+                        </div>
                         <div id="extract">
                             <hr style="height:1px;border:none;border-top:1px solid #87cefa;" />
                             <div class="form-group ">
@@ -383,7 +399,7 @@
                                                  <div class="form-group ">
                                                      <label class="col-md-3 control-label">操作类型</label>
                                                      <div class="col-md-7">
-                                                         <select class="form-control" id="search_operationtype3" name="search_operationtype">
+                                                         <select class="form-control" id="search_operationtype3" name="search_operationtype3">
                                                              <option selected value="">全部</option>
                                                              {% for operation_type in operation_type_list %}
                                                                  <option value="{{ operation_type.operation_type_id }}">{{ operation_type.operation_type_name }}</option>
@@ -396,7 +412,7 @@
                                                  <div class="form-group ">
                                                      <label class="col-md-3 control-label">周期类型</label>
                                                      <div class="col-md-7">
-                                                         <select class="form-control" id="search_cycletype3" name="search_cycletype">
+                                                         <select class="form-control" id="search_cycletype3" name="search_cycletype3">
                                                              <option selected value="">全部</option>
                                                              {% for cycle_type in cycle_type_list %}
                                                                 <option value="{{ cycle_type.cycle_type_id }}">{{ cycle_type.cycle_type_name }}</option>
@@ -411,7 +427,7 @@
                                                  <div class="form-group ">
                                                      <label class="col-md-3 control-label">业务类型</label>
                                                      <div class="col-md-7">
-                                                         <select class="form-control" id="search_businesstype3" name="search_businesstype">
+                                                         <select class="form-control" id="search_businesstype3" name="search_businesstype3">
                                                              <option selected value="">全部</option>
                                                              {% for business_type in business_type_list %}
                                                                  <option value="{{ business_type.business_type_id }}">{{ business_type.business_type_name }}</option>
@@ -424,7 +440,7 @@
                                                  <div class="form-group ">
                                                      <label class="col-md-3 control-label">机组</label>
                                                      <div class="col-md-7">
-                                                         <select class="form-control" id="search_unit3" name="search_unit">
+                                                         <select class="form-control" id="search_unit3" name="search_unit3">
                                                              <option selected value="">全部</option>
                                                              {% for unit in unit_list %}
                                                                 <option value="{{  unit.unit_id }}">{{  unit.unit_name }}</option>
@@ -447,6 +463,8 @@
                              <th style="width:60px;"> 序号</th>
                              <th> 指标名称</th>
                              <th> 指标代码</th>
+                             <th> 是否累积</th>
+                             <th> 周期类型</th>
                              <th> 数据字段</th>
                              <th> 数据时间</th>
                              <th style="width:60px;" id="select"> 操作</th>
