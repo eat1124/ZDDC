@@ -95,7 +95,8 @@ $(document).ready(function () {
     //公式解析函数
     function analysisFunction() {
         var formula_data = ($("#formula").val()).replace(/\s*/g, "");
-        var formula_analysis_data = JSON.parse($("#formula_analysis_data").val());
+        var formula_analysis_data_str = $("#formula_analysis_data").val();
+        var formula_analysis_data = JSON.parse(formula_analysis_data_str);
         var data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积"};
         var data_time = {
             "D": "当天", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
@@ -181,6 +182,7 @@ $(document).ready(function () {
         $("#lowerlimit").val(data.lowerlimit);
         $("#adminapp").val(data.adminapp);
         $("#app").val(data.app).trigger("change");
+        $("#datatype").val(data.datatype);
         $("#cumulative").val(data.cumulative);
         $("#sort").val(data.sort);
         $("#formula").val(data.formula);
@@ -206,11 +208,29 @@ $(document).ready(function () {
             $('#extract').show();
         }
 
+        if ($('#datatype option:selected').text() == '日期' || $('#datatype option:selected').text() == '文本') {
+            $('#is_cumulative').hide();
+            $('#cumulative').hide();
+            $('#magnification_digit').hide();
+            $('#upperlimit_lowerlimit').hide();
+        }
+        if ($('#datatype option:selected').text() == '数值'){
+            $('#is_cumulative').show();
+            $('#cumulative').show();
+            $('#magnification_digit').show();
+            $('#upperlimit_lowerlimit').show();
+        }
+
         ajaxFunction();
         analysisFunction();
-         $("#formula").bind('input propertychange',function () {
+        $("#formula").bind('input propertychange',function () {
             analysisFunction();
         });
+
+        if ($('#datatype').val() == 'numbervalue'){
+            var table = $('#sample_3').DataTable();
+            table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
+        }
 
     });
 
@@ -234,6 +254,21 @@ $(document).ready(function () {
         }
     })
 
+    $('#datatype').change(function () {
+        if ($('#datatype option:selected').text() == '日期' || $('#datatype option:selected').text() == '文本') {
+            $('#is_cumulative').hide();
+            $('#cumulative').hide();
+            $('#magnification_digit').hide();
+            $('#upperlimit_lowerlimit').hide();
+        }
+        if ($('#datatype option:selected').text() == '数值'){
+            $('#is_cumulative').show();
+            $('#cumulative').show();
+            $('#magnification_digit').show();
+            $('#upperlimit_lowerlimit').show();
+        }
+    })
+
 
     $("#new").click(function () {
         $('#sample_3').DataTable().ajax.reload();
@@ -254,6 +289,7 @@ $(document).ready(function () {
         $("#lowerlimit").val("");
         $("#adminapp").val("");
         $("#app").select2("val", "");
+        $("#datatype").val("numbervalue");
         $("#cumulative").val("是");
         $("#sort").val("");
         $("#formula").val("");
@@ -269,9 +305,14 @@ $(document).ready(function () {
 
         ajaxFunction();
         analysisFunction();
-         $("#formula").bind('input propertychange',function () {
+        $("#formula").bind('input propertychange',function () {
             analysisFunction();
         });
+
+        if ($('#datatype').val() == 'numbervalue'){
+            var table = $('#sample_3').DataTable();
+            table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
+        }
 
     });
 
@@ -297,6 +338,7 @@ $(document).ready(function () {
                     lowerlimit: $("#lowerlimit").val(),
                     adminapp: $("#adminapp").val(),
                     app: $("#app").val(),
+                    datatype:$("#datatype").val(),
                     cumulative: $("#cumulative").val(),
                     sort: $("#sort").val(),
 
@@ -396,6 +438,9 @@ $(document).ready(function () {
                 if (full.cumulative == "是" && full.cycletype_name == "年") {
                     return "<select style='width:100px'><option value='d'>当前值</option></select>";
                 }
+                if (full.cumulative == null || full.cumulative == ''){
+                    return ""
+                }
             },
         }, {
             "targets": -2,
@@ -431,7 +476,12 @@ $(document).ready(function () {
 
     $('#search_adminapp3,#search_app3,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3').change(function () {
         var table = $('#sample_3').DataTable();
-        table.ajax.url("../target_data?search_adminapp=" + $('#search_adminapp3').val() + "&search_app=" + $('#search_app3').val() + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val()).load();
+        table.ajax.url("../../target_data?search_adminapp=" + $('#search_adminapp3').val() + "&search_app=" + $('#search_app3').val() + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val()).load();
+    });
+
+    $('#datatype').change(function () {
+        var table = $('#sample_3').DataTable();
+        table.ajax.url("../../target_data?datatype=" + $('#datatype').val()).load();
     });
 
 

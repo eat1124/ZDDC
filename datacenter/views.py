@@ -1782,6 +1782,7 @@ def target_data(request):
         search_businesstype = request.GET.get('search_businesstype', '')
         search_unit = request.GET.get('search_unit', '')
         search_app_noselect = request.GET.get('search_app_noselect', '')
+        datatype = request.GET.get('datatype', '')
 
         all_target = Target.objects.exclude(state="9").order_by("sort")
         if search_adminapp != "":
@@ -1807,6 +1808,8 @@ def target_data(request):
             all_target = all_target.filter(businesstype=search_businesstype)
         if search_unit != "":
             all_target = all_target.filter(unit=search_unit)
+        if datatype != "":
+            all_target = all_target.filter(datatype=datatype)
 
         for target in all_target:
             operationtype = target.operationtype
@@ -1854,7 +1857,6 @@ def target_data(request):
                 adminapp_name = target.adminapp.name
             except:
                 pass
-
             result.append({
                 "operationtype_name": operationtype,
                 "cycletype_name": cycletype,
@@ -1872,6 +1874,7 @@ def target_data(request):
                 "app": applist,
                 "magnification": target.magnification,
                 "digit": target.digit,
+                "datatype": target.datatype,
                 "cumulative": target.cumulative,
                 "upperlimit": target.upperlimit,
                 "lowerlimit": target.lowerlimit,
@@ -1912,12 +1915,14 @@ def target_save(request):
         cycletype = request.POST.get("cycletype", "")
         businesstype = request.POST.get("businesstype", "")
         unit = request.POST.get("unit", "")
+
+        adminapp = request.POST.get("adminapp", "")
+        app_list = request.POST.getlist('app[]')
+        datatype = request.POST.get("datatype", "")
         magnification = request.POST.get("magnification", "")
         digit = request.POST.get("digit", "")
         upperlimit = request.POST.get("upperlimit", "")
         lowerlimit = request.POST.get("lowerlimit", "")
-        adminapp = request.POST.get("adminapp", "")
-        app_list = request.POST.getlist('app[]')
         cumulative = request.POST.get("cumulative", "")
         sort = request.POST.get("sort", "")
 
@@ -1965,137 +1970,79 @@ def target_save(request):
                             if unit.strip() == '':
                                 result["res"] = '机组不能为空。'
                             else:
-                                if id == 0:
-                                    all_target = Target.objects.filter(
-                                        code=code).exclude(state="9")
-                                    if (len(all_target) > 0):
-                                        result["res"] = '指标代码:' + \
-                                                        code + '已存在。'
-                                    else:
-                                        all_target = Target.objects.filter(
-                                            name=name).exclude(state="9")
-                                        if (len(all_target) > 0):
-                                            result["res"] = '指标名称:' + \
-                                                            code + '已存在。'
-                                        else:
-                                            target_save = Target()
-                                            target_save.name = name
-                                            target_save.code = code
-                                            target_save.operationtype = operationtype
-                                            target_save.cycletype = cycletype
-                                            target_save.businesstype = businesstype
-                                            target_save.unit = unit
-                                            try:
-                                                target_save.magnification = float(magnification)
-                                            except:
-                                                pass
-                                            try:
-                                                target_save.digit = int(digit)
-                                            except:
-                                                pass
-                                            try:
-                                                target_save.upperlimit = float(upperlimit)
-                                            except:
-                                                pass
-                                            try:
-                                                target_save.lowerlimit = float(lowerlimit)
-                                            except:
-                                                pass
-                                            try:
-                                                app_id = int(adminapp)
-                                                my_app = all_app.get(id=app_id)
-                                                target_save.adminapp = my_app
-                                            except:
-                                                pass
-                                            target_save.cumulative = cumulative
-                                            try:
-                                                target_save.sort = int(sort)
-                                            except:
-                                                pass
-                                            if operationtype == '17':
-                                                target_save.formula = formula
-                                            if operationtype == '16':
-                                                try:
-                                                    cycle_id = int(cycle)
-                                                    my_cycle = all_cycle.get(id=cycle_id)
-                                                    target_save.cycle = my_cycle
-                                                except:
-                                                    pass
-                                                try:
-                                                    source_id = int(source)
-                                                    my_source = all_source.get(id=source_id)
-                                                    target_save.source = my_source
-                                                except:
-                                                    pass
-                                                target_save.sourcetable = sourcetable
-                                                target_save.sourcesis = sourcesis
-                                                target_save.sourcefields = sourcefields
-                                                target_save.sourceconditions = sourceconditions
-                                                try:
-                                                    storage_id = int(storage)
-                                                    my_storage = all_storage.get(id=storage_id)
-                                                    target_save.storage = my_storage
-                                                except:
-                                                    pass
-                                                target_save.storagetag = storagetag
-                                                target_save.storagefields = storagefields
-                                            target_save.save()
-                                            # 存入多对多app
-                                            if savetype != 'app':
-                                                for app_id in app_list:
-                                                    try:
-                                                        app_id = int(app_id)
-                                                        my_app = all_app.get(id=app_id)
-                                                        target_save.app.add(my_app)
-                                                    except:
-                                                        pass
-                                            result["res"] = "保存成功。"
-                                            result["data"] = target_save.id
+                                if datatype.strip() == '':
+                                    result["res"] = '数据类型不能为空。'
                                 else:
-                                    all_target = Target.objects.filter(code=code).exclude(
-                                        id=id).exclude(state="9")
-                                    if (len(all_target) > 0):
-                                        result["res"] = '指标代码:' + \
-                                                        code + '已存在。'
-                                    else:
-                                        all_target = Target.objects.filter(name=name).exclude(
-                                            id=id).exclude(state="9")
+                                    if id == 0:
+                                        all_target = Target.objects.filter(
+                                            code=code).exclude(state="9")
                                         if (len(all_target) > 0):
-                                            result["res"] = '指标名称:' + \
+                                            result["res"] = '指标代码:' + \
                                                             code + '已存在。'
                                         else:
-                                            try:
-                                                target_save = Target.objects.get(
-                                                    id=id)
+                                            all_target = Target.objects.filter(
+                                                name=name).exclude(state="9")
+                                            if (len(all_target) > 0):
+                                                result["res"] = '指标名称:' + \
+                                                                code + '已存在。'
+                                            else:
+                                                target_save = Target()
                                                 target_save.name = name
                                                 target_save.code = code
                                                 target_save.operationtype = operationtype
                                                 target_save.cycletype = cycletype
                                                 target_save.businesstype = businesstype
                                                 target_save.unit = unit
-                                                try:
-                                                    target_save.magnification = float(magnification)
-                                                except:
-                                                    pass
-                                                try:
-                                                    target_save.digit = int(digit)
-                                                except:
-                                                    pass
-                                                try:
-                                                    target_save.upperlimit = float(upperlimit)
-                                                except:
-                                                    pass
-                                                try:
-                                                    target_save.lowerlimit = float(lowerlimit)
-                                                except:
-                                                    pass
+                                                if datatype == 'numbervalue':
+                                                    try:
+                                                        target_save.magnification = float(magnification)
+                                                    except:
+                                                        pass
+                                                    try:
+                                                        target_save.digit = int(digit)
+                                                    except:
+                                                        pass
+                                                    try:
+                                                        target_save.upperlimit = float(upperlimit)
+                                                    except:
+                                                        pass
+                                                    try:
+                                                        target_save.lowerlimit = float(lowerlimit)
+                                                    except:
+                                                        pass
+                                                    target_save.cumulative = cumulative
+
+                                                if datatype == 'date' or datatype == 'text':
+                                                    magnification = request.POST.get("")
+                                                    digit = request.POST.get("")
+                                                    upperlimit = request.POST.get("")
+                                                    lowerlimit = request.POST.get("")
+                                                    cumulative = request.POST.get("")
+                                                    try:
+                                                        target_save.magnification = magnification
+                                                    except:
+                                                        pass
+                                                    try:
+                                                        target_save.digit = digit
+                                                    except:
+                                                        pass
+                                                    try:
+                                                        target_save.upperlimit = upperlimit
+                                                    except:
+                                                        pass
+                                                    try:
+                                                        target_save.lowerlimit = lowerlimit
+                                                    except:
+                                                        pass
+                                                    target_save.cumulative = cumulative
+                                                target_save.datatype = datatype
                                                 try:
                                                     app_id = int(adminapp)
                                                     my_app = all_app.get(id=app_id)
                                                     target_save.adminapp = my_app
                                                 except:
                                                     pass
-                                                target_save.cumulative = cumulative
+
                                                 try:
                                                     target_save.sort = int(sort)
                                                 except:
@@ -2130,7 +2077,6 @@ def target_save(request):
                                                 target_save.save()
                                                 # 存入多对多app
                                                 if savetype != 'app':
-                                                    target_save.app.clear()
                                                     for app_id in app_list:
                                                         try:
                                                             app_id = int(app_id)
@@ -2140,8 +2086,123 @@ def target_save(request):
                                                             pass
                                                 result["res"] = "保存成功。"
                                                 result["data"] = target_save.id
-                                            except Exception as e:
-                                                result["res"] = "修改失败。"
+                                    else:
+                                        all_target = Target.objects.filter(code=code).exclude(
+                                            id=id).exclude(state="9")
+                                        if (len(all_target) > 0):
+                                            result["res"] = '指标代码:' + \
+                                                            code + '已存在。'
+                                        else:
+                                            all_target = Target.objects.filter(name=name).exclude(
+                                                id=id).exclude(state="9")
+                                            if (len(all_target) > 0):
+                                                result["res"] = '指标名称:' + \
+                                                                code + '已存在。'
+                                            else:
+                                                try:
+                                                    target_save = Target.objects.get(
+                                                        id=id)
+                                                    target_save.name = name
+                                                    target_save.code = code
+                                                    target_save.operationtype = operationtype
+                                                    target_save.cycletype = cycletype
+                                                    target_save.businesstype = businesstype
+                                                    target_save.unit = unit
+                                                    if datatype == 'numbervalue':
+                                                        try:
+                                                            target_save.magnification = float(magnification)
+                                                        except:
+                                                            pass
+                                                        try:
+                                                            target_save.digit = int(digit)
+                                                        except:
+                                                            pass
+                                                        try:
+                                                            target_save.upperlimit = float(upperlimit)
+                                                        except:
+                                                            pass
+                                                        try:
+                                                            target_save.lowerlimit = float(lowerlimit)
+                                                        except:
+                                                            pass
+                                                        target_save.cumulative = cumulative
+                                                    if datatype == 'date' or datatype == 'text':
+                                                        magnification = request.POST.get("")
+                                                        digit = request.POST.get("")
+                                                        upperlimit = request.POST.get("")
+                                                        lowerlimit = request.POST.get("")
+                                                        cumulative = request.POST.get("")
+                                                        try:
+                                                            target_save.magnification = magnification
+                                                        except:
+                                                            pass
+                                                        try:
+                                                            target_save.digit = digit
+                                                        except:
+                                                            pass
+                                                        try:
+                                                            target_save.upperlimit = upperlimit
+                                                        except:
+                                                            pass
+                                                        try:
+                                                            target_save.lowerlimit = lowerlimit
+                                                        except:
+                                                            pass
+                                                        target_save.cumulative = cumulative
+                                                    target_save.datatype = datatype
+                                                    try:
+                                                        app_id = int(adminapp)
+                                                        my_app = all_app.get(id=app_id)
+                                                        target_save.adminapp = my_app
+                                                    except:
+                                                        pass
+
+                                                    try:
+                                                        target_save.sort = int(sort)
+                                                    except:
+                                                        pass
+                                                    if operationtype == '17':
+                                                        target_save.formula = formula
+                                                    if operationtype == '16':
+                                                        try:
+                                                            cycle_id = int(cycle)
+                                                            my_cycle = all_cycle.get(id=cycle_id)
+                                                            target_save.cycle = my_cycle
+                                                        except:
+                                                            pass
+                                                        try:
+                                                            source_id = int(source)
+                                                            my_source = all_source.get(id=source_id)
+                                                            target_save.source = my_source
+                                                        except:
+                                                            pass
+                                                        target_save.sourcetable = sourcetable
+                                                        target_save.sourcesis = sourcesis
+                                                        target_save.sourcefields = sourcefields
+                                                        target_save.sourceconditions = sourceconditions
+                                                        try:
+                                                            storage_id = int(storage)
+                                                            my_storage = all_storage.get(id=storage_id)
+                                                            target_save.storage = my_storage
+                                                        except:
+                                                            pass
+                                                        target_save.storagetag = storagetag
+                                                        target_save.storagefields = storagefields
+                                                    target_save.save()
+                                                    # 存入多对多app
+                                                    if savetype != 'app':
+                                                        target_save.app.clear()
+                                                        for app_id in app_list:
+                                                            try:
+                                                                app_id = int(app_id)
+                                                                my_app = all_app.get(id=app_id)
+                                                                target_save.app.add(my_app)
+                                                            except:
+                                                                pass
+                                                    result["res"] = "保存成功。"
+                                                    result["data"] = target_save.id
+                                                except Exception as e:
+                                                    result["res"] = "修改失败。"
 
     return JsonResponse(result)
 

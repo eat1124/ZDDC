@@ -215,40 +215,6 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label class="col-md-2 control-label"><span
-                                    style="color:red; ">*</span>倍率</label>
-                            <div class="col-md-4">
-                                <input id="magnification" type="number" name="magnification" class="form-control "
-                                       placeholder="1" >
-                                <div class="form-control-focus"></div>
-
-                            </div>
-                            <label class="col-md-2 control-label"><span
-                                    style="color:red; ">*</span>保留位数</label>
-                            <div class="col-md-4">
-                                <input id="digit" type="number" name="digit" class="form-control "
-                                       placeholder="2">
-                                <div class="form-control-focus"></div>
-
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-md-2 control-label">上限</label>
-                            <div class="col-md-4">
-                                <input id="upperlimit" type="number" name="upperlimit" class="form-control "
-                                       placeholder="" >
-                                <div class="form-control-focus"></div>
-
-                            </div>
-                            <label class="col-md-2 control-label">下限</label>
-                            <div class="col-md-4">
-                                <input id="lowerlimit" type="number" name="lowerlimit" class="form-control "
-                                       placeholder="">
-                                <div class="form-control-focus"></div>
-
-                            </div>
-                        </div>
 
                         <div class="form-group ">
                             <label class="col-md-2 control-label">管理应用</label>
@@ -268,14 +234,63 @@
                                 </select>
                             </div>
                         </div>
+
                         <div class="form-group">
-                            <label class="col-md-2 control-label">是否累积</label>
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>数据类型</label>
+                            <div class="col-md-4">
+                                <select class="form-control" id="datatype" name="datatype">
+                                    <option value="numbervalue" selected>数值</option>
+                                    <option value="date" >日期</option>
+                                    <option value="text" >文本</option>
+                                </select>
+                            </div>
+                            <label class="col-md-2 control-label" id="is_cumulative">是否累积</label>
                             <div class="col-md-4">
                                 <select class="form-control" id="cumulative" name="cumulative">
                                     <option value="是" selected>是</option>
                                     <option value="否" >否</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div class="form-group" id="magnification_digit">
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>倍率</label>
+                            <div class="col-md-4">
+                                <input id="magnification" type="number" name="magnification" class="form-control "
+                                       placeholder="1" >
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                            <label class="col-md-2 control-label"><span
+                                    style="color:red; ">*</span>保留位数</label>
+                            <div class="col-md-4">
+                                <input id="digit" type="number" name="digit" class="form-control "
+                                       placeholder="2">
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="upperlimit_lowerlimit">
+                            <label class="col-md-2 control-label">上限</label>
+                            <div class="col-md-4">
+                                <input id="upperlimit" type="number" name="upperlimit" class="form-control "
+                                       placeholder="" >
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                            <label class="col-md-2 control-label">下限</label>
+                            <div class="col-md-4">
+                                <input id="lowerlimit" type="number" name="lowerlimit" class="form-control "
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group">
                             <label class="col-md-2 control-label">排序</label>
                             <div class="col-md-4">
                                 <input id="sort" type="number" name="sort" class="form-control"
@@ -414,7 +429,6 @@
              <div class="modal-header">
                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                  <h4 class="modal-title" id="myModalLabel">插入指标</h4>
-                 <input hidden id="id" type="text" name="id">
              </div>
 
              <div class="modal-body">

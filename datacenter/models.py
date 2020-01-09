@@ -102,6 +102,7 @@ class Target(models.Model):
     cycletype = models.CharField("周期类型", blank=True, max_length=20)
     businesstype = models.CharField("业务类型", blank=True, max_length=20)
     unit = models.CharField("机组", blank=True, max_length=20)
+    datatype = models.CharField("数据类型", blank=True, null=True, max_length=20)
     adminapp = models.ForeignKey(App, null=True, related_name='target_adminapp_set')
     app = models.ManyToManyField(App, related_name='target_app_set')
     magnification = models.DecimalField("倍率", null=True, max_digits=18, decimal_places=5)
