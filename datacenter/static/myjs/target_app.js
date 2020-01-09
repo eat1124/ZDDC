@@ -92,7 +92,8 @@ $(document).ready(function () {
     //公式解析函数
     function analysisFunction() {
         var formula_data = ($("#formula").val()).replace(/\s*/g, "");
-        var formula_analysis_data = JSON.parse($("#formula_analysis_data").val());
+        var formula_analysis_data_str = $("#formula_analysis_data").val();
+        var formula_analysis_data = JSON.parse(formula_analysis_data_str);
         var data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积"};
         var data_time = {
             "D": "当天", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
@@ -177,6 +178,7 @@ $(document).ready(function () {
         $("#digit").val(data.digit);
         $("#upperlimit").val(data.upperlimit);
         $("#lowerlimit").val(data.lowerlimit);
+        $("#datatype").val(data.datatype);
         $("#cumulative").val(data.cumulative);
         $("#sort").val(data.sort);
 
@@ -195,6 +197,12 @@ $(document).ready(function () {
         $('#calculate').hide();
         $('#calculate_analysis').hide();
         $('#extract').hide();
+
+        $('#is_cumulative').show();
+        $('#cumulative').show();
+        $('#magnification_digit').show();
+        $('#upperlimit_lowerlimit').show();
+
         if($('#operationtype option:selected').text()=='计算'){
             $('#calculate').show();
             $('#calculate_analysis').show();
@@ -203,12 +211,29 @@ $(document).ready(function () {
             $('#extract').show();
         }
 
+        if ($('#datatype option:selected').text() == '日期' || $('#datatype option:selected').text() == '文本') {
+            $('#is_cumulative').hide();
+            $('#cumulative').hide();
+            $('#magnification_digit').hide();
+            $('#upperlimit_lowerlimit').hide();
+        }
+        if ($('#datatype option:selected').text() == '数值'){
+            $('#is_cumulative').show();
+            $('#cumulative').show();
+            $('#magnification_digit').show();
+            $('#upperlimit_lowerlimit').show();
+        }
+
         ajaxFunction();
         analysisFunction();
-         $("#formula").bind('input propertychange',function () {
+        $("#formula").bind('input propertychange',function () {
             analysisFunction();
         });
 
+        if ($('#datatype').val() == 'numbervalue' || $('#datatype').val() == 'date' || $('#datatype').val() == 'text'){
+            var table = $('#sample_3').DataTable();
+            table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
+        }
 
     });
 
@@ -228,7 +253,22 @@ $(document).ready(function () {
         if($('#operationtype option:selected').text()=='提取'){
             $('#extract').show();
         }
-    })
+    });
+
+    $('#datatype').change(function () {
+        if ($('#datatype option:selected').text() == '日期' || $('#datatype option:selected').text() == '文本') {
+            $('#is_cumulative').hide();
+            $('#cumulative').hide();
+            $('#magnification_digit').hide();
+            $('#upperlimit_lowerlimit').hide();
+        }
+        if ($('#datatype option:selected').text() == '数值'){
+            $('#is_cumulative').show();
+            $('#cumulative').show();
+            $('#magnification_digit').show();
+            $('#upperlimit_lowerlimit').show();
+        }
+    });
 
     $("#new").click(function () {
         $('#sample_3').DataTable().ajax.reload();
@@ -248,6 +288,7 @@ $(document).ready(function () {
         $("#digit").val("2");
         $("#upperlimit").val("");
         $("#lowerlimit").val("");
+        $("#datatype").val("numbervalue");
         $("#cumulative").val("是");
         $("#sort").val("");
 
@@ -265,9 +306,14 @@ $(document).ready(function () {
 
         ajaxFunction();
         analysisFunction();
-         $("#formula").bind('input propertychange',function () {
+        $("#formula").bind('input propertychange',function () {
             analysisFunction();
         });
+
+        if ($('#datatype').val() == 'numbervalue'){
+            var table = $('#sample_3').DataTable();
+            table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
+        }
     });
 
     $('#save').click(function () {
@@ -290,6 +336,7 @@ $(document).ready(function () {
                     upperlimit: $("#upperlimit").val(),
                     lowerlimit: $("#lowerlimit").val(),
                     adminapp: $("#adminapp").val(),
+                    datatype:$("#datatype").val(),
                     cumulative: $("#cumulative").val(),
                     sort: $("#sort").val(),
 
@@ -469,6 +516,9 @@ $(document).ready(function () {
                 if (full.cumulative == "是" && full.cycletype_name == "年") {
                     return "<select style='width:100px'><option value='d'>当前值</option></select>";
                 }
+                if (full.cumulative == null || full.cumulative == '') {
+                    return ""
+                }
             },
         },
         {
@@ -505,10 +555,11 @@ $(document).ready(function () {
         }
     });
 
-    $('#search_adminapp,#search_app,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3').change(function () {
+    $('#search_adminapp,#search_app,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3,#datatype').change(function () {
         var table = $('#sample_3').DataTable();
-        table.ajax.url("../../target_data?search_adminapp=" + $('#adminapp').val()  + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val()).load();
+        table.ajax.url("../../target_data?search_adminapp=" + $('#adminapp').val()  + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val() + "&datatype=" + $('#datatype').val()).load();
     });
+
 
     $('#sample_3 tbody').on('click', 'button#select', function () {
         var table = $('#sample_3').DataTable();
