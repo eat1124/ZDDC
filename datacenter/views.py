@@ -63,7 +63,8 @@ def get_process_monitor_tree(request):
         # except ValueError as e:
         #     print(e)
 
-        targets = Target.objects.filter(operationtype=16).exclude(state=9).values('source_id', 'adminapp_id', 'cycle_id')
+        targets = Target.objects.filter(operationtype=16).exclude(state=9).values('source_id', 'adminapp_id',
+                                                                                  'cycle_id')
 
         def does_it_exist(source, adminapp=None, cycle=None):
             if source and not any([adminapp, cycle]):
@@ -90,6 +91,7 @@ def get_process_monitor_tree(request):
         source = Source.objects.exclude(state='9')
         app = App.objects.exclude(state='9')
         cycle = Cycle.objects.exclude(state='9')
+
 
         s_info_list = []
         for s in source:
@@ -138,12 +140,14 @@ def get_process_monitor_tree(request):
                         for c in cycle:
                             if does_it_exist(s.id, a.id, c.id):
 
-                                create_time, last_time, status = '','',''
+                                create_time, last_time, status = '', '', ''
                                 # 获取进程状态
-                                cps = ProcessMonitor.objects.filter(source_id=s.id).filter(app_admin_id=a.id).filter(cycle_id=c.id)
+                                cps = ProcessMonitor.objects.filter(source_id=s.id).filter(app_admin_id=a.id).filter(
+                                    cycle_id=c.id)
                                 if cps.exists():
                                     cp = cps[0]
-                                    create_time = '{:%Y-%m-%d %H:%M:%S}'.format(cp.create_time) if cp.create_time else ""
+                                    create_time = '{:%Y-%m-%d %H:%M:%S}'.format(
+                                        cp.create_time) if cp.create_time else ""
                                     last_time = '{:%Y-%m-%d %H:%M:%S}'.format(cp.last_time) if cp.last_time else ""
                                     status = cp.status
 
@@ -167,7 +171,16 @@ def get_process_monitor_tree(request):
                                     'status': status
                                 }
                                 c_info['state'] = {'opened': True}
+
+                                # 判断进程状态
+                                if status != "运行中":
+                                    c_info['type'] = 'file_grey'
+                                    a_info['type'] = 'node_grey'
+                                    s_info['type'] = 'node_grey'
+                                    root_info['type'] = 'node_grey'
+
                                 c_info_list.append(c_info)
+
                         a_info['children'] = c_info_list
 
                         a_info_list.append(a_info)
@@ -289,7 +302,8 @@ def handle_process(current_process, handle_type=None):
 
     if handle_type == "RUN":
         try:
-            process_path = BASE_DIR + os.sep + "utils" + os.sep + "handle_process.py" + " {0}".format(current_process.id)
+            process_path = BASE_DIR + os.sep + "utils" + os.sep + "handle_process.py" + " {0}".format(
+                current_process.id)
             os.popen(r"{0}".format(process_path))
             res = "程序启动成功。"
             tag = 1
@@ -345,7 +359,8 @@ def process_run(request):
         except ValueError as e:
             print(e)
 
-        current_process = ProcessMonitor.objects.filter(source_id=source_id).filter(app_admin_id=app_id).filter(cycle_id=circle_id).exclude(state='9')
+        current_process = ProcessMonitor.objects.filter(source_id=source_id).filter(app_admin_id=app_id).filter(
+            cycle_id=circle_id).exclude(state='9')
         if current_process.exists():
             current_process = current_process[0]
             if operate == 'start':

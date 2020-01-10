@@ -27,7 +27,13 @@ $(document).ready(function () {
                         },
                         "file": {
                             "icon": "fa fa-file-o icon-state-warning icon-lg"
-                        }
+                        },
+                        "node_grey": {
+                            "icon": "fa fa-folder icon-state-default icon-lg"
+                        },
+                        "file_grey": {
+                            "icon": "fa fa-file-o icon-state-default icon-lg"
+                        },
                     },
                     "contextmenu": {
                         "items": {
@@ -79,6 +85,13 @@ $(document).ready(function () {
                         $('#source_id').val(data.node.data.s_id);
                         $('#app_id').val(data.node.data.a_id);
                         $('#circle_id').val(data.node.data.c_id);
+                    })
+                    .on("loaded.jstree", function (event, data) {
+                        // var element = data.instance.element;
+                        // element.find('li').each(function () {
+                        //     console.log($(this).html())
+                        // })
+
                     });
             },
             error: function (e) {

@@ -105,7 +105,8 @@ DATABASES = {
         'NAME': 'datacenter',
         'USER': 'root',
         'PASSWORD': 'password',
-        'HOST': '192.168.1.66',
+        # 'HOST': '192.168.1.66',
+        'HOST': '127.0.0.1',
         'PORT': '3306',
     }
 }
