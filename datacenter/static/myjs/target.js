@@ -198,8 +198,13 @@ $(document).ready(function () {
 
         $('#calculate').hide();
         $('#calculate_analysis').hide();
-
         $('#extract').hide();
+
+        $('#is_cumulative').show();
+        $('#cumulative').show();
+        $('#magnification_digit').show();
+        $('#upperlimit_lowerlimit').show();
+
         if ($('#operationtype option:selected').text() == '计算') {
             $('#calculate').show();
             $('#calculate_analysis').show();
@@ -227,7 +232,7 @@ $(document).ready(function () {
             analysisFunction();
         });
 
-        if ($('#datatype').val() == 'numbervalue'){
+        if ($('#datatype').val() == 'numbervalue' || $('#datatype').val() == 'date' || $('#datatype').val() == 'text'){
             var table = $('#sample_3').DataTable();
             table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
         }
@@ -474,14 +479,9 @@ $(document).ready(function () {
     });
 
 
-    $('#search_adminapp3,#search_app3,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3').change(function () {
+    $('#search_adminapp3,#search_app3,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3,#datatype').change(function () {
         var table = $('#sample_3').DataTable();
-        table.ajax.url("../../target_data?search_adminapp=" + $('#search_adminapp3').val() + "&search_app=" + $('#search_app3').val() + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val()).load();
-    });
-
-    $('#datatype').change(function () {
-        var table = $('#sample_3').DataTable();
-        table.ajax.url("../../target_data?datatype=" + $('#datatype').val()).load();
+        table.ajax.url("../../target_data?search_adminapp=" + $('#search_adminapp3').val() + "&search_app=" + $('#search_app3').val() + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val() + "&datatype=" + $('#datatype').val()).load();
     });
 
 
