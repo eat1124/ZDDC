@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^create_process/$', create_process),
     url(r'^process_run/$', process_run),
     url(r'^process_destroy/$', process_destroy),
+    url(r'^get_process_monitor_tree/$', get_process_monitor_tree),
 
     # 系统维护
     url(r'^organization/$', organization, {'funid': '5'}),

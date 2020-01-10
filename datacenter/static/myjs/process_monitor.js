@@ -1,179 +1,120 @@
 $(document).ready(function () {
-    $('#sample_process_monitor').dataTable({
-        "searching": false,
-        "paging": false,
-        "info": false,
-        "bAutoWidth": true,
-        "bSort": false,
-        "bProcessing": false,
-        "ajax": "../process_monitor_data/",
-        "columns": [
-            {"data": "id"},
-            {"data": "name"},
-            {"data": "code"},
-            {"data": "sourcetype_name"},
-            {"data": "create_time"},
-            {"data": "last_time"},
-            {"data": "status"},
-            {"data": "source_type_list"},
-            {"data": null}
-        ],
 
-        "columnDefs": [{
-            "targets": -2,
-            "visible": false,
-        },{
-            "targets": -1,
-            "data": null,
-            "width": "100px", // fa fa-power-off
-            "defaultContent": "<button  id='create' title='启动' class='btn btn-xs btn-primary' type='button'><i class='fa fa-play'></i></button><button title='关闭'  id='destroy' class='btn btn-xs btn-primary' type='button'><i class='fa fa-stop'></i></button><button title='编辑'  id='edit'  data-toggle='modal'  data-target='#static'   class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>"
-        }],
-        "oLanguage": {
-            "sLengthMenu": "每页显示 _MENU_ 条记录",
-            "sZeroRecords": "抱歉， 没有找到",
-            "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
-            "sInfoEmpty": "没有数据",
-            "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
-            "sSearch": "搜索",
-            "oPaginate": {
-                "sFirst": "首页",
-                "sPrevious": "前一页",
-                "sNext": "后一页",
-                "sLast": "尾页"
-            },
-            "sZeroRecords": "没有检索到数据",
-
-        }
-    });
-    $('#sample_process_monitor tbody').on('click', 'button#edit', function () {
-        var table = $('#sample_process_monitor').DataTable();
-        var data = table.row($(this).parents('tr')).data();
-        $("#id").val(data.id);
-        $("#name").val(data.name);
-        $("#code").val(data.code);
-        $("#sourcetype").empty();
-        for (i = 0; i <= data.source_type_list.length; i++) {
-            $("#sourcetype").append('<option value="' + data.source_type_list[i].source_type_id + '" ' + data.source_type_list[i].source_if_selected + '>\n' +
-            data.source_type_list[i].source_type + '</option>');
-        }
-
-
-    });
-    $('#sample_process_monitor tbody').on('click', 'button#create', function () {
-        if (confirm("确定要启动该程序吗？")) {
-            var table = $('#sample_process_monitor').DataTable();
-            var data = table.row($(this).parents('tr')).data();
-            $.ajax({
-                type: "POST",
-                url: "../process_run/",
-                data: {
-                    id: data.id,
-                },
-                success: function (data) {
-                    var myres = data["res"];
-                    var mytag = data["tag"];
-                    console.log(mytag)
-                    console.log(mytag==1)
-                    if (mytag == 1) {
-                        table.ajax.reload();
-                    }
-                    alert(myres);
-                },
-                error: function (e) {
-                    alert("页面出现错误，请于管理员联系。");
-                }
-            });
-
-        }
-    });
-    $('#sample_process_monitor tbody').on('click', 'button#destroy', function () {
-        if (confirm("确定要终止该进程吗？")) {
-            var table = $('#sample_process_monitor').DataTable();
-            var data = table.row($(this).parents('tr')).data();
-            $.ajax({
-                type: "POST",
-                url: "../process_destroy/",
-                data: {
-                    id: data.id,
-                },
-                success: function (data) {
-                    var myres = data["res"];
-                    var mytag = data["tag"];
-
-                    if (mytag == 1) {
-                        table.ajax.reload();
-                    }
-                    alert(myres);
-                },
-                error: function (e) {
-                    alert("页面出现错误，请于管理员联系。");
-                }
-            });
-        }
-    });
-
-    $('#save').click(function () {
-        var table = $('#sample_process_monitor').DataTable();
-
+    function getProcessMonitorTree(select_id) {
         $.ajax({
             type: "POST",
-            dataType: 'json',
-            url: "../create_process/",
+            dataType: "json",
+            url: "../get_process_monitor_tree/",
             data: {
-                id: $("#id").val(),
-                name: $("#name").val(),
-                code: $("#code").val(),
-                sourcetype: $("#sourcetype").val(),
+                select_id: select_id,
             },
             success: function (data) {
-                var myres = data["res"];
-                if (myres == "保存成功。") {
-                    $('#static').modal('hide');
-                    table.ajax.reload();
-                }
-                alert(myres);
+                var treeData = JSON.parse(data.data);
+
+                $('#process_monitor_tree').jstree('destroy');
+                $('#process_monitor_tree').jstree({
+                    'core': {
+                        "themes": {
+                            "responsive": false
+                        },
+                        "check_callback": true,
+                        'data': treeData
+                    },
+
+                    "types": {
+                        "node": {
+                            "icon": "fa fa-folder icon-state-warning icon-lg"
+                        },
+                        "file": {
+                            "icon": "fa fa-file-o icon-state-warning icon-lg"
+                        }
+                    },
+                    "contextmenu": {
+                        "items": {
+                            "create": null,
+                            "rename": null,
+                            "remove": null,
+                            "ccp": null,
+                        }
+                    },
+                    "plugins": ["types", "role"]
+                })
+                    .bind('select_node.jstree', function (event, data) {
+                        if (data.node.data.type == 'root') {
+                            $("#form_div").hide();
+                        } else {
+                            $("#form_div").show();
+                        }
+
+                        $('#source_div, #app_div, #circle_div, #process_exec').hide();
+
+
+                        $("#title").text(data.node.text);
+
+                        $('#source_name').val(data.node.data.s_name);
+                        $('#source_code').val(data.node.data.s_code);
+                        $('#source_type').val(data.node.data.s_type);
+
+                        if (['source', 'app', 'circle'].indexOf(data.node.data.type) != -1) {
+                            $('#source_div').show();
+                        }
+
+                        if (['app', 'circle'].indexOf(data.node.data.type) != -1) {
+                            $('#app_div').show();
+                        }
+
+                        if (data.node.data.type == 'circle') {
+                            $('#circle_div').show();
+                            $('#process_exec').show();
+
+                            $('#create_time').val(data.node.data.create_time);
+                            $('#status').val(data.node.data.status);
+                            $('#last_time').val(data.node.data.last_time);
+                        }
+
+                        // app/circle
+                        $('#app_name').val(data.node.data.a_name);
+                        $('#circle_name').val(data.node.data.c_name);
+
+                        $('#source_id').val(data.node.data.s_id);
+                        $('#app_id').val(data.node.data.a_id);
+                        $('#circle_id').val(data.node.data.c_id);
+                    });
             },
             error: function (e) {
                 alert("页面出现错误，请于管理员联系。");
             }
         });
+
+
+    }
+
+    getProcessMonitorTree("");
+    // 启动/关闭/重启
+    $('#start, #stop, #restart').click(function () {
+        var operate = $(this).prop('id');
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: '../process_run/',
+            data: {
+                'operate': operate,
+                'source_id': $('#source_id').val(),
+                'app_id': $('#app_id').val(),
+                'circle_id': $('#circle_id').val()
+            },
+            success: function (data) {
+
+                if (data.tag == 1) {
+                    // 刷新树
+                    getProcessMonitorTree("");
+                }
+
+                alert(data.res);
+            },
+            error: function () {
+                alert('页面出现错误，请于管理员联系。')
+            }
+        })
     });
-
-    $('#error').click(function () {
-        $(this).hide()
-    });
-
-    // setInterval(function () {
-    //     var table = $('#sample_process_monitor').DataTable();
-    //     table.ajax.reload();
-    //     console.log("refresh")
-    // }, 2000);
-
-    // var end = false;
-
-    // function customOurInterval() {
-    //     // body...
-    //     setTimeout(function() {
-    //         // do something 定时任务
-    //         // 处理时对end标志进行修改，end=True表示停止（取消定时器）。
-    //         console.log("refresh");
-    //         if (window.location.href.indexOf("process_monitor") != -1) {
-    //             var table = $('#sample_process_monitor').DataTable();
-    //             table.ajax.reload();
-    //             end = false
-    //         } else {
-    //             end = true
-    //         }
-
-    //         if (!end) {
-    //             // 循环(arguments.callee获取当前执行函数的引用)
-    //             setTimeout(arguments.callee, 2000);
-    //         } else {
-    //             end = false;
-    //         }
-    //     }, 2000);
-    // }
-
-    // customOurInterval();
-
 });

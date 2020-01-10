@@ -76,6 +76,7 @@ class Source(models.Model):
     status = models.CharField("状态", blank=True, max_length=50, default="")
     p_id = models.CharField("进程ID", blank=True, max_length=50, default="")
 
+
 class Cycle(models.Model):
     name = models.CharField("周期名称", max_length=100)
     code = models.CharField("周期代码", blank=True, max_length=50)
@@ -111,7 +112,7 @@ class Target(models.Model):
     upperlimit = models.DecimalField("上限", null=True, max_digits=20, decimal_places=5)
     lowerlimit = models.DecimalField("下限", null=True, max_digits=20, decimal_places=5)
     formula = models.CharField("公式", blank=True, null=True, max_length=2000)
-    calculateguid = models.CharField(u"计算GUID", null=True, max_length=50)
+    calculateguid = models.CharField("计算GUID", null=True, max_length=50)
     cycle = models.ForeignKey(Cycle, null=True)
     source = models.ForeignKey(Source, null=True)
     sourcetable = models.CharField("数据源表", blank=True, null=True, max_length=2000)
@@ -154,6 +155,12 @@ class ProcessMonitor(models.Model):
     """
     进程监控类
     """
+    source = models.ForeignKey(Source, null=True, verbose_name='数据源')
+    app_admin = models.ForeignKey(App, null=True, verbose_name='管理应用')
+    cycle = models.ForeignKey(Cycle, null=True, verbose_name='周期')
+    p_id = models.CharField("进程ID", blank=True, max_length=50, default="")
+
+    last_time = models.DateTimeField("最近取数时间", blank=True, null=True)
     name = models.CharField("进程名称", max_length=100, blank=True, null=True)
     process_path = models.CharField("进程路径", max_length=100, blank=True, null=True)
     create_time = models.DateTimeField("进程启动时间", blank=True, null=True)

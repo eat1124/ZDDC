@@ -54,6 +54,143 @@ info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Ad
         "lastlogin": 0}
 
 
+def get_process_monitor_tree(request):
+    if request.user.is_authenticated():
+        # select_id = request.POST.get('select_id', '')
+
+        # try:
+        #     select_id = int(select_id)
+        # except ValueError as e:
+        #     print(e)
+
+        targets = Target.objects.filter(operationtype=16).exclude(state=9).values('source_id', 'adminapp_id', 'cycle_id')
+
+        def does_it_exist(source, adminapp=None, cycle=None):
+            if source and not any([adminapp, cycle]):
+                for t in targets:
+                    if source == t['source_id']:
+                        return True
+            if all([source, adminapp]) and not cycle:
+                for t in targets:
+                    if source == t['source_id'] and adminapp == t['adminapp_id']:
+                        return True
+            if all([source, adminapp, cycle]):
+                for t in targets:
+                    if source == t['source_id'] and adminapp == t['adminapp_id'] and cycle == t['cycle_id']:
+                        return True
+            return False
+
+        # 进程监控 >> 数据源配置 >> (指标管理中匹配)应用>> (指标管理中心根据数据源+应用匹配)周期
+        # 根节点
+        root_info = dict()
+        root_info['text'] = "进程监控"
+        root_info['type'] = 'node'
+
+        # 1.数据源管理
+        source = Source.objects.exclude(state='9')
+        app = App.objects.exclude(state='9')
+        cycle = Cycle.objects.exclude(state='9')
+
+        s_info_list = []
+        for s in source:
+            # 指标管理中匹配
+            if does_it_exist(s.id):
+                # 数据源类型
+                source_type = ""
+                try:
+                    source_type = DictList.objects.get(id=s.id).name
+                except DictList.DoesNotExist as e:
+                    print(e)
+
+                s_info = dict()
+                s_info['text'] = s.name
+                s_info['type'] = 'node'
+                s_info['data'] = {
+                    's_id': s.id,
+                    's_name': s.name,
+                    's_code': s.code,
+                    's_type': source_type,
+                    'type': 'source'
+                }
+                s_info['state'] = {'opened': True}
+
+                # 2.应用
+                a_info_list = []
+                for a in app:
+                    if does_it_exist(s.id, a.id):
+                        a_info = dict()
+                        a_info['text'] = a.name
+                        a_info['type'] = 'node'
+                        a_info['data'] = {
+                            's_id': s.id,
+                            's_name': s.name,
+                            's_code': s.code,
+                            's_type': source_type,
+                            'a_id': a.id,
+                            'a_name': a.name,
+                            'type': 'app'
+                        }
+                        a_info['state'] = {'opened': True}
+
+                        # 3.周期
+                        c_info_list = []
+
+                        for c in cycle:
+                            if does_it_exist(s.id, a.id, c.id):
+
+                                create_time, last_time, status = '','',''
+                                # 获取进程状态
+                                cps = ProcessMonitor.objects.filter(source_id=s.id).filter(app_admin_id=a.id).filter(cycle_id=c.id)
+                                if cps.exists():
+                                    cp = cps[0]
+                                    create_time = '{:%Y-%m-%d %H:%M:%S}'.format(cp.create_time) if cp.create_time else ""
+                                    last_time = '{:%Y-%m-%d %H:%M:%S}'.format(cp.last_time) if cp.last_time else ""
+                                    status = cp.status
+
+                                c_info = dict()
+                                c_info['text'] = c.name
+                                c_info['type'] = 'file'
+                                c_info['data'] = {
+                                    's_id': s.id,
+                                    's_name': s.name,
+                                    's_code': s.code,
+                                    's_type': source_type,
+                                    'a_name': a.name,
+                                    'a_id': a.id,
+                                    'c_id': c.id,
+                                    'c_name': c.name,
+                                    'type': 'circle',
+
+                                    # 进程状态
+                                    'create_time': create_time,
+                                    'last_time': last_time,
+                                    'status': status
+                                }
+                                c_info['state'] = {'opened': True}
+                                c_info_list.append(c_info)
+                        a_info['children'] = c_info_list
+
+                        a_info_list.append(a_info)
+
+                s_info['children'] = a_info_list
+
+                s_info_list.append(s_info)
+
+        root_info['children'] = s_info_list
+        root_info['state'] = {'opened': True}
+        root_info['data'] = {
+            'type': 'root'
+        }
+
+        tree_data = json.dumps([root_info], ensure_ascii=False)
+        return JsonResponse({
+            "ret": 1,
+            "data": tree_data
+        })
+    else:
+        return HttpResponseRedirect("/login")
+
+
 def process_monitor_index(request, funid):
     """
     进程监控
@@ -69,7 +206,7 @@ def process_monitor_index(request, funid):
 def process_monitor_data(request):
     if request.user.is_authenticated():
         result = []
-        p_source = Source.objects.filter(pnode=None).exclude(state="9") 
+        p_source = Source.objects.filter(pnode=None).exclude(state="9")
         if p_source.exists():
             p_source = p_source[0]
         else:
@@ -144,82 +281,127 @@ def create_process(request):
         return JsonResponse(result)
 
 
-def handle_process(source_id, handle_type=None):
+def handle_process(current_process, handle_type=None):
     """
     开启程序
     """
-    current_process = Source.objects.filter(id=source_id)
-    tag = 0
-    res = ""
-    if current_process.exists():
-        current_process = current_process[0]
+    tag, res = "", ""
 
-        if handle_type == "RUN":
-            try:
-                process_path = BASE_DIR + os.sep + "utils" + os.sep + "handle_process.py" + " {0}".format(source_id)
-                os.popen(r"{0}".format(process_path))
-                res = "程序启动成功。"
-                tag = 1
-            except Exception as e:
-                res = "程序启动失败"
-            if tag == 1:
-                # 修改数据库进程状态
-                current_process.status = "running"
-                current_process.create_time = datetime.datetime.now()
-                current_process.save()
-        elif handle_type == "DESTROY":
-            pid = current_process.p_id
-            if pid:
-                all_process = psutil.process_iter()
-                for p in all_process:
-                    if int(pid) == p.pid:
-                        try:
-                            p.terminate()
+    if handle_type == "RUN":
+        try:
+            process_path = BASE_DIR + os.sep + "utils" + os.sep + "handle_process.py" + " {0}".format(current_process.id)
+            os.popen(r"{0}".format(process_path))
+            res = "程序启动成功。"
+            tag = 1
+        except Exception as e:
+            res = "程序启动失败"
+        if tag == 1:
+            # 修改数据库进程状态
+            current_process.status = "运行中"
+            current_process.create_time = datetime.datetime.now()
+            current_process.save()
+    elif handle_type == "DESTROY":
+        pid = current_process.p_id
+        if pid:
+            all_process = psutil.process_iter()
+            for p in all_process:
+                if int(pid) == p.pid:
+                    try:
+                        p.terminate()
 
-                            # 修改数据库进程状态
-                            current_process.status = "已关闭"
-                            current_process.create_time = None
-                            current_process.p_id = ""
-                            current_process.save()
-                            res = "程序终止成功。"
-                            tag = 1
-                        except:
-                            res = "程序终止失败。"
-                        break
-                    else:
-                        res = "未找到该进程"
-            else:
-                res = "该进程不存在。"
+                        # 修改数据库进程状态
+                        current_process.status = "已关闭"
+                        current_process.create_time = None
+                        current_process.p_id = ""
+                        current_process.save()
+                        res = "程序终止成功。"
+                        tag = 1
+                    except:
+                        res = "程序终止失败。"
+                    break
+                else:
+                    res = "未找到该进程"
         else:
-            res = "程序执行类型不符合。"
+            res = "该进程不存在。"
     else:
-        res = "数据源不存在。"
+        res = "程序执行类型不符合。"
 
     return (tag, res)
 
 
 def process_run(request):
     if request.user.is_authenticated():
-        source_id = request.POST.get("id", "")
+        result = {}
+
+        source_id = request.POST.get("source_id", "")
+        app_id = request.POST.get("app_id", "")
+        circle_id = request.POST.get("circle_id", "")
+        operate = request.POST.get("operate", "")
 
         try:
             source_id = int(source_id)
-        except:
+            app_id = int(app_id)
+            circle_id = int(circle_id)
+        except ValueError as e:
+            print(e)
+
+        current_process = ProcessMonitor.objects.filter(source_id=source_id).filter(app_admin_id=app_id).filter(cycle_id=circle_id).exclude(state='9')
+        if current_process.exists():
+            current_process = current_process[0]
+            if operate == 'start':
+                # 查看是否运行中
+                if current_process.status == "运行中":
+                    return JsonResponse({
+                        'tag': 0,
+                        'res': "请勿重复执行该程序。"
+                    })
+                tag, res = handle_process(current_process, handle_type="RUN")
+                return JsonResponse({
+                    'tag': tag,
+                    'res': res
+                })
+            elif operate == 'stop':
+                if current_process.status != "运行中":
+                    return JsonResponse({
+                        'tag': 0,
+                        'res': "当前进程未在运行中。"
+                    })
+                tag, res = handle_process(current_process, handle_type="DESTROY")
+                return JsonResponse({
+                    'tag': tag,
+                    'res': res
+                })
+            elif operate == 'restart':
+                if current_process.status != "运行中":
+                    return JsonResponse({
+                        'tag': 0,
+                        'res': "当前进程未在运行中，请启动程序。"
+                    })
+                tag, res = handle_process(current_process, handle_type="DESTROY")
+                if tag == 1:
+                    tag, res = handle_process(current_process, handle_type="RUN")
+                else:
+                    tag = 0
+                    res = "关闭进程失败。"
+                return JsonResponse({
+                    'tag': tag,
+                    'res': res
+                })
+            else:
+                result["tag"] = 0
+                result["res"] = "未接收到操作指令。"
+        else:
+            current_process = ProcessMonitor()
+            current_process.source_id = source_id
+            current_process.app_admin_id = app_id
+            current_process.cycle_id = circle_id
+            current_process.save()
+            tag, res = handle_process(current_process, handle_type="RUN")
             return JsonResponse({
-                "res": "该数据源不存在。"
+                'tag': tag,
+                'res': res
             })
 
-        result = {}
-        # 异步开启程序
-        current_process = Source.objects.filter(id=source_id, status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(
-            state="9")
-        if current_process.exists():
-            tag, res = handle_process(source_id, handle_type="RUN")
-            result["tag"] = tag
-            result["res"] = res
-        else:
-            result["tag"] = 0
-            result["res"] = "请勿重复执行该程序。"
         return JsonResponse(result)
 
 
@@ -581,7 +763,8 @@ def report_app_index(request, funid):
                                             # 远程执行命令，令远程windows发送请求下载文件
 
                                             local_script_dir = "C:\\Users\\Administrator\\Desktop\\test.ps1"
-                                            remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(file_name)
+                                            remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
+                                                file_name)
                                             # remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
                                             url_visited = "http://192.168.100.225:8000/download_file?file_name={0}".format(
                                                 file_name)
@@ -3112,11 +3295,11 @@ def report_submit_data(request):
                 c_report_time = report_submit_1[0].report_time
                 # 年 月 日  2019-01-01
                 if c_report_time:
-                    if report_type=="年报":
+                    if report_type == "年报":
                         report_time = c_report_time.strftime('%Y')
-                    if report_type in ["月报", "半年报","季报"]:
+                    if report_type in ["月报", "半年报", "季报"]:
                         report_time = c_report_time.strftime('%Y-%m')
-                    if report_type=="日报":
+                    if report_type == "日报":
                         report_time = c_report_time.strftime('%Y-%m-%d')
                 c_report_info_list = []
                 current_report_submit_info_set = report_submit_1[0].reportsubmitinfo_set.exclude(state="9")
@@ -3133,11 +3316,11 @@ def report_submit_data(request):
                 write_time = report_submit_0[0].write_time.strftime('%Y-%m-%d')
                 c_report_time = report_submit_0[0].report_time
                 if c_report_time:
-                    if report_type=="年报":
+                    if report_type == "年报":
                         report_time = c_report_time.strftime('%Y')
-                    if report_type in ["月报", "半年报","季报"]:
+                    if report_type in ["月报", "半年报", "季报"]:
                         report_time = c_report_time.strftime('%Y-%m')
-                    if report_type=="日报":
+                    if report_type == "日报":
                         report_time = c_report_time.strftime('%Y-%m-%d')
                 c_report_info_list = []
                 current_report_submit_info_set = report_submit_0[0].reportsubmitinfo_set.exclude(state="9")
@@ -3206,7 +3389,8 @@ def report_submit_save(request):
             if report_model:
                 report_model = int(report_model)
 
-                current_report_submit = ReportSubmit.objects.exclude(state="9").filter(report_model_id=report_model, report_time=report_time)
+                current_report_submit = ReportSubmit.objects.exclude(state="9").filter(report_model_id=report_model,
+                                                                                       report_time=report_time)
                 # 新增
                 if not current_report_submit.exists():
                     try:

@@ -67,13 +67,13 @@ def getextractdata(target):
     return curvalue
 
 
-def run_process(source_id,processcon,targets):
+def run_process(process_id,processcon,targets):
     # subprocess.run(r"D:\Sublime\Sublime Text Build 3200 x64\sublime_text.exe")
     # 取数 *****************************************************
 
     pid = os.getpid()
 
-    if source_id:
+    if process_id:
         # for target in targets:
         #     curvalue = getextractdata(target)
         #     if not curvalue:
@@ -89,8 +89,8 @@ def run_process(source_id,processcon,targets):
         #             extractdata.cumulativeyear = cumulative["cumulativeyear"]
         #         extractdata.save()
 
-        source_id = int(source_id)
-        connection = pymysql.connect(host='192.168.100.154',
+        process_id = int(process_id)
+        connection = pymysql.connect(host='192.168.1.66',
                                      user='root',
                                      password='password',
                                      db='datacenter',
@@ -98,8 +98,8 @@ def run_process(source_id,processcon,targets):
                                      cursorclass=pymysql.cursors.DictCursor)
         try:
             with connection.cursor() as cursor:
-                update_sql = """UPDATE datacenter.datacenter_source SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
-                    datetime.now(), pid, source_id)
+                update_sql = """UPDATE datacenter.datacenter_processmonitor SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
+                    datetime.now(), pid, process_id)
                 cursor.execute(update_sql)
             connection.commit()
         finally:
