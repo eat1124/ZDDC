@@ -21,6 +21,7 @@ import subprocess
 import multiprocessing
 import decimal
 import pymysql
+import psutil
 
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
@@ -56,13 +57,13 @@ info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Ad
 
 def get_process_monitor_tree(request):
     if request.user.is_authenticated():
-        # select_id = request.POST.get('select_id', '')
+        select_id = request.POST.get('select_id', '')
+        index = request.POST.get('index', '')
 
-        # try:
-        #     select_id = int(select_id)
-        # except ValueError as e:
-        #     print(e)
-
+        try:
+            select_id = int(select_id)
+        except ValueError as e:
+            print(e)
         targets = Target.objects.filter(operationtype=16).exclude(state=9).values('source_id', 'adminapp_id',
                                                                                   'cycle_id')
 
@@ -91,7 +92,6 @@ def get_process_monitor_tree(request):
         source = Source.objects.exclude(state='9')
         app = App.objects.exclude(state='9')
         cycle = Cycle.objects.exclude(state='9')
-
 
         s_info_list = []
         for s in source:
@@ -139,17 +139,24 @@ def get_process_monitor_tree(request):
 
                         for c in cycle:
                             if does_it_exist(s.id, a.id, c.id):
-
                                 create_time, last_time, status = '', '', ''
                                 # 获取进程状态
                                 cps = ProcessMonitor.objects.filter(source_id=s.id).filter(app_admin_id=a.id).filter(
-                                    cycle_id=c.id)
+                                    cycle_id=c.id).exclude(state='9')
                                 if cps.exists():
                                     cp = cps[0]
                                     create_time = '{:%Y-%m-%d %H:%M:%S}'.format(
                                         cp.create_time) if cp.create_time else ""
                                     last_time = '{:%Y-%m-%d %H:%M:%S}'.format(cp.last_time) if cp.last_time else ""
                                     status = cp.status
+                                    if index == "0":
+                                        # 更新数据库数据：进程状态
+                                        p_id = int(cp.p_id) if cp.p_id else ""
+                                        if p_id:
+                                            if not psutil.pid_exists(p_id):
+                                                cp.status = "已关闭"
+                                                cp.save()
+                                                status = "已关闭"
 
                                 c_info = dict()
                                 c_info['text'] = c.name

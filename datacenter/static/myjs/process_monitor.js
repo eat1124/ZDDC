@@ -1,5 +1,5 @@
 $(document).ready(function () {
-
+    var index = 0;
     function getProcessMonitorTree(select_id) {
         $.ajax({
             type: "POST",
@@ -7,8 +7,10 @@ $(document).ready(function () {
             url: "../get_process_monitor_tree/",
             data: {
                 select_id: select_id,
+                index: index
             },
             success: function (data) {
+                index += 1;
                 var treeData = JSON.parse(data.data);
 
                 $('#process_monitor_tree').jstree('destroy');
