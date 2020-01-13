@@ -1,4 +1,5 @@
 $(document).ready(function () {
+
     $('#sample_1').dataTable({
         "bAutoWidth": true,
         "bSort": false,
@@ -23,7 +24,20 @@ $(document).ready(function () {
             {
             "targets": -5,
             "mRender":function(data,type,full){
-                        return "<input id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
+                        $('.curvaluedate_').datetimepicker({
+                            format: 'yyyy-mm-dd hh:ii:ss',
+                            autoclose: true,
+                        });
+
+                        if (full.target_datatype == 'numbervalue'){
+                            return "<input id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
+                        }
+                        if (full.target_datatype == 'date'){
+                            return "<input class='curvaluedate_'autocomplete='off' style = 'width:153px;height:26px;' id='table1_curvaluedate_" + full.id + "' name='table1_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        }
+                        if (full.target_datatype == 'text'){
+                            return "<input  id='table1_curvaluetext_" + full.id + "' name='table1_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        }
                     }
             },
             {
@@ -81,6 +95,7 @@ $(document).ready(function () {
             }
         }
     });
+
     // 行按钮
     $('#sample_1 tbody').on('change', 'input[name="table1_curvalue"]', function () {
             var table = $('#sample_1').DataTable();
@@ -221,7 +236,20 @@ $(document).ready(function () {
             {
             "targets": -6,
             "mRender":function(data,type,full){
-                        return "<input id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
+                        $('.curvaluedate_').datetimepicker({
+                            format: 'yyyy-mm-dd hh:ii:ss',
+                            autoclose: true,
+                        });
+
+                        if (full.target_datatype == 'numbervalue'){
+                            return "<input id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
+                        }
+                        if (full.target_datatype == 'date'){
+                            return "<input class='curvaluedate_'autocomplete='off' style = 'width:153px;height:26px;' id='table3_curvaluedate_" + full.id + "' name='table3_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        }
+                        if (full.target_datatype == 'text'){
+                            return "<input  id='table3_curvaluetext_" + full.id + "' name='table3_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        }
                     }
             },
             {
@@ -455,7 +483,7 @@ $(document).ready(function () {
         var table = $('#sample_1').DataTable().data();
         var savedata=[]
     　　$.each(table,function(i,item){
-            savedata.push({"id":item.id,"curvalue":$('#table1_curvalue_' + item.id).val(),"cumulativemonth":$('#table1_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table1_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table1_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table1_cumulativeyear_' + item.id).val()})
+            savedata.push({"id":item.id,"curvalue":$('#table1_curvalue_' + item.id).val(),"curvaluedate":$('#table1_curvaluedate_' + item.id).val(),"curvaluetext":$('#table1_curvaluetext_' + item.id).val(),"cumulativemonth":$('#table1_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table1_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table1_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table1_cumulativeyear_' + item.id).val()})
     　　});
         $.ajax({
             type: "POST",
@@ -639,7 +667,7 @@ $(document).ready(function () {
         var table = $('#sample_3').DataTable().data();
         var savedata=[]
     　　$.each(table,function(i,item){
-            savedata.push({"id":item.id,"curvalue":$('#table3_curvalue_' + item.id).val(),"cumulativemonth":$('#table3_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table3_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table3_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table3_cumulativeyear_' + item.id).val()})
+            savedata.push({"id":item.id,"curvalue":$('#table3_curvalue_' + item.id).val(),"curvaluedate":$('#table3_curvaluedate_' + item.id).val(),"curvaluetext":$('#table3_curvaluetext_' + item.id).val(),"cumulativemonth":$('#table3_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table3_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table3_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table3_cumulativeyear_' + item.id).val()})
     　　});
         $.ajax({
             type: "POST",
