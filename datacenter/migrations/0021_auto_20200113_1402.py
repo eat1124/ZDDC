@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datacenter', '0018_auto_20200110_1133'),
+        ('datacenter', '0020_processmonitor_last_time'),
     ]
 
     operations = [

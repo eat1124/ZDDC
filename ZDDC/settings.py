@@ -151,7 +151,7 @@ STATIC_ROOT = os.path.join(SITE_ROOT, 'static')
 
 EMAIL_HOST = 'smtp.exmail.qq.com'
 EMAIL_HOST_USER = 'huangzx@tesunet.com.cn'
-EMAIL_HOST_PASSWORD = 'China320701045'
+EMAIL_HOST_PASSWORD = '00'
 EMAIL_PORT = 25
 
 # CASHES_DIR = BASE_DIR + os.sep + "faconstor"+ os.sep + "static"+ os.sep + "mem"

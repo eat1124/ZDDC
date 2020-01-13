@@ -565,7 +565,7 @@ def report_index(request, funid):
                                             remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
                                                 file_name)
                                             # remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
-                                            url_visited = "http://192.168.100.225:8000/download_file?file_name={0}".format(
+                                            url_visited = "http://192.168.100.224:8000/download_file?file_name={0}".format(
                                                 file_name)
                                             remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                 local_script_dir, remote_file_dir, url_visited)
@@ -791,7 +791,7 @@ def report_app_index(request, funid):
                                             remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
                                                 file_name)
                                             # remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
-                                            url_visited = "http://192.168.100.225:8000/download_file?file_name={0}".format(
+                                            url_visited = "http://192.168.100.224:8000/download_file?file_name={0}".format(
                                                 file_name)
                                             remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                 local_script_dir, remote_file_dir, url_visited)
