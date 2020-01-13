@@ -87,13 +87,6 @@ $(document).ready(function () {
                         $('#source_id').val(data.node.data.s_id);
                         $('#app_id').val(data.node.data.a_id);
                         $('#circle_id').val(data.node.data.c_id);
-                    })
-                    .on("loaded.jstree", function (event, data) {
-                        // var element = data.instance.element;
-                        // element.find('li').each(function () {
-                        //     console.log($(this).html())
-                        // })
-
                     });
             },
             error: function (e) {
@@ -119,10 +112,9 @@ $(document).ready(function () {
                 'circle_id': $('#circle_id').val()
             },
             success: function (data) {
-
                 if (data.tag == 1) {
                     // 刷新树
-                    getProcessMonitorTree("");
+                    getProcessMonitorTree($('#circle_id').val());
                 }
 
                 alert(data.res);

@@ -177,7 +177,10 @@ def get_process_monitor_tree(request):
                                     'last_time': last_time,
                                     'status': status
                                 }
+
                                 c_info['state'] = {'opened': True}
+                                if select_id == c.id:
+                                    c_info['state']['selected'] = True
 
                                 # 判断进程状态
                                 if status != "运行中":
