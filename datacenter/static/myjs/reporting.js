@@ -23,13 +23,10 @@ $(document).ready(function () {
             {
             "targets": -5,
             "mRender":function(data,type,full){
-                        // console.log(full.id)
-                        // console.log($('#table1_curvaluedate_' + full.id))
                         $('#table1_curvaluedate_' + full.id).datetimepicker({
                             format: 'yyyy-mm-dd hh:ii:ss',
                             autoclose: true,
                         });
-                        console.log('zzzzzzzz')
 
                         if (full.target_datatype == 'numbervalue'){
                             return "<input id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
