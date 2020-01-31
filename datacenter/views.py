@@ -57,11 +57,14 @@ info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Ad
 
 def get_process_monitor_tree(request):
     if request.user.is_authenticated():
-        select_id = request.POST.get('select_id', '')
+        circle_id = request.POST.get('circle_id', '')
+        app_id = request.POST.get('app_id', '')
+        source_id = request.POST.get('source_id', '')
         index = request.POST.get('index', '')
-
         try:
-            select_id = int(select_id)
+            circle_id = int(circle_id)
+            app_id = int(app_id)
+            source_id = int(source_id)
         except ValueError as e:
             print(e)
         targets = Target.objects.filter(operationtype=16).exclude(state=9).values('source_id', 'adminapp_id',
@@ -179,7 +182,8 @@ def get_process_monitor_tree(request):
                                 }
 
                                 c_info['state'] = {'opened': True}
-                                if select_id == c.id:
+                                #
+                                if circle_id == c.id and app_id == a.id and source_id == s.id:
                                     c_info['state']['selected'] = True
 
                                 # 判断进程状态
@@ -188,23 +192,18 @@ def get_process_monitor_tree(request):
                                     a_info['type'] = 'node_grey'
                                     s_info['type'] = 'node_grey'
                                     root_info['type'] = 'node_grey'
-
                                 c_info_list.append(c_info)
-
                         a_info['children'] = c_info_list
 
                         a_info_list.append(a_info)
-
                 s_info['children'] = a_info_list
 
                 s_info_list.append(s_info)
-
         root_info['children'] = s_info_list
         root_info['state'] = {'opened': True}
         root_info['data'] = {
             'type': 'root'
         }
-
         tree_data = json.dumps([root_info], ensure_ascii=False)
         return JsonResponse({
             "ret": 1,
@@ -306,7 +305,9 @@ def create_process(request):
 
 def handle_process(current_process, handle_type=None):
     """
-    开启程序
+    操作程序
+        已关闭
+        运行中
     """
     tag, res = "", ""
 
@@ -355,7 +356,7 @@ def handle_process(current_process, handle_type=None):
 
 def process_run(request):
     if request.user.is_authenticated():
-        result = {}
+        tag, res = 0, ""
 
         source_id = request.POST.get("source_id", "")
         app_id = request.POST.get("app_id", "")
@@ -373,48 +374,48 @@ def process_run(request):
             cycle_id=circle_id).exclude(state='9')
         if current_process.exists():
             current_process = current_process[0]
+
+            def get_running_info(current_process):
+                # 获取运行状态与启动时间
+                status = current_process.status
+                create_time = current_process.create_time
+                return {
+                    'status': status,
+                    'create_time': '{:%Y-%m-%d %H:%M:%S}'.format(create_time) if create_time else ''
+                }
+
             if operate == 'start':
                 # 查看是否运行中
                 if current_process.status == "运行中":
-                    return JsonResponse({
-                        'tag': 0,
-                        'res': "请勿重复执行该程序。"
-                    })
-                tag, res = handle_process(current_process, handle_type="RUN")
-                return JsonResponse({
-                    'tag': tag,
-                    'res': res
-                })
+                    tag = 0
+                    res = "请勿重复执行该程序。"
+                else:
+                    tag, res = handle_process(current_process, handle_type="RUN")
             elif operate == 'stop':
                 if current_process.status != "运行中":
-                    return JsonResponse({
-                        'tag': 0,
-                        'res': "当前进程未在运行中。"
-                    })
-                tag, res = handle_process(current_process, handle_type="DESTROY")
-                return JsonResponse({
-                    'tag': tag,
-                    'res': res
-                })
+                    tag = 0
+                    res = "当前进程未在运行中。"
+                else:
+                    tag, res = handle_process(current_process, handle_type="DESTROY")
             elif operate == 'restart':
                 if current_process.status != "运行中":
-                    return JsonResponse({
-                        'tag': 0,
-                        'res': "当前进程未在运行中，请启动程序。"
-                    })
-                tag, res = handle_process(current_process, handle_type="DESTROY")
-                if tag == 1:
-                    tag, res = handle_process(current_process, handle_type="RUN")
-                else:
                     tag = 0
-                    res = "关闭进程失败。"
-                return JsonResponse({
-                    'tag': tag,
-                    'res': res
-                })
+                    res = "当前进程未在运行中，请启动程序。"
+                else:
+                    tag, res = handle_process(current_process, handle_type="DESTROY")
+                    if tag == 1:
+                        tag, res = handle_process(current_process, handle_type="RUN")
+                    else:
+                        tag = 0
+                        res = "关闭进程失败。"
             else:
-                result["tag"] = 0
-                result["res"] = "未接收到操作指令。"
+                tag = 0
+                res = "未接收到操作指令。"
+            return JsonResponse({
+                'tag': tag,
+                'res': res,
+                'data': get_running_info(current_process)
+            })
         else:
             current_process = ProcessMonitor()
             current_process.source_id = source_id
@@ -422,12 +423,12 @@ def process_run(request):
             current_process.cycle_id = circle_id
             current_process.save()
             tag, res = handle_process(current_process, handle_type="RUN")
+
             return JsonResponse({
                 'tag': tag,
-                'res': res
+                'res': res,
+                'data': ''
             })
-
-        return JsonResponse(result)
 
 
 def process_destroy(request):

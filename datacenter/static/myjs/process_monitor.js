@@ -1,18 +1,20 @@
 $(document).ready(function () {
     var index = 0;
-    function getProcessMonitorTree(select_id) {
+
+    function getProcessMonitorTree(circle_id, app_id, source_id) {
         $.ajax({
             type: "POST",
             dataType: "json",
             url: "../get_process_monitor_tree/",
             data: {
-                select_id: select_id,
+                circle_id: circle_id,
+                app_id: app_id,
+                source_id: source_id,
                 index: index
             },
             success: function (data) {
                 index += 1;
                 var treeData = JSON.parse(data.data);
-
                 $('#process_monitor_tree').jstree('destroy');
                 $('#process_monitor_tree').jstree({
                     'core': {
@@ -48,6 +50,8 @@ $(document).ready(function () {
                     "plugins": ["types", "role"]
                 })
                     .bind('select_node.jstree', function (event, data) {
+                        $('#node_id').val(data.node.id);
+
                         if (data.node.data.type == 'root') {
                             $("#form_div").hide();
                         } else {
@@ -56,6 +60,16 @@ $(document).ready(function () {
 
                         $('#source_div, #app_div, #circle_div, #process_exec').hide();
 
+                        // 根据data.node.data.status判断展示开启/关闭/重启按钮
+                        if (data.node.data.status == '已关闭') {
+                            $('#start').show();
+                            $('#stop, #restart').hide();
+                        } else if (data.node.data.status == '运行中') {
+                            $('#stop, #restart').show();
+                            $('#start').hide();
+                        } else {
+                            $('#start, #stop, #restart').hide();
+                        }
 
                         $("#title").text(data.node.text);
 
@@ -97,7 +111,7 @@ $(document).ready(function () {
 
     }
 
-    getProcessMonitorTree("");
+    getProcessMonitorTree("", "", "");
     // 启动/关闭/重启
     $('#start, #stop, #restart').click(function () {
         var operate = $(this).prop('id');
@@ -114,9 +128,25 @@ $(document).ready(function () {
             success: function (data) {
                 if (data.tag == 1) {
                     // 刷新树
-                    getProcessMonitorTree($('#circle_id').val());
-                }
+                    getProcessMonitorTree($('#circle_id').val(), $('#app_id').val(), $('#source_id').val());
 
+                    // 写入状态，时间
+                    if (data.data) {
+                        $('#status').val(data.data.status);
+                        $('#create_time').val(data.data.create_time);
+
+                        // 根据data.data.status判断展示开启/关闭/重启按钮
+                        if (data.data.status == '已关闭') {
+                            $('#start').show();
+                            $('#stop, #restart').hide();
+                        } else if (data.data.status == '运行中') {
+                            $('#stop, #restart').show();
+                            $('#start').hide();
+                        } else {
+                            $('#start, #stop, #restart').hide();
+                        }
+                    }
+                }
                 alert(data.res);
             },
             error: function () {
