@@ -23,7 +23,20 @@ $(document).ready(function () {
             {
             "targets": -5,
             "mRender":function(data,type,full){
-                        return "<input id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
+                        $('#table1_curvaluedate_' + full.id).datetimepicker({
+                            format: 'yyyy-mm-dd hh:ii:ss',
+                            autoclose: true,
+                        });
+
+                        if (full.target_datatype == 'numbervalue'){
+                            return "<input id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
+                        }
+                        if (full.target_datatype == 'date'){
+                            return "<input style = 'width:153px;height:26px;' id='table1_curvaluedate_" + full.id + "' name='table1_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        }
+                        if (full.target_datatype == 'text'){
+                            return "<input  id='table1_curvaluetext_" + full.id + "' name='table1_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        }
                     }
             },
             {
@@ -118,7 +131,20 @@ $(document).ready(function () {
             {
             "targets": -6,
             "mRender":function(data,type,full){
-                        return "<input id='table2_curvalue_" + full.id + "' name='table2_curvalue'  type='number' value='" + data + "'></input>"
+                        $('#table2_curvaluedate_' + full.id).datetimepicker({
+                            format: 'yyyy-mm-dd hh:ii:ss',
+                            autoclose: true,
+                        });
+
+                        if (full.target_datatype == 'numbervalue'){
+                             return "<input id='table2_curvalue_" + full.id + "' name='table2_curvalue'  type='number' value='" + data + "'></input>"
+                        }
+                        if (full.target_datatype == 'date'){
+                            return "<input style = 'width:153px;height:26px;' id='table2_curvaluedate_" + full.id + "' name='table2_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        }
+                        if (full.target_datatype == 'text'){
+                            return "<input  id='table2_curvaluetext_" + full.id + "' name='table2_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        }
                     }
             },
             {
@@ -221,7 +247,20 @@ $(document).ready(function () {
             {
             "targets": -6,
             "mRender":function(data,type,full){
-                        return "<input id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
+                        $('#table3_curvaluedate_' + full.id).datetimepicker({
+                            format: 'yyyy-mm-dd hh:ii:ss',
+                            autoclose: true,
+                        });
+
+                        if (full.target_datatype == 'numbervalue'){
+                            return "<input id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
+                        }
+                        if (full.target_datatype == 'date'){
+                            return "<input style = 'width:153px;height:26px;' id='table3_curvaluedate_" + full.id + "' name='table3_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        }
+                        if (full.target_datatype == 'text'){
+                            return "<input  id='table3_curvaluetext_" + full.id + "' name='table3_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        }
                     }
             },
             {
@@ -319,6 +358,52 @@ $(document).ready(function () {
             {"data": "cumulativeyear"},
         ],
 
+        "columnDefs": [
+            {
+            "targets": -5,
+            "mRender":function(data,type,full){
+                        $('#table4_curvaluedate_' + full.id).datetimepicker({
+                            format: 'yyyy-mm-dd hh:ii:ss',
+                            autoclose: true,
+                        });
+
+                        if (full.target_datatype == 'numbervalue'){
+                            return "<input disabled id='table4_curvalue_" + full.id + "' name='table4_curvalue'  type='number' value='" + data + "'></input>"
+                        }
+                        if (full.target_datatype == 'date'){
+                            return "<input disabled style = 'width:153px;height:26px;' id='table4_curvaluedate_" + full.id + "' name='table4_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        }
+                        if (full.target_datatype == 'text'){
+                            return "<input disabled id='table4_curvaluetext_" + full.id + "' name='table4_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        }
+                    }
+            },
+            {
+            "targets": -4,
+            "mRender":function(data,type,full){
+                        return "<input disabled id='table4_cumulativemonth_" + full.id + "' name='table4_cumulativemonth'  type='text' value='" + data + "'></input>"
+                    }
+            },
+            {
+            "targets": -3,
+            "mRender":function(data,type,full){
+                        return "<input disabled id='table4_cumulativequarter_" + full.id + "' name='table4_cumulativequarter'  type='text' value='" + data + "'></input>"
+                    }
+            },
+            {
+            "targets": -2,
+            "mRender":function(data,type,full){
+                        return "<input disabled id='table4_cumulativehalfyear_" + full.id + "' name='table4_cumulativehalfyear'  type='text' value='" + data + "'></input>"
+                    }
+            },
+            {
+            "targets": -1,
+            "mRender":function(data,type,full){
+                        return "<input disabled id='table4_cumulativeyear_" + full.id + "' name='table4_cumulativeyear'  type='text' value='" + data + "'></input>"
+                    }
+            },
+        ],
+
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",
             "sZeroRecords": "抱歉， 没有找到",
@@ -336,17 +421,28 @@ $(document).ready(function () {
         },
     });
 
+    // 行按钮
+    $('#sample_4 tbody').on('change', 'input[name="table4_curvalue"]', function () {
+            var table = $('#sample_4').DataTable();
+            var data = table.row($(this).parents('tr')).data();
+            if(data.target_cumulative=='是') {
+                $('#table4_cumulativemonth_' + data.id).val(Number(data.cumulativemonth) - Number(data.curvalue) + Number($('#table4_curvalue_' + data.id).val()))
+                $('#table4_cumulativequarter_' + data.id).val(Number(data.cumulativequarter) - Number(data.curvalue) + Number($('#table4_curvalue_' + data.id).val()))
+                $('#table4_cumulativehalfyear_' + data.id).val(Number(data.cumulativehalfyear) - Number(data.curvalue) + Number($('#table4_curvalue_' + data.id).val()))
+                $('#table4_cumulativeyear_' + data.id).val(Number(data.cumulativeyear) - Number(data.curvalue) + Number($('#table4_curvalue_' + data.id).val()))
+            }
+    });
+
     $('#reporting_date').change(function () {
         var table1 = $('#sample_1').DataTable();
-        table1.ajax.url("../../../reporting_data?app=" + $('#app').val()  + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=15").load();
+        table1.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15").load();
         var table2 = $('#sample_2').DataTable();
-        table2.ajax.url("../../../reporting_data?app=" + $('#app').val()  + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=16").load();
+        table2.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=16").load();
         var table3 = $('#sample_3').DataTable();
-        table3.ajax.url("../../../reporting_data?app=" + $('#app').val()  + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=17").load();
+        table3.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=17").load();
         var table4 = $('#sample_4').DataTable();
-        table4.ajax.url("../../../reporting_data?app=" + $('#app').val()  + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=0").load();
+        table4.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=0").load();
     })
-
 
     if($('#cycletype').val()=="10") {
         $('#reporting_date').datetimepicker({
@@ -455,7 +551,7 @@ $(document).ready(function () {
         var table = $('#sample_1').DataTable().data();
         var savedata=[]
     　　$.each(table,function(i,item){
-            savedata.push({"id":item.id,"curvalue":$('#table1_curvalue_' + item.id).val(),"cumulativemonth":$('#table1_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table1_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table1_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table1_cumulativeyear_' + item.id).val()})
+            savedata.push({"id":item.id,"curvalue":$('#table1_curvalue_' + item.id).val(),"curvaluedate":$('#table1_curvaluedate_' + item.id).val(),"curvaluetext":$('#table1_curvaluetext_' + item.id).val(),"cumulativemonth":$('#table1_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table1_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table1_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table1_cumulativeyear_' + item.id).val()})
     　　});
         $.ajax({
             type: "POST",
@@ -547,7 +643,7 @@ $(document).ready(function () {
         var table = $('#sample_2').DataTable().data();
         var savedata=[]
     　　$.each(table,function(i,item){
-            savedata.push({"id":item.id,"curvalue":$('#table2_curvalue_' + item.id).val(),"cumulativemonth":$('#table2_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table2_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table2_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table2_cumulativeyear_' + item.id).val()})
+            savedata.push({"id":item.id,"curvalue":$('#table2_curvalue_' + item.id).val(),"curvaluedate":$('#table2_curvaluedate_' + item.id).val(),"curvaluetext":$('#table2_curvaluetext_' + item.id).val(),"cumulativemonth":$('#table2_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table2_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table2_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table2_cumulativeyear_' + item.id).val()})
     　　});
         $.ajax({
             type: "POST",
@@ -639,7 +735,7 @@ $(document).ready(function () {
         var table = $('#sample_3').DataTable().data();
         var savedata=[]
     　　$.each(table,function(i,item){
-            savedata.push({"id":item.id,"curvalue":$('#table3_curvalue_' + item.id).val(),"cumulativemonth":$('#table3_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table3_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table3_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table3_cumulativeyear_' + item.id).val()})
+            savedata.push({"id":item.id,"curvalue":$('#table3_curvalue_' + item.id).val(),"curvaluedate":$('#table3_curvaluedate_' + item.id).val(),"curvaluetext":$('#table3_curvaluetext_' + item.id).val(),"cumulativemonth":$('#table3_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table3_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table3_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table3_cumulativeyear_' + item.id).val()})
     　　});
         $.ajax({
             type: "POST",

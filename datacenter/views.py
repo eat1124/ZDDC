@@ -566,7 +566,7 @@ def report_index(request, funid):
                                             remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
                                                 file_name)
                                             # remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
-                                            url_visited = "http://192.168.100.225:8000/download_file?file_name={0}".format(
+                                            url_visited = "http://192.168.100.224:8000/download_file?file_name={0}".format(
                                                 file_name)
                                             remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                 local_script_dir, remote_file_dir, url_visited)
@@ -792,7 +792,7 @@ def report_app_index(request, funid):
                                             remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
                                                 file_name)
                                             # remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
-                                            url_visited = "http://192.168.100.225:8000/download_file?file_name={0}".format(
+                                            url_visited = "http://192.168.100.224:8000/download_file?file_name={0}".format(
                                                 file_name)
                                             remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                 local_script_dir, remote_file_dir, url_visited)
@@ -2826,7 +2826,6 @@ def reporting_data(request):
                 reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
         except:
             raise Http404()
-
         all_data = []
         if operationtype == "0":
             curapp = App.objects.get(id=app)
@@ -2872,6 +2871,8 @@ def reporting_data(request):
             result.append({
                 "id": data.id,
                 "curvalue": round(data.curvalue, data.target.digit),
+                "curvaluedate": data.curvaluedate.strftime('%Y-%m-%d %H:%M:%S') if data.curvaluedate else "",
+                "curvaluetext": data.curvaluetext,
                 "cumulativemonth": cumulativemonth,
                 "cumulativequarter": cumulativequarter,
                 "cumulativehalfyear": cumulativehalfyear,
@@ -2883,6 +2884,7 @@ def reporting_data(request):
                 "target_unit": data.target.unit,
                 "target_businesstypename": businesstypename,
                 "target_unitname": unitname,
+                "target_datatype": data.target.datatype,
                 "target_cumulative": data.target.cumulative,
                 "target_upperlimit": data.target.upperlimit,
                 "target_lowerlimit": data.target.lowerlimit,
@@ -3163,10 +3165,23 @@ def reporting_save(request):
                 savedata = Extractdata.objects.exclude(state="9").get(id=int(curdata["id"]))
             if operationtype == "17":
                 savedata = Calculatedata.objects.exclude(state="9").get(id=int(curdata["id"]))
-            try:
-                savedata.curvalue = float(curdata["curvalue"])
-            except:
-                pass
+
+            if savedata.target.datatype == 'numbervalue':
+                try:
+                    savedata.curvalue = float(curdata["curvalue"])
+                except:
+                    pass
+            if savedata.target.datatype == 'date':
+                try:
+                    savedata.curvaluedate = curdata["curvaluedate"]
+                except:
+                    pass
+            if savedata.target.datatype == 'text':
+                try:
+                    savedata.curvaluetext = curdata["curvaluetext"]
+                except:
+                    pass
+
             try:
                 savedata.cumulativemonth = float(curdata["cumulativemonth"])
             except:
