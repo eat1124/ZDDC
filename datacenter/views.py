@@ -22,6 +22,7 @@ import multiprocessing
 import decimal
 import pymysql
 import psutil
+import base64
 
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
@@ -4699,7 +4700,18 @@ def organization(request, funid):
                                     errors.append(orgname + '已存在。')
                                 else:
                                     try:
+                                        # 虚假用户，避免SQLServer中唯一索引null重复
+                                        newuser = User()
+                                        tmp_datetime = str(datetime.datetime.now())[-20:-1].encode('utf-8')
+                                        newuser.username = base64.b64encode(tmp_datetime)  # 注意username的长度
+                                        newuser.password = ''
+                                        newuser.email = ''
+                                        newuser.is_active = 0
+                                        newuser.is_staff = 0
+                                        newuser.save()
+
                                         profile = UserInfo()  # e*************************
+                                        profile.user = newuser
                                         profile.fullname = orgname
                                         profile.pnode = porg
                                         profile.remark = remark
