@@ -8,6 +8,8 @@ import pymysql
 from datetime import datetime
 import time
 import json
+# import pymssql
+
 
 def getcumulative(target, date, value):
     """
@@ -48,6 +50,7 @@ def getcumulative(target, date, value):
     return {"cumulativemonth": cumulativemonth, "cumulativequarter": cumulativequarter,
             "cumulativehalfyear": cumulativehalfyear, "cumulativeyear": cumulativeyear}
 
+
 def getextractdata(target):
     """
     数据提取
@@ -67,7 +70,7 @@ def getextractdata(target):
     return curvalue
 
 
-def run_process(process_id,processcon,targets):
+def run_process(process_id, processcon, targets):
     # subprocess.run(r"D:\Sublime\Sublime Text Build 3200 x64\sublime_text.exe")
     # 取数 *****************************************************
 
@@ -90,7 +93,11 @@ def run_process(process_id,processcon,targets):
         #         extractdata.save()
 
         process_id = int(process_id)
-        connection = pymysql.connect(host='192.168.1.66',
+
+        # SQL Server
+        # connection = pymssql.connect(host='127.0.0.1', user='miaokela', password='Passw0rD', database='mkl')
+
+        connection = pymysql.connect(host='127.0.0.1',
                                      user='root',
                                      password='password',
                                      db='datacenter',
@@ -98,6 +105,10 @@ def run_process(process_id,processcon,targets):
                                      cursorclass=pymysql.cursors.DictCursor)
         try:
             with connection.cursor() as cursor:
+                # # SQL Server
+                # update_sql = """UPDATE dbo.datacenter_processmonitor SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
+                #     datetime.now(), pid, process_id)
+
                 update_sql = """UPDATE datacenter.datacenter_processmonitor SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
                     datetime.now(), pid, process_id)
                 cursor.execute(update_sql)
@@ -135,5 +146,3 @@ if len(sys.argv) > 1:
         time.sleep(60)
 else:
     print("未传参")
-
-
