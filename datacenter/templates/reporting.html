@@ -23,24 +23,24 @@
     {% endif %}
 </div>
 <ul id="navtabs" class="nav nav-tabs">
-    <li  class="active">
+    <li style="{{ searchtag }}" {{ searchtagclass }}>
         <a href="#tab_1_4" id='tabcheck4'  data-toggle="tab"> 数据查询 </a>
     </li>
-    <li style="{{ metertag }}">
+    <li style="{{ metertag }}" {{ metertagclass }}>
         <a href="#tab_1_5"  id='tabcheck5'  data-toggle="tab"> 电表走字 </a>
     </li>
-    <li style="{{ entrytag }}">
+    <li style="{{ entrytag }}" {{ entrytagclass }}>
         <a href="#tab_1_1"  id='tabcheck1'  data-toggle="tab"> 数据录入 </a>
     </li>
-    <li style="{{ extracttag }}">
+    <li style="{{ extracttag }}" {{ extracttagclass }}>
         <a href="#tab_1_2" id='tabcheck2'  data-toggle="tab"> 数据提取 </a>
     </li>
-    <li style="{{ calculatetag }}">
+    <li style="{{ calculatetag }}" {{ calculatetagclass }}>
         <a href="#tab_1_3" id='tabcheck3'  data-toggle="tab"> 数据计算 </a>
     </li>
 </ul>
 <div id="myTabContent1" class="tab-content">
-    <div class="tab-pane fade active in" id="tab_1_4">
+    <div class="tab-pane fade {{ searchtagtabclass }}" id="tab_1_4">
         <table class="table table-striped table-bordered table-hover table-checkable order-column" id="sample_4">
             <thead>
             <tr>
@@ -62,7 +62,7 @@
             </tbody>
         </table>
     </div>
-    <div class="tab-pane fade " id="tab_1_5">
+    <div class="tab-pane fade {{ metertagtabclass }}" id="tab_1_5">
         <div class="table-toolbar">
             <div class="row">
                 <div class="col-md-6">
@@ -94,8 +94,8 @@
                 <th> 业务类型</th>
                 <th> 机组</th>
                 <th> 倍率</th>
-                <th> 零点走字</th>
-                <th> 二十四点走字</th>
+                <th> 0点走字</th>
+                <th> 24点走字</th>
                 <th> 电表数值</th>
                 <th> 当前值</th>
                 <th> 月累计值</th>
@@ -110,7 +110,7 @@
             </tbody>
         </table>
     </div>
-    <div class="tab-pane fade " id="tab_1_1">
+    <div class="tab-pane fade {{ entrytagtabclass }}" id="tab_1_1">
         <div class="table-toolbar">
             <div class="row">
                 <div class="col-md-6">
@@ -154,7 +154,7 @@
             </tbody>
         </table>
     </div>
-    <div class="tab-pane fade" id="tab_1_2">
+    <div class="tab-pane fade {{ extracttagtabclass }}" id="tab_1_2">
         <div class="table-toolbar">
             <div class="row">
                 <div class="col-md-6">
@@ -203,7 +203,7 @@
             </tbody>
         </table>
     </div>
-    <div class="tab-pane fade" id="tab_1_3">
+    <div class="tab-pane fade {{ calculatetagtabclass }}" id="tab_1_3">
         <div class="table-toolbar">
             <div class="row">
                 <div class="col-md-6">

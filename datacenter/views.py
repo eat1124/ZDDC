@@ -2742,10 +2742,23 @@ def reporting_index(request, cycletype, funid):
                 days=-1)).replace(month=1, day=1)
             date = now.strftime("%Y")
 
+        searchtag=""
         metertag = ""
         entrytag = ""
         extracttag = ""
         calculatetag = ""
+
+        searchtagclass=""
+        metertagclass = ""
+        entrytagclass = ""
+        extracttagclass = ""
+        calculatetagclass = ""
+
+        searchtagtabclass=""
+        metertagtabclass = ""
+        entrytagtabclass = ""
+        extracttagtabclass = ""
+        calculatetagtabclass = ""
 
         meternew = ""
         entrynew = ""
@@ -2756,6 +2769,8 @@ def reporting_index(request, cycletype, funid):
         entryreset = ""
         extractreset = ""
         calculatereset = ""
+        curapp = App.objects.filter(id=app)
+        search_target = Target.objects.exclude(state='9').exclude(adminapp=app).filter(cycletype=cycletype,app__in=curapp)
 
         meter_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
                                                                 operationtype='1')
@@ -2774,6 +2789,9 @@ def reporting_index(request, cycletype, funid):
                                                                      target__cycletype=cycletype, datadate=now)
         calculate_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                          target__cycletype=cycletype, datadate=now)
+
+        if len(search_target) <= 0:
+            searchtag = "display: none;"
         if len(meter_target) <= 0 and len(meter_data) <= 0:
             metertag = "display: none;"
         if len(entry_target) <= 0 and len(entry_data) <= 0:
@@ -2786,6 +2804,23 @@ def reporting_index(request, cycletype, funid):
             meterreset = "display: none;"
         else:
             meternew = "display: none;"
+
+        if len(search_target) > 0:
+            searchtagclass = "class=active"
+            searchtagtabclass = "active in"
+        elif len(meter_target) > 0:
+            metertagclass = "class=active"
+            metertagtabclass = "active in"
+        elif len(entry_target) > 0:
+            entrytagclass = "class=active"
+            entrytagtabclass = "active in"
+        elif len(extract_target) > 0:
+            extracttagclass = "class=active"
+            extracttagtabclass = "active in"
+        elif len(calculate_target) > 0:
+            calculatetagclass = "class=active"
+            calculatetagtabclass = "active in"
+
         if len(entry_data) <= 0:
             entryreset = "display: none;"
         else:
@@ -2804,10 +2839,21 @@ def reporting_index(request, cycletype, funid):
                        "cycletype": cycletype,
                        "app": app,
                        "date": date,
+                       "searchtag":searchtag,
                        "metertag": metertag,
                        "entrytag": entrytag,
                        "extracttag": extracttag,
                        "calculatetag": calculatetag,
+                       "searchtagclass": searchtagclass,
+                       "metertagtagclass": searchtagclass,
+                       "entrytagclass": entrytagclass,
+                       "extracttagclass": extracttagclass,
+                       "calculatetagclass": calculatetagclass,
+                       "searchtagtabclass": searchtagtabclass,
+                       "metertagtabclass": metertagtabclass,
+                       "entrytagtabclass": entrytagtabclass,
+                       "extracttagtabclass": extracttagtabclass,
+                       "calculatetagtabclass": calculatetagtabclass,
                        "meternew": meternew,
                        "entrynew": entrynew,
                        "extractnew": extractnew,
