@@ -168,6 +168,25 @@ class ProcessMonitor(models.Model):
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
 
+class Meterdata(models.Model):
+    """
+    电表走字
+    """
+    target = models.ForeignKey(Target)
+    datadate = models.DateTimeField("开始时间", blank=True, null=True)
+    zerodata = models.CharField("零点走字", null=True, max_length=20)
+    twentyfourdata = models.CharField("二十四点走字", null=True, max_length=20)
+    metervalue = models.CharField("电表数值", null=True, max_length=20)
+    curvalue = models.DecimalField("当前值", null=True, max_digits=20, decimal_places=5)
+    curvaluedate = models.DateTimeField("当前值", null=True)
+    curvaluetext = models.CharField("当前值", null=True, max_length=20)
+    cumulativemonth = models.DecimalField("月累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativequarter = models.DecimalField("季累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
+    cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+
+
 class Entrydata(models.Model):
     """
     录入数据

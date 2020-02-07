@@ -23,16 +23,11 @@ $(document).ready(function () {
             {
             "targets": -5,
             "mRender":function(data,type,full){
-                        $('#table1_curvaluedate_' + full.id).datetimepicker({
-                            format: 'yyyy-mm-dd hh:ii:ss',
-                            autoclose: true,
-                        });
-
                         if (full.target_datatype == 'numbervalue'){
                             return "<input id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
                         }
                         if (full.target_datatype == 'date'){
-                            return "<input style = 'width:153px;height:26px;' id='table1_curvaluedate_" + full.id + "' name='table1_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                            return "<input class='table1_curvaluedate' style = 'width:153px;height:26px;' id='table1_curvaluedate_" + full.id + "' name='table1_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                         }
                         if (full.target_datatype == 'text'){
                             return "<input  id='table1_curvaluetext_" + full.id + "' name='table1_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
@@ -80,6 +75,10 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
         "fnDrawCallback": function( data ) {
+            $('.table1_curvaluedate').datetimepicker({
+                format: 'yyyy-mm-dd hh:ii:ss',
+                autoclose: true,
+            });
             if(data.aoData.length>0)
             {
                 $("#new1").hide();
@@ -131,16 +130,11 @@ $(document).ready(function () {
             {
             "targets": -6,
             "mRender":function(data,type,full){
-                        $('#table2_curvaluedate_' + full.id).datetimepicker({
-                            format: 'yyyy-mm-dd hh:ii:ss',
-                            autoclose: true,
-                        });
-
                         if (full.target_datatype == 'numbervalue'){
                              return "<input id='table2_curvalue_" + full.id + "' name='table2_curvalue'  type='number' value='" + data + "'></input>"
                         }
                         if (full.target_datatype == 'date'){
-                            return "<input style = 'width:153px;height:26px;' id='table2_curvaluedate_" + full.id + "' name='table2_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                            return "<input class='table2_curvaluedate'style = 'width:153px;height:26px;' id='table2_curvaluedate_" + full.id + "' name='table2_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                         }
                         if (full.target_datatype == 'text'){
                             return "<input  id='table2_curvaluetext_" + full.id + "' name='table2_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
@@ -194,6 +188,10 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
         "fnDrawCallback": function( data ) {
+            $('.table2_curvaluedate').datetimepicker({
+                format: 'yyyy-mm-dd hh:ii:ss',
+                autoclose: true,
+            });
             if(data.aoData.length>0)
             {
                 $("#new2").hide();
@@ -247,16 +245,11 @@ $(document).ready(function () {
             {
             "targets": -6,
             "mRender":function(data,type,full){
-                        $('#table3_curvaluedate_' + full.id).datetimepicker({
-                            format: 'yyyy-mm-dd hh:ii:ss',
-                            autoclose: true,
-                        });
-
                         if (full.target_datatype == 'numbervalue'){
                             return "<input id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
                         }
                         if (full.target_datatype == 'date'){
-                            return "<input style = 'width:153px;height:26px;' id='table3_curvaluedate_" + full.id + "' name='table3_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                            return "<input class='table3_curvaluedate' style = 'width:153px;height:26px;' id='table3_curvaluedate_" + full.id + "' name='table3_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                         }
                         if (full.target_datatype == 'text'){
                             return "<input  id='table3_curvaluetext_" + full.id + "' name='table3_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
@@ -310,6 +303,10 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
         "fnDrawCallback": function( data ) {
+            $('.table3_curvaluedate').datetimepicker({
+                format: 'yyyy-mm-dd hh:ii:ss',
+                autoclose: true,
+            });
             if(data.aoData.length>0)
             {
                 $("#new3").hide();
@@ -420,7 +417,6 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
     });
-
     // 行按钮
     $('#sample_4 tbody').on('change', 'input[name="table4_curvalue"]', function () {
             var table = $('#sample_4').DataTable();
@@ -433,6 +429,148 @@ $(document).ready(function () {
             }
     });
 
+    $('#sample_5').dataTable({
+        "bAutoWidth": true,
+        "bSort": false,
+        "bProcessing": true,
+        "bPaginate" : false,
+        "bFilter" : false,
+        "ajax": "../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=1",
+        "columns": [
+            {"data": "id"},
+            {"data": "target_name"},
+            {"data": "target_code"},
+            {"data": "target_businesstypename"},
+            {"data": "target_unitname"},
+            {"data": "target_magnification"},
+            {"data": "zerodata"},
+            {"data": "twentyfourdata"},
+            {"data": "metervalue"},
+            {"data": "curvalue"},
+            {"data": "cumulativemonth"},
+            {"data": "cumulativequarter"},
+            {"data": "cumulativehalfyear"},
+            {"data": "cumulativeyear"},
+        ],
+
+        "columnDefs": [
+            {
+            "targets": -8,
+            "mRender":function(data,type,full){
+                      return "<input id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
+                    }
+            },
+            {
+            "targets": -7,
+            "mRender":function(data,type,full){
+                      return "<input id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
+                    }
+            },
+            {
+            "targets": -6,
+            "mRender":function(data,type,full){
+                       return "<input id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
+                    }
+            },
+            {
+            "targets": -5,
+            "mRender":function(data,type,full){
+                        if (full.target_datatype == 'numbervalue'){
+                            return "<input id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
+                        }
+                        if (full.target_datatype == 'date'){
+                            return "<input class='table5_curvaluedate' style = 'width:153px;height:26px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        }
+                        if (full.target_datatype == 'text'){
+                            return "<input  id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        }
+                    }
+            },
+            {
+            "targets": -4,
+            "mRender":function(data,type,full){
+                        return "<input disabled id='table5_cumulativemonth_" + full.id + "' name='table5_cumulativemonth'  type='text' value='" + data + "'></input>"
+                    }
+            },
+            {
+            "targets": -3,
+            "mRender":function(data,type,full){
+                        return "<input disabled id='table5_cumulativequarter_" + full.id + "' name='table5_cumulativequarter'  type='text' value='" + data + "'></input>"
+                    }
+            },
+            {
+            "targets": -2,
+            "mRender":function(data,type,full){
+                        return "<input disabled id='table5_cumulativehalfyear_" + full.id + "' name='table5_cumulativehalfyear'  type='text' value='" + data + "'></input>"
+                    }
+            },
+            {
+            "targets": -1,
+            "mRender":function(data,type,full){
+                        return "<input disabled id='table5_cumulativeyear_" + full.id + "' name='table5_cumulativeyear'  type='text' value='" + data + "'></input>"
+                    }
+            },
+        ],
+        "oLanguage": {
+            "sLengthMenu": "每页显示 _MENU_ 条记录",
+            "sZeroRecords": "抱歉， 没有找到",
+            "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+            "sInfoEmpty": "没有数据",
+            "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+            "sSearch": "搜索",
+            "oPaginate": {
+                "sFirst": "首页",
+                "sPrevious": "前一页",
+                "sNext": "后一页",
+                "sLast": "尾页"
+            },
+            "sZeroRecords": "没有检索到数据",
+        },
+        "fnDrawCallback": function( data ) {
+            $('.table5_curvaluedate').datetimepicker({
+                format: 'yyyy-mm-dd hh:ii:ss',
+                autoclose: true,
+            });
+            if(data.aoData.length>0)
+            {
+                $("#new5").hide();
+                $("#save5").show();
+                $("#del5").show();
+            }
+            else
+            {
+                $("#new5").show();
+                $("#save5").hide();
+                $("#del5").hide();
+            }
+        }
+    });
+
+     // 行按钮
+    $('#sample_5 tbody').on('change', 'input[name="table5_zerodata"]', function () {
+            var table = $('#sample_5').DataTable();
+            var data = table.row($(this).parents('tr')).data();
+            $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())),math.bignumber(Number($('#table5_zerodata_' + data.id).val())))))
+            $('#table5_curvalue_' + data.id).val(Number($('#table5_metervalue_' + data.id).val()) * Number(data.target_magnification))
+            if(data.target_cumulative=='是') {
+                $('#table5_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));   // math.js精度计算
+                $('#table5_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
+                $('#table5_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
+                $('#table5_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))))
+            }
+    });
+    $('#sample_5 tbody').on('change', 'input[name="table5_twentyfourdata"]', function () {
+            var table = $('#sample_5').DataTable();
+            var data = table.row($(this).parents('tr')).data();
+            $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())),math.bignumber(Number($('#table5_zerodata_' + data.id).val())))))
+            $('#table5_curvalue_' + data.id).val(Number($('#table5_metervalue_' + data.id).val()) * Number(data.target_magnification))
+            if(data.target_cumulative=='是') {
+                $('#table5_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
+                $('#table5_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
+                $('#table5_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
+                $('#table5_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))))
+            }
+    });
     $('#reporting_date').change(function () {
         var table1 = $('#sample_1').DataTable();
         table1.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15").load();
@@ -442,6 +580,8 @@ $(document).ready(function () {
         table3.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=17").load();
         var table4 = $('#sample_4').DataTable();
         table4.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=0").load();
+        var table5 = $('#sample_5').DataTable();
+        table5.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1").load();
     })
 
     if($('#cycletype').val()=="10") {
@@ -744,6 +884,97 @@ $(document).ready(function () {
             data:
                 {
                     operationtype:17,
+                    savedata:JSON.stringify(savedata),
+                },
+            success: function (data) {
+                var myres = data["res"];
+                if (myres == "保存成功。") {
+                    table.ajax.reload();
+                }
+                alert(myres);
+            },
+            error: function (e) {
+                alert("页面出现错误，请于管理员联系。");
+            }
+        });
+    })
+
+    $("#new5").click(function () {
+        var table = $('#sample_5').DataTable();
+        $.ajax({
+            type: "POST",
+            url: "../../../reporting_new/",
+            data:
+                {
+                    app: $('#app').val(),
+                    cycletype:$('#cycletype').val(),
+                    reporting_date:$('#reporting_date').val(),
+                    operationtype:1,
+
+                },
+            success: function (data) {
+                if (data == 1) {
+                    table.ajax.reload();
+                    $("#new5").hide();
+                    $("#save5").show();
+                    $("#del5").show();
+                    alert("新增成功！");
+                }
+                else
+                    alert("新增失败，请于管理员联系。");
+            },
+            error: function (e) {
+                alert("新增失败，请于管理员联系。");
+            }
+        });
+    });
+    $("#del5").click(function () {
+        if (confirm("确定要删除表中数据？")) {
+            var table = $('#sample_5').DataTable();
+            $.ajax({
+                type: "POST",
+                url: "../../../reporting_del/",
+                data:
+                    {
+                        app: $('#app').val(),
+                        cycletype:$('#cycletype').val(),
+                        reporting_date:$('#reporting_date').val(),
+                        operationtype:1,
+
+                    },
+                success: function (data) {
+                    if (data == 1) {
+                        table.ajax.reload();
+                        $("#new5").show();
+                        $("#save5").hide();
+                        $("#del5").hide();
+                        alert("删除成功！");
+                    }
+                    else
+                        alert("删除失败，请于管理员联系。");
+                },
+                error: function (e) {
+                    alert("删除失败，请于管理员联系。");
+                }
+            });
+
+        }
+    });
+
+    $('#save5').click(function () {
+        $("Element").blur()
+        var table = $('#sample_5').DataTable().data();
+        var savedata=[]
+    　　$.each(table,function(i,item){
+            savedata.push({"id":item.id,"zerodata":$('#table5_zerodata_' + item.id).val(),"twentyfourdata":$('#table5_twentyfourdata_' + item.id).val(),"metervalue":$('#table5_metervalue_' + item.id).val(),"curvalue":$('#table5_curvalue_' + item.id).val(),"curvaluedate":$('#table5_curvaluedate_' + item.id).val(),"curvaluetext":$('#table5_curvaluetext_' + item.id).val(),"cumulativemonth":$('#table5_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table5_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table5_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table5_cumulativeyear_' + item.id).val()})
+    　　});
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_save/",
+            data:
+                {
+                    operationtype:1,
                     savedata:JSON.stringify(savedata),
                 },
             success: function (data) {

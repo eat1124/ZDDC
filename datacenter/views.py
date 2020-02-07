@@ -2742,18 +2742,23 @@ def reporting_index(request, cycletype, funid):
                 days=-1)).replace(month=1, day=1)
             date = now.strftime("%Y")
 
+        metertag = ""
         entrytag = ""
         extracttag = ""
         calculatetag = ""
 
+        meternew = ""
         entrynew = ""
         extractnew = ""
         calculatenew = ""
 
+        meterreset = ""
         entryreset = ""
         extractreset = ""
         calculatereset = ""
 
+        meter_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+                                                                operationtype='1')
         entry_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
                                                                 operationtype='15')
         extract_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
@@ -2761,18 +2766,26 @@ def reporting_index(request, cycletype, funid):
         calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
                                                                     operationtype='17')
 
+        meter_data = Meterdata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+                                                                 datadate=now)
         entry_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
                                                                  datadate=now)
         extract_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                      target__cycletype=cycletype, datadate=now)
         calculate_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                          target__cycletype=cycletype, datadate=now)
+        if len(meter_target) <= 0 and len(meter_data) <= 0:
+            metertag = "display: none;"
         if len(entry_target) <= 0 and len(entry_data) <= 0:
             entrytag = "display: none;"
         if len(extract_target) <= 0 and len(extract_data) <= 0:
             extracttag = "display: none;"
         if len(calculate_target) <= 0 and len(calculate_data) <= 0:
             calculatetag = "display: none;"
+        if len(meter_data) <= 0:
+            meterreset = "display: none;"
+        else:
+            meternew = "display: none;"
         if len(entry_data) <= 0:
             entryreset = "display: none;"
         else:
@@ -2791,12 +2804,15 @@ def reporting_index(request, cycletype, funid):
                        "cycletype": cycletype,
                        "app": app,
                        "date": date,
+                       "metertag": metertag,
                        "entrytag": entrytag,
                        "extracttag": extracttag,
                        "calculatetag": calculatetag,
+                       "meternew": meternew,
                        "entrynew": entrynew,
                        "extractnew": extractnew,
                        "calculatenew": calculatenew,
+                       "meterreset": meterreset,
                        "entryreset": entryreset,
                        "extractreset": extractreset,
                        "calculatereset": calculatereset,
@@ -2832,6 +2848,16 @@ def reporting_data(request):
             curapp = App.objects.get(id=app)
             all_data = Entrydata.objects.exclude(state="9").filter(target__app=curapp, target__cycletype=cycletype,
                                                                    datadate=reporting_date)
+        zerodata = ""
+        twentyfourdata = ""
+        metervalue = ""
+        if operationtype == "1":
+            all_data = Meterdata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+                                                                   datadate=reporting_date)
+            for data in all_data:
+                zerodata = data.zerodata
+                twentyfourdata = data.twentyfourdata
+                metervalue = data.metervalue
         if operationtype == "15":
             all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
                                                                    datadate=reporting_date)
@@ -2871,6 +2897,9 @@ def reporting_data(request):
                 cumulativeyear = round(data.cumulativeyear, data.target.digit)
             result.append({
                 "id": data.id,
+                "zerodata": zerodata,
+                "twentyfourdata": twentyfourdata,
+                "metervalue": metervalue,
                 "curvalue": round(data.curvalue, data.target.digit),
                 "curvaluedate": data.curvaluedate.strftime('%Y-%m-%d %H:%M:%S') if data.curvaluedate else "",
                 "curvaluetext": data.curvaluetext,
@@ -2887,6 +2916,7 @@ def reporting_data(request):
                 "target_unitname": unitname,
                 "target_datatype": data.target.datatype,
                 "target_cumulative": data.target.cumulative,
+                "target_magnification": data.target.magnification,
                 "target_upperlimit": data.target.upperlimit,
                 "target_lowerlimit": data.target.lowerlimit,
             })
@@ -2918,6 +2948,8 @@ def getcumulative(target, date, value):
             days=-1)).replace(month=1, day=1)
 
     all_data = []
+    if target.operationtype == "1":
+        all_data = Meterdata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
     if target.operationtype == "15":
         all_data = Entrydata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
     if target.operationtype == "16":
@@ -3057,6 +3089,7 @@ def reporting_new(request):
         cycletype = request.POST.get('cycletype', '')
         reporting_date = request.POST.get('reporting_date', '')
         operationtype = request.POST.get('operationtype', '')
+
         try:
             app = int(app)
             if cycletype == "10":
@@ -3076,6 +3109,25 @@ def reporting_new(request):
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
                                                               operationtype=operationtype)
         for target in all_target:
+            if operationtype == "1":
+                all_meterdata = Meterdata.objects.exclude(state="9").filter(target=target, datadate=reporting_date + datetime.timedelta(days=-1))
+                meterdata = Meterdata()
+                if len(all_meterdata) > 0:
+                    meterdata.zerodata = all_meterdata[0].twentyfourdata
+                else:
+                    meterdata.zerodata = 0
+                meterdata.target = target
+                meterdata.datadate = reporting_date
+                meterdata.twentyfourdata = meterdata.zerodata
+                meterdata.metervalue = float(meterdata.twentyfourdata) - float(meterdata.zerodata)
+                meterdata.curvalue = decimal.Decimal(float(meterdata.metervalue) * float(target.magnification))
+                if target.cumulative == "是":
+                    cumulative = getcumulative(target, reporting_date, meterdata.curvalue)
+                    meterdata.cumulativemonth = cumulative["cumulativemonth"]
+                    meterdata.cumulativequarter = cumulative["cumulativequarter"]
+                    meterdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                    meterdata.cumulativeyear = cumulative["cumulativeyear"]
+                meterdata.save()
             if operationtype == "15":
                 entrydata = Entrydata()
                 entrydata.target = target
@@ -3135,6 +3187,9 @@ def reporting_del(request):
             return HttpResponse(0)
 
         all_data = []
+        if operationtype == "1":
+            all_data = Meterdata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+                                                                   datadate=reporting_date)
         if operationtype == "15":
             all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
                                                                    datadate=reporting_date)
@@ -3160,6 +3215,8 @@ def reporting_save(request):
         operationtype = request.POST.get('operationtype')
         savedata = json.loads(savedata)
         for curdata in savedata:
+            if operationtype == "1":
+                savedata = Meterdata.objects.exclude(state="9").get(id=int(curdata["id"]))
             if operationtype == "15":
                 savedata = Entrydata.objects.exclude(state="9").get(id=int(curdata["id"]))
             if operationtype == "16":
@@ -3182,6 +3239,21 @@ def reporting_save(request):
                     savedata.curvaluetext = curdata["curvaluetext"]
                 except:
                     pass
+
+            try:
+                savedata.zerodata = curdata["zerodata"]
+            except:
+                pass
+
+            try:
+                savedata.twentyfourdata = curdata["twentyfourdata"]
+            except:
+                pass
+
+            try:
+                savedata.metervalue = curdata["metervalue"]
+            except:
+                pass
 
             try:
                 savedata.cumulativemonth = float(curdata["cumulativemonth"])
