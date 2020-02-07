@@ -442,10 +442,10 @@ $(document).ready(function () {
             {"data": "target_code"},
             {"data": "target_businesstypename"},
             {"data": "target_unitname"},
-            {"data": "target_magnification"},
             {"data": "zerodata"},
             {"data": "twentyfourdata"},
             {"data": "metervalue"},
+            {"data": "target_magnification"},
             {"data": "curvalue"},
             {"data": "cumulativemonth"},
             {"data": "cumulativequarter"},
@@ -455,59 +455,59 @@ $(document).ready(function () {
 
         "columnDefs": [
             {
+            "targets": -9,
+            "mRender":function(data,type,full){
+                      return "<input style = 'width:90px;height:26px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
+                    }
+            },
+            {
             "targets": -8,
             "mRender":function(data,type,full){
-                      return "<input id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
+                      return "<input style = 'width:90px;height:26px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
                     }
             },
             {
             "targets": -7,
             "mRender":function(data,type,full){
-                      return "<input id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
-                    }
-            },
-            {
-            "targets": -6,
-            "mRender":function(data,type,full){
-                       return "<input id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
+                       return "<input style = 'width:90px;height:26px;' id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
                     }
             },
             {
             "targets": -5,
             "mRender":function(data,type,full){
                         if (full.target_datatype == 'numbervalue'){
-                            return "<input id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
+                            return "<input style = 'width:90px;height:26px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
                         }
                         if (full.target_datatype == 'date'){
-                            return "<input class='table5_curvaluedate' style = 'width:153px;height:26px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                            return "<input class='table5_curvaluedate' style = 'width:90px;height:26px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                         }
                         if (full.target_datatype == 'text'){
-                            return "<input  id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                            return "<input  style = 'width:90px;height:26px;' id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
                         }
                     }
             },
             {
             "targets": -4,
             "mRender":function(data,type,full){
-                        return "<input disabled id='table5_cumulativemonth_" + full.id + "' name='table5_cumulativemonth'  type='text' value='" + data + "'></input>"
+                        return "<input disabled style = 'width:90px;height:26px;' id='table5_cumulativemonth_" + full.id + "' name='table5_cumulativemonth'  type='text' value='" + data + "'></input>"
                     }
             },
             {
             "targets": -3,
             "mRender":function(data,type,full){
-                        return "<input disabled id='table5_cumulativequarter_" + full.id + "' name='table5_cumulativequarter'  type='text' value='" + data + "'></input>"
+                        return "<input disabled style = 'width:90px;height:26px;' id='table5_cumulativequarter_" + full.id + "' name='table5_cumulativequarter'  type='text' value='" + data + "'></input>"
                     }
             },
             {
             "targets": -2,
             "mRender":function(data,type,full){
-                        return "<input disabled id='table5_cumulativehalfyear_" + full.id + "' name='table5_cumulativehalfyear'  type='text' value='" + data + "'></input>"
+                        return "<input disabled style = 'width:90px;height:26px;' id='table5_cumulativehalfyear_" + full.id + "' name='table5_cumulativehalfyear'  type='text' value='" + data + "'></input>"
                     }
             },
             {
             "targets": -1,
             "mRender":function(data,type,full){
-                        return "<input disabled id='table5_cumulativeyear_" + full.id + "' name='table5_cumulativeyear'  type='text' value='" + data + "'></input>"
+                        return "<input disabled  style = 'width:90px;height:26px;'id='table5_cumulativeyear_" + full.id + "' name='table5_cumulativeyear'  type='text' value='" + data + "'></input>"
                     }
             },
         ],
