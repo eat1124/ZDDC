@@ -1350,7 +1350,6 @@ def storage_data(request):
             result.append({
                 "id": storage.id,
                 "name": storage.name,
-                "code": storage.code,
                 "tablename": storage.tablename,
                 "storagetype_num": storage.storagetype,
                 "validtime_num": storage.validtime,
@@ -1366,7 +1365,6 @@ def storage_save(request):
     if request.user.is_authenticated():
         id = request.POST.get("id", "")
         storage_name = request.POST.get("storage_name", "")
-        storage_code = request.POST.get("storage_code", "")
         table_name = request.POST.get("table_name", "")
         storage_type = request.POST.get("storage_type", "")
         valid_time = request.POST.get("valid_time", "")
@@ -1382,57 +1380,53 @@ def storage_save(request):
         if storage_name.strip() == '':
             result["res"] = '存储名称不能为空。'
         else:
-            if storage_code.strip() == '':
-                result["res"] = '存储代码不能为空。'
+
+            if table_name.strip() == '':
+                result["res"] = '数据库表名不能为空。'
             else:
-                if table_name.strip() == '':
-                    result["res"] = '数据库表名不能为空。'
+                if storage_type.strip() == '':
+                    result["res"] = '存储类型不能为空。'
                 else:
-                    if storage_type.strip() == '':
-                        result["res"] = '存储类型不能为空。'
+                    if valid_time.strip() == '':
+                        result["res"] = '有效时间不能为空。'
                     else:
-                        if valid_time.strip() == '':
-                            result["res"] = '有效时间不能为空。'
+                        if id == 0:
+                            all_storage = Storage.objects.filter(
+                                name=storage_name).exclude(state="9")
+                            if (len(all_storage) > 0):
+                                result["res"] = '存储名称:' + \
+                                                storage_name + '已存在。'
+                            else:
+                                storage_save = Storage()
+                                storage_save.name = storage_name
+                                storage_save.tablename = table_name
+                                storage_save.storagetype = storage_type
+                                storage_save.validtime = valid_time
+                                storage_save.sort = sort
+                                storage_save.save()
+                                result["res"] = "保存成功。"
+                                result["data"] = storage_save.id
                         else:
-                            if id == 0:
-                                all_storage = Storage.objects.filter(
-                                    code=storage_code).exclude(state="9")
-                                if (len(all_storage) > 0):
-                                    result["res"] = '存储代码:' + \
-                                                    storage_code + '已存在。'
-                                else:
-                                    storage_save = Storage()
+                            all_storage = Storage.objects.filter(name=storage_name).exclude(
+                                id=id).exclude(state="9")
+                            if (len(all_storage) > 0):
+                                result["res"] = '存储名称:' + \
+                                                storage_name + '已存在。'
+                            else:
+                                try:
+                                    storage_save = Storage.objects.get(
+                                        id=id)
                                     storage_save.name = storage_name
-                                    storage_save.code = storage_code
                                     storage_save.tablename = table_name
                                     storage_save.storagetype = storage_type
                                     storage_save.validtime = valid_time
-                                    storage_save.sort = sort
+                                    storage_save.sort = int(
+                                        sort) if sort else None
                                     storage_save.save()
                                     result["res"] = "保存成功。"
                                     result["data"] = storage_save.id
-                            else:
-                                all_storage = Storage.objects.filter(code=storage_code).exclude(
-                                    id=id).exclude(state="9")
-                                if (len(all_storage) > 0):
-                                    result["res"] = '存储代码:' + \
-                                                    storage_code + '已存在。'
-                                else:
-                                    try:
-                                        storage_save = Storage.objects.get(
-                                            id=id)
-                                        storage_save.name = storage_name
-                                        storage_save.code = storage_code
-                                        storage_save.tablename = table_name
-                                        storage_save.storagetype = storage_type
-                                        storage_save.validtime = valid_time
-                                        storage_save.sort = int(
-                                            sort) if sort else None
-                                        storage_save.save()
-                                        result["res"] = "保存成功。"
-                                        result["data"] = storage_save.id
-                                    except:
-                                        result["res"] = "修改失败。"
+                                except:
+                                    result["res"] = "修改失败。"
     return JsonResponse(result)
 
 
@@ -1471,13 +1465,24 @@ def cycle_data(request):
 
         all_cycle = Cycle.objects.exclude(state="9").order_by("sort")
         for cycle in all_cycle:
+            minutes = cycle.minute
+            hours = cycle.hour
+            per_week = cycle.day_of_week
+            per_month = cycle.day_of_month
+            schedule_type = cycle.schedule_type
+            schedule_type_display = cycle.get_schedule_type_display()
+
             result.append({
                 "id": cycle.id,
                 "name": cycle.name,
-                "code": cycle.code,
-                "minutes": cycle.minutes,
-                "create_date": cycle.creatdate.strftime('%Y-%m-%d %H:%M:%S') if cycle.creatdate else "",
                 "sort": cycle.sort,
+
+                "minutes": minutes,
+                "hours": hours,
+                "per_week": per_week,
+                "per_month": per_month,
+                "schedule_type": schedule_type,
+                "schedule_type_display": schedule_type_display,
             })
 
         return JsonResponse({"data": result})
@@ -1487,10 +1492,14 @@ def cycle_save(request):
     if request.user.is_authenticated():
         id = request.POST.get("id", "")
         cycle_name = request.POST.get("cycle_name", "")
-        cycle_code = request.POST.get("cycle_code", "")
-        minutes = request.POST.get("minutes", "")
-        create_date = request.POST.get("create_date", "")
         sort = request.POST.get("sort", "")
+
+        schedule_type = request.POST.get('schedule_type', '')
+
+        per_time = request.POST.get('per_time', '')
+        per_month = request.POST.get('per_month', '')
+        per_week = request.POST.get('per_week', '')
+        print(request.POST)
         try:
             id = int(id)
         except:
@@ -1500,50 +1509,67 @@ def cycle_save(request):
         if cycle_name.strip() == '':
             result["res"] = '周期名称不能为空。'
         else:
-            if cycle_code.strip() == '':
-                result["res"] = '周期代码不能为空。'
+            # 周期类型
+            try:
+                schedule_type = int(schedule_type)
+            except ValueError as e:
+                return JsonResponse({
+                    "res": "周期类型未选择。"
+                })
             else:
-                if minutes.strip() == '':
-                    result["res"] = '分钟不能为空。'
+                if schedule_type == 2:
+                    if not per_week:
+                        return JsonResponse({
+                            "res": "周几未选择。"
+                        })
+
+                if schedule_type == 3:
+                    if not per_month:
+                        return JsonResponse({
+                            "res": "每月第几天未选择。"
+                        })
+
+            hour, minute = per_time.split(':')
+            if id == 0:
+                all_cycle = Cycle.objects.filter(
+                    name=cycle_name).exclude(state="9")
+                if (len(all_cycle) > 0):
+                    result["res"] = '存储代码:' + cycle_name + '已存在。'
                 else:
-                    if create_date.strip() == '':
-                        result["res"] = '开始时间不能为空。'
-                    else:
-                        if id == 0:
-                            all_cycle = Cycle.objects.filter(
-                                code=cycle_code).exclude(state="9")
-                            if (len(all_cycle) > 0):
-                                result["res"] = '存储代码:' + cycle_code + '已存在。'
-                            else:
-                                cycle_save = Cycle()
-                                cycle_save.name = cycle_name
-                                cycle_save.code = cycle_code
-                                cycle_save.minutes = minutes
-                                cycle_save.creatdate = create_date
-                                cycle_save.sort = int(sort) if sort else None
-                                cycle_save.save()
-                                result["res"] = "保存成功。"
-                                result["data"] = cycle_save.id
-                        else:
-                            all_cycle = Cycle.objects.filter(code=cycle_code).exclude(
-                                id=id).exclude(state="9")
-                            if (len(all_cycle) > 0):
-                                result["res"] = '存储代码:' + cycle_code + '已存在。'
-                            else:
-                                try:
-                                    cycle_save = Cycle.objects.get(id=id)
-                                    cycle_save.name = cycle_name
-                                    cycle_save.code = cycle_code
-                                    cycle_save.minutes = minutes
-                                    cycle_save.creatdate = create_date
-                                    cycle_save.sort = int(
-                                        sort) if sort else None
-                                    cycle_save.save()
-                                    result["res"] = "保存成功。"
-                                    result["data"] = cycle_save.id
-                                except Exception as e:
-                                    print(e)
-                                    result["res"] = "修改失败。"
+                    cycle_save = Cycle()
+                    cycle_save.name = cycle_name
+                    cycle_save.hour = hour
+                    cycle_save.minute = minute
+                    cycle_save.day_of_week = per_week
+                    cycle_save.day_of_month = per_month
+                    cycle_save.schedule_type = schedule_type
+                    cycle_save.sort = int(sort) if sort else None
+                    cycle_save.save()
+                    result["res"] = "保存成功。"
+                    result["data"] = cycle_save.id
+            else:
+                all_cycle = Cycle.objects.filter(name=cycle_name).exclude(
+                    id=id).exclude(state="9")
+                if (len(all_cycle) > 0):
+                    result["res"] = '存储名称:' + cycle_name + '已存在。'
+                else:
+                    try:
+                        # 保存定时任务
+                        cycle_save = Cycle.objects.get(id=id)
+                        cycle_save.name = cycle_name
+                        cycle_save.hour = hour
+                        cycle_save.minute = minute
+                        cycle_save.day_of_week = per_week
+                        cycle_save.day_of_month = per_month
+                        cycle_save.schedule_type = schedule_type
+                        cycle_save.sort = int(
+                            sort) if sort else None
+                        cycle_save.save()
+                        result["res"] = "保存成功。"
+                        result["data"] = cycle_save.id
+                    except Exception as e:
+                        print(e)
+                        result["res"] = "修改失败。"
         return JsonResponse(result)
 
 
@@ -1883,6 +1909,16 @@ def move_source(request):
 def target_index(request, funid):
     """
     指标管理
+        过滤条件：
+            管理应用
+            查询应用
+
+            操作类型
+            周期类型
+            业务类型
+            机组 unit
+
+            DictIndex 字典名称 >> DictList 字典条目
     """
     if request.user.is_authenticated():
         app_list = []
@@ -1950,7 +1986,6 @@ def target_index(request, funid):
                 "source_name": i.name,
                 "source_id": i.id,
             })
-        print(len(sourcelist))
 
         cyclelist = Cycle.objects.all().exclude(state='9')
         for i in cyclelist:
@@ -1960,12 +1995,22 @@ def target_index(request, funid):
             })
 
         storagelist = Storage.objects.all().exclude(state='9')
+
+        all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
+
         for i in storagelist:
+            storage_type = i.storagetype
+            storage_type_display = ""
+            for dict in all_dict_list:
+                if storage_type == str(dict['id']):
+                    storage_type_display = dict['name']
+                    break
+
             storage_list.append({
                 "storage_name": i.name,
                 "storage_id": i.id,
+                'storage_type': storage_type_display
             })
-
         return render(request, 'target.html',
                       {'username': request.user.userinfo.fullname,
                        "app_list": app_list,
@@ -2021,6 +2066,20 @@ def target_data(request):
         if datatype != "":
             all_target = all_target.filter(datatype=datatype)
 
+        storagelist = Storage.objects.all().exclude(state='9')
+
+        all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
+
+        # for i in storagelist:
+        #     storage_type = i.storagetype
+        #     storage_type_display = ""
+        #     for dict in all_dict_list:
+        #         if storage_type == str(dict['id']):
+        #             storage_type_display = dict['name']
+        #             break
+
+
+
         for target in all_target:
             operationtype = target.operationtype
             try:
@@ -2058,6 +2117,7 @@ def target_data(request):
             except:
                 pass
 
+            # 查询应用
             applist = []
             for my_app in target.app.all():
                 applist.append(my_app.id)
@@ -2067,6 +2127,18 @@ def target_data(request):
                 adminapp_name = target.adminapp.name
             except:
                 pass
+
+            # ...
+            storage_type_display = ""
+            storage = target.storage
+            if storage:
+                storage_type = storage.storagetype
+                if storage_type:
+                    for dict in all_dict_list:
+                        if storage_type == str(dict['id']):
+                            storage_type_display = dict['name']
+                            break
+
             result.append({
                 "operationtype_name": operationtype,
                 "cycletype_name": cycletype,
@@ -2091,11 +2163,16 @@ def target_data(request):
                 "formula": target.formula,
                 "cycle": target.cycle_id,
                 "source": target.source_id,
-                "sourcetable": target.sourcetable,
-                "sourcefields": target.sourcefields,
-                "sourceconditions": target.sourceconditions,
-                "sourcesis": target.sourcesis,
+                # "sourcetable": target.sourcetable,
+                # "sourcefields": target.sourcefields,
+                # "sourceconditions": target.sourceconditions,
+                # "sourcesis": target.sourcesis,
+                "source_content": target.source_content,
                 "storage": target.storage_id,
+
+                # 行、列判断是否展示存储标识
+                "storage_type": storage_type_display,
+
                 "storagefields": target.storagefields,
                 "storagetag": target.storagetag,
                 "sort": target.sort,
@@ -2140,10 +2217,12 @@ def target_save(request):
 
         cycle = request.POST.get("cycle", "")
         source = request.POST.get("source", "")
-        sourcetable = request.POST.get("sourcetable", "")
-        sourcesis = request.POST.get("sourcesis", "")
-        sourcefields = request.POST.get("sourcefields", "")
-        sourceconditions = request.POST.get("sourceconditions", "")
+        # sourcetable = request.POST.get("sourcetable", "")
+        # sourcesis = request.POST.get("sourcesis", "")
+        # sourcefields = request.POST.get("sourcefields", "")
+        # sourceconditions = request.POST.get("sourceconditions", "")
+        source_content = request.POST.get("source_content", "")
+
         storage = request.POST.get("storage", "")
         storagetag = request.POST.get("storagetag", "")
         storagefields = request.POST.get("storagefields", "")
@@ -2259,7 +2338,7 @@ def target_save(request):
                                                     pass
                                                 if operationtype == '17':
                                                     target_save.formula = formula
-                                                if operationtype == '16':
+                                                if operationtype in ['1', '16']:
                                                     try:
                                                         cycle_id = int(cycle)
                                                         my_cycle = all_cycle.get(id=cycle_id)
@@ -2272,10 +2351,11 @@ def target_save(request):
                                                         target_save.source = my_source
                                                     except:
                                                         pass
-                                                    target_save.sourcetable = sourcetable
-                                                    target_save.sourcesis = sourcesis
-                                                    target_save.sourcefields = sourcefields
-                                                    target_save.sourceconditions = sourceconditions
+                                                    # target_save.sourcetable = sourcetable
+                                                    # target_save.sourcesis = sourcesis
+                                                    # target_save.sourcefields = sourcefields
+                                                    # target_save.sourceconditions = sourceconditions
+                                                    target_save.source_content = source_content
                                                     try:
                                                         storage_id = int(storage)
                                                         my_storage = all_storage.get(id=storage_id)
@@ -2373,7 +2453,7 @@ def target_save(request):
                                                         pass
                                                     if operationtype == '17':
                                                         target_save.formula = formula
-                                                    if operationtype == '16':
+                                                    if operationtype in ['1', '16']:
                                                         try:
                                                             cycle_id = int(cycle)
                                                             my_cycle = all_cycle.get(id=cycle_id)
@@ -2386,10 +2466,11 @@ def target_save(request):
                                                             target_save.source = my_source
                                                         except:
                                                             pass
-                                                        target_save.sourcetable = sourcetable
-                                                        target_save.sourcesis = sourcesis
-                                                        target_save.sourcefields = sourcefields
-                                                        target_save.sourceconditions = sourceconditions
+                                                        # target_save.sourcetable = sourcetable
+                                                        # target_save.sourcesis = sourcesis
+                                                        # target_save.sourcefields = sourcefields
+                                                        # target_save.sourceconditions = sourceconditions
+                                                        target_save.source_content = source_content
                                                         try:
                                                             storage_id = int(storage)
                                                             my_storage = all_storage.get(id=storage_id)
@@ -3020,7 +3101,13 @@ def getextractdata(target, date):
     con = target.source.connection
     con = json.loads(con)
     db = pymysql.connect(con[0]["host"], con[0]["user"], con[0]["passwd"], con[0]["db"])
+    # SQL Server
+    # db = pymssql.connect(con[0]["host"], con[0]["user"], con[0]["passwd"], con[0]["db"])
     cursor = db.cursor()
+
+    # strsql = """
+    # SELECT {sourcefields} FROM dbo.{sourcetable} WHERE {sourceconditions}
+    # """.format(sourcefields=target.sourcefields, sourcetable=target.sourcetable, sourceconditions=target.sourceconditions)
     strsql = "select " + target.sourcefields + " from " + target.sourcetable + " where " + target.sourceconditions
     cursor.execute(strsql)
     data = cursor.fetchall()

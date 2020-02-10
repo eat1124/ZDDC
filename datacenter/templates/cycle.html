@@ -29,9 +29,8 @@
         <tr>
             <th style="width:40px;"> 序号</th>
             <th> 周期名称</th>
-            <th> 周期代码</th>
-            <th> 分钟</th>
-            <th> 开始时间</th>
+            <th> 周期类型</th>
+            <th> 时间</th>
             <th> 排序</th>
             <th style="width:50px;"> 操作</th>
         </tr>
@@ -65,33 +64,51 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>周期代码</label>
+                                <label class="col-md-2 control-label"><span style="color:red; ">*</span>周期类型</label>
                                 <div class="col-md-10">
-                                    <input id="cycle_code" type="text" name="cycle_code" class="form-control "
-                                           placeholder="">
-                                    <div class="form-control-focus"></div>
-
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>分钟</label>
-                                <div class="col-md-10">
-                                    <input id="minutes" type="number" name="minutes" class="form-control "
-                                           placeholder="">
+                                    <select name="schedule_type" id="schedule_type" class="form-control select2">
+                                        <option value="1">每日</option>
+                                        <option value="2">每周</option>
+                                        <option value="3">每月</option>
+                                    </select>
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>
-
-                            <div class="form-group">
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>开始时间</label>
+                            <div class="form-group" id="per_week_div" hidden>
+                                <label class="col-md-2 control-label"><span style="color:red; ">*</span>周几</label>
                                 <div class="col-md-10">
-                                    <input id="create_date" autocomplete="off" type="datetime" name="create_date"
+                                    <select name="per_week" id="per_week" class="form-control select2">
+                                        <option value="1">周一</option>
+                                        <option value="2">周二</option>
+                                        <option value="3">周三</option>
+                                        <option value="4">周四</option>
+                                        <option value="5">周五</option>
+                                        <option value="6">周六</option>
+                                        <option value="7">周日</option>
+                                    </select>
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                            <div class="form-group" id="per_month_div" hidden>
+                                <label class="col-md-2 control-label"><span style="color:red; ">*</span>第几天</label>
+                                <div class="col-md-10">
+                                    <input type="number" id="per_month" name="per_month"
                                            class="form-control">
                                     <div class="form-control-focus"></div>
+                                </div>
+                            </div>
 
+                            <div class="form-group">
+                                <label class="col-md-2 control-label"><span style="color:red; ">*</span>时间</label>
+                                <div class="col-md-10">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="per_time" name="per_time">
+                                        <span class="input-group-btn">
+                                                <button class="btn default" type="button">
+                                                    <i class="fa fa-clock-o"></i>
+                                                </button>
+                                            </span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -140,6 +157,12 @@
     <script src="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js"
             type="text/javascript"></script>
     <script src="/static/assets/global/plugins/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"
+            type="text/javascript"></script>
+
+    <!-- timepicker -->
+    <link rel="stylesheet" href="/static/assets/global/plugins/bootstrap-timepicker/css/bootstrap-timepicker.css">
+    <link rel="stylesheet" href="/static/assets/global/css/plugins.min.css">
+    <script src="/static/assets/global/plugins/bootstrap-timepicker/js/bootstrap-timepicker.min.js"
             type="text/javascript"></script>
 {% endblock %}
 

@@ -79,8 +79,7 @@ $(document).ready(function () {
                     if (data == 1) {
                         table.ajax.reload();
                         alert("删除成功！");
-                    }
-                    else
+                    } else
                         alert("删除失败，请于管理员联系。");
                 },
                 error: function (e) {
@@ -112,26 +111,26 @@ $(document).ready(function () {
         for (var i = 0; i < formula_data_list.length; i++) {
             var formula_data_pre = formula_data_list[i].split(':');
             var formula_data_pre_list = formula_data_pre;
-            if (formula_data_pre[0] in formula_analysis_data){
+            if (formula_data_pre[0] in formula_analysis_data) {
                 formula_data_pre1 = formula_analysis_data[formula_data_pre[0]];
                 formula_data_pre_list[0] = formula_data_pre1
-            } else{
+            } else {
                 formula_data_pre1 = formula_data_pre[0]
             }
-            if (formula_data_pre[1]){
-                if (formula_data_pre[1] in data_field){
+            if (formula_data_pre[1]) {
+                if (formula_data_pre[1] in data_field) {
                     formula_data_pre2 = data_field[formula_data_pre[1]];
                     formula_data_pre_list[1] = formula_data_pre2
-                }else{
-                     formula_data_pre2 = formula_data_pre[1]
+                } else {
+                    formula_data_pre2 = formula_data_pre[1]
                 }
             }
-            if (formula_data_pre[2]){
-                if (formula_data_pre[2] in data_time){
-                     formula_data_pre3 = data_time[formula_data_pre[2]];
-                     formula_data_pre_list[2] = formula_data_pre3
-                }else{
-                     formula_data_pre3 = formula_data_pre[2];
+            if (formula_data_pre[2]) {
+                if (formula_data_pre[2] in data_time) {
+                    formula_data_pre3 = data_time[formula_data_pre[2]];
+                    formula_data_pre_list[2] = formula_data_pre3
+                } else {
+                    formula_data_pre3 = formula_data_pre[2];
                 }
             }
             formula_data_pre_list = formula_data_pre_list.join(':');
@@ -143,10 +142,9 @@ $(document).ready(function () {
             }
         }
 
-        if (pre_data != ""){
-             $("#formula_analysis").val(pre_data);
-        }
-        else {
+        if (pre_data != "") {
+            $("#formula_analysis").val(pre_data);
+        } else {
             $("#formula_analysis").val(formula_data);
         }
 
@@ -188,13 +186,20 @@ $(document).ready(function () {
         $("#formula").val(data.formula);
         $("#cycle").val(data.cycle);
         $("#source").val(data.source);
-        $("#sourcetable").val(data.sourcetable);
-        $("#sourcesis").val(data.sourcesis);
-        $("#sourcefields").val(data.sourcefields);
-        $("#sourceconditions").val(data.sourceconditions);
+        // $("#sourcetable").val(data.sourcetable);
+        // $("#sourcesis").val(data.sourcesis);
+        // $("#sourcefields").val(data.sourcefields);
+        // $("#sourceconditions").val(data.sourceconditions);
+        $("#source_content").val(data.source_content);
+
         $("#storage").val(data.storage);
         $("#storagetag").val(data.storagetag);
         $("#storagefields").val(data.storagefields);
+        if (data.storage_type == '列'){
+            $('#storagetag').parent().parent().show();
+        } else {
+            $('#storagetag').parent().parent().hide();
+        }
 
         $('#calculate').hide();
         $('#calculate_analysis').hide();
@@ -205,13 +210,16 @@ $(document).ready(function () {
         $('#magnification_digit').show();
         $('#upperlimit_lowerlimit').show();
 
-        if ($('#operationtype option:selected').text() == '计算') {
+        // 操作类型：提取/电表走字 显示数据源配置
+        var selected_operation_type = $('#operationtype option:selected').text();
+        if (selected_operation_type == '计算') {
             $('#calculate').show();
             $('#calculate_analysis').show();
         }
-        if ($('#operationtype option:selected').text() == '提取') {
+        if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
             $('#extract').show();
         }
+
 
         if ($('#datatype option:selected').text() == '日期' || $('#datatype option:selected').text() == '文本') {
             $('#is_cumulative').hide();
@@ -219,7 +227,7 @@ $(document).ready(function () {
             $('#magnification_digit').hide();
             $('#upperlimit_lowerlimit').hide();
         }
-        if ($('#datatype option:selected').text() == '数值'){
+        if ($('#datatype option:selected').text() == '数值') {
             $('#is_cumulative').show();
             $('#cumulative').show();
             $('#magnification_digit').show();
@@ -228,14 +236,16 @@ $(document).ready(function () {
 
         ajaxFunction();
         analysisFunction();
-        $("#formula").bind('input propertychange',function () {
+        $("#formula").bind('input propertychange', function () {
             analysisFunction();
         });
 
-        if ($('#datatype').val() == 'numbervalue' || $('#datatype').val() == 'date' || $('#datatype').val() == 'text'){
+        if ($('#datatype').val() == 'numbervalue' || $('#datatype').val() == 'date' || $('#datatype').val() == 'text') {
             var table = $('#sample_3').DataTable();
             table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
         }
+
+        // 判断是否展示存储标识
 
     });
 
@@ -250,14 +260,16 @@ $(document).ready(function () {
         $('#calculate').hide();
         $('#calculate_analysis').hide();
         $('#extract').hide();
-        if ($('#operationtype option:selected').text() == '计算') {
+
+        var selected_operation_type = $('#operationtype option:selected').text();
+        if (selected_operation_type == '计算') {
             $('#calculate').show();
             $('#calculate_analysis').show();
         }
-        if ($('#operationtype option:selected').text() == '提取') {
+        if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
             $('#extract').show();
         }
-    })
+    });
 
     $('#datatype').change(function () {
         if ($('#datatype option:selected').text() == '日期' || $('#datatype option:selected').text() == '文本') {
@@ -266,7 +278,7 @@ $(document).ready(function () {
             $('#magnification_digit').hide();
             $('#upperlimit_lowerlimit').hide();
         }
-        if ($('#datatype option:selected').text() == '数值'){
+        if ($('#datatype option:selected').text() == '数值') {
             $('#is_cumulative').show();
             $('#cumulative').show();
             $('#magnification_digit').show();
@@ -300,21 +312,23 @@ $(document).ready(function () {
         $("#formula").val("");
         $("#cycle").val("");
         $("#source").val("");
-        $("#sourcetable").val("");
-        $("#sourcesis").val("");
-        $("#sourcefields").val("");
-        $("#sourceconditions").val("");
+        // $("#sourcetable").val("");
+        // $("#sourcesis").val("");
+        // $("#sourcefields").val("");
+        // $("#sourceconditions").val("");
+        $("#source_content").val("");
+
         $("#storage").val("");
         $("#storagetag").val("");
         $("#storagefields").val("");
 
         ajaxFunction();
         analysisFunction();
-        $("#formula").bind('input propertychange',function () {
+        $("#formula").bind('input propertychange', function () {
             analysisFunction();
         });
 
-        if ($('#datatype').val() == 'numbervalue'){
+        if ($('#datatype').val() == 'numbervalue') {
             var table = $('#sample_3').DataTable();
             table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
         }
@@ -343,7 +357,7 @@ $(document).ready(function () {
                     lowerlimit: $("#lowerlimit").val(),
                     adminapp: $("#adminapp").val(),
                     app: $("#app").val(),
-                    datatype:$("#datatype").val(),
+                    datatype: $("#datatype").val(),
                     cumulative: $("#cumulative").val(),
                     sort: $("#sort").val(),
 
@@ -351,10 +365,11 @@ $(document).ready(function () {
 
                     cycle: $("#cycle").val(),
                     source: $("#source").val(),
-                    sourcetable: $("#sourcetable").val(),
-                    sourcesis: $("#sourcesis").val(),
-                    sourcefields: $("#sourcefields").val(),
-                    sourceconditions: $("#sourceconditions").val(),
+                    // sourcetable: $("#sourcetable").val(),
+                    // sourcesis: $("#sourcesis").val(),
+                    // sourcefields: $("#sourcefields").val(),
+                    // sourceconditions: $("#sourceconditions").val(),
+                    source_content: $("#source_content").val(),
                     storage: $("#storage").val(),
                     storagetag: $("#storagetag").val(),
                     storagefields: $("#storagefields").val(),
@@ -443,7 +458,7 @@ $(document).ready(function () {
                 if (full.cumulative == "是" && full.cycletype_name == "年") {
                     return "<select style='width:100px'><option value='d'>当前值</option></select>";
                 }
-                if (full.cumulative == null || full.cumulative == ''){
+                if (full.cumulative == null || full.cumulative == '') {
                     return ""
                 }
             },
@@ -451,8 +466,8 @@ $(document).ready(function () {
             "targets": -2,
             "data": null,
             "defaultContent": "<select style='width:100px'><option value='D'>当天</option><option value='L'>前一天</option><option value='MS'>月初</option><option value='ME'>月末</option><option value='LMS'>上月初</option><option value='LME'>上月末</option>" +
-            "<option value='SS'>季初</option><option value='SE'>季末</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='HE'>半年末</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-            "<option value='YS'>年初</option><option value='YE'>年末</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                "<option value='SS'>季初</option><option value='SE'>季末</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='HE'>半年末</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
+                "<option value='YS'>年初</option><option value='YE'>年末</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
         },
             {
                 "targets": -1,
@@ -499,7 +514,15 @@ $(document).ready(function () {
         $('#myModal').modal('hide');
     });
 
-
+    $('#storage').change(function () {
+        var storage_id = $(this).val();
+        var storage_type = $('#storage_' + storage_id).val();
+        if (storage_type == '列'){
+            $('#storagetag').parent().parent().show();
+        } else {
+            $('#storagetag').parent().parent().hide();
+        }
+    });
 });
 
 

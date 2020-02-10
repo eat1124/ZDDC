@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 class App(models.Model):
     name = models.CharField("应用名称", max_length=100)
     code = models.CharField("应用编号", blank=True, max_length=50)
-    remark = models.CharField("说明", blank=True, null=True, max_length=2000)
+    remark = models.TextField("说明", blank=True, null=True)
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, max_length=20)
 
@@ -19,7 +19,7 @@ class Fun(models.Model):
     app = models.ForeignKey(App, blank=True, null=True)
     sort = models.IntegerField("排序", blank=True, null=True)
     funtype = models.CharField("类型", blank=True, null=True, max_length=20)
-    url = models.CharField("地址", blank=True, null=True, max_length=500)
+    url = models.CharField("地址", blank=True, null=True, max_length=256)
     icon = models.CharField("图标", blank=True, null=True, max_length=100)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
@@ -27,7 +27,7 @@ class Fun(models.Model):
 class Group(models.Model):
     name = models.CharField("组名", blank=True, null=True, max_length=50)
     fun = models.ManyToManyField(Fun)
-    remark = models.CharField("说明", blank=True, null=True, max_length=2000)
+    remark = models.TextField("说明", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
     sort = models.IntegerField("排序", blank=True, null=True)
 
@@ -42,7 +42,7 @@ class UserInfo(models.Model):
     usertype = models.CharField("类型", blank=True, null=True, max_length=20)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
     sort = models.IntegerField("排序", blank=True, null=True)
-    remark = models.CharField("说明", blank=True, null=True, max_length=2000)
+    remark = models.TextField("说明", blank=True, null=True)
     company = models.CharField("公司", blank=True, null=True, max_length=100)
     tell = models.CharField("电话", blank=True, null=True, max_length=50)
     forgetpassword = models.CharField("修改密码地址", blank=True, null=True, max_length=50)
@@ -50,7 +50,7 @@ class UserInfo(models.Model):
 
 class DictIndex(models.Model):
     name = models.CharField("字典名称", max_length=100)
-    remark = models.CharField("说明", blank=True, null=True, max_length=2000)
+    remark = models.TextField("说明", blank=True, null=True)
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, max_length=20)
 
@@ -58,7 +58,7 @@ class DictIndex(models.Model):
 class DictList(models.Model):
     dictindex = models.ForeignKey(DictIndex)
     name = models.CharField("条目名称", max_length=100)
-    remark = models.CharField("说明", blank=True, null=True, max_length=2000)
+    remark = models.TextField("说明", blank=True, null=True)
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, max_length=20)
 
@@ -68,7 +68,7 @@ class Source(models.Model):
     name = models.CharField("数据源名称", max_length=100)
     code = models.CharField("数据源代码", blank=True, max_length=50)
     sourcetype = models.CharField("类型", blank=True, null=True, max_length=20)
-    connection = models.CharField("连接串", blank=True, null=True, max_length=500)
+    connection = models.TextField("连接串", blank=True, null=True)
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
     create_time = models.DateTimeField("启动时间", blank=True, null=True)
@@ -79,16 +79,22 @@ class Source(models.Model):
 
 class Cycle(models.Model):
     name = models.CharField("周期名称", max_length=100)
-    code = models.CharField("周期代码", blank=True, max_length=50)
-    minutes = models.IntegerField("分钟", blank=True, null=True)
-    creatdate = models.DateTimeField("开始时间", blank=True, null=True)
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
+    minute = models.CharField('分钟', max_length=64, default='', blank=True)
+    hour = models.CharField('小时', max_length=64, default='', blank=True)
+    day_of_week = models.CharField('周中日', max_length=64, default='', blank=True)
+    day_of_month = models.CharField('月中日', max_length=64, default='', blank=True)
+    schedule_type_choices = (
+        (1, "每日"),
+        (2, "每周"),
+        (3, "每月"),
+    )
+    schedule_type = models.IntegerField(choices=schedule_type_choices, default=1, null=True)
 
 
 class Storage(models.Model):
     name = models.CharField("存储名称", max_length=100)
-    code = models.CharField("存储代码", blank=True, max_length=50)
     tablename = models.CharField("表名", blank=True, max_length=200)
     storagetype = models.CharField("存储类型", blank=True, null=True, max_length=20)
     validtime = models.CharField("数据有效时间", blank=True, null=True, max_length=20)
@@ -111,20 +117,24 @@ class Target(models.Model):
     cumulative = models.CharField("是否累计", blank=True, null=True, max_length=20)
     upperlimit = models.DecimalField("上限", null=True, max_digits=20, decimal_places=5)
     lowerlimit = models.DecimalField("下限", null=True, max_digits=20, decimal_places=5)
-    formula = models.CharField("公式", blank=True, null=True, max_length=2000)
+    formula = models.TextField("公式", blank=True, null=True)
     calculateguid = models.CharField("计算GUID", null=True, max_length=50)
     cycle = models.ForeignKey(Cycle, null=True)
     source = models.ForeignKey(Source, null=True)
-    sourcetable = models.CharField("数据源表", blank=True, null=True, max_length=2000)
-    sourcefields = models.CharField("数据源字段", blank=True, null=True, max_length=2000)
-    sourceconditions = models.CharField("数据源条件", blank=True, null=True, max_length=2000)
-    sourcesis = models.CharField("数据源sis点", blank=True, null=True, max_length=2000)
+
+    # sourcetable = models.CharField("数据源表", blank=True, null=True, max_length=2000)
+    # sourcefields = models.CharField("数据源字段", blank=True, null=True, max_length=2000)
+    # sourceconditions = models.CharField("数据源条件", blank=True, null=True, max_length=2000)
+    # sourcesis = models.CharField("数据源sis点", blank=True, null=True, max_length=2000)
+
+    source_content = models.TextField('数据源内容', blank=True, null=True)
+
     storage = models.ForeignKey(Storage, null=True)
-    storagefields = models.CharField("存储字段", blank=True, null=True, max_length=2000)
+    storagefields = models.TextField("存储字段", blank=True, null=True)
     storagetag = models.CharField("存储标识", blank=True, null=True, max_length=200)
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
-    remark = models.CharField("说明", blank=True, null=True, max_length=2000)
+    remark = models.TextField("说明", blank=True, null=True)
 
 
 class ReportModel(models.Model):
@@ -232,7 +242,7 @@ class Calculatedata(models.Model):
     cumulativequarter = models.DecimalField("季累计值", null=True, max_digits=20, decimal_places=5)
     cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
     cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
-    formula = models.CharField("公式", blank=True, null=True, max_length=2000)
+    formula = models.TextField("公式", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
 

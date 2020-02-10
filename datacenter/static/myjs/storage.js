@@ -7,7 +7,6 @@ $(document).ready(function () {
         "columns": [
             {"data": "id"},
             {"data": "name"},
-            {"data": "code"},
             {"data": "tablename"},
             {"data": "storagetype"},
             {"data": "validtime"},
@@ -69,7 +68,6 @@ $(document).ready(function () {
         var data = table.row($(this).parents('tr')).data();
         $("#id").val(data.id);
         $("#storage_name").val(data.name);
-        $("#storage_code").val(data.code);
         $("#table_name").val(data.tablename);
         $("#storage_type").val(data.storagetype_num);
         $("#valid_time").val(data.validtime_num);
@@ -79,7 +77,6 @@ $(document).ready(function () {
     $("#new").click(function () {
         $("#id").val("0");
         $("#storage_name").val("");
-        $("#storage_code").val("");
         $("#table_name").val("");
         $("#storage_type").val("");
         $("#valid_time").val("");
@@ -97,7 +94,6 @@ $(document).ready(function () {
                 {
                     id: $("#id").val(),
                     storage_name: $("#storage_name").val(),
-                    storage_code: $("#storage_code").val(),
                     table_name: $("#table_name").val(),
                     storage_type: $("#storage_type").val(),
                     valid_time: $("#valid_time").val(),
