@@ -58,8 +58,7 @@ $(document).ready(function () {
                         table.ajax.reload();
                         table2.ajax.reload();
                         alert("删除成功！");
-                    }
-                    else
+                    } else
                         alert("删除失败，请于管理员联系。");
                 },
                 error: function (e) {
@@ -91,27 +90,41 @@ $(document).ready(function () {
 
         $("#cycle").val(data.cycle);
         $("#source").val(data.source);
-        $("#sourcetable").val(data.sourcetable);
-        $("#sourcesis").val(data.sourcesis);
-        $("#sourcefields").val(data.sourcefields);
-        $("#sourceconditions").val(data.sourceconditions);
+        // $("#sourcetable").val(data.sourcetable);
+        // $("#sourcesis").val(data.sourcesis)
+        // $("#sourcefields").val(data.sourcefields);
+        // $("#sourceconditions").val(data.sourceconditions);
+        $('#source_content').val(data.source_content);
+
         $("#storage").val(data.storage);
         $("#storagetag").val(data.storagetag);
         $("#storagefields").val(data.storagefields);
 
+        // 判断是否展示存储标识
+        if (data.storage_type == '列') {
+            $('#storagetag').parent().parent().show();
+        } else {
+            $('#storagetag').parent().parent().hide();
+        }
+
         $('#calculate').hide();
         $('#extract').hide();
-        if($('#operationtype option:selected').text()=='计算'){
+
+
+        // 操作类型：提取/电表走字 显示数据源配置
+        var selected_operation_type = $('#operationtype option:selected').text();
+        if (selected_operation_type == '计算') {
             $('#calculate').show();
+            $('#calculate_analysis').show();
         }
-        if($('#operationtype option:selected').text()=='提取'){
+        if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
             $('#extract').show();
         }
     });
 
     $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit').change(function () {
         var table = $('#sample_1').DataTable();
-        table.ajax.url("../../target_data?search_app=" + $('#adminapp').val()  + "&search_operationtype=" + $('#search_operationtype').val() + "&search_cycletype=" + $('#search_cycletype').val() + "&search_businesstype=" + $('#search_businesstype').val() + "&search_unit=" + $('#search_unit').val()).load();
+        table.ajax.url("../../target_data?search_app=" + $('#adminapp').val() + "&search_operationtype=" + $('#search_operationtype').val() + "&search_cycletype=" + $('#search_cycletype').val() + "&search_businesstype=" + $('#search_businesstype').val() + "&search_unit=" + $('#search_unit').val()).load();
     })
 
     $('#error').click(function () {
@@ -136,9 +149,9 @@ $(document).ready(function () {
 
         "columnDefs": [{
             "targets": 0,
-            "mRender":function(data,type,full){
-                        return "<input name='selecttarget' type='checkbox' class='checkboxes' value='" + data + "'/>"
-                    }
+            "mRender": function (data, type, full) {
+                return "<input name='selecttarget' type='checkbox' class='checkboxes' value='" + data + "'/>"
+            }
 
 
         }],
@@ -161,41 +174,40 @@ $(document).ready(function () {
 
     $('#search_operationtype1,#search_cycletype1,#search_businesstype1,#search_unit1').change(function () {
         var table = $('#sample_2').DataTable();
-        table.ajax.url("../../target_data?search_app_noselect=" + $('#adminapp').val()  + "&search_operationtype=" + $('#search_operationtype1').val() + "&search_cycletype=" + $('#search_cycletype1').val() + "&search_businesstype=" + $('#search_businesstype1').val() + "&search_unit=" + $('#search_unit1').val()).load();
+        table.ajax.url("../../target_data?search_app_noselect=" + $('#adminapp').val() + "&search_operationtype=" + $('#search_operationtype1').val() + "&search_cycletype=" + $('#search_cycletype1').val() + "&search_businesstype=" + $('#search_businesstype1').val() + "&search_unit=" + $('#search_unit1').val()).load();
     })
 
     $('#addapp_save').click(function () {
-         var table1 = $('#sample_1').DataTable();
-         var table2 = $('#sample_2').DataTable();
+        var table1 = $('#sample_1').DataTable();
+        var table2 = $('#sample_2').DataTable();
         var theArray = []
-        $("input[name=selecttarget]:checked").each(function() {
+        $("input[name=selecttarget]:checked").each(function () {
             theArray.push($(this).val());
         });
-        if(theArray.length<1){
-           alert("请至少选择一个指标");
-        }
-       else {
+        if (theArray.length < 1) {
+            alert("请至少选择一个指标");
+        } else {
             $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../target_importapp/",
-            data:
-                {
-                    adminapp: $("#adminapp").val(),
-                    selectedtarget:theArray,
+                type: "POST",
+                dataType: 'json',
+                url: "../../target_importapp/",
+                data:
+                    {
+                        adminapp: $("#adminapp").val(),
+                        selectedtarget: theArray,
+                    },
+                success: function (data) {
+                    var myres = data["res"];
+                    if (myres == "导入完成。") {
+                        table1.ajax.reload();
+                        table2.ajax.reload();
+                    }
+                    alert(myres);
                 },
-            success: function (data) {
-                var myres = data["res"];
-                if (myres == "导入完成。") {
-                    table1.ajax.reload();
-                    table2.ajax.reload();
+                error: function (e) {
+                    alert("页面出现错误，请于管理员联系。");
                 }
-                alert(myres);
-            },
-            error: function (e) {
-                alert("页面出现错误，请于管理员联系。");
-            }
-        });
+            });
         }
 
     })
