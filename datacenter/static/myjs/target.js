@@ -195,7 +195,9 @@ $(document).ready(function () {
         $("#storage").val(data.storage);
         $("#storagetag").val(data.storagetag);
         $("#storagefields").val(data.storagefields);
-        if (data.storage_type == '列'){
+
+        // 判断是否展示存储标识
+        if (data.storage_type == '列') {
             $('#storagetag').parent().parent().show();
         } else {
             $('#storagetag').parent().parent().hide();
@@ -245,7 +247,6 @@ $(document).ready(function () {
             table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
         }
 
-        // 判断是否展示存储标识
 
     });
 
@@ -517,7 +518,7 @@ $(document).ready(function () {
     $('#storage').change(function () {
         var storage_id = $(this).val();
         var storage_type = $('#storage_' + storage_id).val();
-        if (storage_type == '列'){
+        if (storage_type == '列') {
             $('#storagetag').parent().parent().show();
         } else {
             $('#storagetag').parent().parent().hide();

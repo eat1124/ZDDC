@@ -2078,8 +2078,6 @@ def target_data(request):
         #             storage_type_display = dict['name']
         #             break
 
-
-
         for target in all_target:
             operationtype = target.operationtype
             try:
@@ -2592,11 +2590,20 @@ def target_app_index(request, funid):
                 "cycle_id": i.id,
             })
 
+        all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
+
         storagelist = Storage.objects.all().exclude(state='9')
         for i in storagelist:
+            storage_type = i.storagetype
+            storage_type_display = ""
+            for dict in all_dict_list:
+                if storage_type == str(dict['id']):
+                    storage_type_display = dict['name']
+                    break
             storage_list.append({
                 "storage_name": i.name,
                 "storage_id": i.id,
+                "storage_type": storage_type_display,
             })
         return render(request, 'target_app.html',
                       {'username': request.user.userinfo.fullname,
@@ -2823,19 +2830,19 @@ def reporting_index(request, cycletype, funid):
                 days=-1)).replace(month=1, day=1)
             date = now.strftime("%Y")
 
-        searchtag=""
+        searchtag = ""
         metertag = ""
         entrytag = ""
         extracttag = ""
         calculatetag = ""
 
-        searchtagclass=""
+        searchtagclass = ""
         metertagclass = ""
         entrytagclass = ""
         extracttagclass = ""
         calculatetagclass = ""
 
-        searchtagtabclass=""
+        searchtagtabclass = ""
         metertagtabclass = ""
         entrytagtabclass = ""
         extracttagtabclass = ""
@@ -2851,7 +2858,8 @@ def reporting_index(request, cycletype, funid):
         extractreset = ""
         calculatereset = ""
         curapp = App.objects.filter(id=app)
-        search_target = Target.objects.exclude(state='9').exclude(adminapp=app).filter(cycletype=cycletype,app__in=curapp)
+        search_target = Target.objects.exclude(state='9').exclude(adminapp=app).filter(cycletype=cycletype,
+                                                                                       app__in=curapp)
 
         meter_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
                                                                 operationtype='1')
@@ -2920,7 +2928,7 @@ def reporting_index(request, cycletype, funid):
                        "cycletype": cycletype,
                        "app": app,
                        "date": date,
-                       "searchtag":searchtag,
+                       "searchtag": searchtag,
                        "metertag": metertag,
                        "entrytag": entrytag,
                        "extracttag": extracttag,
@@ -3243,7 +3251,9 @@ def reporting_new(request):
                                                               operationtype=operationtype)
         for target in all_target:
             if operationtype == "1":
-                all_meterdata = Meterdata.objects.exclude(state="9").filter(target=target, datadate=reporting_date + datetime.timedelta(days=-1))
+                all_meterdata = Meterdata.objects.exclude(state="9").filter(target=target,
+                                                                            datadate=reporting_date + datetime.timedelta(
+                                                                                days=-1))
                 meterdata = Meterdata()
                 if len(all_meterdata) > 0:
                     meterdata.zerodata = all_meterdata[0].twentyfourdata
