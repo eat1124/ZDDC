@@ -100,17 +100,17 @@ def run_process(process_id, processcon, targets):
         connection = pymysql.connect(host='127.0.0.1',
                                      user='root',
                                      password='password',
-                                     db='dbo',
+                                     db='datacenter',
                                      charset='utf8mb4',
                                      cursorclass=pymysql.cursors.DictCursor)
         try:
             with connection.cursor() as cursor:
                 # SQL Server
-                update_sql = """UPDATE dbo.datacenter_processmonitor SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
-                    datetime.now(), pid, process_id)
-
-                # update_sql = """UPDATE datacenter.datacenter_processmonitor SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
+                # update_sql = """UPDATE dbo.datacenter_processmonitor SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
                 #     datetime.now(), pid, process_id)
+
+                update_sql = """UPDATE datacenter.datacenter_processmonitor SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
+                    datetime.now(), pid, process_id)
                 cursor.execute(update_sql)
             connection.commit()
         finally:
