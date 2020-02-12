@@ -15,6 +15,8 @@ $(document).ready(function () {
             success: function (data) {
                 index += 1;
                 var treeData = JSON.parse(data.data);
+                console.log(treeData)
+
                 $('#process_monitor_tree').jstree('destroy');
                 $('#process_monitor_tree').jstree({
                     'core': {
@@ -61,7 +63,7 @@ $(document).ready(function () {
                         $('#source_div, #app_div, #circle_div, #process_exec').hide();
 
                         // 根据data.node.data.status判断展示开启/关闭/重启按钮
-                        if (data.node.data.status == '已关闭') {
+                        if (['已关闭', ''].indexOf(data.node.data.status) != -1) {
                             $('#start').show();
                             $('#stop, #restart').hide();
                         } else if (data.node.data.status == '运行中') {
@@ -84,7 +86,6 @@ $(document).ready(function () {
                         if (['app', 'circle'].indexOf(data.node.data.type) != -1) {
                             $('#app_div').show();
                         }
-
                         if (data.node.data.type == 'circle') {
                             $('#circle_div').show();
                             $('#process_exec').show();
