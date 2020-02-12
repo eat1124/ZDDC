@@ -3264,7 +3264,7 @@ def reporting_new(request):
 
                 meterdata = Meterdata()
                 if len(all_meterchangedata) > 0:
-                    meterdata.zerodata = all_meterchangedata[0].newtable_twentyfourdata
+                    meterdata.zerodata = float(all_meterchangedata[0].newtable_twentyfourdata)
                     meterdata.twentyfourdata = meterdata.zerodata
                 else:
                     if len(all_meterdata) > 0:
