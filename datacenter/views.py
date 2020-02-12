@@ -1412,6 +1412,7 @@ def storage_save(request):
                                     result["data"] = storage_save.id
                                 except Exception as e:
                                     print(e)
+                                    result["res"] = "保存失败。"
                         else:
                             all_storage = Storage.objects.filter(name=storage_name).exclude(
                                 id=id).exclude(state="9")
