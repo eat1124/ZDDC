@@ -93,15 +93,17 @@
                 <th> 指标代码</th>
                 <th> 业务类型</th>
                 <th> 机组</th>
+                <th> 是否累积</th>
                 <th> 0点走字</th>
                 <th> 24点走字</th>
                 <th> 电表数值</th>
-                 <th> 倍率</th>
+                <th> 倍率</th>
                 <th> 当前值</th>
                 <th> 月累计值</th>
                 <th> 季累计值</th>
                 <th> 半年累计值</th>
                 <th> 年累计值</th>
+                <th style="width:50px;"> 操作</th>
             </tr>
             </thead>
 
@@ -309,7 +311,124 @@
         </div>
     </div>
 </div>
+<div id="static5" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" style="width:900px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">换表走字</h4>
+                <input hidden id="id" type="text" name="id">
+                <input hidden id="cumulative" type="text" name="cumulative">
+                <input hidden id="curvalue" type="text" name="curvalue">
+                <input hidden id="cumulativemonth" type="text" name="cumulativemonth">
+                <input hidden id="cumulativequarter" type="text" name="cumulativequarter">
+                <input hidden id="cumulativehalfyear" type="text" name="cumulativehalfyear">
+                <input hidden id="cumulativeyear" type="text" name="cumulativeyear">
+            </div>
+            <div class="panel-body">
 
+                <form class="bs-example form-horizontal activate-form">{% csrf_token %}
+
+                    <div class="form-body">
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">旧表起始走字</label>
+                            <div class="col-md-4">
+                                <input id="oldtable_zerodata" type="number" name="oldtable_zerodata" class="form-control"
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                            <label class="col-md-2 control-label">新表起始走字</label>
+                            <div class="col-md-4">
+                                 <input id="newtable_zerodata" type="number" name="newtable_zerodata" class="form-control"
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group ">
+                            <label class="col-md-2 control-label">旧表最终走字</label>
+                            <div class="col-md-4">
+                                <input id="oldtable_twentyfourdata" type="number" name="oldtable_twentyfourdata" class="form-control"
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+                            </div>
+                            <label class="col-md-2 control-label">新表最终走字</label>
+                            <div class="col-md-4">
+                                <input id="newtable_twentyfourdata" type="number" name="newtable_twentyfourdata" class="form-control"
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group ">
+                            <label class="col-md-2 control-label">旧表差值</label>
+                            <div class="col-md-4">
+                                <input id="oldtable_value" type="number" name="oldtable_value" class="form-control"
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+                            </div>
+                            <label class="col-md-2 control-label">新表差值</label>
+                            <div class="col-md-4">
+                                <input id="newtable_value" type="number" name="newtable_value" class="form-control"
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group ">
+                            <label class="col-md-2 control-label">旧表倍率</label>
+                            <div class="col-md-4">
+                                <input id="oldtable_magnification" type="number" name="oldtable_magnification" class="form-control"
+                                       placeholder="" readonly>
+                                <div class="form-control-focus"></div>
+                            </div>
+                            <label class="col-md-2 control-label">新表倍率</label>
+                            <div class="col-md-4">
+                                <input id="newtable_magnification" type="number" name="newtable_magnification" class="form-control"
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">旧表最终值</label>
+                            <div class="col-md-4">
+                                <input id="oldtable_finalvalue" type="number" name="oldtable_finalvalue" class="form-control"
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+                            </div>
+                            <label class="col-md-2 control-label">新表最终值</label>
+                            <div class="col-md-4">
+                                <input id="newtable_finalvalue" type="number" name="newtable_finalvalue" class="form-control"
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">最终计算值</label>
+                            <div class="col-md-10">
+                                <input id="finalvalue" type="number" name="finalvalue" class="form-control"
+                                       placeholder="">
+                                <div class="form-control-focus"></div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-actions ">
+                        <div class="modal-footer">
+                           <button type="button" id="confirm" name="confirm" class="btn green">确认</button>
+
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 

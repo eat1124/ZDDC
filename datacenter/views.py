@@ -3258,17 +3258,23 @@ def reporting_new(request):
                                                               operationtype=operationtype)
         for target in all_target:
             if operationtype == "1":
-                all_meterdata = Meterdata.objects.exclude(state="9").filter(target=target,
-                                                                            datadate=reporting_date + datetime.timedelta(
-                                                                                days=-1))
+
+                all_meterdata = Meterdata.objects.exclude(state="9").filter(target=target, datadate=reporting_date + datetime.timedelta(days=-1))
+                all_meterchangedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=all_meterdata[0].id)
+
                 meterdata = Meterdata()
-                if len(all_meterdata) > 0:
-                    meterdata.zerodata = all_meterdata[0].twentyfourdata
+                if len(all_meterchangedata) > 0:
+                    meterdata.zerodata = all_meterchangedata[0].newtable_twentyfourdata
+                    meterdata.twentyfourdata = meterdata.zerodata
                 else:
-                    meterdata.zerodata = 0
+                    if len(all_meterdata) > 0:
+                        meterdata.zerodata = all_meterdata[0].twentyfourdata
+                    else:
+                        meterdata.zerodata = 0
+                    meterdata.twentyfourdata = meterdata.zerodata
+
                 meterdata.target = target
                 meterdata.datadate = reporting_date
-                meterdata.twentyfourdata = meterdata.zerodata
                 meterdata.metervalue = float(meterdata.twentyfourdata) - float(meterdata.zerodata)
                 meterdata.curvalue = decimal.Decimal(float(meterdata.metervalue) * float(target.magnification))
                 if target.cumulative == "是":
@@ -3365,6 +3371,63 @@ def reporting_save(request):
         operationtype = request.POST.get('operationtype')
         savedata = json.loads(savedata)
         for curdata in savedata:
+            if operationtype == "meterchangedata":
+                reporting_date = datetime.datetime.strptime(curdata["reporting_date"], "%Y-%m-%d")
+                savedata = Meterdata.objects.exclude(state="9").get(id=int(curdata["id"]))
+                meterchangedata = Meterchangedata()
+                try:
+                    meterchangedata.datadate = reporting_date
+                except:
+                    pass
+                try:
+                    meterchangedata.meterdata = savedata
+                except:
+                    pass
+                try:
+                    meterchangedata.oldtable_zerodata = float(curdata["oldtable_zerodata"])
+                except:
+                    pass
+                try:
+                    meterchangedata.oldtable_twentyfourdata = float(curdata["oldtable_twentyfourdata"])
+                except:
+                    pass
+                try:
+                    meterchangedata.oldtable_value = float(curdata["oldtable_value"])
+                except:
+                    pass
+                try:
+                    meterchangedata.oldtable_magnification = float(curdata["oldtable_magnification"])
+                except:
+                    pass
+                try:
+                    meterchangedata.oldtable_finalvalue = float(curdata["oldtable_finalvalue"])
+                except:
+                    pass
+                try:
+                    meterchangedata.newtable_zerodata = float(curdata["newtable_zerodata"])
+                except:
+                    pass
+                try:
+                    meterchangedata.newtable_twentyfourdata = float(curdata["newtable_twentyfourdata"])
+                except:
+                    pass
+                try:
+                    meterchangedata.newtable_value = float(curdata["newtable_value"])
+                except:
+                    pass
+                try:
+                    meterchangedata.newtable_magnification = float(curdata["newtable_magnification"])
+                except:
+                    pass
+                try:
+                    meterchangedata.newtable_finalvalue = float(curdata["newtable_finalvalue"])
+                except:
+                    pass
+                try:
+                    meterchangedata.finalvalue = float(curdata["finalvalue"])
+                except:
+                    pass
+                meterchangedata.save()
             if operationtype == "1":
                 savedata = Meterdata.objects.exclude(state="9").get(id=int(curdata["id"]))
             if operationtype == "15":
@@ -3389,41 +3452,39 @@ def reporting_save(request):
                     savedata.curvaluetext = curdata["curvaluetext"]
                 except:
                     pass
-
+            try:
+                savedata.target.magnification = float(curdata["magnification"])
+            except:
+                pass
             try:
                 savedata.zerodata = curdata["zerodata"]
             except:
                 pass
-
             try:
                 savedata.twentyfourdata = curdata["twentyfourdata"]
             except:
                 pass
-
             try:
                 savedata.metervalue = curdata["metervalue"]
             except:
                 pass
-
             try:
                 savedata.cumulativemonth = float(curdata["cumulativemonth"])
             except:
                 pass
-
             try:
                 savedata.cumulativequarter = float(curdata["cumulativequarter"])
             except:
                 pass
-
             try:
                 savedata.cumulativehalfyear = float(curdata["cumulativehalfyear"])
             except:
                 pass
-
             try:
                 savedata.cumulativeyear = float(curdata["cumulativeyear"])
             except:
                 pass
+            savedata.target.save()
             savedata.save()
 
         result["res"] = "保存成功。"

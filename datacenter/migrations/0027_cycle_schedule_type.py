@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('datacenter', '0025_remove_cycle_code'),
+        ('datacenter', '0026_remove_cycle_code'),
     ]
 
     operations = [

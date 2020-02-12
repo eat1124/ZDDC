@@ -197,6 +197,26 @@ class Meterdata(models.Model):
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
 
+class Meterchangedata(models.Model):
+    """
+    电表走字换表
+    """
+    meterdata = models.ForeignKey(Meterdata)
+    datadate = models.DateTimeField("开始时间", blank=True, null=True)
+    oldtable_zerodata = models.DecimalField("旧表起始走字", null=True, max_digits=20, decimal_places=5)
+    oldtable_twentyfourdata = models.DecimalField("旧表最终走字", null=True, max_digits=20, decimal_places=5)
+    oldtable_value = models.DecimalField("旧表差值", null=True, max_digits=20, decimal_places=5)
+    oldtable_magnification = models.DecimalField("旧表倍率", null=True, max_digits=18, decimal_places=5)
+    oldtable_finalvalue = models.DecimalField("旧表最终值", null=True, max_digits=20, decimal_places=5)
+    newtable_zerodata = models.DecimalField("新表起始走字", null=True, max_digits=20, decimal_places=5)
+    newtable_twentyfourdata = models.DecimalField("新表最终走字", null=True, max_digits=20, decimal_places=5)
+    newtable_value = models.DecimalField("新表差值", null=True, max_digits=20, decimal_places=5)
+    newtable_magnification = models.DecimalField("新表倍率", null=True, max_digits=18, decimal_places=5)
+    newtable_finalvalue = models.DecimalField("新表最终值", null=True, max_digits=20, decimal_places=5)
+    finalvalue = models.DecimalField("最终计算值", null=True, max_digits=20, decimal_places=5)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+
+
 class Entrydata(models.Model):
     """
     录入数据
