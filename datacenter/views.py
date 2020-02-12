@@ -1329,15 +1329,18 @@ def storage_data(request):
     if request.user.is_authenticated():
         result = []
         all_storage = Storage.objects.exclude(state="9").order_by("sort")
+
+        all_dict_list = DictList.objects.exclude(
+            state='9').values('id', 'name')
+
         for storage in all_storage:
-            storagetype = storage.storagetype
-            try:
-                storagetype_dict_list = DictList.objects.filter(id=int(storage.storagetype))
-                if storagetype_dict_list.exists():
-                    storagetype_dict_list = storagetype_dict_list[0]
-                    storagetype = storagetype_dict_list.name
-            except:
-                pass
+            storage_type = storage.storagetype
+            storage_type_display = ""
+            for dict in all_dict_list:
+                if storage_type == str(dict['id']):
+                    storage_type_display = dict['name']
+                    break
+
             storagetype = storage.validtime
             try:
                 validtime_dict_list = DictList.objects.filter(id=int(storage.validtime))
@@ -1351,13 +1354,13 @@ def storage_data(request):
                 "id": storage.id,
                 "name": storage.name,
                 "tablename": storage.tablename,
-                "storagetype_num": storage.storagetype,
+                "storagetype_num": storage_type,
                 "validtime_num": storage.validtime,
-                "storagetype": storagetype,
+                "storagetype": storage_type_display,
                 "validtime": validtime,
                 "sort": storage.sort,
             })
-
+        print(result)
         return JsonResponse({"data": result})
 
 
@@ -1397,15 +1400,18 @@ def storage_save(request):
                                 result["res"] = '存储名称:' + \
                                                 storage_name + '已存在。'
                             else:
-                                storage_save = Storage()
-                                storage_save.name = storage_name
-                                storage_save.tablename = table_name
-                                storage_save.storagetype = storage_type
-                                storage_save.validtime = valid_time
-                                storage_save.sort = sort
-                                storage_save.save()
-                                result["res"] = "保存成功。"
-                                result["data"] = storage_save.id
+                                try:
+                                    storage_save = Storage()
+                                    storage_save.name = storage_name
+                                    storage_save.tablename = table_name
+                                    storage_save.storagetype = storage_type
+                                    storage_save.validtime = valid_time
+                                    storage_save.sort = sort if sort else None
+                                    storage_save.save()
+                                    result["res"] = "保存成功。"
+                                    result["data"] = storage_save.id
+                                except Exception as e:
+                                    print(e)
                         else:
                             all_storage = Storage.objects.filter(name=storage_name).exclude(
                                 id=id).exclude(state="9")
