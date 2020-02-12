@@ -20,13 +20,18 @@ urlpatterns = [
     url(r'^password/$', password),
     url(r'^userpassword/$', userpassword),
 
-    # 应用管理
+    # 进程管理
     url(r'^process_monitor/$', process_monitor_index, {'funid': '21'}),
     url(r'^process_monitor_data/$', process_monitor_data),
     url(r'^create_process/$', create_process),
     url(r'^process_run/$', process_run),
     url(r'^process_destroy/$', process_destroy),
     url(r'^get_process_monitor_tree/$', get_process_monitor_tree),
+    url(r'^pm_target_data/$', pm_target_data),
+    url(r'^get_exception_data/$', get_exception_data),
+    url(r'^get_log_info/$', get_log_info),
+    url(r'^target_test/$', target_test),
+    url(r'^supplement_process/$', supplement_process),
 
     # 系统维护
     url(r'^organization/$', organization, {'funid': '5'}),
