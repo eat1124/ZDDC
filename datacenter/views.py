@@ -482,7 +482,6 @@ def pm_target_data(request):
                     'storage_fields': target.storagefields[:-1] if target.storagefields.endswith(
                         ',') else target.storagefields
                 })
-
         return JsonResponse({"data": result})
     else:
         return HttpResponseRedirect("/login")
