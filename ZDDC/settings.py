@@ -70,6 +70,7 @@ MIDDLEWARE_CLASSES = [
     # 'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
+
 ROOT_URLCONF = 'ZDDC.urls'
 
 TEMPLATES = [
@@ -104,25 +105,12 @@ DATABASES = {
         'NAME': 'datacenter',
         'USER': 'root',
         'PASSWORD': 'password',
-        # 'HOST': '192.168.1.66',
+        #'HOST': '192.168.1.66',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'sql_server.pyodbc',
-#         'NAME': 'mkl',
-#         'USER': 'miaokela',
-#         'PASSWORD': 'Passw0rD',
-#         'HOST': '127.0.0.1',
-#         'PORT': '1433',
-#         'OPTIONS': {
-#             'driver': 'SQL Server Native Client 11.0',  # 這邊要去查詢作業系統本身支援的版本 Win10是 11
-#         },
-#     },
-# }
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
