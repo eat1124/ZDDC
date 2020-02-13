@@ -665,6 +665,10 @@ $(document).ready(function () {
 
                   $("Element").blur();
                   var savedata=[];
+                  var id = $("#id").val()
+                  var reporting_date = $("#reporting_date").val()
+                   var id = $("#id").val()
+                  var reporting_date = $("#reporting_date").val()
                   savedata.push({"id":$("#id").val(),"reporting_date":$("#reporting_date").val(),"oldtable_zerodata":$("#oldtable_zerodata").val(),"oldtable_twentyfourdata":$("#oldtable_twentyfourdata").val(),"oldtable_value":$("#oldtable_value").val(), "oldtable_magnification":$("#oldtable_magnification").val(),"oldtable_finalvalue":$("#oldtable_finalvalue").val(),
                       "newtable_zerodata":$("#newtable_zerodata").val(),"newtable_twentyfourdata":$("#newtable_twentyfourdata").val(), "newtable_value": $("#newtable_value").val(),"newtable_magnification":$("#newtable_magnification").val(), "newtable_finalvalue":$("#newtable_finalvalue").val(),"finalvalue":$("#finalvalue").val(),
                       });
@@ -1083,7 +1087,6 @@ $(document).ready(function () {
     　　$.each(table,function(i,item){
             savedata.push({"id":item.id,"reporting_date":$("#reporting_date").val(),"magnification": $('#table5_magnification_' + item.id).val(),"zerodata":$('#table5_zerodata_' + item.id).val(),"twentyfourdata":$('#table5_twentyfourdata_' + item.id).val(),"metervalue":$('#table5_metervalue_' + item.id).val(),"curvalue":$('#table5_curvalue_' + item.id).val(),"curvaluedate":$('#table5_curvaluedate_' + item.id).val(),"curvaluetext":$('#table5_curvaluetext_' + item.id).val(),"cumulativemonth":$('#table5_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table5_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table5_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table5_cumulativeyear_' + item.id).val()})
     　　});
-        console.log(savedata, '123456')
         $.ajax({
             type: "POST",
             dataType: 'json',
@@ -1104,6 +1107,9 @@ $(document).ready(function () {
                 alert("页面出现错误，请于管理员联系。");
             }
         });
+
+
+
     })
 
 });
