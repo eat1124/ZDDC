@@ -206,7 +206,12 @@ $(document).ready(function () {
                 $("#del2").hide();
                 $("#reset2").hide();
             }
-        }
+        },
+        "createdRow": function (row, data, index) {
+            if(data.curvalue==0) {
+                $('td', row).css("color", "#FF0000");
+            }
+        },
     });
     // 行按钮
     $('#sample_2 tbody').on('change', 'input[name="table2_curvalue"]', function () {
@@ -217,6 +222,12 @@ $(document).ready(function () {
                 $('#table2_cumulativequarter_' + data.id).val(Number(data.cumulativequarter) - Number(data.curvalue) + Number($('#table2_curvalue_' + data.id).val()))
                 $('#table2_cumulativehalfyear_' + data.id).val(Number(data.cumulativehalfyear) - Number(data.curvalue) + Number($('#table2_curvalue_' + data.id).val()))
                 $('#table2_cumulativeyear_' + data.id).val(Number(data.cumulativeyear) - Number(data.curvalue) + Number($('#table2_curvalue_' + data.id).val()))
+            }
+            if(Number($('#table2_curvalue_' + data.id).val())==0){
+                $('td', $(this).parents('tr')).css("color", "#FF0000");
+            }
+            else{
+                $('td', $(this).parents('tr')).css("color", "#000000");
             }
     });
 
@@ -475,7 +486,7 @@ $(document).ready(function () {
             {
             "targets": -8,
             "mRender":function(data,type,full){
-                       return "<input style = 'width:90px;height:26px;' id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
+                       return "<input disabled style = 'width:90px;height:26px;' id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
                     }
             },
             {
@@ -561,7 +572,13 @@ $(document).ready(function () {
                 $("#save5").hide();
                 $("#del5").hide();
             }
-        }
+        },
+        "createdRow": function (row, data, index) {
+            if(data.zerodata==data.twentyfourdata) {
+                $('td', row).css("color", "#FF0000");
+            }
+        },
+
     });
 
      // 行按钮
@@ -576,6 +593,12 @@ $(document).ready(function () {
                 $('#table5_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
                 $('#table5_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))))
             }
+            if(Number($('#table5_zerodata_' + data.id).val())==Number($('#table5_twentyfourdata_' + data.id).val())){
+                $('td', $(this).parents('tr')).css("color", "#FF0000");
+            }
+            else{
+                $('td', $(this).parents('tr')).css("color", "#000000");
+            }
     });
     $('#sample_5 tbody').on('change', 'input[name="table5_twentyfourdata"]', function () {
             var table = $('#sample_5').DataTable();
@@ -587,6 +610,12 @@ $(document).ready(function () {
                 $('#table5_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
                 $('#table5_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
                 $('#table5_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)),math.bignumber(Number(data.curvalue))))),math.bignumber(Number($('#table5_curvalue_' + data.id).val())))))
+            }
+            if(Number($('#table5_zerodata_' + data.id).val())==Number($('#table5_twentyfourdata_' + data.id).val())){
+                $('td', $(this).parents('tr')).css("color", "#FF0000");
+            }
+            else{
+                $('td', $(this).parents('tr')).css("color", "#000000");
             }
     });
 

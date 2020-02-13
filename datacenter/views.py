@@ -3155,10 +3155,22 @@ def reporting_data(request):
             cumulativehalfyear = ""
             cumulativeyear = ""
             if data.target.cumulative == '是':
-                cumulativemonth = round(data.cumulativemonth, data.target.digit)
-                cumulativequarter = round(data.cumulativequarter, data.target.digit)
-                cumulativehalfyear = round(data.cumulativehalfyear, data.target.digit)
-                cumulativeyear = round(data.cumulativeyear, data.target.digit)
+                try:
+                    cumulativemonth = round(data.cumulativemonth, data.target.digit)
+                except:
+                    pass
+                try:
+                    cumulativequarter = round(data.cumulativequarter, data.target.digit)
+                except:
+                    pass
+                try:
+                    cumulativehalfyear = round(data.cumulativehalfyear, data.target.digit)
+                except:
+                    pass
+                try:
+                    cumulativeyear = round(data.cumulativeyear, data.target.digit)
+                except:
+                    pass
             result.append({
                 "id": data.id,
                 "zerodata": zerodata,
@@ -3221,10 +3233,30 @@ def getcumulative(target, date, value):
     if target.operationtype == "17":
         all_data = Calculatedata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
     if len(all_data) > 0:
-        cumulativemonth = all_data[0].cumulativemonth + value
-        cumulativequarter = all_data[0].cumulativequarter + value
-        cumulativehalfyear = all_data[0].cumulativehalfyear + value
-        cumulativeyear = all_data[0].cumulativeyear + value
+        lastcumulativemonth=0
+        lastcumulativequarter=0
+        lastcumulativehalfyear=0
+        lastcumulativeyear=0
+        try:
+            lastcumulativemonth+=all_data[0].cumulativemonth
+        except:
+            pass
+        try:
+            lastcumulativequarter+=all_data[0].cumulativequarter
+        except:
+            pass
+        try:
+            lastcumulativehalfyear+=all_data[0].cumulativehalfyear
+        except:
+            pass
+        try:
+            lastcumulativeyear+=all_data[0].cumulativeyear
+        except:
+            pass
+        cumulativemonth = lastcumulativemonth + value
+        cumulativequarter = lastcumulativequarter + value
+        cumulativehalfyear = lastcumulativehalfyear + value
+        cumulativeyear = lastcumulativeyear + value
     return {"cumulativemonth": cumulativemonth, "cumulativequarter": cumulativequarter,
             "cumulativehalfyear": cumulativehalfyear, "cumulativeyear": cumulativeyear}
 
@@ -3379,16 +3411,34 @@ def reporting_new(request):
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
                                                               operationtype=operationtype)
         for target in all_target:
+            #电表走字
             if operationtype == "1":
 
-                all_meterdata = Meterdata.objects.exclude(state="9").filter(target=target, datadate=reporting_date + datetime.timedelta(days=-1))
+                all_meterdata = Meterdata.objects.exclude(state="9").filter(target=target,
+                                                                            datadate=reporting_date + datetime.timedelta(
+                                                                                days=-1))
                 meterdata = Meterdata()
-
                 if len(all_meterdata) > 0:
                     meterdata.zerodata = all_meterdata[0].twentyfourdata
                 else:
                     meterdata.zerodata = 0
                 meterdata.twentyfourdata = meterdata.zerodata
+
+                tablename = ""
+                try:
+                    tablename= target.storage.tablename
+                except:
+                    pass
+                if tablename != "":
+                    cursor = connection.cursor()
+                    strsql="select  curvalue from " + tablename + " where  target_id = " + str(target.id) +  " and  datadate='" + reporting_date .strftime("%Y-%m-%d %H:%M:%S") + "'"
+                    cursor.execute(strsql)
+                    rows = cursor.fetchall()
+                    if len(rows)>0:
+                        try:
+                            meterdata.twentyfourdata = rows[0][0]
+                        except:
+                            pass
 
                 meterdata.target = target
                 meterdata.datadate = reporting_date
@@ -3401,6 +3451,7 @@ def reporting_new(request):
                     meterdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
                     meterdata.cumulativeyear = cumulative["cumulativeyear"]
                 meterdata.save()
+            #录入
             if operationtype == "15":
                 entrydata = Entrydata()
                 entrydata.target = target
@@ -3413,24 +3464,36 @@ def reporting_new(request):
                     entrydata.cumulativehalfyear = cumulative["cumulativehalfyear"]
                     entrydata.cumulativeyear = cumulative["cumulativeyear"]
                 entrydata.save()
+            #提取
             if operationtype == "16":
-                extractdata = Extractdata.objects.filter(state="8", target=target, datadate=reporting_date)
-                if len(extractdata) > 0:
-                    extractdata = extractdata[0]
-                    extractdata.state = ""
-                    extractdata.save()
-                else:
-                    extractdata = Extractdata()
-                    extractdata.target = target
-                    extractdata.datadate = reporting_date
-                    extractdata.curvalue = getextractdata(target, reporting_date)
-                    if target.cumulative == "是":
-                        cumulative = getcumulative(target, reporting_date, extractdata.curvalue)
-                        extractdata.cumulativemonth = cumulative["cumulativemonth"]
-                        extractdata.cumulativequarter = cumulative["cumulativequarter"]
-                        extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
-                        extractdata.cumulativeyear = cumulative["cumulativeyear"]
-                    extractdata.save()
+                extractdata = Extractdata()
+                extractdata.target = target
+                extractdata.datadate = reporting_date
+                extractdata.curvalue = 0
+
+                tablename = ""
+                try:
+                    tablename= target.storage.tablename
+                except:
+                    pass
+                if tablename != "":
+                    cursor = connection.cursor()
+                    strsql="select  curvalue from " + tablename + " where target_id = " + str(target.id) +  " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'"
+                    cursor.execute(strsql)
+                    rows = cursor.fetchall()
+                    if len(rows)>0:
+                        try:
+                            extractdata.curvalue = rows[0][0]
+                        except:
+                            pass
+                if target.cumulative == "是":
+                    cumulative = getcumulative(target, reporting_date, extractdata.curvalue)
+                    extractdata.cumulativemonth = cumulative["cumulativemonth"]
+                    extractdata.cumulativequarter = cumulative["cumulativequarter"]
+                    extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                    extractdata.cumulativeyear = cumulative["cumulativeyear"]
+                extractdata.save()
+            #计算
             if operationtype == "17":
                 target = Target.objects.get(id=target.id)
                 if target.calculateguid != str(guid):
