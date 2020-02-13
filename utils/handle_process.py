@@ -8,7 +8,7 @@ import pymysql
 from datetime import datetime
 import time
 import json
-# import pymssql
+import pymssql
 
 
 def getcumulative(target, date, value):
@@ -105,7 +105,7 @@ def run_process(process_id, processcon, targets):
                                      cursorclass=pymysql.cursors.DictCursor)
         try:
             with connection.cursor() as cursor:
-                # # SQL Server
+                # SQL Server
                 # update_sql = """UPDATE dbo.datacenter_processmonitor SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
                 #     datetime.now(), pid, process_id)
 

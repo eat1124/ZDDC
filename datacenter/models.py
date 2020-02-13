@@ -286,3 +286,30 @@ class ReportSubmitInfo(models.Model):
     name = models.CharField("信息名称", max_length=100)
     value = models.CharField("默认值", max_length=100)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
+
+
+class ExceptionData(models.Model):
+    """
+    异常数据
+    """
+    target = models.ForeignKey(Target, null=True, verbose_name='指标')
+    source = models.ForeignKey(Source, null=True, verbose_name='数据源')
+    app = models.ForeignKey(App, null=True, verbose_name='应用')
+    cycle = models.ForeignKey(Cycle, null=True, verbose_name='周期')
+    extract_error_time = models.DateTimeField('取数失败时间', null=True, blank=True)
+    supplement_times = models.IntegerField('补取次数', blank=True, null=True)
+    last_supplement_time = models.DateTimeField('最新补取时间', null=True, blank=True)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+
+
+class LogInfo(models.Model):
+    """
+    日志信息
+    """
+    source = models.ForeignKey(Source, null=True, verbose_name='数据源')
+    app = models.ForeignKey(App, null=True, verbose_name='应用')
+    cycle = models.ForeignKey(Cycle, null=True, verbose_name='周期')
+    create_time = models.DateTimeField('时间', null=True, blank=True)
+    content = models.TextField('日志内容', null=True, blank=True)
+
+

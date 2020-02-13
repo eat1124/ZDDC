@@ -449,6 +449,128 @@ def process_destroy(request):
         return JsonResponse(result)
 
 
+def pm_target_data(request):
+    """
+    根据应用、数据源、周期 过滤出所有指标
+    :param request:
+    :return:
+    """
+    if request.user.is_authenticated():
+        app_id = request.GET.get('app_id', '')
+        source_id = request.GET.get('source_id', '')
+        circle_id = request.GET.get('circle_id', '')
+
+        result = []
+
+        try:
+            app_id = int(app_id)
+            source_id = int(source_id)
+            circle_id = int(circle_id)
+        except ValueError as e:
+            print(e)
+        else:
+            targets = Target.objects.exclude(state='9').filter(
+                Q(adminapp_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id))
+
+            for target in targets:
+                result.append({
+                    'id': target.id,
+                    'target_code': target.code,
+                    'target_name': target.name,
+                    'source_content': target.source_content,
+                    'storage_table_name': target.storage.tablename if target.storage else '',
+                    'storage_fields': target.storagefields[:-1] if target.storagefields.endswith(
+                        ',') else target.storagefields
+                })
+        return JsonResponse({"data": result})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def get_exception_data(request):
+    if request.user.is_authenticated():
+        result = []
+        app_id = request.GET.get('app_id', '')
+        source_id = request.GET.get('source_id', '')
+        circle_id = request.GET.get('circle_id', '')
+
+        try:
+            app_id = int(app_id)
+            source_id = int(source_id)
+            circle_id = int(circle_id)
+        except ValueError as e:
+            print(e)
+        else:
+            exceptions = ExceptionData.objects.filter(state='0').filter(
+                Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id))
+            for exception in exceptions:
+                result.append({
+                    'id': exception.id,
+                    'target_name': exception.target.name if exception.target else '',
+                    'extract_error_time': '{:%Y-%m-%d %H:%M:%S}'.format(
+                        exception.extract_error_time) if exception.extract_error_time else '',
+                    'supplement_times': exception.supplement_times,
+                    'last_supplement_time': '{:%Y-%m-%d %H:%M:%S}'.format(
+                        exception.last_supplement_time) if exception.last_supplement_time else '',
+                })
+        return JsonResponse({"data": result})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def get_log_info(request):
+    if request.user.is_authenticated():
+        result = []
+        app_id = request.GET.get('app_id', '')
+        source_id = request.GET.get('source_id', '')
+        circle_id = request.GET.get('circle_id', '')
+
+        try:
+            app_id = int(app_id)
+            source_id = int(source_id)
+            circle_id = int(circle_id)
+        except ValueError as e:
+            print(e)
+        else:
+            log_infos = LogInfo.objects.filter(
+                Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id))
+
+            for log_info in log_infos:
+                result.append({
+                    'id': log_info.id,
+                    'create_time': '{:%Y-%m-%d %H:%M:%S}'.format(
+                        log_info.create_time) if log_info.create_time else '',
+                    'content': log_info.content,
+                })
+        return JsonResponse({"data": result})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def target_test(request):
+    if request.user.is_authenticated():
+        selectedtarget = request.POST.getlist('selectedtarget[]')
+
+        result = {}
+        # ...
+
+        return JsonResponse(result)
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def supplement_process(request):
+    if request.user.is_authenticated():
+        selectedtarget = request.POST.getlist('selectedtarget[]')
+
+        result = {}
+        # ...
+
+        return JsonResponse(result)
+    else:
+        return HttpResponseRedirect("/login")
+
+
 @csrf_exempt
 def download_file(request):
     file_name = request.GET.get("file_name", "")
@@ -3260,6 +3382,11 @@ def reporting_new(request):
             if operationtype == "1":
 
                 all_meterdata = Meterdata.objects.exclude(state="9").filter(target=target, datadate=reporting_date + datetime.timedelta(days=-1))
+                all_meterdata = Meterdata.objects.exclude(state="9").filter(target=target,
+                                                                            datadate=reporting_date + datetime.timedelta(
+                                                                                days=-1))
+                all_meterchangedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=all_meterdata[0].id)
+
                 meterdata = Meterdata()
 
                 if len(all_meterdata) > 0:
