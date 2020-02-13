@@ -3260,18 +3260,13 @@ def reporting_new(request):
             if operationtype == "1":
 
                 all_meterdata = Meterdata.objects.exclude(state="9").filter(target=target, datadate=reporting_date + datetime.timedelta(days=-1))
-                all_meterchangedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=all_meterdata[0].id)
-
                 meterdata = Meterdata()
-                if len(all_meterchangedata) > 0:
-                    meterdata.zerodata = float(all_meterchangedata[0].newtable_twentyfourdata)
-                    meterdata.twentyfourdata = meterdata.zerodata
+
+                if len(all_meterdata) > 0:
+                    meterdata.zerodata = all_meterdata[0].twentyfourdata
                 else:
-                    if len(all_meterdata) > 0:
-                        meterdata.zerodata = all_meterdata[0].twentyfourdata
-                    else:
-                        meterdata.zerodata = 0
-                    meterdata.twentyfourdata = meterdata.zerodata
+                    meterdata.zerodata = 0
+                meterdata.twentyfourdata = meterdata.zerodata
 
                 meterdata.target = target
                 meterdata.datadate = reporting_date
