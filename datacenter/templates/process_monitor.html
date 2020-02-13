@@ -19,16 +19,16 @@
                     </div>
                     <div class="portlet-body form">
                         <ul id="navtabs" class="nav nav-tabs">
-                            <li  class="active">
+                            <li class="active">
                                 <a href="#tab_1_1" id='tabcheck1' data-toggle="tab"> 进程信息 </a>
                             </li>
-                            <li >
+                            <li>
                                 <a href="#tab_1_2" id='tabcheck2' data-toggle="tab"> 指标信息 </a>
                             </li>
-                            <li >
+                            <li>
                                 <a href="#tab_1_3" id='tabcheck3' data-toggle="tab"> 异常数据 </a>
                             </li>
-                            <li >
+                            <li>
                                 <a href="#tab_1_4" id='tabcheck4' data-toggle="tab"> 日志信息 </a>
                             </li>
                         </ul>
@@ -134,9 +134,10 @@
                                         <th style="width:40px;"> 序号</th>
                                         <th> 指标代码</th>
                                         <th> 指标名称</th>
-                                        <th> 数据源内容</th>
-                                        <th> 存储表</th>
-                                        <th> 存储字段</th>
+                                        {#                                        <th> 数据源内容</th>#}
+                                        {#                                        <th> 存储表</th>#}
+                                        {#                                        <th> 存储字段</th>#}
+                                        <th> 操作</th>
                                     </tr>
                                     </thead>
 
@@ -195,7 +196,116 @@
 
         </div>
     </div>
-
+    <div id="static" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">指标详情</h4>
+                </div>
+                <div class="panel-body">
+                    <form class="bs-example form-horizontal activate-form">{% csrf_token %}
+                        <div class="form-body">
+                            <div class="form-group ">
+                                <label class="col-md-2 control-label">指标代码</label>
+                                <div class="col-md-10">
+                                    <input id="target_code" autocomplete="off" type="text"
+                                           name="target_code"
+                                           class="form-control" readonly>
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                            <div class="form-group ">
+                                <label class="col-md-2 control-label">指标名称</label>
+                                <div class="col-md-10">
+                                    <input id="target_name" autocomplete="off" type="text"
+                                           name="target_name"
+                                           class="form-control" readonly>
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">数据源内容</label>
+                                <div class="col-md-10">
+                                <textarea class="form-control" rows="6" id="source_content"
+                                          name="source_content" readonly> </textarea>
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                            <div class="form-group ">
+                                <label class="col-md-2 control-label">存储表</label>
+                                <div class="col-md-10">
+                                    <input id="storage_table_name" autocomplete="off" type="text"
+                                           name="storage_table_name"
+                                           class="form-control" readonly>
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                            <div class="form-group ">
+                                <label class="col-md-2 control-label">存储字段</label>
+                                <div class="col-md-10">
+                                    <input id="storage_fields" autocomplete="off" type="text"
+                                           name="storage_fields"
+                                           class="form-control" readonly>
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions ">
+                            <div class="modal-footer">
+                                <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="static1" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">选择补取区间</h4>
+                </div>
+                <div class="panel-body">
+                    <form class="bs-example form-horizontal activate-form">{% csrf_token %}
+                        <div class="form-body">
+                            <div class="form-group ">
+                                <input type="text" id="selectArray" name="selectArray" hidden>
+                                <label class="col-md-2 control-label">开始时间</label>
+                                <div class="col-md-10">
+                                    <input id="start_time" autocomplete="off" type="text"
+                                           name="start_time"
+                                           class="form-control">
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                            <div class="form-group ">
+                                <label class="col-md-2 control-label">结束时间</label>
+                                <div class="col-md-10">
+                                    <input id="end_time" autocomplete="off" type="text"
+                                           name="end_time"
+                                           class="form-control">
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions ">
+                            <div class="modal-footer">
+                                <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭
+                                </button>
+                                <button type="button" id="do_supplement" name="do_supplement"
+                                        class="btn green">确认
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block script %}

@@ -189,9 +189,10 @@ $(document).ready(function () {
                         {"data": "id"},
                         {"data": "target_code"},
                         {"data": "target_name"},
-                        {"data": "source_content"},
-                        {"data": "storage_table_name"},
-                        {"data": "storage_fields"},
+                        // {"data": "source_content"},
+                        // {"data": "storage_table_name"},
+                        // {"data": "storage_fields"},
+                        {"data": null},
                     ],
 
                     "columnDefs": [{
@@ -199,6 +200,10 @@ $(document).ready(function () {
                         "mRender": function (data, type, full) {
                             return "<input name='selecttarget' type='checkbox' class='checkboxes' value='" + data + "'/>"
                         }
+                    }, {
+                        "targets": -1,
+                        "data": null,
+                        "defaultContent": "<button  id='view' title='查看详情'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-eye'></i></button>"
                     }],
                     "oLanguage": {
                         "sLengthMenu": "每页显示 _MENU_ 条记录",
@@ -219,6 +224,7 @@ $(document).ready(function () {
                         sample_2_completed = true;
                     }
                 });
+
             }
         }
         if (target_id == 'tabcheck3') {
@@ -275,8 +281,8 @@ $(document).ready(function () {
                     "ajax": "../../get_log_info/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val(),
                     "columns": [
                         {"data": "id"},
-                        { "data": "create_time"},
-                        { "data": "content"},
+                        {"data": "create_time"},
+                        {"data": "content"},
                     ],
 
                     "columnDefs": [],
@@ -303,10 +309,24 @@ $(document).ready(function () {
         }
     });
 
+    // 查看详情
+    $('#sample_2 tbody').on('click', 'button#view', function () {
+        $('#static').modal('show');
+        var table2 = $('#sample_2').DataTable();
+        var data = table2.row($(this).parents('tr')).data();
+
+        $('#target_code').val(data.target_code);
+        $('#target_name').val(data.target_name);
+        $('#source_content').val(data.source_content);
+        $('#storage_table_name').val(data.storage_table_name);
+        $('#storage_fields').val(data.storage_fields);
+    });
+
+
     // 测试
     $('#test').click(function () {
         var test_table = $('#sample_2').DataTable();
-        var selectArray = []
+        var selectArray = [];
         $("input[name=selecttarget]:checked").each(function () {
             selectArray.push($(this).val());
         });
@@ -318,9 +338,9 @@ $(document).ready(function () {
                 dataType: 'json',
                 url: "../../target_test/",
                 data:
-                {
-                    selectedtarget: selectArray,
-                },
+                    {
+                        selectedtarget: selectArray,
+                    },
                 success: function (data) {
                     var myres = data["res"];
                     if (myres == "测试成功。") {
@@ -335,34 +355,50 @@ $(document).ready(function () {
         }
     });
     // 补取
-    $('#supplement_process').click(function () {
-        var supplement_process_table = $('#sample_2').DataTable();
-        var selectArray = []
+    $('#start_time').datetimepicker({
+        autoclose: true,
+        format: 'yyyy-mm-dd hh:ii',
+    });
+    $('#end_time').datetimepicker({
+        autoclose: true,
+        format: 'yyyy-mm-dd hh:ii',
+    });
+    $('#supplement').click(function () {
+        var selectArray = [];
         $("input[name=selecttarget]:checked").each(function () {
             selectArray.push($(this).val());
         });
         if (selectArray.length < 1) {
             alert("请至少选择一个指标");
         } else {
-            $.ajax({
-                type: "POST",
-                dataType: 'json',
-                url: "../../supplement_process/",
-                data:
-                {
-                    selectedtarget: selectArray,
-                },
-                success: function (data) {
-                    var myres = data["res"];
-                    if (myres == "补取成功。") {
-                        supplement_process_table.ajax.reload();
-                    }
-                    alert(myres);
-                },
-                error: function (e) {
-                    alert("页面出现错误，请于管理员联系。");
-                }
-            });
+            $('#selectArray').val(selectArray);
+
+            // 弹出模态框
+            $('#static1').modal({backdrop: "static"});
         }
     });
+    $('#do_supplement').click(function () {
+        var supplement_process_table = $('#sample_2').DataTable();
+
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../supplement_process/",
+            data: {
+                selectedtarget: $('#selectArray').val(),
+                start_time: $('#start_time').val(),
+                end_time: $('#end_time').val(),
+            },
+            success: function (data) {
+                var myres = data["res"];
+                if (myres == "补取成功。") {
+                    supplement_process_table.ajax.reload();
+                }
+                alert(myres);
+            },
+            error: function (e) {
+                alert("页面出现错误，请于管理员联系。");
+            }
+        });
+    })
 });
