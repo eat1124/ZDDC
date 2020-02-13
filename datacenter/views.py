@@ -3115,6 +3115,18 @@ def reporting_data(request):
         zerodata = ""
         twentyfourdata = ""
         metervalue = ""
+        meterchangedata_id = ""
+        oldtable_zerodata = ""
+        oldtable_twentyfourdata = ""
+        oldtable_value = ""
+        oldtable_magnification = ""
+        oldtable_finalvalue = ""
+        newtable_zerodata = ""
+        newtable_twentyfourdata = ""
+        newtable_value = ""
+        newtable_magnification = ""
+        newtable_finalvalue = ""
+        finalvalue = ""
         if operationtype == "1":
             all_data = Meterdata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
                                                                    datadate=reporting_date)
@@ -3122,6 +3134,24 @@ def reporting_data(request):
                 zerodata = data.zerodata
                 twentyfourdata = data.twentyfourdata
                 metervalue = data.metervalue
+
+            if len(all_data) > 0:
+                all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata_id=int(all_data[0].id))
+                if len(all_changedata) > 0:
+                    for data in all_changedata:
+                        meterchangedata_id = data.id
+                        oldtable_zerodata = data.oldtable_zerodata
+                        oldtable_twentyfourdata = data.oldtable_twentyfourdata
+                        oldtable_value = data.oldtable_value
+                        oldtable_magnification = data.oldtable_magnification
+                        oldtable_finalvalue = data.oldtable_finalvalue
+                        newtable_zerodata = data.newtable_zerodata
+                        newtable_twentyfourdata = data.newtable_twentyfourdata
+                        newtable_value = data.newtable_value
+                        newtable_magnification = data.newtable_magnification
+                        newtable_finalvalue = data.newtable_finalvalue
+                        finalvalue = data.finalvalue
+
         if operationtype == "15":
             all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
                                                                    datadate=reporting_date)
@@ -3195,6 +3225,20 @@ def reporting_data(request):
                 "target_magnification": data.target.magnification,
                 "target_upperlimit": data.target.upperlimit,
                 "target_lowerlimit": data.target.lowerlimit,
+
+                "meterchangedata_id": meterchangedata_id,
+                "oldtable_zerodata": oldtable_zerodata,
+                "oldtable_twentyfourdata": oldtable_twentyfourdata,
+                "oldtable_value": oldtable_value,
+                "oldtable_magnification": oldtable_magnification,
+                "oldtable_finalvalue":  oldtable_finalvalue,
+                "newtable_zerodata": newtable_zerodata,
+                "newtable_twentyfourdata": newtable_twentyfourdata,
+                "newtable_value": newtable_value,
+                "newtable_magnification": newtable_magnification,
+                "newtable_finalvalue": newtable_finalvalue,
+                "finalvalue": finalvalue,
+
             })
         return JsonResponse({"data": result})
 
@@ -3551,65 +3595,66 @@ def reporting_save(request):
         operationtype = request.POST.get('operationtype')
         savedata = json.loads(savedata)
         for curdata in savedata:
-            if operationtype == "meterchangedata":
-                reporting_date = datetime.datetime.strptime(curdata["reporting_date"], "%Y-%m-%d")
-                savedata = Meterdata.objects.exclude(state="9").get(id=int(curdata["id"]))
-                meterchangedata = Meterchangedata()
-                try:
-                    meterchangedata.datadate = reporting_date
-                except:
-                    pass
-                try:
-                    meterchangedata.meterdata = savedata
-                except:
-                    pass
-                try:
-                    meterchangedata.oldtable_zerodata = float(curdata["oldtable_zerodata"])
-                except:
-                    pass
-                try:
-                    meterchangedata.oldtable_twentyfourdata = float(curdata["oldtable_twentyfourdata"])
-                except:
-                    pass
-                try:
-                    meterchangedata.oldtable_value = float(curdata["oldtable_value"])
-                except:
-                    pass
-                try:
-                    meterchangedata.oldtable_magnification = float(curdata["oldtable_magnification"])
-                except:
-                    pass
-                try:
-                    meterchangedata.oldtable_finalvalue = float(curdata["oldtable_finalvalue"])
-                except:
-                    pass
-                try:
-                    meterchangedata.newtable_zerodata = float(curdata["newtable_zerodata"])
-                except:
-                    pass
-                try:
-                    meterchangedata.newtable_twentyfourdata = float(curdata["newtable_twentyfourdata"])
-                except:
-                    pass
-                try:
-                    meterchangedata.newtable_value = float(curdata["newtable_value"])
-                except:
-                    pass
-                try:
-                    meterchangedata.newtable_magnification = float(curdata["newtable_magnification"])
-                except:
-                    pass
-                try:
-                    meterchangedata.newtable_finalvalue = float(curdata["newtable_finalvalue"])
-                except:
-                    pass
-                try:
-                    meterchangedata.finalvalue = float(curdata["finalvalue"])
-                except:
-                    pass
-                meterchangedata.save()
             if operationtype == "1":
                 savedata = Meterdata.objects.exclude(state="9").get(id=int(curdata["id"]))
+                if curdata["finalvalue"]:
+                    reporting_date = datetime.datetime.strptime(curdata["reporting_date"], "%Y-%m-%d")
+                    meterchangedata = Meterchangedata()
+
+                    try:
+                        meterchangedata.datadate = reporting_date
+                    except:
+                        pass
+                    try:
+                        meterchangedata.meterdata = savedata
+                    except:
+                        pass
+                    try:
+                        meterchangedata.oldtable_zerodata = float(curdata["oldtable_zerodata"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.oldtable_twentyfourdata = float(curdata["oldtable_twentyfourdata"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.oldtable_value = float(curdata["oldtable_value"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.oldtable_magnification = float(curdata["oldtable_magnification"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.oldtable_finalvalue = float(curdata["oldtable_finalvalue"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.newtable_zerodata = float(curdata["newtable_zerodata"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.newtable_twentyfourdata = float(curdata["newtable_twentyfourdata"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.newtable_value = float(curdata["newtable_value"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.newtable_magnification = float(curdata["newtable_magnification"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.newtable_finalvalue = float(curdata["newtable_finalvalue"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.finalvalue = float(curdata["finalvalue"])
+                    except:
+                        pass
+                    meterchangedata.save()
+
             if operationtype == "15":
                 savedata = Entrydata.objects.exclude(state="9").get(id=int(curdata["id"]))
             if operationtype == "16":

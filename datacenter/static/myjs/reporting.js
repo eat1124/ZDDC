@@ -619,9 +619,11 @@ $(document).ready(function () {
             }
     });
 
+    var data5 = "";
     $('#sample_5 tbody').on('click', 'button#edit', function () {
             var table = $('#sample_5').DataTable();
             var data = table.row($(this).parents('tr')).data();
+            data5 = data;
             $("#id").val(data.id);
             $("#cumulative").val(data.target_cumulative);
             $("#curvalue").val(data.curvalue);
@@ -630,18 +632,36 @@ $(document).ready(function () {
             $("#cumulativehalfyear").val(data.cumulativehalfyear);
             $("#cumulativeyear").val(data.cumulativehalfyear);
 
-            $("#oldtable_zerodata").val($('#table5_zerodata_' + data.id).val());
-            $("#oldtable_twentyfourdata").val($('#table5_zerodata_' + data.id).val());
-            $("#oldtable_value").val(Number( $("#oldtable_twentyfourdata").val()) - Number($("#oldtable_zerodata").val()));
-            $("#oldtable_magnification").val($('#table5_magnification_' + data.id).val());
-            $("#oldtable_finalvalue").val(Number($("#oldtable_value").val()) * Number(data.target_magnification));
 
-            $("#newtable_zerodata").val($('#table5_zerodata_' + data.id).val());
-            $("#newtable_twentyfourdata").val($('#table5_twentyfourdata_' + data.id).val());
-            $("#newtable_value").val(Number( $("#newtable_twentyfourdata").val()) - Number($("#newtable_zerodata").val()));
-            $("#newtable_magnification").val($('#table5_magnification_' + data.id).val());
-            $("#newtable_finalvalue").val(Number($("#newtable_value").val()) * Number(data.target_magnification));
-            $("#finalvalue").val(Number($("#oldtable_finalvalue").val()) + Number($("#newtable_finalvalue").val()));
+            $("#meterchangedata_id").val(data.meterchangedata_id);
+            if ($("#meterchangedata_id").val()){
+                $("#oldtable_zerodata").val(data.oldtable_zerodata);
+                $("#oldtable_twentyfourdata").val(data.oldtable_twentyfourdata);
+                $("#oldtable_value").val(data.oldtable_value);
+                $("#oldtable_magnification").val(data.oldtable_magnification);
+                $("#oldtable_finalvalue").val(data.oldtable_finalvalue);
+
+                $("#newtable_zerodata").val(data.newtable_zerodata);
+                $("#newtable_twentyfourdata").val(data.newtable_twentyfourdata);
+                $("#newtable_value").val(data.newtable_value);
+                $("#newtable_magnification").val(data.newtable_magnification);
+                $("#newtable_finalvalue").val(data.newtable_finalvalue);
+                $("#finalvalue").val(data.finalvalue);
+            }else{
+                $("#oldtable_zerodata").val($('#table5_zerodata_' + data.id).val());
+                $("#oldtable_twentyfourdata").val($('#table5_zerodata_' + data.id).val());
+                $("#oldtable_value").val(Number( $("#oldtable_twentyfourdata").val()) - Number($("#oldtable_zerodata").val()));
+                $("#oldtable_magnification").val($('#table5_magnification_' + data.id).val());
+                $("#oldtable_finalvalue").val(Number($("#oldtable_value").val()) * Number(data.target_magnification));
+
+                $("#newtable_zerodata").val($('#table5_zerodata_' + data.id).val());
+                $("#newtable_twentyfourdata").val($('#table5_twentyfourdata_' + data.id).val());
+                $("#newtable_value").val(Number( $("#newtable_twentyfourdata").val()) - Number($("#newtable_zerodata").val()));
+                $("#newtable_magnification").val($('#table5_magnification_' + data.id).val());
+                $("#newtable_finalvalue").val(Number($("#newtable_value").val()) * Number(data.target_magnification));
+                $("#finalvalue").val(Number($("#oldtable_finalvalue").val()) + Number($("#newtable_finalvalue").val()));
+
+            }
     });
 
     $("#oldtable_zerodata").bind('input propertychange',function (){
@@ -692,28 +712,19 @@ $(document).ready(function () {
                        $('#table5_cumulativeyear_' + id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativeyear)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val())))))
                   }
 
-                  $("Element").blur();
-                  var savedata=[];
-                  var id = $("#id").val()
-                  var reporting_date = $("#reporting_date").val()
-                   var id = $("#id").val()
-                  var reporting_date = $("#reporting_date").val()
-                  savedata.push({"id":$("#id").val(),"reporting_date":$("#reporting_date").val(),"oldtable_zerodata":$("#oldtable_zerodata").val(),"oldtable_twentyfourdata":$("#oldtable_twentyfourdata").val(),"oldtable_value":$("#oldtable_value").val(), "oldtable_magnification":$("#oldtable_magnification").val(),"oldtable_finalvalue":$("#oldtable_finalvalue").val(),
-                      "newtable_zerodata":$("#newtable_zerodata").val(),"newtable_twentyfourdata":$("#newtable_twentyfourdata").val(), "newtable_value": $("#newtable_value").val(),"newtable_magnification":$("#newtable_magnification").val(), "newtable_finalvalue":$("#newtable_finalvalue").val(),"finalvalue":$("#finalvalue").val(),
-                      });
+                  data5.oldtable_zerodata = $("#oldtable_zerodata").val();
+                  data5.oldtable_twentyfourdata = $("#oldtable_twentyfourdata").val();
+                  data5.oldtable_value = $("#oldtable_value").val();
+                  data5.oldtable_magnification = $("#oldtable_magnification").val();
+                  data5.oldtable_finalvalue = $("#oldtable_finalvalue").val();
+                  data5.newtable_zerodata = $("#newtable_zerodata").val();
+                  data5.newtable_twentyfourdata = $("#newtable_twentyfourdata").val();
+                  data5.newtable_value = $("#newtable_value").val();
+                  data5.newtable_magnification = $("#newtable_magnification").val();
+                  data5.newtable_finalvalue = $("#newtable_finalvalue").val();
+                  data5.finalvalue = $("#finalvalue").val();
 
-                  $.ajax({
-                        type: "POST",
-                        dataType: 'json',
-                        url: "../../../reporting_save/",
-                        data:
-                            {
-                                operationtype:"meterchangedata",
-                                savedata:JSON.stringify(savedata),
-                            },
-                  });
                   $('#static5').modal('hide');
-
             }
             else{
                 $('#static5').modal('hide');
@@ -1110,35 +1121,36 @@ $(document).ready(function () {
         }
     });
     $('#save5').click(function () {
-        $("Element").blur()
-        var table = $('#sample_5').DataTable().data();
-        var savedata=[]
-    　　$.each(table,function(i,item){
-            savedata.push({"id":item.id,"reporting_date":$("#reporting_date").val(),"magnification": $('#table5_magnification_' + item.id).val(),"zerodata":$('#table5_zerodata_' + item.id).val(),"twentyfourdata":$('#table5_twentyfourdata_' + item.id).val(),"metervalue":$('#table5_metervalue_' + item.id).val(),"curvalue":$('#table5_curvalue_' + item.id).val(),"curvaluedate":$('#table5_curvaluedate_' + item.id).val(),"curvaluetext":$('#table5_curvaluetext_' + item.id).val(),"cumulativemonth":$('#table5_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table5_cumulativequarter_' + item.id).val(),"cumulativehalfyear":$('#table5_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table5_cumulativeyear_' + item.id).val()})
-    　　});
-        $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../../reporting_save/",
-            data:
-                {
-                    operationtype:1,
-                    savedata:JSON.stringify(savedata),
+            $("Element").blur()
+            var table = $('#sample_5').DataTable().data();
+            var savedata=[];
+            $.each(table,function(i,item){
+                savedata.push({"id":item.id,"oldtable_zerodata": item.oldtable_zerodata, "oldtable_twentyfourdata": item.oldtable_twentyfourdata, "oldtable_value": item.oldtable_value, "oldtable_magnification": item.oldtable_magnification, "oldtable_finalvalue": item.oldtable_finalvalue,
+                    "newtable_zerodata":item.newtable_zerodata, "newtable_twentyfourdata":item.newtable_twentyfourdata, "newtable_value": item.newtable_value, "newtable_magnification": item.newtable_magnification, "newtable_finalvalue": item.newtable_finalvalue, "finalvalue": item.finalvalue,
+                    "reporting_date":$("#reporting_date").val(),"magnification": $('#table5_magnification_' + item.id).val(),"zerodata":$('#table5_zerodata_' + item.id).val(),"twentyfourdata":$('#table5_twentyfourdata_' + item.id).val(),"metervalue":$('#table5_metervalue_' + item.id).val(),
+                    "curvalue":$('#table5_curvalue_' + item.id).val(),"curvaluedate":$('#table5_curvaluedate_' + item.id).val(),"curvaluetext":$('#table5_curvaluetext_' + item.id).val(),"cumulativemonth":$('#table5_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table5_cumulativequarter_' + item.id).val(),
+                    "cumulativehalfyear":$('#table5_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table5_cumulativeyear_' + item.id).val()})
+        　　});
+            $.ajax({
+                type: "POST",
+                dataType: 'json',
+                url: "../../../reporting_save/",
+                data:
+                    {
+                        operationtype:1,
+                        savedata:JSON.stringify(savedata),
+                    },
+                success: function (data) {
+                    var myres = data["res"];
+                    if (myres == "保存成功。") {
+                        table.ajax.reload();
+                    }
+                    alert(myres);
                 },
-            success: function (data) {
-                var myres = data["res"];
-                if (myres == "保存成功。") {
-                    table.ajax.reload();
+                error: function (e) {
+                    alert("页面出现错误，请于管理员联系。");
                 }
-                alert(myres);
-            },
-            error: function (e) {
-                alert("页面出现错误，请于管理员联系。");
-            }
-        });
-
-
-
+            });
     })
 
 });
