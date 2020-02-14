@@ -352,65 +352,27 @@ $(document).ready(function () {
         "bProcessing": true,
         "bPaginate" : false,
         "bFilter" : false,
-        "ajax": "../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val()  + "&operationtype=0",
+        "ajax": "../../../reporting_search_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val(),
         "columns": [
-            {"data": "id"},
+            {"data": "target_id"},
             {"data": "target_name"},
             {"data": "target_code"},
             {"data": "target_businesstypename"},
             {"data": "target_unitname"},
+            {"data": "zerodata"},
+            {"data": "twentyfourdata"},
             {"data": "curvalue"},
             {"data": "cumulativemonth"},
             {"data": "cumulativequarter"},
             {"data": "cumulativehalfyear"},
             {"data": "cumulativeyear"},
         ],
+        "createdRow": function (row, data, index) {
+            if(data.curvalue=="") {
+                $('td', row).css("color", "#FF0000");
+            }
+        },
 
-        "columnDefs": [
-            {
-            "targets": -5,
-            "mRender":function(data,type,full){
-                        $('#table4_curvaluedate_' + full.id).datetimepicker({
-                            format: 'yyyy-mm-dd hh:ii:ss',
-                            autoclose: true,
-                        });
-
-                        if (full.target_datatype == 'numbervalue'){
-                            return "<input disabled id='table4_curvalue_" + full.id + "' name='table4_curvalue'  type='number' value='" + data + "'></input>"
-                        }
-                        if (full.target_datatype == 'date'){
-                            return "<input disabled style = 'width:153px;height:26px;' id='table4_curvaluedate_" + full.id + "' name='table4_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
-                        }
-                        if (full.target_datatype == 'text'){
-                            return "<input disabled id='table4_curvaluetext_" + full.id + "' name='table4_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
-                        }
-                    }
-            },
-            {
-            "targets": -4,
-            "mRender":function(data,type,full){
-                        return "<input disabled id='table4_cumulativemonth_" + full.id + "' name='table4_cumulativemonth'  type='text' value='" + data + "'></input>"
-                    }
-            },
-            {
-            "targets": -3,
-            "mRender":function(data,type,full){
-                        return "<input disabled id='table4_cumulativequarter_" + full.id + "' name='table4_cumulativequarter'  type='text' value='" + data + "'></input>"
-                    }
-            },
-            {
-            "targets": -2,
-            "mRender":function(data,type,full){
-                        return "<input disabled id='table4_cumulativehalfyear_" + full.id + "' name='table4_cumulativehalfyear'  type='text' value='" + data + "'></input>"
-                    }
-            },
-            {
-            "targets": -1,
-            "mRender":function(data,type,full){
-                        return "<input disabled id='table4_cumulativeyear_" + full.id + "' name='table4_cumulativeyear'  type='text' value='" + data + "'></input>"
-                    }
-            },
-        ],
 
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",
@@ -428,18 +390,7 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
     });
-    // 行按钮
-    $('#sample_4 tbody').on('change', 'input[name="table4_curvalue"]', function () {
-            var table = $('#sample_4').DataTable();
-            var data = table.row($(this).parents('tr')).data();
-            if(data.target_cumulative=='是') {
-                $('#table4_cumulativemonth_' + data.id).val(Number(data.cumulativemonth) - Number(data.curvalue) + Number($('#table4_curvalue_' + data.id).val()))
-                $('#table4_cumulativequarter_' + data.id).val(Number(data.cumulativequarter) - Number(data.curvalue) + Number($('#table4_curvalue_' + data.id).val()))
-                $('#table4_cumulativehalfyear_' + data.id).val(Number(data.cumulativehalfyear) - Number(data.curvalue) + Number($('#table4_curvalue_' + data.id).val()))
-                $('#table4_cumulativeyear_' + data.id).val(Number(data.cumulativeyear) - Number(data.curvalue) + Number($('#table4_curvalue_' + data.id).val()))
-            }
-    });
-
+    var data5 = "";
     $('#sample_5').dataTable({
         "bAutoWidth": true,
         "bSort": false,
@@ -474,13 +425,21 @@ $(document).ready(function () {
             {
             "targets": -10,
             "mRender":function(data,type,full){
-                      return "<input style = 'width:90px;height:26px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
+                        var disabled=""
+                        if (full.meterchangedata_id){
+                            disabled = "disabled"
+                        }
+                      return "<input " + disabled + "   style = 'width:90px;height:26px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
                     }
             },
             {
             "targets": -9,
             "mRender":function(data,type,full){
-                      return "<input style = 'width:90px;height:26px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
+                        var disabled=""
+                        if (full.meterchangedata_id){
+                            disabled = "disabled"
+                        }
+                      return "<input " + disabled + "  style = 'width:90px;height:26px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
                     }
             },
             {
@@ -496,18 +455,22 @@ $(document).ready(function () {
                     }
             },
             {
-            "targets": -6,
-            "mRender":function(data,type,full){
-                        if (full.target_datatype == 'numbervalue'){
-                            return "<input style = 'width:90px;height:26px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
+                "targets": -6,
+                "mRender":function(data,type,full){
+                    var disabled=""
+                        if (full.meterchangedata_id){
+                            disabled = "disabled"
                         }
-                        if (full.target_datatype == 'date'){
-                            return "<input class='table5_curvaluedate' style = 'width:90px;height:26px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
-                        }
-                        if (full.target_datatype == 'text'){
-                            return "<input  style = 'width:90px;height:26px;' id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
-                        }
+                    if (full.target_datatype == 'numbervalue'){
+                        return "<input " + disabled + "   style = 'width:90px;height:26px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
                     }
+                    if (full.target_datatype == 'date'){
+                        return "<input " + disabled + "   class='table5_curvaluedate' style = 'width:90px;height:26px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                    }
+                    if (full.target_datatype == 'text'){
+                        return "<input " + disabled + "   style = 'width:90px;height:26px;' id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                    }
+                }
             },
             {
             "targets": -5,
@@ -537,7 +500,7 @@ $(document).ready(function () {
             "targets": -1,
             "data": null,
             "width": "100px",
-            "defaultContent": "<button  id='edit' title='编辑' data-toggle='modal'  data-target='#static5'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>"
+            "defaultContent": "<button  id='edit' title='换表' data-toggle='modal'  data-target='#static5'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>"
             }
         ],
         "oLanguage": {
@@ -618,12 +581,27 @@ $(document).ready(function () {
                 $('td', $(this).parents('tr')).css("color", "#000000");
             }
     });
+    $('#sample_5 tbody').on('change', 'input[name="table5_curvalue"]', function () {
+        var table = $('#sample_5').DataTable();
+        var data = table.row($(this).parents('tr')).data();
+        if(data.target_cumulative=='是') {
+                $('#table5_cumulativemonth_' + data.id).val(Number(data.cumulativemonth) - Number(data.curvalue) + Number($('#table5_curvalue_' + data.id).val()))
+                $('#table5_cumulativequarter_' + data.id).val(Number(data.cumulativequarter) - Number(data.curvalue) + Number($('#table5_curvalue_' + data.id).val()))
+                $('#table5_cumulativehalfyear_' + data.id).val(Number(data.cumulativehalfyear) - Number(data.curvalue) + Number($('#table5_curvalue_' + data.id).val()))
+                $('#table5_cumulativeyear_' + data.id).val(Number(data.cumulativeyear) - Number(data.curvalue) + Number($('#table5_curvalue_' + data.id).val()))
+            }
+    });
 
-    var data5 = "";
     $('#sample_5 tbody').on('click', 'button#edit', function () {
+            var data5 = $('#sample_5').DataTable().data();
             var table = $('#sample_5').DataTable();
             var data = table.row($(this).parents('tr')).data();
-            data5 = data;
+            $.each(data5,function(i,item){
+              if(item.id== data.id){
+                  data = item
+                  return false
+              }
+            })
             $("#id").val(data.id);
             $("#cumulative").val(data.target_cumulative);
             $("#curvalue").val(data.curvalue);
@@ -691,44 +669,65 @@ $(document).ready(function () {
     });
 
     $('#confirm').click(function () {
-            if (confirm("此操作涉及到换表，是否执行换表操作？")){
-                  var id = $("#id").val();
-                  var cumulative = $("#cumulative").val();
-                  var curvalue = $("#curvalue").val();
-                  var cumulativemonth  = $("#cumulativemonth").val();
-                  var cumulativequarter = $("#cumulativequarter").val();
-                  var cumulativehalfyear = $("#cumulativehalfyear").val();
-                  var cumulativeyear = $("#cumulativeyear").val();
-                  $("#table5_magnification_" + id).val($("#newtable_magnification").val());
-                  $("#table5_curvalue_" + id).val($("#finalvalue").val());
-                  $("#table5_zerodata_" + id).val($("#oldtable_zerodata").val());
-                  $("#table5_twentyfourdata_" + id).val($("#newtable_twentyfourdata").val());
-                  $("#table5_metervalue_" + id).val(Number($("#table5_twentyfourdata_" + id).val()) - Number($("#table5_zerodata_" + id).val()));
+        if (confirm("换表后将新增换表记录，并修改此表计倍率，请谨慎操作！！！\r是否继续换表操作？")){
+            var id = $("#id").val();
+            var cumulative = $("#cumulative").val();
+            var curvalue = $("#curvalue").val();
+            var cumulativemonth  = $("#cumulativemonth").val();
+            var cumulativequarter = $("#cumulativequarter").val();
+            var cumulativehalfyear = $("#cumulativehalfyear").val();
+            var cumulativeyear = $("#cumulativeyear").val();
+            $("#table5_magnification_" + id).val($("#newtable_magnification").val());
+            $("#table5_curvalue_" + id).val($("#finalvalue").val());
+            $("#table5_zerodata_" + id).val($("#oldtable_zerodata").val());
+            $("#table5_twentyfourdata_" + id).val($("#newtable_twentyfourdata").val());
+            $("#table5_metervalue_" + id).val(Number($("#table5_twentyfourdata_" + id).val()) - Number($("#table5_zerodata_" + id).val()));
+            $("#table5_curvalue_" + id).attr("disabled","disabled")
+            $("#table5_twentyfourdata_" + id).attr("disabled","disabled")
+            $("#table5_zerodata_" + id).attr("disabled","disabled")
+            var newcumulativemonth=""
+            var newcumulativequarter=""
+            var newcumulativehalfyear=""
+            var newcumulativeyear=""
+            if(cumulative=='是') {
+               newcumulativemonth=math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativemonth)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val()))));
+               newcumulativequarter=math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativequarter)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val()))));
+               newcumulativehalfyear=math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativehalfyear)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val()))));
+               newcumulativeyear=math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativeyear)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val()))));
 
-                  if(cumulative=='是') {
-                       $('#table5_cumulativemonth_' + id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativemonth)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val())))));
-                       $('#table5_cumulativequarter_' + id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativequarter)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val())))));
-                       $('#table5_cumulativehalfyear_' + id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativehalfyear)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val())))));
-                       $('#table5_cumulativeyear_' + id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativeyear)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val())))))
-                  }
-
-                  data5.oldtable_zerodata = $("#oldtable_zerodata").val();
-                  data5.oldtable_twentyfourdata = $("#oldtable_twentyfourdata").val();
-                  data5.oldtable_value = $("#oldtable_value").val();
-                  data5.oldtable_magnification = $("#oldtable_magnification").val();
-                  data5.oldtable_finalvalue = $("#oldtable_finalvalue").val();
-                  data5.newtable_zerodata = $("#newtable_zerodata").val();
-                  data5.newtable_twentyfourdata = $("#newtable_twentyfourdata").val();
-                  data5.newtable_value = $("#newtable_value").val();
-                  data5.newtable_magnification = $("#newtable_magnification").val();
-                  data5.newtable_finalvalue = $("#newtable_finalvalue").val();
-                  data5.finalvalue = $("#finalvalue").val();
-
-                  $('#static5').modal('hide');
+               $('#table5_cumulativemonth_' + id).val(newcumulativemonth);
+               $('#table5_cumulativequarter_' + id).val(newcumulativequarter);
+               $('#table5_cumulativehalfyear_' + id).val(newcumulativehalfyear);
+               $('#table5_cumulativeyear_' + id).val(newcumulativeyear);
             }
-            else{
-                $('#static5').modal('hide');
-            }
+            var data5 = $('#sample_5').DataTable().data();
+            $.each(data5,function(i,item){
+              if(item.id== id){
+                  data5[i].meterchangedata_id = "0";
+                  data5[i].oldtable_zerodata = $("#oldtable_zerodata").val();
+                  data5[i].oldtable_twentyfourdata = $("#oldtable_twentyfourdata").val();
+                  data5[i].oldtable_value = $("#oldtable_value").val();
+                  data5[i].oldtable_magnification = $("#oldtable_magnification").val();
+                  data5[i].oldtable_finalvalue = $("#oldtable_finalvalue").val();
+                  data5[i].newtable_zerodata = $("#newtable_zerodata").val();
+                  data5[i].newtable_twentyfourdata = $("#newtable_twentyfourdata").val();
+                  data5[i].newtable_value = $("#newtable_value").val();
+                  data5[i].newtable_magnification = $("#newtable_magnification").val();
+                  data5[i].newtable_finalvalue = $("#newtable_finalvalue").val();
+                  data5[i].finalvalue = $("#finalvalue").val();
+                  data5[i].cumulativemonth = newcumulativequarter;
+                  data5[i].cumulativequarter = newcumulativequarter;
+                  data5[i].cumulativehalfyear = newcumulativehalfyear;
+                  data5[i].cumulativeyear = newcumulativeyear;
+                  return false
+              }
+            })
+
+            $('#static5').modal('hide');
+        }
+        else{
+            $('#static5').modal('hide');
+        }
     });
 
     $('#reporting_date').change(function () {
@@ -739,9 +738,13 @@ $(document).ready(function () {
         var table3 = $('#sample_3').DataTable();
         table3.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=17").load();
         var table4 = $('#sample_4').DataTable();
-        table4.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=0").load();
+        table4.ajax.url("../../../reporting_search_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()).load();
         var table5 = $('#sample_5').DataTable();
         table5.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1").load();
+    })
+    $('#searchapp').change(function () {
+        var table4 = $('#sample_4').DataTable();
+        table4.ajax.url("../../../reporting_search_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()).load();
     })
 
     if($('#cycletype').val()=="10") {
@@ -1125,11 +1128,31 @@ $(document).ready(function () {
             var table = $('#sample_5').DataTable().data();
             var savedata=[];
             $.each(table,function(i,item){
-                savedata.push({"id":item.id,"oldtable_zerodata": item.oldtable_zerodata, "oldtable_twentyfourdata": item.oldtable_twentyfourdata, "oldtable_value": item.oldtable_value, "oldtable_magnification": item.oldtable_magnification, "oldtable_finalvalue": item.oldtable_finalvalue,
-                    "newtable_zerodata":item.newtable_zerodata, "newtable_twentyfourdata":item.newtable_twentyfourdata, "newtable_value": item.newtable_value, "newtable_magnification": item.newtable_magnification, "newtable_finalvalue": item.newtable_finalvalue, "finalvalue": item.finalvalue,
-                    "reporting_date":$("#reporting_date").val(),"magnification": $('#table5_magnification_' + item.id).val(),"zerodata":$('#table5_zerodata_' + item.id).val(),"twentyfourdata":$('#table5_twentyfourdata_' + item.id).val(),"metervalue":$('#table5_metervalue_' + item.id).val(),
-                    "curvalue":$('#table5_curvalue_' + item.id).val(),"curvaluedate":$('#table5_curvaluedate_' + item.id).val(),"curvaluetext":$('#table5_curvaluetext_' + item.id).val(),"cumulativemonth":$('#table5_cumulativemonth_' + item.id).val(),"cumulativequarter":$('#table5_cumulativequarter_' + item.id).val(),
-                    "cumulativehalfyear":$('#table5_cumulativehalfyear_' + item.id).val(),"cumulativeyear":$('#table5_cumulativeyear_' + item.id).val()})
+                savedata.push({
+                    "id":item.id,
+                    "oldtable_zerodata": item.oldtable_zerodata,
+                    "oldtable_twentyfourdata": item.oldtable_twentyfourdata,
+                    "oldtable_value": item.oldtable_value,
+                    "oldtable_magnification": item.oldtable_magnification,
+                    "oldtable_finalvalue": item.oldtable_finalvalue,
+                    "newtable_zerodata":item.newtable_zerodata,
+                    "newtable_twentyfourdata":item.newtable_twentyfourdata,
+                    "newtable_value": item.newtable_value,
+                    "newtable_magnification": item.newtable_magnification,
+                    "newtable_finalvalue": item.newtable_finalvalue,
+                    "finalvalue": item.finalvalue,
+                    "reporting_date":$("#reporting_date").val(),
+                    "magnification": $('#table5_magnification_' + item.id).val(),
+                    "zerodata":$('#table5_zerodata_' + item.id).val(),
+                    "twentyfourdata":$('#table5_twentyfourdata_' + item.id).val(),
+                    "metervalue":$('#table5_metervalue_' + item.id).val(),
+                    "curvalue":$('#table5_curvalue_' + item.id).val(),
+                    "curvaluedate":$('#table5_curvaluedate_' + item.id).val(),
+                    "curvaluetext":$('#table5_curvaluetext_' + item.id).val(),
+                    "cumulativemonth":$('#table5_cumulativemonth_' + item.id).val(),
+                    "cumulativequarter":$('#table5_cumulativequarter_' + item.id).val(),
+                    "cumulativehalfyear":$('#table5_cumulativehalfyear_' + item.id).val(),
+                    "cumulativeyear":$('#table5_cumulativeyear_' + item.id).val()})
         　　});
             $.ajax({
                 type: "POST",

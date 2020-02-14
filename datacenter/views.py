@@ -2987,7 +2987,7 @@ def reporting_index(request, cycletype, funid):
         extractreset = ""
         calculatereset = ""
         curapp = App.objects.filter(id=app)
-        search_target = Target.objects.exclude(state='9').exclude(adminapp=app).filter(cycletype=cycletype,
+        search_target = Target.objects.exclude(state='9').exclude(adminapp_id=app).filter(cycletype=cycletype,
                                                                                        app__in=curapp)
 
         meter_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
@@ -3007,9 +3007,16 @@ def reporting_index(request, cycletype, funid):
                                                                      target__cycletype=cycletype, datadate=now)
         calculate_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                          target__cycletype=cycletype, datadate=now)
-
+        search_app=[]
         if len(search_target) <= 0:
             searchtag = "display: none;"
+        else:
+            for target in search_target:
+                if target.adminapp is not None:
+                    cursearchapp = {"id":target.adminapp.id,"name":target.adminapp.name}
+                    if cursearchapp not in search_app:
+                        search_app.append(cursearchapp)
+
         if len(meter_target) <= 0 and len(meter_data) <= 0:
             metertag = "display: none;"
         if len(entry_target) <= 0 and len(entry_data) <= 0:
@@ -3080,6 +3087,7 @@ def reporting_index(request, cycletype, funid):
                        "entryreset": entryreset,
                        "extractreset": extractreset,
                        "calculatereset": calculatereset,
+                       "search_app":search_app,
                        "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
@@ -3108,61 +3116,21 @@ def reporting_data(request):
         except:
             raise Http404()
         all_data = []
-        if operationtype == "0":
-            curapp = App.objects.get(id=app)
-            all_data = Entrydata.objects.exclude(state="9").filter(target__app=curapp, target__cycletype=cycletype,
-                                                                   datadate=reporting_date)
-        zerodata = ""
-        twentyfourdata = ""
-        metervalue = ""
-        meterchangedata_id = ""
-        oldtable_zerodata = ""
-        oldtable_twentyfourdata = ""
-        oldtable_value = ""
-        oldtable_magnification = ""
-        oldtable_finalvalue = ""
-        newtable_zerodata = ""
-        newtable_twentyfourdata = ""
-        newtable_value = ""
-        newtable_magnification = ""
-        newtable_finalvalue = ""
-        finalvalue = ""
+
         if operationtype == "1":
             all_data = Meterdata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
-                                                                   datadate=reporting_date)
-            for data in all_data:
-                zerodata = data.zerodata
-                twentyfourdata = data.twentyfourdata
-                metervalue = data.metervalue
-
-            if len(all_data) > 0:
-                all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata_id=int(all_data[0].id))
-                if len(all_changedata) > 0:
-                    for data in all_changedata:
-                        meterchangedata_id = data.id
-                        oldtable_zerodata = data.oldtable_zerodata
-                        oldtable_twentyfourdata = data.oldtable_twentyfourdata
-                        oldtable_value = data.oldtable_value
-                        oldtable_magnification = data.oldtable_magnification
-                        oldtable_finalvalue = data.oldtable_finalvalue
-                        newtable_zerodata = data.newtable_zerodata
-                        newtable_twentyfourdata = data.newtable_twentyfourdata
-                        newtable_value = data.newtable_value
-                        newtable_magnification = data.newtable_magnification
-                        newtable_finalvalue = data.newtable_finalvalue
-                        finalvalue = data.finalvalue
-
+                                                                   datadate=reporting_date).select_related("target")
         if operationtype == "15":
             all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
-                                                                   datadate=reporting_date)
+                                                                   datadate=reporting_date).select_related("target")
         if operationtype == "16":
             all_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                      target__cycletype=cycletype,
-                                                                     datadate=reporting_date)
+                                                                     datadate=reporting_date).select_related("target")
         if operationtype == "17":
             all_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                        target__cycletype=cycletype,
-                                                                       datadate=reporting_date)
+                                                                       datadate=reporting_date).select_related("target")
         for data in all_data:
             businesstypename = data.target.businesstype
             unitname = data.target.unit
@@ -3180,11 +3148,21 @@ def reporting_data(request):
                     unitname = unit_dict_list.name
             except:
                 pass
+            curvalue=""
+            curvaluedate=""
             cumulativemonth = ""
             cumulativequarter = ""
             cumulativehalfyear = ""
             cumulativeyear = ""
             if data.target.cumulative == '是':
+                try:
+                    curvalue = round(data.curvalue, data.target.digit)
+                except:
+                    pass
+                try:
+                    curvaluedate = data.curvaluedate.strftime('%Y-%m-%d %H:%M:%S') if data.curvaluedate else "",
+                except:
+                    pass
                 try:
                     cumulativemonth = round(data.cumulativemonth, data.target.digit)
                 except:
@@ -3201,13 +3179,110 @@ def reporting_data(request):
                     cumulativeyear = round(data.cumulativeyear, data.target.digit)
                 except:
                     pass
-            result.append({
+            if operationtype in ("15","16","17"):
+                result.append({
                 "id": data.id,
-                "zerodata": zerodata,
-                "twentyfourdata": twentyfourdata,
-                "metervalue": metervalue,
-                "curvalue": round(data.curvalue, data.target.digit),
-                "curvaluedate": data.curvaluedate.strftime('%Y-%m-%d %H:%M:%S') if data.curvaluedate else "",
+                "curvalue": curvalue,
+                "curvaluedate": curvaluedate,
+                "curvaluetext": data.curvaluetext,
+                "cumulativemonth": cumulativemonth,
+                "cumulativequarter": cumulativequarter,
+                "cumulativehalfyear": cumulativehalfyear,
+                "cumulativeyear": cumulativeyear,
+                "target_id": data.target.id,
+                "target_name": data.target.name,
+                "target_code": data.target.code,
+                "target_businesstype": data.target.businesstype,
+                "target_unit": data.target.unit,
+                "target_businesstypename": businesstypename,
+                "target_unitname": unitname,
+                "target_datatype": data.target.datatype,
+                "target_cumulative": data.target.cumulative,
+                "target_magnification": data.target.magnification,
+                "target_upperlimit": data.target.upperlimit,
+                "target_lowerlimit": data.target.lowerlimit,
+            })
+            elif operationtype =="1":
+                zerodata = data.zerodata
+                twentyfourdata = data.twentyfourdata
+                metervalue = data.twentyfourdata
+                meterchangedata_id = ""
+                oldtable_zerodata = ""
+                oldtable_twentyfourdata = ""
+                oldtable_value = ""
+                oldtable_magnification = ""
+                oldtable_finalvalue = ""
+                newtable_zerodata = ""
+                newtable_twentyfourdata = ""
+                newtable_value = ""
+                newtable_magnification = ""
+                newtable_finalvalue = ""
+                finalvalue = ""
+
+                all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=data)
+                if len(all_changedata) > 0:
+                    meterchangedata_id = all_changedata[0].id
+                    oldtable_zerodata = all_changedata[0].oldtable_zerodata
+                    oldtable_twentyfourdata = all_changedata[0].oldtable_twentyfourdata
+                    oldtable_value = all_changedata[0].oldtable_value
+                    oldtable_magnification = all_changedata[0].oldtable_magnification
+                    oldtable_finalvalue = all_changedata[0].oldtable_finalvalue
+                    newtable_zerodata = all_changedata[0].newtable_zerodata
+                    newtable_twentyfourdata = all_changedata[0].newtable_twentyfourdata
+                    newtable_value = all_changedata[0].newtable_value
+                    newtable_magnification = all_changedata[0].newtable_magnification
+                    newtable_finalvalue = all_changedata[0].newtable_finalvalue
+                    finalvalue = all_changedata[0].finalvalue
+                    if data.target.cumulative == '是':
+                        try:
+                            oldtable_zerodata = round(data.oldtable_zerodata, data.target.digit)
+                        except:
+                            pass
+                        try:
+                            oldtable_twentyfourdata = round(data.oldtable_twentyfourdata, data.target.digit)
+                        except:
+                            pass
+                        try:
+                            oldtable_value = round(data.oldtable_value, data.target.digit)
+                        except:
+                            pass
+                        try:
+                            oldtable_magnification = round(data.oldtable_magnification, data.target.digit)
+                        except:
+                            pass
+                        try:
+                            oldtable_finalvalue = round(data.oldtable_finalvalue, data.target.digit)
+                        except:
+                            pass
+                        try:
+                            newtable_zerodata = round(data.newtable_zerodata, data.target.digit)
+                        except:
+                            pass
+                        try:
+                            newtable_twentyfourdata = round(data.newtable_twentyfourdata, data.target.digit)
+                        except:
+                            pass
+                        try:
+                            newtable_value = round(data.newtable_value, data.target.digit)
+                        except:
+                            pass
+                        try:
+                            newtable_magnification = round(data.newtable_magnification, data.target.digit)
+                        except:
+                            pass
+                        try:
+                            newtable_finalvalue = round(data.newtable_finalvalue, data.target.digit)
+                        except:
+                            pass
+                        try:
+                            finalvalue = round(data.finalvalue, data.target.digit)
+                        except:
+                            pass
+
+                result.append({
+                "id": data.id,
+                "curvalue": curvalue,
+                "curvaluedate": curvaluedate,
                 "curvaluetext": data.curvaluetext,
                 "cumulativemonth": cumulativemonth,
                 "cumulativequarter": cumulativequarter,
@@ -3226,6 +3301,9 @@ def reporting_data(request):
                 "target_upperlimit": data.target.upperlimit,
                 "target_lowerlimit": data.target.lowerlimit,
 
+                "zerodata": zerodata,
+                "twentyfourdata": twentyfourdata,
+                "metervalue": metervalue,
                 "meterchangedata_id": meterchangedata_id,
                 "oldtable_zerodata": oldtable_zerodata,
                 "oldtable_twentyfourdata": oldtable_twentyfourdata,
@@ -3239,6 +3317,135 @@ def reporting_data(request):
                 "newtable_finalvalue": newtable_finalvalue,
                 "finalvalue": finalvalue,
 
+            })
+        return JsonResponse({"data": result})
+
+
+def reporting_search_data(request):
+    if request.user.is_authenticated():
+
+        result = []
+        app = request.GET.get('app', '')
+        cycletype = request.GET.get('cycletype', '')
+        reporting_date = request.GET.get('reporting_date', '')
+        searchapp= request.GET.get('searchapp', '')
+        try:
+            app = int(app)
+            if cycletype == "10":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
+            if cycletype == "11":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype == "12":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype == "13":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype == "14":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+        except:
+            raise Http404()
+        all_data = []
+        curapp = App.objects.get(id=app)
+        all_target = Target.objects.exclude(state="9").exclude(adminapp=curapp).filter(app=curapp,cycletype=cycletype).order_by("adminapp","operationtype","sort")
+        if searchapp != "":
+            try:
+                cursearchapp = App.objects.get(id=int(searchapp))
+                all_target = all_target.filter(adminapp=cursearchapp)
+            except:
+                pass
+        for target in all_target:
+            curtargetdata= {"target":target,"zerodata":"","twentyfourdata":"","metervalue":"","curvalue":"","curvaluedate":"","curvaluetext":"","cumulativemonth":"","cumulativequarter":"","cumulativehalfyear":"","cumulativeyear":""}
+            if target.operationtype=="15":
+                targetvalue = Entrydata.objects.exclude(state="9").filter(target=target,datadate=reporting_date)
+                if len(targetvalue)>0:
+                    curtargetdata={"target":target,"zerodata":"","twentyfourdata":"","metervalue":"","curvalue":targetvalue[0].curvalue,"curvaluedate":targetvalue[0].curvaluedate,"curvaluetext":targetvalue[0].curvaluetext,"cumulativemonth":targetvalue[0].cumulativemonth,"cumulativequarter":targetvalue[0].cumulativequarter,"cumulativehalfyear":targetvalue[0].cumulativehalfyear,"cumulativeyear":targetvalue[0].cumulativeyear}
+            elif target.operationtype=="16":
+                targetvalue = Extractdata.objects.exclude(state="9").filter(target=target,datadate=reporting_date)
+                if len(targetvalue)>0:
+                    curtargetdata={"target":target,"zerodata":"","twentyfourdata":"","metervalue":"","curvalue":targetvalue[0].curvalue,"curvaluedate":targetvalue[0].curvaluedate,"curvaluetext":targetvalue[0].curvaluetext,"cumulativemonth":targetvalue[0].cumulativemonth,"cumulativequarter":targetvalue[0].cumulativequarter,"cumulativehalfyear":targetvalue[0].cumulativehalfyear,"cumulativeyear":targetvalue[0].cumulativeyear}
+            elif target.operationtype=="17":
+                targetvalue = Calculatedata.objects.exclude(state="9").filter(target=target,datadate=reporting_date)
+                if len(targetvalue)>0:
+                    curtargetdata={"target":target,"zerodata":"","twentyfourdata":"","metervalue":"","curvalue":targetvalue[0].curvalue,"curvaluedate":targetvalue[0].curvaluedate,"curvaluetext":targetvalue[0].curvaluetext,"cumulativemonth":targetvalue[0].cumulativemonth,"cumulativequarter":targetvalue[0].cumulativequarter,"cumulativehalfyear":targetvalue[0].cumulativehalfyear,"cumulativeyear":targetvalue[0].cumulativeyear}
+            elif target.operationtype=="1":
+                targetvalue = Meterdata.objects.exclude(state="9").filter(target=target,datadate=reporting_date)
+                if len(targetvalue)>0:
+                    curtargetdata={"target":target,"zerodata":targetvalue[0].zerodata,"twentyfourdata":targetvalue[0].twentyfourdata,"metervalue":targetvalue[0].metervalue,"curvalue":targetvalue[0].curvalue,"curvaluedate":targetvalue[0].curvaluedate,"curvaluetext":targetvalue[0].curvaluetext,"cumulativemonth":targetvalue[0].cumulativemonth,"cumulativequarter":targetvalue[0].cumulativequarter,"cumulativehalfyear":targetvalue[0].cumulativehalfyear,"cumulativeyear":targetvalue[0].cumulativeyear}
+            all_data.append(curtargetdata)
+        for data in all_data:
+            businesstypename = data["target"].businesstype
+            unitname = data["target"].unit
+            try:
+                businesstype_dict_list = DictList.objects.filter(id=int(data["target"].businesstype))
+                if businesstype_dict_list.exists():
+                    businesstype_dict_list = businesstype_dict_list[0]
+                    businesstypename = businesstype_dict_list.name
+            except:
+                pass
+            try:
+                unit_dict_list = DictList.objects.filter(id=int(data["target"].unit))
+                if unit_dict_list.exists():
+                    unit_dict_list = unit_dict_list[0]
+                    unitname = unit_dict_list.name
+            except:
+                pass
+            cumulativemonth = ""
+            cumulativequarter = ""
+            cumulativehalfyear = ""
+            cumulativeyear = ""
+            curvalue = ""
+            if data["target"].datatype=="numbervalue":
+                curvalue = data["curvalue"]
+                try:
+                    curvalue = round(data["curvalue"], data["target"].digit)
+                except:
+                    pass
+            elif data["target"].datatype=="date":
+                curvalue =""
+                try:
+                    curvalue = data["curvaluedate"].strftime('%Y-%m-%d %H:%M:%S') if data["curvaluedate"] else ""
+                except:
+                    pass
+            elif data["target"].datatype=="text":
+                curvalue = data["curvaluetext"]
+            if data["target"].cumulative == '是':
+                try:
+                    cumulativemonth = round(data["cumulativemonth"], data["target"].digit)
+                except:
+                    pass
+                try:
+                    cumulativequarter = round(data["cumulativequarter"], data["target"].digit)
+                except:
+                    pass
+                try:
+                    cumulativehalfyear = round(data["cumulativehalfyear"], data["target"].digit)
+                except:
+                    pass
+                try:
+                    cumulativeyear = round(data["cumulativeyear"], data["target"].digit)
+                except:
+                    pass
+            result.append({
+                "curvalue": curvalue,
+                "cumulativemonth": cumulativemonth,
+                "cumulativequarter": cumulativequarter,
+                "cumulativehalfyear": cumulativehalfyear,
+                "cumulativeyear": cumulativeyear,
+                "target_id": data["target"].id,
+                "target_name": data["target"].name,
+                "target_code": data["target"].code,
+                "target_businesstype": data["target"].businesstype,
+                "target_unit": data["target"].unit,
+                "target_businesstypename": businesstypename,
+                "target_unitname": unitname,
+                "target_datatype": data["target"].datatype,
+                "target_cumulative": data["target"].cumulative,
+                "target_magnification": data["target"].magnification,
+                "target_upperlimit": data["target"].upperlimit,
+                "target_lowerlimit": data["target"].lowerlimit,
+
+                "zerodata": data["zerodata"] ,
+                "twentyfourdata": data["twentyfourdata"],
+                "metervalue": data["metervalue"],
             })
         return JsonResponse({"data": result})
 
@@ -3598,9 +3805,20 @@ def reporting_save(request):
             if operationtype == "1":
                 savedata = Meterdata.objects.exclude(state="9").get(id=int(curdata["id"]))
                 if curdata["finalvalue"]:
-                    reporting_date = datetime.datetime.strptime(curdata["reporting_date"], "%Y-%m-%d")
-                    meterchangedata = Meterchangedata()
+                    try:
+                        newmagnification = float(curdata["magnification"])
+                        if savedata.target.magnification != newmagnification:
+                            savedata.target.magnification = newmagnification
+                            savedata.target.save()
+                    except:
+                        pass
+                    meterchangedata = savedata.meterchangedata_set.exclude(state="9")
+                    if len(meterchangedata)>0:
+                        meterchangedata = meterchangedata[0]
+                    else:
+                        meterchangedata = Meterchangedata()
 
+                    reporting_date = datetime.datetime.strptime(curdata["reporting_date"], "%Y-%m-%d")
                     try:
                         meterchangedata.datadate = reporting_date
                     except:
@@ -3653,7 +3871,7 @@ def reporting_save(request):
                         meterchangedata.finalvalue = float(curdata["finalvalue"])
                     except:
                         pass
-                    meterchangedata.save()
+                meterchangedata.save()
 
             if operationtype == "15":
                 savedata = Entrydata.objects.exclude(state="9").get(id=int(curdata["id"]))
@@ -3677,10 +3895,6 @@ def reporting_save(request):
                     savedata.curvaluetext = curdata["curvaluetext"]
                 except:
                     pass
-            try:
-                savedata.target.magnification = float(curdata["magnification"])
-            except:
-                pass
             try:
                 savedata.zerodata = curdata["zerodata"]
             except:
@@ -3709,7 +3923,6 @@ def reporting_save(request):
                 savedata.cumulativeyear = float(curdata["cumulativeyear"])
             except:
                 pass
-            savedata.target.save()
             savedata.save()
 
         result["res"] = "保存成功。"
