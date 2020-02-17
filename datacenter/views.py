@@ -205,6 +205,10 @@ def get_process_monitor_tree(request):
         root_info['data'] = {
             'type': 'root'
         }
+
+        # 固定节点(数据补取、数据清理、数据服务、短信服务)
+
+
         tree_data = json.dumps([root_info], ensure_ascii=False)
         return JsonResponse({
             "ret": 1,
@@ -2705,7 +2709,7 @@ def target_app_index(request, funid):
                     "unit_id": i.id,
                 })
 
-        sourcelist = Source.objects.all().exclude(state='9')
+        sourcelist = Source.objects.all().exclude(state='9').exclude(pnode_id=None)
         for i in sourcelist:
             source_list.append({
                 "source_name": i.name,
