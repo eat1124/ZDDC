@@ -864,6 +864,7 @@ $(document).ready(function () {
                 {
                     operationtype:15,
                     savedata:JSON.stringify(savedata),
+                    reporting_date:$('#reporting_date').val(),
                 },
             success: function (data) {
                 var myres = data["res"];
@@ -956,6 +957,7 @@ $(document).ready(function () {
                 {
                     operationtype:16,
                     savedata:JSON.stringify(savedata),
+                    reporting_date:$('#reporting_date').val(),
                 },
             success: function (data) {
                 var myres = data["res"];
@@ -1048,6 +1050,7 @@ $(document).ready(function () {
                 {
                     operationtype:17,
                     savedata:JSON.stringify(savedata),
+                    reporting_date:$('#reporting_date').val(),
                 },
             success: function (data) {
                 var myres = data["res"];
@@ -1162,6 +1165,7 @@ $(document).ready(function () {
                     {
                         operationtype:1,
                         savedata:JSON.stringify(savedata),
+                        reporting_date:$('#reporting_date').val(),
                     },
                 success: function (data) {
                     var myres = data["res"];

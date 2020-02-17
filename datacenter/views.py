@@ -55,6 +55,28 @@ funlist = []
 info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Admin@2017", "token": "",
         "lastlogin": 0}
 
+def getmodels(modelname,year):
+    try:
+        from django.apps import apps
+
+        mydata = apps.get_model('__main__', modelname+'_' +year)
+    except LookupError:
+        if modelname=="Meterdata":
+            mydata = get_meterdata_model(year)
+        elif modelname == "entrydata":
+            mydata = get_entrydata_model(year)
+        elif modelname=="Extractdata":
+            mydata = get_extractdata_model(year)
+        elif modelname == "Calculatedata":
+            mydata = get_calculatedata_model(year)
+        else:
+            mydata = get_entrydata_model(year)
+
+    if not mydata.is_exists():
+        with connection.schema_editor() as schema_editor:
+            schema_editor.create_model(mydata)
+    return  mydata
+
 
 def get_process_monitor_tree(request):
     if request.user.is_authenticated():
@@ -3003,13 +3025,13 @@ def reporting_index(request, cycletype, funid):
         calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
                                                                     operationtype='17')
 
-        meter_data = Meterdata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+        meter_data = getmodels("Meterdata",str(now.year)).objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
                                                                  datadate=now)
-        entry_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+        entry_data = getmodels("Entrydata",str(now.year)).objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
                                                                  datadate=now)
-        extract_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,
+        extract_data = getmodels("Extractdata",str(now.year)).objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                      target__cycletype=cycletype, datadate=now)
-        calculate_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,
+        calculate_data = getmodels("Calculatedata",str(now.year)).objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                          target__cycletype=cycletype, datadate=now)
         search_app=[]
         if len(search_target) <= 0:
@@ -3122,17 +3144,17 @@ def reporting_data(request):
         all_data = []
 
         if operationtype == "1":
-            all_data = Meterdata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+            all_data = getmodels("Meterdata",str(reporting_date.year)).objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
                                                                    datadate=reporting_date).select_related("target")
         if operationtype == "15":
-            all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+            all_data = getmodels("Entrydata",str(reporting_date.year)).objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
                                                                    datadate=reporting_date).select_related("target")
         if operationtype == "16":
-            all_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,
+            all_data = getmodels("Extractdata",str(reporting_date.year)).objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                      target__cycletype=cycletype,
                                                                      datadate=reporting_date).select_related("target")
         if operationtype == "17":
-            all_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,
+            all_data = getmodels("Calculatedata",str(reporting_date.year)).objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                        target__cycletype=cycletype,
                                                                        datadate=reporting_date).select_related("target")
         for data in all_data:
@@ -3158,15 +3180,16 @@ def reporting_data(request):
             cumulativequarter = ""
             cumulativehalfyear = ""
             cumulativeyear = ""
+            try:
+                curvalue = round(data.curvalue, data.target.digit)
+            except:
+                pass
+            try:
+                curvaluedate = data.curvaluedate.strftime('%Y-%m-%d %H:%M:%S') if data.curvaluedate else "",
+            except:
+                pass
             if data.target.cumulative == '是':
-                try:
-                    curvalue = round(data.curvalue, data.target.digit)
-                except:
-                    pass
-                try:
-                    curvaluedate = data.curvaluedate.strftime('%Y-%m-%d %H:%M:%S') if data.curvaluedate else "",
-                except:
-                    pass
+
                 try:
                     cumulativemonth = round(data.cumulativemonth, data.target.digit)
                 except:
@@ -3223,7 +3246,7 @@ def reporting_data(request):
                 newtable_finalvalue = ""
                 finalvalue = ""
 
-                all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=data)
+                all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=data.id)
                 if len(all_changedata) > 0:
                     meterchangedata_id = all_changedata[0].id
                     oldtable_zerodata = all_changedata[0].oldtable_zerodata
@@ -3359,19 +3382,19 @@ def reporting_search_data(request):
         for target in all_target:
             curtargetdata= {"target":target,"zerodata":"","twentyfourdata":"","metervalue":"","curvalue":"","curvaluedate":"","curvaluetext":"","cumulativemonth":"","cumulativequarter":"","cumulativehalfyear":"","cumulativeyear":""}
             if target.operationtype=="15":
-                targetvalue = Entrydata.objects.exclude(state="9").filter(target=target,datadate=reporting_date)
+                targetvalue = getmodels("Entrydata",str(reporting_date.year)).objects.exclude(state="9").filter(target=target,datadate=reporting_date)
                 if len(targetvalue)>0:
                     curtargetdata={"target":target,"zerodata":"","twentyfourdata":"","metervalue":"","curvalue":targetvalue[0].curvalue,"curvaluedate":targetvalue[0].curvaluedate,"curvaluetext":targetvalue[0].curvaluetext,"cumulativemonth":targetvalue[0].cumulativemonth,"cumulativequarter":targetvalue[0].cumulativequarter,"cumulativehalfyear":targetvalue[0].cumulativehalfyear,"cumulativeyear":targetvalue[0].cumulativeyear}
             elif target.operationtype=="16":
-                targetvalue = Extractdata.objects.exclude(state="9").filter(target=target,datadate=reporting_date)
+                targetvalue = getmodels("Extractdata",str(reporting_date.year)).objects.exclude(state="9").filter(target=target,datadate=reporting_date)
                 if len(targetvalue)>0:
                     curtargetdata={"target":target,"zerodata":"","twentyfourdata":"","metervalue":"","curvalue":targetvalue[0].curvalue,"curvaluedate":targetvalue[0].curvaluedate,"curvaluetext":targetvalue[0].curvaluetext,"cumulativemonth":targetvalue[0].cumulativemonth,"cumulativequarter":targetvalue[0].cumulativequarter,"cumulativehalfyear":targetvalue[0].cumulativehalfyear,"cumulativeyear":targetvalue[0].cumulativeyear}
             elif target.operationtype=="17":
-                targetvalue = Calculatedata.objects.exclude(state="9").filter(target=target,datadate=reporting_date)
+                targetvalue = getmodels("Calculatedata",str(reporting_date.year)).objects.exclude(state="9").filter(target=target,datadate=reporting_date)
                 if len(targetvalue)>0:
                     curtargetdata={"target":target,"zerodata":"","twentyfourdata":"","metervalue":"","curvalue":targetvalue[0].curvalue,"curvaluedate":targetvalue[0].curvaluedate,"curvaluetext":targetvalue[0].curvaluetext,"cumulativemonth":targetvalue[0].cumulativemonth,"cumulativequarter":targetvalue[0].cumulativequarter,"cumulativehalfyear":targetvalue[0].cumulativehalfyear,"cumulativeyear":targetvalue[0].cumulativeyear}
             elif target.operationtype=="1":
-                targetvalue = Meterdata.objects.exclude(state="9").filter(target=target,datadate=reporting_date)
+                targetvalue = getmodels("Meterdata",str(reporting_date.year)).objects.exclude(state="9").filter(target=target,datadate=reporting_date)
                 if len(targetvalue)>0:
                     curtargetdata={"target":target,"zerodata":targetvalue[0].zerodata,"twentyfourdata":targetvalue[0].twentyfourdata,"metervalue":targetvalue[0].metervalue,"curvalue":targetvalue[0].curvalue,"curvaluedate":targetvalue[0].curvaluedate,"curvaluetext":targetvalue[0].curvaluetext,"cumulativemonth":targetvalue[0].cumulativemonth,"cumulativequarter":targetvalue[0].cumulativequarter,"cumulativehalfyear":targetvalue[0].cumulativehalfyear,"cumulativeyear":targetvalue[0].cumulativeyear}
             all_data.append(curtargetdata)
@@ -3480,13 +3503,13 @@ def getcumulative(target, date, value):
 
     all_data = []
     if target.operationtype == "1":
-        all_data = Meterdata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
+        all_data = getmodels("Meterdata",str(lastg_date.year)).objects.exclude(state="9").filter(target=target, datadate=lastg_date)
     if target.operationtype == "15":
-        all_data = Entrydata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
+        all_data = getmodels("Entrydata",str(lastg_date.year)).objects.exclude(state="9").filter(target=target, datadate=lastg_date)
     if target.operationtype == "16":
-        all_data = Extractdata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
+        all_data = getmodels("Extractdata",str(lastg_date.year)).objects.exclude(state="9").filter(target=target, datadate=lastg_date)
     if target.operationtype == "17":
-        all_data = Calculatedata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
+        all_data = getmodels("Calculatedata",str(lastg_date.year)).objects.exclude(state="9").filter(target=target, datadate=lastg_date)
     if len(all_data) > 0:
         lastcumulativemonth=0
         lastcumulativequarter=0
@@ -3569,17 +3592,19 @@ def getcalculatedata(target, date, guid):
                 if len(membertarget) <= 0:
                     curvalue = 0
                 else:
-                    queryset = Entrydata.objects
+                    queryset = getmodels("Entrydata", str(date.year)).objects
                     membertarget = membertarget[0]
                     if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id and membertarget.cycletype == target.cycletype and membertarget.calculateguid != guid:
                         getcalculatedata(membertarget, date, guid)
                     operationtype = membertarget.operationtype
+                    if operationtype == "1":
+                        queryset = getmodels("Meterdata", str(date.year)).objects
                     if operationtype == "15":
-                        queryset = Entrydata.objects
+                        queryset = getmodels("Entrydata", str(date.year)).objects
                     if operationtype == "16":
-                        queryset = Extractdata.objects
+                        queryset = getmodels("Extractdata", str(date.year)).objects
                     if operationtype == "17":
-                        queryset = Calculatedata.objects
+                        queryset = getmodels("Calculatedata", str(date.year)).objects
                     condtions = {'datadate': date}
                     if cond == "D":
                         condtions = {'datadate': date}
@@ -3624,7 +3649,7 @@ def getcalculatedata(target, date, guid):
         curvalue = eval(formula)
     except:
         pass
-    calculatedata = Calculatedata()
+    calculatedata = getmodels("Calculatedata",str(date.year))()
     calculatedata.target = target
     calculatedata.datadate = date
     calculatedata.curvalue = curvalue
@@ -3670,10 +3695,11 @@ def reporting_new(request):
             #电表走字
             if operationtype == "1":
 
-                all_meterdata = Meterdata.objects.exclude(state="9").filter(target=target,
+                all_meterdata = getmodels("Meterdata",str((reporting_date + datetime.timedelta(
+                                                                                days=-1)).year)).objects.exclude(state="9").filter(target=target,
                                                                             datadate=reporting_date + datetime.timedelta(
                                                                                 days=-1))
-                meterdata = Meterdata()
+                meterdata = getmodels("Meterdata",str(reporting_date.year))()
                 if len(all_meterdata) > 0:
                     meterdata.zerodata = all_meterdata[0].twentyfourdata
                 else:
@@ -3709,7 +3735,7 @@ def reporting_new(request):
                 meterdata.save()
             #录入
             if operationtype == "15":
-                entrydata = Entrydata()
+                entrydata = getmodels("Entrydata",str(reporting_date.year))()
                 entrydata.target = target
                 entrydata.datadate = reporting_date
                 entrydata.curvalue = 0
@@ -3722,7 +3748,7 @@ def reporting_new(request):
                 entrydata.save()
             #提取
             if operationtype == "16":
-                extractdata = Extractdata()
+                extractdata = getmodels("Extractdata",str(reporting_date.year))()
                 extractdata.target = target
                 extractdata.datadate = reporting_date
                 extractdata.curvalue = 0
@@ -3781,17 +3807,17 @@ def reporting_del(request):
 
         all_data = []
         if operationtype == "1":
-            all_data = Meterdata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+            all_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
                                                                    datadate=reporting_date)
         if operationtype == "15":
-            all_data = Entrydata.objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
+            all_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(target__adminapp_id=app, target__cycletype=cycletype,
                                                                    datadate=reporting_date)
         if operationtype == "16":
-            all_data = Extractdata.objects.exclude(state="9").filter(target__adminapp_id=app,
+            all_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                      target__cycletype=cycletype,
                                                                      datadate=reporting_date)
         if operationtype == "17":
-            all_data = Calculatedata.objects.exclude(state="9").filter(target__adminapp_id=app,
+            all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(target__adminapp_id=app,
                                                                        target__cycletype=cycletype,
                                                                        datadate=reporting_date)
         for data in all_data:
@@ -3807,9 +3833,14 @@ def reporting_save(request):
         savedata = request.POST.get('savedata')
         operationtype = request.POST.get('operationtype')
         savedata = json.loads(savedata)
+        reporting_date = request.POST.get('reporting_date', '')
+        try:
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
+        except:
+            return HttpResponse(0)
         for curdata in savedata:
             if operationtype == "1":
-                savedata = Meterdata.objects.exclude(state="9").get(id=int(curdata["id"]))
+                savedata = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").get(id=int(curdata["id"]))
                 if curdata["finalvalue"]:
                     try:
                         newmagnification = float(curdata["magnification"])
@@ -3818,7 +3849,7 @@ def reporting_save(request):
                             savedata.target.save()
                     except:
                         pass
-                    meterchangedata = savedata.meterchangedata_set.exclude(state="9")
+                    meterchangedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=savedata.id)
                     if len(meterchangedata)>0:
                         meterchangedata = meterchangedata[0]
                     else:
@@ -3830,7 +3861,7 @@ def reporting_save(request):
                     except:
                         pass
                     try:
-                        meterchangedata.meterdata = savedata
+                        meterchangedata.meterdata = savedata.id
                     except:
                         pass
                     try:
@@ -3877,14 +3908,14 @@ def reporting_save(request):
                         meterchangedata.finalvalue = float(curdata["finalvalue"])
                     except:
                         pass
-                meterchangedata.save()
+                    meterchangedata.save()
 
             if operationtype == "15":
-                savedata = Entrydata.objects.exclude(state="9").get(id=int(curdata["id"]))
+                savedata = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").get(id=int(curdata["id"]))
             if operationtype == "16":
-                savedata = Extractdata.objects.exclude(state="9").get(id=int(curdata["id"]))
+                savedata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").get(id=int(curdata["id"]))
             if operationtype == "17":
-                savedata = Calculatedata.objects.exclude(state="9").get(id=int(curdata["id"]))
+                savedata = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").get(id=int(curdata["id"]))
 
             if savedata.target.datatype == 'numbervalue':
                 try:
