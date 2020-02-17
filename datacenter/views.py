@@ -100,113 +100,155 @@ def get_process_monitor_tree(request):
         s_info_list = []
         for s in source:
             # 指标管理中匹配
-            if does_it_exist(s.id):
-                # 数据源类型
-                source_type = ""
-                try:
-                    source_type = DictList.objects.get(id=s.id).name
-                except DictList.DoesNotExist as e:
-                    print(e)
+            if s.type != "0":
+                if does_it_exist(s.id):
+                    # 数据源类型
+                    source_type = ""
+                    try:
+                        source_type = DictList.objects.get(id=s.id).name
+                    except DictList.DoesNotExist as e:
+                        print(e)
 
-                s_info = dict()
-                s_info['text'] = s.name
-                s_info['type'] = 'node'
-                s_info['data'] = {
+                    s_info = dict()
+                    s_info['text'] = s.name
+                    s_info['type'] = 'node'
+                    s_info['data'] = {
+                        's_id': s.id,
+                        's_name': s.name,
+                        's_code': s.code,
+                        's_type': source_type,
+                        'type': 'source'
+                    }
+                    s_info['state'] = {'opened': True}
+
+                    # 2.应用
+                    a_info_list = []
+                    for a in app:
+                        if does_it_exist(s.id, a.id):
+                            a_info = dict()
+                            a_info['text'] = a.name
+                            a_info['type'] = 'node'
+                            a_info['data'] = {
+                                's_id': s.id,
+                                's_name': s.name,
+                                's_code': s.code,
+                                's_type': source_type,
+                                'a_id': a.id,
+                                'a_name': a.name,
+                                'type': 'app'
+                            }
+                            a_info['state'] = {'opened': True}
+
+                            # 3.周期
+                            c_info_list = []
+
+                            for c in cycle:
+                                if does_it_exist(s.id, a.id, c.id):
+                                    create_time, last_time, status = '', '', ''
+                                    # 获取进程状态
+                                    cps = ProcessMonitor.objects.filter(source_id=s.id).filter(app_admin_id=a.id).filter(
+                                        cycle_id=c.id).exclude(state='9')
+                                    if cps.exists():
+                                        cp = cps[0]
+                                        create_time = '{:%Y-%m-%d %H:%M:%S}'.format(
+                                            cp.create_time) if cp.create_time else ""
+                                        last_time = '{:%Y-%m-%d %H:%M:%S}'.format(cp.last_time) if cp.last_time else ""
+                                        status = cp.status
+                                        if index == "0":
+                                            # 更新数据库数据：进程状态
+                                            p_id = int(cp.p_id) if cp.p_id else ""
+                                            if p_id:
+                                                if not psutil.pid_exists(p_id):
+                                                    cp.status = "已关闭"
+                                                    cp.save()
+                                                    status = "已关闭"
+
+                                    c_info = dict()
+                                    c_info['text'] = c.name
+                                    c_info['type'] = 'file'
+                                    c_info['data'] = {
+                                        's_id': s.id,
+                                        's_name': s.name,
+                                        's_code': s.code,
+                                        's_type': source_type,
+                                        'a_name': a.name,
+                                        'a_id': a.id,
+                                        'c_id': c.id,
+                                        'c_name': c.name,
+                                        'type': 'circle',
+
+                                        # 进程状态
+                                        'create_time': create_time,
+                                        'last_time': last_time,
+                                        'status': status
+                                    }
+
+                                    c_info['state'] = {'opened': True}
+                                    #
+                                    if circle_id == c.id and app_id == a.id and source_id == s.id:
+                                        c_info['state']['selected'] = True
+
+                                    # 判断进程状态
+                                    if status != "运行中":
+                                        c_info['type'] = 'file_grey'
+                                        a_info['type'] = 'node_grey'
+                                        s_info['type'] = 'node_grey'
+                                        root_info['type'] = 'node_grey'
+                                    c_info_list.append(c_info)
+                            a_info['children'] = c_info_list
+
+                            a_info_list.append(a_info)
+                    s_info['children'] = a_info_list
+
+                    s_info_list.append(s_info)
+            else:
+                # 固定节点(数据补取、数据清理、数据服务、短信服务)
+                fixed_s_info = dict()
+                fixed_s_info['text'] = s.name
+                fixed_s_info['type'] = 'file'
+
+                # 进程状态
+                f_create_time, f_last_time, f_status = '', '', ''
+                # 获取进程状态
+                f_cps = ProcessMonitor.objects.filter(source_id=s.id).exclude(state='9')
+                if f_cps.exists():
+                    f_cp = f_cps[0]
+                    f_create_time = '{:%Y-%m-%d %H:%M:%S}'.format(
+                        f_cp.create_time) if f_cp.create_time else ""
+                    f_last_time = '{:%Y-%m-%d %H:%M:%S}'.format(f_cp.last_time) if f_cp.last_time else ""
+                    f_status = f_cp.status
+                    if index == "0":
+                        # 更新数据库数据：进程状态
+                        p_id = int(f_cp.p_id) if f_cp.p_id else ""
+                        if p_id:
+                            if not psutil.pid_exists(p_id):
+                                f_cp.status = "已关闭"
+                                f_cp.save()
+                                f_status = "已关闭"
+
+                # 判断进程状态
+                if f_status != "运行中":
+                    fixed_s_info['type'] = 'file_grey'
+                    root_info['type'] = 'node_grey'
+
+                fixed_s_info['data'] = {
+                    'check_type': s.type,
+
+                    'f_s_name': s.name,
                     's_id': s.id,
-                    's_name': s.name,
-                    's_code': s.code,
-                    's_type': source_type,
-                    'type': 'source'
+                    # 进程状态
+                    'create_time': f_create_time,
+                    'last_time': f_last_time,
+                    'status': f_status
                 }
-                s_info['state'] = {'opened': True}
+                s_info_list.append(fixed_s_info)
 
-                # 2.应用
-                a_info_list = []
-                for a in app:
-                    if does_it_exist(s.id, a.id):
-                        a_info = dict()
-                        a_info['text'] = a.name
-                        a_info['type'] = 'node'
-                        a_info['data'] = {
-                            's_id': s.id,
-                            's_name': s.name,
-                            's_code': s.code,
-                            's_type': source_type,
-                            'a_id': a.id,
-                            'a_name': a.name,
-                            'type': 'app'
-                        }
-                        a_info['state'] = {'opened': True}
 
-                        # 3.周期
-                        c_info_list = []
-
-                        for c in cycle:
-                            if does_it_exist(s.id, a.id, c.id):
-                                create_time, last_time, status = '', '', ''
-                                # 获取进程状态
-                                cps = ProcessMonitor.objects.filter(source_id=s.id).filter(app_admin_id=a.id).filter(
-                                    cycle_id=c.id).exclude(state='9')
-                                if cps.exists():
-                                    cp = cps[0]
-                                    create_time = '{:%Y-%m-%d %H:%M:%S}'.format(
-                                        cp.create_time) if cp.create_time else ""
-                                    last_time = '{:%Y-%m-%d %H:%M:%S}'.format(cp.last_time) if cp.last_time else ""
-                                    status = cp.status
-                                    if index == "0":
-                                        # 更新数据库数据：进程状态
-                                        p_id = int(cp.p_id) if cp.p_id else ""
-                                        if p_id:
-                                            if not psutil.pid_exists(p_id):
-                                                cp.status = "已关闭"
-                                                cp.save()
-                                                status = "已关闭"
-
-                                c_info = dict()
-                                c_info['text'] = c.name
-                                c_info['type'] = 'file'
-                                c_info['data'] = {
-                                    's_id': s.id,
-                                    's_name': s.name,
-                                    's_code': s.code,
-                                    's_type': source_type,
-                                    'a_name': a.name,
-                                    'a_id': a.id,
-                                    'c_id': c.id,
-                                    'c_name': c.name,
-                                    'type': 'circle',
-
-                                    # 进程状态
-                                    'create_time': create_time,
-                                    'last_time': last_time,
-                                    'status': status
-                                }
-
-                                c_info['state'] = {'opened': True}
-                                #
-                                if circle_id == c.id and app_id == a.id and source_id == s.id:
-                                    c_info['state']['selected'] = True
-
-                                # 判断进程状态
-                                if status != "运行中":
-                                    c_info['type'] = 'file_grey'
-                                    a_info['type'] = 'node_grey'
-                                    s_info['type'] = 'node_grey'
-                                    root_info['type'] = 'node_grey'
-                                c_info_list.append(c_info)
-                        a_info['children'] = c_info_list
-
-                        a_info_list.append(a_info)
-                s_info['children'] = a_info_list
-
-                s_info_list.append(s_info)
         root_info['children'] = s_info_list
         root_info['state'] = {'opened': True}
         root_info['data'] = {
             'type': 'root'
         }
-
-        # 固定节点(数据补取、数据清理、数据服务、短信服务)
 
 
         tree_data = json.dumps([root_info], ensure_ascii=False)
@@ -233,12 +275,12 @@ def process_monitor_index(request, funid):
 def process_monitor_data(request):
     if request.user.is_authenticated():
         result = []
-        p_source = Source.objects.filter(pnode=None).exclude(state="9")
+        p_source = Source.objects.filter(pnode=None).exclude(state="9").exclude(type='0')
         if p_source.exists():
             p_source = p_source[0]
         else:
             return JsonResponse({"data": []})
-        all_source = Source.objects.exclude(state="9").filter(pnode=p_source)
+        all_source = Source.objects.exclude(state="9").filter(pnode=p_source).exclude(type='0')
         for source in all_source:
             source_type = source.sourcetype
             if source_type:
@@ -367,7 +409,7 @@ def process_run(request):
         app_id = request.POST.get("app_id", "")
         circle_id = request.POST.get("circle_id", "")
         operate = request.POST.get("operate", "")
-
+        check_type = request.POST.get("check_type", "")
         try:
             source_id = int(source_id)
             app_id = int(app_id)
@@ -375,8 +417,14 @@ def process_run(request):
         except ValueError as e:
             print(e)
 
-        current_process = ProcessMonitor.objects.filter(source_id=source_id).filter(app_admin_id=app_id).filter(
-            cycle_id=circle_id).exclude(state='9')
+        # 固定进程
+        current_process = ProcessMonitor.objects.filter(source_id=source_id).exclude(state='9')
+
+        # 动态进程
+        if check_type != '0':
+            current_process = ProcessMonitor.objects.filter(source_id=source_id).filter(app_admin_id=app_id).filter(
+                cycle_id=circle_id).exclude(state='9')
+
         if current_process.exists():
             current_process = current_process[0]
 
@@ -424,8 +472,9 @@ def process_run(request):
         else:
             current_process = ProcessMonitor()
             current_process.source_id = source_id
-            current_process.app_admin_id = app_id
-            current_process.cycle_id = circle_id
+            if check_type != '0':
+                current_process.app_admin_id = app_id
+                current_process.cycle_id = circle_id
             current_process.save()
             tag, res = handle_process(current_process, handle_type="RUN")
 
@@ -1809,12 +1858,12 @@ def source_index(request, funid):
                                         except:
                                             pid = None
                                             max_sort_from_pnode = \
-                                                Source.objects.exclude(state="9").filter(pnode_id=None).aggregate(
+                                                Source.objects.exclude(state="9").exclude(type='0').filter(pnode_id=None).aggregate(
                                                     Max("sort"))[
                                                     "sort__max"]
                                         else:
                                             max_sort_from_pnode = \
-                                                Source.objects.exclude(state="9").filter(pnode_id=pid).aggregate(
+                                                Source.objects.exclude(state="9").exclude(type='0').filter(pnode_id=pid).aggregate(
                                                     Max("sort"))[
                                                     "sort__max"]
 
@@ -1856,7 +1905,7 @@ def source_index(request, funid):
             # 加载树
             treedata = []
             rootnodes = Source.objects.order_by(
-                "sort").filter(pnode=None).exclude(state="9")
+                "sort").filter(pnode=None).exclude(state="9").exclude(type='0')
 
             if len(rootnodes) > 0:
                 for rootnode in rootnodes:
@@ -1937,7 +1986,7 @@ def del_source(request):
                 all_source.state = 9
                 all_source.save()
                 sort_source = Source.objects.filter(pnode=p_source).filter(
-                    sort__gt=sort).exclude(state="9")
+                    sort__gt=sort).exclude(state="9").exclude(type='0')
                 if sort_source.exists():
                     for sortstep in sort_source:
                         try:
@@ -1982,7 +2031,7 @@ def move_source(request):
 
             cur_source_obj = \
                 Source.objects.filter(pnode_id=old_parent).filter(
-                    sort=old_position).exclude(state="9")[0]
+                    sort=old_position).exclude(state="9").exclude(type='0')[0]
             cur_source_obj.sort = position
             cur_source_id = cur_source_obj.id
             cur_source_obj.save()
@@ -1991,14 +2040,14 @@ def move_source(request):
                 # 向上拽
                 source_under_pnode = Source.objects.filter(pnode_id=old_parent).exclude(state="9").filter(
                     sort__gte=position,
-                    sort__lt=old_position).exclude(id=cur_source_id)
+                    sort__lt=old_position).exclude(id=cur_source_id).exclude(type='0')
                 for source in source_under_pnode:
                     source.sort += 1
                     source.save()
 
                 # 向下拽
                 source_under_pnode = Source.objects.filter(pnode_id=old_parent).exclude(state="9").filter(
-                    sort__gt=old_position, sort__lte=position).exclude(id=cur_source_id)
+                    sort__gt=old_position, sort__lte=position).exclude(id=cur_source_id).exclude(type='0')
                 for source in source_under_pnode:
                     source.sort -= 1
                     source.save()
@@ -2007,14 +2056,14 @@ def move_source(request):
             else:
                 # 原来pnode下
                 old_source = Source.objects.filter(pnode_id=old_parent).exclude(state="9").filter(
-                    sort__gt=old_position).exclude(id=cur_source_id)
+                    sort__gt=old_position).exclude(id=cur_source_id).exclude(type='0')
                 for step in old_source:
                     step.sort -= 1
                     step.save()
                 # 后来pnode下
                 cur_source = Source.objects.filter(pnode_id=parent).exclude(state="9").filter(
                     sort__gte=position).exclude(
-                    id=cur_source_id)
+                    id=cur_source_id).exclude(type='0')
                 for source in cur_source:
                     source.sort += 1
                     source.save()
@@ -2113,7 +2162,7 @@ def target_index(request, funid):
                     "unit_name": i.name,
                     "unit_id": i.id,
                 })
-        sourcelist = Source.objects.all().exclude(state='9').exclude(pnode=None)
+        sourcelist = Source.objects.all().exclude(state='9').exclude(pnode=None).exclude(type='0')
         for i in sourcelist:
             source_list.append({
                 "source_name": i.name,
@@ -2362,7 +2411,7 @@ def target_save(request):
 
         all_app = App.objects.exclude(state="9")
         all_cycle = Cycle.objects.exclude(state="9")
-        all_source = Source.objects.exclude(state="9")
+        all_source = Source.objects.exclude(state="9").exclude(type='0')
         all_storage = Storage.objects.exclude(state="9")
 
         try:
@@ -2709,7 +2758,7 @@ def target_app_index(request, funid):
                     "unit_id": i.id,
                 })
 
-        sourcelist = Source.objects.all().exclude(state='9').exclude(pnode_id=None)
+        sourcelist = Source.objects.all().exclude(state='9').exclude(pnode_id=None).exclude(type='0')
         for i in sourcelist:
             source_list.append({
                 "source_name": i.name,
@@ -2843,7 +2892,7 @@ def target_app_search_index(request, funid):
                     "unit_id": i.id,
                 })
 
-        sourcelist = Source.objects.all().exclude(state='9')
+        sourcelist = Source.objects.all().exclude(state='9').exclude(type='0')
         for i in sourcelist:
             source_list.append({
                 "source_name": i.name,

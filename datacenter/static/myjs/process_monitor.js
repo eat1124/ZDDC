@@ -15,7 +15,6 @@ $(document).ready(function () {
             success: function (data) {
                 index += 1;
                 var treeData = JSON.parse(data.data);
-                console.log(treeData)
 
                 $('#process_monitor_tree').jstree('destroy');
                 $('#process_monitor_tree').jstree({
@@ -94,7 +93,6 @@ $(document).ready(function () {
                             $('#status').val(data.node.data.status);
                             $('#last_time').val(data.node.data.last_time);
 
-
                             // tab
                             $('#navtabs').show();
                         } else {
@@ -109,8 +107,24 @@ $(document).ready(function () {
                         $('#app_id').val(data.node.data.a_id);
                         $('#circle_id').val(data.node.data.c_id);
 
+                        // 固定进程 单独写
+                        if (data.node.data.check_type == '0') {
+                            $('#circle_div').show();
+                            $('#circle_name').parent().parent().hide();
+                            $('#process_exec').show();
+                            $('#source_name').val(data.node.data.f_s_name);
+
+                            $('#create_time').val(data.node.data.create_time);
+                            $('#status').val(data.node.data.status);
+                            $('#last_time').val(data.node.data.last_time);
+
+                        } else {
+                            $('#circle_name').parent().parent().show();
+                        }
+                        $('#check_type').val(data.node.data.check_type);
+
                         // tab
-                        $('#navtabs a:first').tab('show')
+                        $('#navtabs a:first').tab('show');
                     });
             },
             error: function (e) {
@@ -125,11 +139,15 @@ $(document).ready(function () {
     // 启动/关闭/重启
     $('#start, #stop, #restart').click(function () {
         var operate = $(this).prop('id');
+        // 判断固定进程还是动态进程
+        var check_type = $('#check_type').val();
+
         $.ajax({
             type: 'POST',
             dataType: 'json',
             url: '../process_run/',
             data: {
+                'check_type': check_type,
                 'operate': operate,
                 'source_id': $('#source_id').val(),
                 'app_id': $('#app_id').val(),
