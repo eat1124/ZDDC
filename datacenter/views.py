@@ -3711,6 +3711,7 @@ def reporting_new(request):
         except:
             return HttpResponse(0)
 
+        #生成本次计算guid
         guid = uuid.uuid1()
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
                                                               operationtype=operationtype)
@@ -3800,6 +3801,7 @@ def reporting_new(request):
             #计算
             if operationtype == "17":
                 target = Target.objects.get(id=target.id)
+                #为减少重复计算，判断指标calculate，如果指标calculate等于本次计算guid，则说明该指标在本次计算中以计算过
                 if target.calculateguid != str(guid):
                     getcalculatedata(target, reporting_date, str(guid))
         return HttpResponse(1)
