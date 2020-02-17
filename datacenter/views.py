@@ -3706,19 +3706,23 @@ def getcalculatedata(target, date, guid):
                 if len(membertarget) <= 0:
                     curvalue = 0
                 else:
-                    queryset = getmodels("Entrydata", str(date.year)).objects
                     membertarget = membertarget[0]
                     if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id and membertarget.cycletype == target.cycletype and membertarget.calculateguid != guid:
                         getcalculatedata(membertarget, date, guid)
+
+                    tableyear = str(date.year)
+                    queryset = getmodels("Entrydata", tableyear).objects
+                    if cond =="LYS" or cond =="LYE" or ((cond =="LHS" or cond =="LHS") and int(date.month)<7):
+                        tableyear= str(int(date.year)-1)
                     operationtype = membertarget.operationtype
                     if operationtype == "1":
-                        queryset = getmodels("Meterdata", str(date.year)).objects
+                        queryset = getmodels("Meterdata", tableyear).objects
                     if operationtype == "15":
-                        queryset = getmodels("Entrydata", str(date.year)).objects
+                        queryset = getmodels("Entrydata", tableyear).objects
                     if operationtype == "16":
-                        queryset = getmodels("Extractdata", str(date.year)).objects
+                        queryset = getmodels("Extractdata", tableyear).objects
                     if operationtype == "17":
-                        queryset = getmodels("Calculatedata", str(date.year)).objects
+                        queryset = getmodels("Calculatedata", tableyear).objects
                     condtions = {'datadate': date}
                     if cond == "D":
                         condtions = {'datadate': date}
