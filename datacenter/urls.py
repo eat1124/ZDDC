@@ -107,6 +107,7 @@ urlpatterns = [
     # 应用填报
     url(r'^reporting/(?P<cycletype>\d+)/(?P<funid>\d+)/$', reporting_index),
     url(r'^reporting_data/$', reporting_data),
+    url(r'^reporting_search_data/$', reporting_search_data),
     url(r'^reporting_del/$', reporting_del),
     url(r'^reporting_save/$', reporting_save),
     url(r'^reporting_new/$', reporting_new),
