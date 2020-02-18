@@ -76,7 +76,7 @@ class Source(models.Model):
     last_time = models.DateTimeField("最近取数时间", blank=True, null=True)
     status = models.CharField("状态", blank=True, max_length=50, default="")
     p_id = models.CharField("进程ID", blank=True, max_length=50, default="")
-    type = models.CharField("类型：区分固定0/动态1", blank=True, default='1', max_length=20)
+    type = models.CharField("类型：动态类型为空字符串，固定类型(数据补取：1，数据清理：2，数据服务：3，短信服务：4)", blank=True, default='', max_length=20)
 
 
 class Cycle(models.Model):

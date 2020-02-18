@@ -108,7 +108,7 @@ $(document).ready(function () {
                         $('#circle_id').val(data.node.data.c_id);
 
                         // 固定进程 单独写
-                        if (data.node.data.check_type == '0') {
+                        if (data.node.data.check_type) {
                             $('#circle_div').show();
                             $('#circle_name').parent().parent().hide();
                             $('#process_exec').show();
