@@ -6,6 +6,7 @@ import datetime
 import time
 import json
 import copy
+import re
 # 使用ORM
 import sys
 from django.core.wsgi import get_wsgi_application
@@ -196,8 +197,15 @@ class Extract(object):
             else:
                 pass
 
+        # 匹配出<#DATE:m:L#>
+        date_com = re.compile('<.*?>')
+        pre_format_list = date_com.findall(source_content)
+
+        format_date = self.format_date(time, pre_format_list[0] if pre_format_list else '')
+
         for result in result_list:
             # 存表
+
             pass
 
     def get_col_data(self, target_list, time):
@@ -228,6 +236,103 @@ class Extract(object):
             for result in result_list:
                 # 存表
                 pass
+
+    def format_date(self, date, pre_format):
+        # {
+		# "D": "当前", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
+		# "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
+		# "YE": "年末", "LYS": "去年初", "LYE": "去年末"
+	    # }
+
+        # 匹配出时间点/格式
+        com = re.compile('.*?:([a-z A-Z]+):([a-z A-Z]+).*?') 
+
+        format_params = com.findall(pre_format)
+
+        time_format, cond = format_params[0]
+        
+        # 时间点
+        # if cond == "D":
+        newdate = date
+        if cond == "L":
+            newdate = date + datetime.timedelta(days=-1)
+        if cond == "MS":
+            newdate = date.replace(day=1)
+        if cond == "ME":
+            year = date.year
+            month = date.month
+            a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
+            newdate = datetime.datetime(year=year, month=month, day=b) 
+        if cond == "LME":
+            date_now = date.replace(day=1)
+            newdate = date_now + datetime.timedelta(days=-1)
+        if cond == "LMS":
+            date_now = date.replace(day=1)
+            date_now = date_now + datetime.timedelta(days=-1)
+            newdate = datetime.datetime(date_now.year, date_now.month, 1)
+        if cond == "YS":
+            newdate = date.replace(month=1, day=1)
+        if cond == "YE":
+            newdate = date.replace(month=12, day=31)
+        if cond == "LYS":
+            newdate = date.replace(month=1, day=1)
+            newdate = newdate + datetime.timedelta(days=-1)
+            newdate = datetime.datetime(newdate.year, 1, 1)
+        if cond == "LYE":
+            newdate = date.replace(month=1, day=1)
+            newdate = newdate + datetime.timedelta(days=-1)
+        if cond == "SS":
+            month = (date.month - 1) - (date.month - 1) % 3 + 1
+            newdate = datetime.datetime(date.year, month, 1)
+        if cond == "SE":
+            month = (date.month - 1) - (date.month - 1) % 3 + 1
+            if month == 10:
+                newdate = datetime.datetime(date.year+1, 1, 1) + datetime.timedelta(days=-1)
+            else:
+                newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
+        if cond == "LSS":
+            month = (date.month - 1) - (date.month - 1) % 3 + 1
+            newdate = datetime.datetime(date.year, month, 1)
+            newdate = newdate + datetime.timedelta(days=-1)
+            newdate = datetime.datetime(newdate.year, newdate.month - 2, 1)
+        if cond == "LSE":
+            month = (date.month - 1) - (date.month - 1) % 3 + 1  #10
+            newdate = datetime.datetime(date.year, month, 1)
+            newdate = newdate + datetime.timedelta(days=-1)
+        if cond == "HS":
+            month = (date.month - 1) - (date.month - 1) % 6 + 1
+            newdate = datetime.datetime(date.year, month, 1)
+        if cond == "HE":
+            month = (date.month - 1) - (date.month - 1) % 6 + 1
+            if month == 7:
+                newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+            else:
+                newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
+        if cond == "LHS":
+            month = (date.month - 1) - (date.month - 1) % 6 + 1
+            newdate = datetime.datetime(date.year, month, 1)
+            newdate = newdate + datetime.timedelta(days=-1)
+            newdate = datetime.datetime(newdate.year, newdate.month - 5, 1)
+        if cond == "LHE":
+            month = (date.month - 1) - (date.month - 1) % 6 + 1
+            newdate = datetime.datetime(date.year, month, 1)
+            newdate = newdate + datetime.timedelta(days=-1)
+        # 格式
+        date_init = ''
+        if time_format == 's':
+            date_init = '{:%Y-%m-%d %H:%M:%S}'.format(newdate)
+        if time_format == 'mi':
+            date_init = '{:%Y-%m-%d %H:%M}'.format(newdate)
+        if time_format == 'h':
+            date_init = '{:%Y-%m-%d %H}'.format(newdate)
+        if time_format == 'd':
+            date_init = '{:%Y-%m-%d}'.format(newdate)
+        if time_format == 'm':
+            date_init = '{:%Y-%m}'.format(newdate)
+        if time_format == 'y':
+            date_init = '{:%Y}'.format(newdate)
+
+        return date_init
 
     def run(self):
         # 补取()
