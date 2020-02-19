@@ -119,8 +119,10 @@ class Extract(object):
 
     def set_timer(self):
         # 定时器
-        time_now = datetime.datetime.now()
-        self.get_data(time_now)
+        while True:
+            time_now = datetime.datetime.now()
+            self.get_data(time_now)
+            time.sleep(60)
 
     def get_data(self, now_time):
         # 取数
