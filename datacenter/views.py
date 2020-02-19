@@ -33,7 +33,7 @@ from django.http import HttpResponseRedirect, Http404, HttpResponse, JsonRespons
 from django.http import StreamingHttpResponse
 from django.db.models import Q
 from django.db.models import Count
-from django.db.models import Sum, Max
+from django.db.models import Sum, Max, Avg
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import cache_page
@@ -3730,26 +3730,18 @@ def getcalculatedata(target, date, guid):
                         condtions = {'datadate__year': date.year, 'datadate__month': date.month}
                     if cond == "Y":
                         condtions = {'datadate__year': date.year}
-                    if cond == "MS":
-                        newdate = date.replace(day=1)
-                        condtions = {'datadate': newdate}
                     if cond == "L":
                         newdate = date + datetime.timedelta(days=-1)
+                        condtions = {'datadate': newdate}
+
+                    if cond == "MS":
+                        newdate = date.replace(day=1)
                         condtions = {'datadate': newdate}
                     if cond == "ME":
                         year = date.year
                         month = date.month
                         a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
-                        # date_now = datetime.datetime(year=year, month=month, day=b)  # 构造本月1号datetime
-                        # newdate = date_now + datetime.timedelta(days=1)  # 上月datetime
-                        # condtions = {'datadate': newdate}
                         newdate = datetime.datetime(year=year, month=month, day=b)  # 构造本月月末datetime
-                        condtions = {'datadate': newdate}
-                    if cond == "YS":
-                        newdate = date.replace(month=1, day=1)
-                        condtions = {'datadate': newdate}
-                    if cond == "YE":
-                        newdate = date.replace(month=12, day=31)
                         condtions = {'datadate': newdate}
                     if cond == "LME":
                         date_now = date.replace(day=1)
@@ -3760,13 +3752,33 @@ def getcalculatedata(target, date, guid):
                         date_now = date_now + datetime.timedelta(days=-1)
                         newdate = datetime.datetime(date_now.year, date_now.month, 1)
                         condtions = {'datadate': newdate}
+
+                    if cond == "YS":
+                        newdate = date.replace(month=1, day=1)
+                        condtions = {'datadate': newdate}
+                    if cond == "YE":
+                        newdate = date.replace(month=12, day=31)
+                        condtions = {'datadate': newdate}
+                    if cond == "LYS":
+                        newdate = date.replace(month=1, day=1)
+                        newdate = newdate + datetime.timedelta(days=-1)
+                        newdate = datetime.datetime(newdate.year, 1, 1)
+                        condtions = {'datadate': newdate}
+                    if cond == "LYE":
+                        newdate = date.replace(month=1, day=1)
+                        newdate = newdate + datetime.timedelta(days=-1)
+                        condtions = {'datadate': newdate}
+
                     if cond == "SS":
                         month = (date.month - 1) - (date.month - 1) % 3 + 1
                         newdate = datetime.datetime(date.year, month, 1)
                         condtions = {'datadate': newdate}
                     if cond == "SE":
                         month = (date.month - 1) - (date.month - 1) % 3 + 1
-                        newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
+                        if month == 10:
+                            newdate = datetime.datetime(date.year+1, 1, 1) + datetime.timedelta(days=-1)
+                        else:
+                            newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
                         condtions = {'datadate': newdate}
                     if cond == "LSS":
                         month = (date.month - 1) - (date.month - 1) % 3 + 1
@@ -3775,37 +3787,31 @@ def getcalculatedata(target, date, guid):
                         newdate = datetime.datetime(newdate.year, newdate.month - 2, 1)
                         condtions = {'datadate': newdate}
                     if cond == "LSE":
-                        month = (date.month - 1) - (date.month - 1) % 3 + 1
+                        month = (date.month - 1) - (date.month - 1) % 3 + 1  #10
                         newdate = datetime.datetime(date.year, month, 1)
                         newdate = newdate + datetime.timedelta(days=-1)
                         condtions = {'datadate': newdate}
+
                     if cond == "HS":
-                        month = (date.month - 1) - (date.month - 1) % 2 + 1
+                        month = (date.month - 1) - (date.month - 1) % 6 + 1
                         newdate = datetime.datetime(date.year, month, 1)
                         condtions = {'datadate': newdate}
                     if cond == "HE":
-                        month = (date.month - 1) - (date.month - 1) % 2 + 1
-                        newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
+                        month = (date.month - 1) - (date.month - 1) % 6 + 1
+                        if month == 7:
+                            newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+                        else:
+                            newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
                         condtions = {'datadate': newdate}
                     if cond == "LHS":
-                        month = (date.month - 1) - (date.month - 1) % 2 + 1
+                        month = (date.month - 1) - (date.month - 1) % 6 + 1
                         newdate = datetime.datetime(date.year, month, 1)
                         newdate = newdate + datetime.timedelta(days=-1)
                         newdate = datetime.datetime(newdate.year, newdate.month - 5, 1)
                         condtions = {'datadate': newdate}
                     if cond == "LHE":
-                        month = (date.month - 1) - (date.month - 1) % 2 + 1
+                        month = (date.month - 1) - (date.month - 1) % 6 + 1
                         newdate = datetime.datetime(date.year, month, 1)
-                        newdate = newdate + datetime.timedelta(days=-1)
-                        condtions = {'datadate': newdate}
-                        pass
-                    if cond == "LYS":
-                        newdate = date.replace(month=1, day=1)
-                        newdate = newdate + datetime.timedelta(days=-1)
-                        newdate = datetime.datetime(newdate.year, 1, 1)
-                        condtions = {'datadate': newdate}
-                    if cond == "LYE":
-                        newdate = date.replace(month=1, day=1)
                         newdate = newdate + datetime.timedelta(days=-1)
                         condtions = {'datadate': newdate}
 
@@ -3821,13 +3827,19 @@ def getcalculatedata(target, date, guid):
                     if cond == "SAVG":
                         month = (date.month - 1) - (date.month - 1) % 3 + 1
                         ss_newdate = datetime.datetime(date.year, month, 1)
-                        se_newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
+                        if month == 10:
+                            se_newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+                        else:
+                            se_newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
                         new_date = (ss_newdate, se_newdate)
 
                     if cond == "HAVG":
-                        month = (date.month - 1) - (date.month - 1) % 2 + 1
+                        month = (date.month - 1) - (date.month - 1) % 6 + 1
                         hs_newdate = datetime.datetime(date.year, month, 1)
-                        he_newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
+                        if month == 7:
+                            he_newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+                        else:
+                            he_newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
                         new_date = (hs_newdate, he_newdate)
 
                     if cond == "YAVG":
@@ -3838,22 +3850,37 @@ def getcalculatedata(target, date, guid):
                     if condtions:
                         query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9")
                     if new_date:
-                        query_res = queryset.filter(pub_date__range=new_date).filter(target=membertarget).exclude(state="9")
+                        query_res = queryset.filter(datadate__range=new_date).filter(target=membertarget).exclude(state="9")
 
                     if len(query_res) <= 0:
                         curvalue = 0
                     else:
                         value = 0
                         if col == 'd':
-                            value = query_res[0].curvalue
+                            if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                value = query_res.aggregate(Avg('curvalue'))[0].curvalue
+                            else:
+                                value = query_res[0].curvalue
                         if col == 'm':
-                            value = query_res[0].cumulativemonth
+                            if cond == "MAVG" or  cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                value = query_res.aggregate(Avg('cumulativemonth'))[0].cumulativemonth
+                            else:
+                                value = query_res[0].cumulativemonth
                         if col == 's':
-                            value = query_res[0].cumulativequarter
+                            if cond == "MAVG" or  cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                value = query_res.aggregate(Avg('cumulativequarter'))[0].cumulativequarter
+                            else:
+                                value = query_res[0].cumulativequarter
                         if col == 'h':
-                            value = query_res[0].cumulativehalfyear
+                            if cond == "MAVG" or  cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                value = query_res.aggregate(Avg('cumulativehalfyear'))[0].cumulativehalfyear
+                            else:
+                                value = query_res[0].cumulativehalfyear
                         if col == 'y':
-                            value = query_res[0].cumulativeyear
+                            if cond == "MAVG" or  cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                value = query_res.aggregate(Avg('cumulativeyear'))[0].cumulativeyear
+                            else:
+                                value = query_res[0].cumulativeyear
                         formula = formula.replace("<" + th + ">", str(value));
 
     try:
