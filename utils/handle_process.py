@@ -160,24 +160,72 @@ class Extract(object):
             storage = o_target.storage
             if storage:
                 if storage.storagetag == '行':
-                    self.get_row_data(now_time)
+                    self.get_row_data(o_target, now_time)
                 elif storage.storagetag == '列':
-                    col_ordered_target = copy_ordered_targets.filter(storage=storage, storagetag=storage.storagetag)
+                    col_ordered_targets = copy_ordered_targets.filter(storage=storage, storagetag=storage.storagetag)
 
-                    self.get_col_data(now_time)
+                    self.get_col_data(col_ordered_targets, now_time)
                     # 剔除
                     copy_ordered_targets = copy_ordered_targets.exclude(storage=storage, storagetag=storage.storagetag)
                 else:
                     pass
 
-
-    def get_row_data(self, time):
+    def get_row_data(self, target, time):
         # 获取行数据
-        pass
+        source_content = target.source_content
 
-    def get_col_data(self, time):
+        result_list = []
+
+        source = target.source
+        if source:
+            source_type_name = ''
+            source_type = source.sourcetype
+            try:
+                dl = DictList.objects.get(id=int(source_type))
+            except:
+                pass
+            else:
+                source_type_name = source_type.name
+
+            if source_type_name == 'Oracle':
+                pass
+            elif source_type_name == 'SQL Server':
+                pass
+            else:
+                pass
+
+        for result in result_list:
+            # 存表
+            pass
+
+    def get_col_data(self, target_list, time):
         # 获取列数据
-        pass
+        for target in target_list:
+            source_content = target.source_content
+
+            result_list = []
+
+            source = target.source
+            if source:
+                source_type_name = ''
+                source_type = source.sourcetype
+                try:
+                    dl = DictList.objects.get(id=int(source_type))
+                except:
+                    pass
+                else:
+                    source_type_name = source_type.name
+
+                if source_type_name == 'Oracle':
+                    pass
+                elif source_type_name == 'SQL Server':
+                    pass
+                else:
+                    pass
+
+            for result in result_list:
+                # 存表
+                pass
 
     def run(self):
         # 补取()
