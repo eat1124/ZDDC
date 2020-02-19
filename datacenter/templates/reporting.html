@@ -213,7 +213,6 @@
                 <th> 季累计值</th>
                 <th> 半年累计值</th>
                 <th> 年累计值</th>
-                <th style="width:50px;"> 操作</th>
             </tr>
             </thead>
 
@@ -274,47 +273,18 @@
 
 </div>
 
-<div id="static2" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog" style="width:900px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-                <h4 class="modal-title">数据提取</h4>
-                <input hidden id="id" type="text" name="id">
-            </div>
-            <div class="panel-body">
-
-                <form class="bs-example form-horizontal activate-form">{% csrf_token %}
-
-                    <div class="form-body">
-
-                    </div>
-                    <div class="form-actions ">
-                        <div class="modal-footer">
-                            <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭
-                            </button>
-
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 <div id="static3" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog" style="width:900px;">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
                 <h4 class="modal-title">数据计算</h4>
-                <input hidden id="id" type="text" name="id">
             </div>
             <div class="panel-body">
 
                 <form class="bs-example form-horizontal activate-form">{% csrf_token %}
 
-                    <div class="form-body">
-
+                    <div id="formuladiv" class="form-body">
                     </div>
                     <div class="form-actions ">
                         <div class="modal-footer">

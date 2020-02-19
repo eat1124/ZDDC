@@ -123,12 +123,11 @@ $(document).ready(function () {
             {"data": "cumulativequarter"},
             {"data": "cumulativehalfyear"},
             {"data": "cumulativeyear"},
-            {"data": null},
         ],
 
         "columnDefs": [
             {
-            "targets": -6,
+            "targets": -5,
             "mRender":function(data,type,full){
                         if (full.target_datatype == 'numbervalue'){
                              return "<input id='table2_curvalue_" + full.id + "' name='table2_curvalue'  type='number' value='" + data + "'></input>"
@@ -142,35 +141,30 @@ $(document).ready(function () {
                     }
             },
             {
-            "targets": -5,
+            "targets": -4,
             "mRender":function(data,type,full){
                         return "<input disabled id='table2_cumulativemonth_" + full.id + "' name='table2_cumulativemonth'  type='text' value='" + data + "'></input>"
                     }
             },
             {
-            "targets": -4,
+            "targets": -3,
             "mRender":function(data,type,full){
                         return "<input disabled id='table2_cumulativequarter_" + full.id + "' name='table2_cumulativequarter'  type='text' value='" + data + "'></input>"
                     }
             },
             {
-            "targets": -3,
+            "targets": -2,
             "mRender":function(data,type,full){
                         return "<input disabled id='table2_cumulativehalfyear_" + full.id + "' name='table2_cumulativehalfyear'  type='text' value='" + data + "'></input>"
                     }
             },
             {
-            "targets": -2,
+            "targets": -1,
             "mRender":function(data,type,full){
                         return "<input disabled id='table2_cumulativeyear_" + full.id + "' name='table2_cumulativeyear'  type='text' value='" + data + "'></input>"
                     }
             },
-            {
-            "targets": -1,
-            "data": null,
-            "width": "100px",
-            "defaultContent": "<button  id='edit' title='编辑' data-toggle='modal'  data-target='#static2'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>"
-            }
+
         ],
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",
@@ -345,6 +339,26 @@ $(document).ready(function () {
                 $('#table3_cumulativeyear_' + data.id).val(Number(data.cumulativeyear) - Number(data.curvalue) + Number($('#table3_curvalue_' + data.id).val()))
             }
     });
+    $('#sample_3 tbody').on('click', 'button#edit', function () {
+        var table = $('#sample_3').DataTable();
+        var data = table.row($(this).parents('tr')).data();
+        $.getformula(data.id.toString()  );
+    });
+
+    $.formulabtnclick = function(){
+        $(".formulabtn").click(function () {
+            $(this).parent().nextAll().remove();
+            $.getformula(this.id.replace("formulabtn_",""));
+        })
+    }
+    $.getformula = function(btnid){
+        var aa = (parseInt(btnid) +1).toString()
+        $("#formuladiv").append("<div style=\"font-size:18px\"><span style=\"font-size:18px\"  class=\"label label-primary\">#1机组发电量" + aa + "</span><button id='formulabtn_" + aa + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\"><#1_发电量:当前值:当天>221.3</button> + <发电量:当前值:当天>+1+#1机组发电量</span> 123.2<#1_发电量:当前值:当天>+221.3<发电量:当前值:当天>+1=31.12<br><br></div>")
+        $.formulabtnclick();
+    }
+
+
+
 
     $('#sample_4').dataTable({
         "bAutoWidth": true,
