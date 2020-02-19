@@ -1,14 +1,22 @@
 """
 启动进程
 """
-import sys
 import os
-import subprocess
-import pymysql
-from datetime import datetime
+import datetime
 import time
 import json
-import pymssql
+import copy
+# 使用ORM
+import sys
+from django.core.wsgi import get_wsgi_application
+
+# 获取django路径
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.extend([r'%s' % BASE_DIR, ])
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ZDDC.settings")
+application = get_wsgi_application()
+from datacenter.models import *
+from django.db.models import Q
 
 
 def getcumulative(target, date, value):
@@ -70,12 +78,119 @@ def getextractdata(target):
     return curvalue
 
 
+class Extract(object):
+    """
+    先补取，后定时取数
+    """
+    def __init__(self, app_id, source_id, circle_id):
+        self.app_id = app_id
+        self.source_id = source_id
+        self.circle_id = circle_id
+        self.pm = None
+        self.msg = ''
+        try:
+            self.pm = ProcessMonitor.objects.get(app_admin_id=self.app_id, source_id=self.source_id, cycle_id=self.circle_id)
+        except ProcessMonitor.DoesNotExist as e:
+            self.msg = 'ProcessMonitor对象不存在。'
+
+    def supplement(self):
+        # 补取
+        if self.pm:
+            start_time = self.pm.last_time
+            end_time = datetime.datetime.now()
+
+            # start_time加上一分钟，低于end_time继续循环补取，超过则停止
+            while True:
+                one_minute_plus = start_time + datetime.timedelta(minutes=1)
+                # 取数
+                self.get_data(one_minute_plus)
+                if one_minute_plus > end_time:
+                    break
+
+            # 补取过程也消耗时间，再次判断进行补取:先把秒数抹掉再比较(啥意思？)
+            aft_last_time = self.pm.last_time
+            try:
+                delta_time = (datetime.datetime.now() - aft_last_time).total_seconds()
+            except:
+                pass
+            else:
+                if delta_time > 60:
+                    self.supplement()
+
+    def set_timer(self):
+        # 定时器
+        time_now = datetime.datetime.now()
+        self.get_data(time_now)
+
+    def get_data(self, now_time):
+        # 取数
+        # 判断当前时间是否符合周期规则
+        if self.pm:
+            circle_rule = self.pm.cycle
+            if circle_rule:
+                schedule_type = circle_rule.schedule_type
+                minute = circle_rule.minute
+                hour = circle_rule.hour
+                day_of_week = circle_rule.day_of_week
+                day_of_month = circle_rule.day_of_month
+
+                # 当前时间
+                now_minute = now_time.minute
+                now_hour = now_time.hour
+                now_weekday = str(now_time.weekday())
+                now_day = str(now_time.day)
+
+                if now_hour == hour and now_minute == minute:
+                    # 每日/每周/每月
+                    if schedule_type == 1:
+                        self._get_data(now_time)
+                    if schedule_type == 2:
+                        # 判断一周第几天
+                        if now_weekday == day_of_week:
+                            self._get_data(now_time)
+                    if schedule_type == 3:
+                        # 判断一月第几天
+                        if now_day == day_of_month:
+                            self._get_data(now_time)
+
+    def _get_data(self, now_time):
+        ordered_targets = Target.objects.filter(adminapp_id=self.app_id, source_id=self.source_id, cycle_id=self.circle_id).exclude(state='9').order_by('storage_id', 'storagetag')
+        copy_ordered_targets = copy.deepcopy(ordered_targets)
+        for o_target in ordered_targets:
+            storage = o_target.storage
+            if storage:
+                if storage.storagetag == '行':
+                    self.get_row_data(now_time)
+                elif storage.storagetag == '列':
+                    col_ordered_target = copy_ordered_targets.filter(storage=storage, storagetag=storage.storagetag)
+
+                    self.get_col_data(now_time)
+                    # 剔除
+                    copy_ordered_targets = copy_ordered_targets.exclude(storage=storage, storagetag=storage.storagetag)
+                else:
+                    pass
+
+
+    def get_row_data(self, time):
+        # 获取行数据
+        pass
+
+    def get_col_data(self, time):
+        # 获取列数据
+        pass
+
+    def run(self):
+        # 补取()
+	    # 启动定时器，每分钟执行一次
+        self.supplement()
+        self.set_timer()
+
+
 def run_process(process_id, processcon, targets):
-    # subprocess.run(r"D:\Sublime\Sublime Text Build 3200 x64\sublime_text.exe")
     # 取数 *****************************************************
-
+    # SQL Server
+    # connection = pymssql.connect(host='127.0.0.1', user='miaokela', password='Passw0rD', database='mkl')
     pid = os.getpid()
-
     if process_id:
         # for target in targets:
         #     curvalue = getextractdata(target)
@@ -94,34 +209,31 @@ def run_process(process_id, processcon, targets):
 
         process_id = int(process_id)
 
-        # SQL Server
-        # connection = pymssql.connect(host='127.0.0.1', user='miaokela', password='Passw0rD', database='mkl')
+        # 判断进程类型 动态还是固定(数据补取：1，数据清理：2，数据服务：3，短信服务：4)
 
-        connection = pymysql.connect(host='127.0.0.1',
-                                     user='root',
-                                     password='password',
-                                     db='datacenter',
-                                     charset='utf8mb4',
-                                     cursorclass=pymysql.cursors.DictCursor)
+        # if process_info:
+        #     # 根据app_id/source_id/circle_id来过滤所有指标来取数
+        #     extract = Extract(app_id, source_id, circle_id)
+        #     extract.run()
+        #     pass
+
+        # 更新数据库状态
         try:
-            with connection.cursor() as cursor:
-                # SQL Server
-                # update_sql = """UPDATE dbo.datacenter_processmonitor SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
-                #     datetime.now(), pid, process_id)
-
-                update_sql = """UPDATE datacenter.datacenter_processmonitor SET last_time='{0}', p_id='{1}' WHERE id='{2}'""".format(
-                    datetime.now(), pid, process_id)
-                cursor.execute(update_sql)
-            connection.commit()
-        finally:
-            connection.close()
+            update_pm = ProcessMonitor.objects.get(id=process_id)
+            print(update_pm)
+        except ProcessMonitor.DoesNotExist as e:
+            print(e)
+        else:
+            update_pm.last_time = datetime.datetime.now()
+            update_pm.p_id = pid
+            update_pm.save()
     else:
         pass
 
-
+# run_process(10, None, None)
 if len(sys.argv) > 1:
     while True:
-        # if datetime.now().minute==10:
+        # if datetime.datetime.now().minute==10:
         #     connection = pymysql.connect(host='192.168.100.154',
         #                                  user='root',
         #                                  password='password',

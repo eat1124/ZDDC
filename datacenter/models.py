@@ -179,6 +179,7 @@ class ProcessMonitor(models.Model):
     status = models.CharField("进程状态", blank=True, null=True, max_length=20)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
+
 def get_meterdata_model(prefix):
     table_name = 't_meterdata_%s' % str(prefix)
 
@@ -212,6 +213,7 @@ def get_meterdata_model(prefix):
 
     return Meterdata
 
+
 def get_entrydata_model(prefix):
     table_name = 't_entrydata_%s' % str(prefix)
 
@@ -241,6 +243,7 @@ def get_entrydata_model(prefix):
             db_table = table_name
 
     return Entrydata
+
 
 def get_extractdata_model(prefix):
     table_name = 't_extractdata_%s' % str(prefix)
@@ -272,6 +275,7 @@ def get_extractdata_model(prefix):
 
     return Extractdata
 
+
 def get_calculatedata_model(prefix):
     table_name = 't_calculatedata_%s' % str(prefix)
 
@@ -302,6 +306,7 @@ def get_calculatedata_model(prefix):
             db_table = table_name
 
     return Calculatedata
+
 
 class Meterchangedata(models.Model):
     """
@@ -368,5 +373,3 @@ class LogInfo(models.Model):
     cycle = models.ForeignKey(Cycle, null=True, verbose_name='周期')
     create_time = models.DateTimeField('时间', null=True, blank=True)
     content = models.TextField('日志内容', null=True, blank=True)
-
-

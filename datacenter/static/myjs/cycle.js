@@ -28,7 +28,7 @@ $(document).ready(function () {
                         00:00 第2天(月)
                  */
                 var time = full.hours + ":" + full.minutes;
-                var week_map = {1: "周一", 2: "周二", 3: "周三", 4: "周四", 5: "周五", 6: "周六", 7: "周日"};
+                var week_map = {1: "周日", 2: "周一", 3: "周二", 4: "周三", 5: "周四", 6: "周五", 7: "周六"};
                 var per_week = week_map[full.per_week];
                 var per_month = full.per_month;
 

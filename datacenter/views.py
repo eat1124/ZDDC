@@ -3712,8 +3712,8 @@ def getcalculatedata(target, date, guid):
 
                     tableyear = str(date.year)
                     queryset = getmodels("Entrydata", tableyear).objects
-                    if cond =="LYS" or cond =="LYE" or ((cond =="LHS" or cond =="LHS") and int(date.month)<7):
-                        tableyear= str(int(date.year)-1)
+                    if cond == "LYS" or cond == "LYE" or ((cond == "LHS" or cond == "LHS") and int(date.month) < 7):
+                        tableyear = str(int(date.year) - 1)
                     operationtype = membertarget.operationtype
                     if operationtype == "1":
                         queryset = getmodels("Meterdata", tableyear).objects
