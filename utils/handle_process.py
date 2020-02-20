@@ -255,6 +255,7 @@ class Extract(object):
 
             db_query = SeveralDBQuery(source_type_name, source_connection)
             result_list = db_query.fetch_all(source_content)
+            db_query.close()
 
         for result in result_list:
             # 存表
@@ -291,6 +292,7 @@ class Extract(object):
 
                 db_query = SeveralDBQuery(source_type_name, source_connection)
                 result_list = db_query.fetch_all(source_content)
+                db_query.close()
 
             for result in result_list:
                 # 存表
