@@ -18,6 +18,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ZDDC.settings")
 application = get_wsgi_application()
 from datacenter.models import *
 from django.db.models import Q
+from django.conf import settings
 
 
 def getcumulative(target, date, value):
@@ -85,6 +86,15 @@ class SeveralDBQuery(object):
         self.db_type = db_type
         self.connection = None
 
+        if seld.db_type == "MySQL":
+            import pymysql.cursors
+
+            self.connection = pymysql.connect(host=credit['host'],
+                                        user=credit['user'],
+                                        password=credit['passwd'],
+                                        db=credit['db'],
+                                        charset='utf8mb4',
+                                        cursorclass=pymysql.cursors.DictCursor)
         if self.db_type == 'Oracle':
             import cx_Oracle
 
@@ -226,6 +236,11 @@ class Extract(object):
                     pass
 
     def get_row_data(self, target, time):
+        # storagefields有4个特例，
+		# 1.id，id字段不需要配置，storage表必有id字段并自增长
+		# 2.target_id,target_id字段不需要配置,代码中强制保存index.id到storage的target_id字段
+		# 3.savedate,savedate字段不需要配置,代码中强制保存time到storage的savedate字段
+		# 4.datadate，配置时需放在普通字段之后，datadate格式如<#DATADATE:m:S#>，参考source_content中的时间格式，将time格式化后再转成日期格式保存
         # 获取行数据
         source_content = target.source_content
 
@@ -257,11 +272,43 @@ class Extract(object):
             result_list = db_query.fetch_all(source_content)
             db_query.close()
 
+        # 本地数据库信息
+        connection = {
+            'host': settings.DATABASES['default']['HOST'],
+            'user': settings.DATABASES['default']['USER'],
+            'passwd': settings.DATABASES['default']['PASSWORD'],
+            'db': settings.DATABASES['default']['NAME'],
+        }
+        db_update = SeveralDBQuery('MySQL', connection)
+
         for result in result_list:
-            # 存表
-            pass
+            storage = {}
+            storage["savedate"] = time
+            storage['target_id'] = target.id
+            storage['savedate'] = time
+            if 'DATADATE' in target.storagefields:
+                # storage['datadate'] 
+                # ...
+                pass
+
+            set_values = ''
+            for k, v in storage.items():
+                set_values += k + '=' + str(v) + ','
+            
+            set_values = set_values[:-1] if set_values.endswith(',') else set_values
+            tablename = target.storage.tablename
+            # 行存
+            row_save_sql = """UPDATE datacenter_{tablename} SET {set_values}""".format(tablename=tablename, set_values=set_values)
+
+            db_update.update(row_save_sql)
+        db_update.close()
 
     def get_col_data(self, target_list, time):
+        storage = {}
+        storage["savedate"] = time
+        # 格式化时间<datadate:MS>  storage['datadate'] 
+        # ...
+
         # 获取列数据
         for target in target_list:
             source_content = target.source_content
@@ -294,9 +341,35 @@ class Extract(object):
                 result_list = db_query.fetch_all(source_content)
                 db_query.close()
 
-            for result in result_list:
-                # 存表
-                pass
+            # 存表
+            storagefields = target.storagefields
+            storagefields_ilst = storagefields.split(',')
+            if result_list:
+                result = result_list[0]
+                i = 0
+                for k, v in result.items():
+                    # 字段为target.storagefields
+                    storage[storagefields_ilst[i]] = v
+                    i += 1
+
+        set_values = ''
+        for k, v in storage.items():
+            set_values += k + '=' + str(v) + ','
+        
+        set_values = set_values[:-1] if set_values.endswith(',') else set_values
+
+        # 列存，将storage存成一条记录,本地数据库
+        tablename = target_list[0].storage.tablename
+        col_save_sql = """UPDATE datacenter_{tablename} SET {set_values}""".format(tablename=tablename, set_values=set_values)
+        connection = {
+            'host': settings.DATABASES['default']['HOST'],
+            'user': settings.DATABASES['default']['USER'],
+            'passwd': settings.DATABASES['default']['PASSWORD'],
+            'db': settings.DATABASES['default']['NAME'],
+        }
+        db_update = SeveralDBQuery('MySQL', connection)
+        db_update.update(col_save_sql)
+        db_update.close()
 
     def format_date(self, date, pre_format):
         # {
