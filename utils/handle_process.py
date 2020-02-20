@@ -79,6 +79,58 @@ def getextractdata(target):
     return curvalue
 
 
+class SeveralDBQuery(object):
+    def __init__(self, db_type, credit):
+        # {"host":"192.168.1.66","user":"root","passwd":"password","db":"datacenter"}
+        self.db_type = db_type
+        self.connection = None
+
+        if self.db_type == 'Oracle':
+            import cx_Oracle
+
+            self.connection = cx_Oracle.connect('{user}/{passwd}@{host}/{db}'.format(
+                user=credit['user'], 
+                passwd=credit['passwd'], 
+                host=credit['host'], 
+                db=credit['db']
+            ))
+        if self.db_type == 'SQL Server':
+            import pymssql
+
+            self.connection = pymssql.connect(
+                host=credit['host'], 
+                user=credit['user'], 
+                password=credit['passwd'], 
+                database=credit['db']
+            )
+
+    def fetch_one(self, fetch_sql):
+        result = None
+        if self.connection:
+            with self.connection.cursor() as cursor:
+                cursor.execute(temp_sql)
+                result = cursor.fetchone()
+        return result
+
+    def fetch_all(self, fetch_sql):
+        result = []
+        if self.connection:
+            with self.connection.cursor() as cursor:
+                cursor.execute(temp_sql)
+                result = cursor.fetchall()
+        return result
+
+    def update(self, update_sql):
+        if self.connection:
+            with self.connection.cursor() as cursor:
+                cursor.execute(temp_sql)
+                self.connection.commit()
+
+    def close(self):
+        if self.connection:
+            self.connection.close()
+
+
 class Extract(object):
     """
     先补取，后定时取数
@@ -177,12 +229,23 @@ class Extract(object):
         # 获取行数据
         source_content = target.source_content
 
+        # 匹配出<#DATE:m:L#>
+        date_com = re.compile('<.*?>')
+        pre_format_list = date_com.findall(source_content)
+
+        format_date = self.format_date(time, pre_format_list[0] if pre_format_list else '')
+
+        # 格式化后的SQL
+        source_content = source_content.replace(pre_format_list[0], format_date) if pre_format_list else source_content
+
         result_list = []
 
         source = target.source
         if source:
             source_type_name = ''
-            source_type = source.sourcetype
+            source_type = source.sourcetype  # Oracle/SQL Server
+            source_connection = source.connection
+
             try:
                 dl = DictList.objects.get(id=int(source_type))
             except:
@@ -190,22 +253,11 @@ class Extract(object):
             else:
                 source_type_name = source_type.name
 
-            if source_type_name == 'Oracle':
-                pass
-            elif source_type_name == 'SQL Server':
-                pass
-            else:
-                pass
-
-        # 匹配出<#DATE:m:L#>
-        date_com = re.compile('<.*?>')
-        pre_format_list = date_com.findall(source_content)
-
-        format_date = self.format_date(time, pre_format_list[0] if pre_format_list else '')
+            db_query = SeveralDBQuery(source_type_name, source_connection)
+            result_list = db_query.fetch_all(source_content)
 
         for result in result_list:
             # 存表
-
             pass
 
     def get_col_data(self, target_list, time):
@@ -213,12 +265,23 @@ class Extract(object):
         for target in target_list:
             source_content = target.source_content
 
+            # 匹配出<#DATE:m:L#>
+            date_com = re.compile('<.*?>')
+            pre_format_list = date_com.findall(source_content)
+
+            format_date = self.format_date(time, pre_format_list[0] if pre_format_list else '')
+
+            # 格式化后的SQL
+            source_content = source_content.replace(pre_format_list[0], format_date) if pre_format_list else source_content
+
             result_list = []
 
             source = target.source
             if source:
                 source_type_name = ''
-                source_type = source.sourcetype
+                source_type = source.sourcetype  # Oracle/SQL Server
+                source_connection = source.connection
+
                 try:
                     dl = DictList.objects.get(id=int(source_type))
                 except:
@@ -226,12 +289,8 @@ class Extract(object):
                 else:
                     source_type_name = source_type.name
 
-                if source_type_name == 'Oracle':
-                    pass
-                elif source_type_name == 'SQL Server':
-                    pass
-                else:
-                    pass
+                db_query = SeveralDBQuery(source_type_name, source_connection)
+                result_list = db_query.fetch_all(source_content)
 
             for result in result_list:
                 # 存表
