@@ -108,7 +108,7 @@ class SeveralDBQuery(object):
         result = None
         if self.connection:
             with self.connection.cursor() as cursor:
-                cursor.execute(temp_sql)
+                cursor.execute(fetch_sql)
                 result = cursor.fetchone()
         return result
 
@@ -116,14 +116,14 @@ class SeveralDBQuery(object):
         result = []
         if self.connection:
             with self.connection.cursor() as cursor:
-                cursor.execute(temp_sql)
+                cursor.execute(fetch_sql)
                 result = cursor.fetchall()
         return result
 
     def update(self, update_sql):
         if self.connection:
             with self.connection.cursor() as cursor:
-                cursor.execute(temp_sql)
+                cursor.execute(update_sql)
                 self.connection.commit()
 
     def close(self):
