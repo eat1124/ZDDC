@@ -172,13 +172,20 @@ class Extract(object):
 
             # 补取过程也消耗时间，再次判断进行补取:先把秒数抹掉再比较(啥意思？)
             aft_last_time = self.pm.last_time
+
             try:
-                delta_time = (datetime.datetime.now() - aft_last_time).total_seconds()
+                aft_last_time = datetime.datetime.timestamp('{:%Y-%m-%d %H:%M}'.format(aft_last_time), '%Y-%m-%d %H:%M')
+                now_time = datetime.datetime.timestamp('{:%Y-%m-%d %H:%M}'.format(datetime.datetime.now()), '%Y-%m-%d %H:%M')
             except:
-                pass
+                exit(0)
             else:
-                if delta_time > 60:
-                    self.supplement()
+                try:
+                    delta_time = (now_time - aft_last_time).total_seconds()
+                except:
+                    exit(0)
+                else:
+                    if delta_time > 60:
+                        self.supplement()
 
     def set_timer(self):
         # 定时器
@@ -309,7 +316,7 @@ class Extract(object):
             
             tablename = target.storage.tablename
             # 行存
-            row_save_sql = """INSERT INTOR datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
+            row_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
 
             db_update.update(row_save_sql)
         db_update.close()
@@ -383,7 +390,7 @@ class Extract(object):
 
         # 列存，将storage存成一条记录,本地数据库
         tablename = target_list[0].storage.tablename
-        col_save_sql = """INSERT INTOR datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
+        col_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
         connection = {
             'host': settings.DATABASES['default']['HOST'],
             'user': settings.DATABASES['default']['USER'],
