@@ -112,6 +112,7 @@ urlpatterns = [
     url(r'^reporting_save/$', reporting_save),
     url(r'^reporting_new/$', reporting_new),
     url(r'^reporting_recalculate/$', reporting_recalculate),
+    url(r'^reporting_formulacalculate/$', reporting_formulacalculate),
 
     # 报表上报
     url(r'^report_submit/(?P<funid>\d+)/$', report_submit_index),
