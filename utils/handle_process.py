@@ -542,7 +542,6 @@ def run_process(process_id, processcon, targets):
         #             extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
         #             extractdata.cumulativeyear = cumulative["cumulativeyear"]
         #         extractdata.save()
-
         process_id = int(process_id)
 
         # 判断进程类型 动态还是固定(数据补取：1，数据清理：2，数据服务：3，短信服务：4)
@@ -552,11 +551,9 @@ def run_process(process_id, processcon, targets):
         #     extract = Extract(app_id, source_id, circle_id)
         #     extract.run()
         #     pass
-
         # 更新数据库状态
         try:
             update_pm = ProcessMonitor.objects.get(id=process_id)
-            print(update_pm)
         except ProcessMonitor.DoesNotExist as e:
             print(e)
         else:

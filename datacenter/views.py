@@ -23,6 +23,7 @@ import decimal
 import pymysql
 import psutil
 import base64
+import win32api
 
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
@@ -293,7 +294,7 @@ def process_monitor_index(request, funid):
             p_id = process_monitor.p_id
             try:
                 p_id = int(p_id)
-            except:
+            except ValueError as e:
                 process_monitor.status = "已关闭"
                 process_monitor.create_time = None
                 process_monitor.save()
@@ -401,10 +402,13 @@ def handle_process(current_process, handle_type=None):
         try:
             process_path = BASE_DIR + os.sep + "utils" + os.sep + "handle_process.py" + " {0}".format(
                 current_process.id)
-            os.popen(r"{0}".format(process_path))
+
+            win32api.ShellExecute(0, 'open', 'python', r'-i {process_path}'.format(process_path=process_path), '', 0)
+            # os.popen(r"{0}".format(process_path))
             res = "程序启动成功。"
             tag = 1
         except Exception as e:
+            print(e)
             res = "程序启动失败"
         if tag == 1:
             # 修改数据库进程状态
