@@ -241,6 +241,8 @@ class Extract(object):
                     copy_ordered_targets = copy_ordered_targets.exclude(storage=storage, storagetag=storage.storagetag)
                 else:
                     pass
+        self.pm.last_time = now_time
+        self.pm.save()
 
     def get_row_data(self, target, time):
         # storagefields有4个特例，
