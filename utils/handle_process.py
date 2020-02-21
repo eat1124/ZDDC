@@ -294,14 +294,22 @@ class Extract(object):
                 # storage['datadate'] 
                 storage['datadate'] = format_datadate
 
-            set_values = ''
-            for k, v in storage.items():
-                set_values += k + '=' + str(v) + ','
+            fields = ''
+            values = ''
+
+            for k,v in storage.items():
+                fields += k + ','
+                if type(v) == 'int':
+                    values += v + ','
+                if type(v) == 'str':
+                    values += '"%s"' % v + ','
+
+            fields = fields if fields[:-1] else fields
+            values = values if values[:-1] else values
             
-            set_values = set_values[:-1] if set_values.endswith(',') else set_values
             tablename = target.storage.tablename
             # 行存
-            row_save_sql = """UPDATE datacenter_{tablename} SET {set_values}""".format(tablename=tablename, set_values=set_values)
+            row_save_sql = """INSERT INTOR datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
 
             db_update.update(row_save_sql)
         db_update.close()
@@ -360,15 +368,22 @@ class Extract(object):
                     storage[storagefields_ilst[i]] = v
                     i += 1
 
-        set_values = ''
-        for k, v in storage.items():
-            set_values += k + '=' + str(v) + ','
-        
-        set_values = set_values[:-1] if set_values.endswith(',') else set_values
+        fields = ''
+        values = ''
+
+        for k,v in storage.items():
+            fields += k + ','
+            if type(v) == 'int':
+                values += v + ','
+            if type(v) == 'str':
+                values += '"%s"' % v + ','
+
+        fields = fields if fields[:-1] else fields
+        values = values if values[:-1] else values
 
         # 列存，将storage存成一条记录,本地数据库
         tablename = target_list[0].storage.tablename
-        col_save_sql = """UPDATE datacenter_{tablename} SET {set_values}""".format(tablename=tablename, set_values=set_values)
+        col_save_sql = """INSERT INTOR datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
         connection = {
             'host': settings.DATABASES['default']['HOST'],
             'user': settings.DATABASES['default']['USER'],
