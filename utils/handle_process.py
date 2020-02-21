@@ -253,6 +253,11 @@ class Extract(object):
         # 格式化后的SQL
         source_content = source_content.replace(pre_format_list[0], format_date) if pre_format_list else source_content
 
+        # datadate
+        pre_datadate_format_list = date_com(target.storagefields)
+        
+        format_datadate = self.format_date(time, pre_datadate_format_list[0], return_type='timestamp') if pre_datadate_format_list else None
+
         result_list = []
 
         source = target.source
@@ -285,11 +290,9 @@ class Extract(object):
             storage = {}
             storage["savedate"] = time
             storage['target_id'] = target.id
-            storage['savedate'] = time
             if 'DATADATE' in target.storagefields:
                 # storage['datadate'] 
-                # ...
-                pass
+                storage['datadate'] = format_datadate
 
             set_values = ''
             for k, v in storage.items():
@@ -307,7 +310,12 @@ class Extract(object):
         storage = {}
         storage["savedate"] = time
         # 格式化时间<datadate:MS>  storage['datadate'] 
-        # ...
+
+        # datadate
+        if 'DATADATE' in target_list[0].storagefields:
+            pre_datadate_format_list = date_com(target_list[0].storagefields)
+            format_datadate = self.format_date(time, pre_datadate_format_list[0], return_type='timestamp') if pre_datadate_format_list else None
+            storage['datadate'] = format_datadate
 
         # 获取列数据
         for target in target_list:
@@ -371,7 +379,7 @@ class Extract(object):
         db_update.update(col_save_sql)
         db_update.close()
 
-    def format_date(self, date, pre_format):
+    def format_date(self, date, pre_format, return_type='str'):
         # {
 		# "D": "当前", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
 		# "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
@@ -451,20 +459,35 @@ class Extract(object):
             month = (date.month - 1) - (date.month - 1) % 6 + 1
             newdate = datetime.datetime(date.year, month, 1)
             newdate = newdate + datetime.timedelta(days=-1)
+
+        date_init = '' if return_type == 'str' else None
         # 格式
-        date_init = ''
-        if time_format == 's':
-            date_init = '{:%Y-%m-%d %H:%M:%S}'.format(newdate)
-        if time_format == 'mi':
-            date_init = '{:%Y-%m-%d %H:%M}'.format(newdate)
-        if time_format == 'h':
-            date_init = '{:%Y-%m-%d %H}'.format(newdate)
-        if time_format == 'd':
-            date_init = '{:%Y-%m-%d}'.format(newdate)
-        if time_format == 'm':
-            date_init = '{:%Y-%m}'.format(newdate)
-        if time_format == 'y':
-            date_init = '{:%Y}'.format(newdate)
+        if return_type == 'str':
+            if time_format == 's':
+                date_init = '{:%Y-%m-%d %H:%M:%S}'.format(newdate)
+            if time_format == 'mi':
+                date_init = '{:%Y-%m-%d %H:%M}'.format(newdate)
+            if time_format == 'h':
+                date_init = '{:%Y-%m-%d %H}'.format(newdate)
+            if time_format == 'd':
+                date_init = '{:%Y-%m-%d}'.format(newdate)
+            if time_format == 'm':
+                date_init = '{:%Y-%m}'.format(newdate)
+            if time_format == 'y':
+                date_init = '{:%Y}'.format(newdate)
+        if return_type == 'timestamp':
+            if time_format == 's':
+                date_init = datetime.datetime.strptime('{:%Y-%m-%d %H:%M:%S}'.format(newdate), '%Y-%m-%d %H:%M:%S') 
+            if time_format == 'mi':
+                date_init = datetime.datetime.strptime('{:%Y-%m-%d %H:%M}'.format(newdate), '%Y-%m-%d %H:%M')
+            if time_format == 'h':
+                date_init = datetime.datetime.strptime('{:%Y-%m-%d %H}'.format(newdate), '%Y-%m-%d %H')
+            if time_format == 'd':
+                date_init = datetime.datetime.strptime('{:%Y-%m-%d}'.format(newdate), '%Y-%m-%d')
+            if time_format == 'm':
+                date_init = datetime.datetime.strptime('{:%Y-%m}'.format(newdate), '%Y-%m')
+            if time_format == 'y':
+                date_init = datetime.datetime.strptime('{:%Y}'.format(newdate), '%Y')
 
         return date_init
 
