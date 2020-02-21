@@ -177,3 +177,40 @@ EMAIL_PORT = 25
 #         },
 #     }
 # }
+
+
+# 日志系统
+# 创建日志的路径
+LOG_PATH = os.path.join(BASE_DIR, 'log')
+# 如果地址不存在，则自动创建log文件夹
+if not os.path.exists(LOG_PATH):
+    os.mkdir(LOG_PATH)
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,   # True表示禁用logger
+    'formatters': {
+        'default': {
+            'format': '%(levelno)s %(module)s %(asctime)s %(message)s ',
+            'datefmt': '%Y-%m-%d %A %H:%M:%S',
+        },
+    },
+
+    'handlers': {
+        'process_handlers': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',  # 日志文件指定为5M, 超过5m重新命名，然后写入新的日志文件
+            'maxBytes': 5 * 1024,  # 指定文件大小
+            'filename': '%s/process.txt' % LOG_PATH,  # 指定文件地址
+            'formatter': 'default',
+            'encoding': 'utf8',
+        },
+    },
+    'loggers': {
+        'process': {
+            'handlers': ['process_handlers'],
+            'level': 'INFO'
+        },
+    },
+}
+
+

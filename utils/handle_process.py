@@ -7,6 +7,7 @@ import time
 import json
 import copy
 import re
+import logging
 # 使用ORM
 import sys
 from django.core.wsgi import get_wsgi_application
@@ -20,6 +21,8 @@ from datacenter.models import *
 from django.db.models import Q
 from django.conf import settings
 
+logger = logging.getLogger('process')
+# logger.info('test')
 
 def getcumulative(target, date, value):
     """
@@ -150,11 +153,10 @@ class Extract(object):
         self.source_id = source_id
         self.circle_id = circle_id
         self.pm = None
-        self.msg = ''
         try:
             self.pm = ProcessMonitor.objects.get(app_admin_id=self.app_id, source_id=self.source_id, cycle_id=self.circle_id)
         except ProcessMonitor.DoesNotExist as e:
-            self.msg = 'ProcessMonitor对象不存在。'
+            logger.info('Extract >> __init__() >> %s' % e)
 
     def supplement(self):
         # 补取
@@ -176,12 +178,14 @@ class Extract(object):
             try:
                 aft_last_time = datetime.datetime.timestamp('{:%Y-%m-%d %H:%M}'.format(aft_last_time), '%Y-%m-%d %H:%M')
                 now_time = datetime.datetime.timestamp('{:%Y-%m-%d %H:%M}'.format(datetime.datetime.now()), '%Y-%m-%d %H:%M')
-            except:
+            except Exception as e:
+                logger.info('Extract >> supplement() >> %s' % e)
                 exit(0)
             else:
                 try:
                     delta_time = (now_time - aft_last_time).total_seconds()
-                except:
+                except Exception as e:
+                    logger.info('Extract >> supplement() >> %s' % e)
                     exit(0)
                 else:
                     if delta_time > 60:
@@ -240,7 +244,7 @@ class Extract(object):
                     # 剔除
                     copy_ordered_targets = copy_ordered_targets.exclude(storage=storage, storagetag=storage.storagetag)
                 else:
-                    pass
+                    logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
         self.pm.last_time = now_time
         self.pm.save()
 
@@ -277,8 +281,8 @@ class Extract(object):
 
             try:
                 dl = DictList.objects.get(id=int(source_type))
-            except:
-                pass
+            except Exception as e:
+                logger.info('Extract >> get_row_data() >> %s' % e)
             else:
                 source_type_name = source_type.name
 
@@ -358,7 +362,7 @@ class Extract(object):
                 try:
                     dl = DictList.objects.get(id=int(source_type))
                 except:
-                    pass
+                    logger.info('Extract >> get_col_data() >> %s' % e)
                 else:
                     source_type_name = source_type.name
 
@@ -418,8 +422,7 @@ class Extract(object):
         time_format, cond = format_params[0]
         
         # 时间点
-        # if cond == "D":
-        newdate = date
+        newdate = date  # if cond == "D":
         if cond == "L":
             newdate = date + datetime.timedelta(days=-1)
         if cond == "MS":
@@ -544,27 +547,39 @@ def run_process(process_id, processcon, targets):
         #         extractdata.save()
         process_id = int(process_id)
 
-        # 判断进程类型 动态还是固定(数据补取：1，数据清理：2，数据服务：3，短信服务：4)
-
-        # if process_info:
-        #     # 根据app_id/source_id/circle_id来过滤所有指标来取数
-        #     extract = Extract(app_id, source_id, circle_id)
-        #     extract.run()
-        #     pass
-        # 更新数据库状态
+        # 测试
         try:
             update_pm = ProcessMonitor.objects.get(id=process_id)
         except ProcessMonitor.DoesNotExist as e:
-            print(e)
+            logger.info('run_process() >> %s' % e)
         else:
             update_pm.last_time = datetime.datetime.now()
             update_pm.p_id = pid
             update_pm.save()
-    else:
-        pass
 
-# run_process(10, None, None)
+        # # 实际
+        # try:
+        #     update_pm = ProcessMonitor.objects.get(id=process_id)
+        # except ProcessMonitor.DoesNotExist as e:
+        #     logger.info('run_process() >> %s' % e)
+        # else:
+        #     app_id = update_pm.app_admin_id
+        #     source_id = update_pm.source_id
+        #     circle_id = update_pm.cycle_id
+        #     extract = Extract(app_id, source_id, circle_id)
+        #     extract.run()
+
+        #     update_pm.create_time = datetime.datetime.now()
+        #     update_pm.p_id = pid
+        #     update_pm.save()
+        
+    else:
+        logger.info('run_process() >> %s' % '传入参数有误。')
+
 if len(sys.argv) > 1:
+    # # 实际
+    # run_process(sys.argv[1], None, None)
+    logger.info('进程启动。')
     while True:
         # if datetime.datetime.now().minute==10:
         #     connection = pymysql.connect(host='192.168.100.154',
@@ -590,4 +605,4 @@ if len(sys.argv) > 1:
         run_process(sys.argv[1], None, None)
         time.sleep(60)
 else:
-    print("未传参")
+    logger.info('脚本未传参。')
