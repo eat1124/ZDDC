@@ -3917,6 +3917,7 @@ def reporting_formulacalculate(request):
         id = request.POST.get('id', '')
         cycletype = request.POST.get('cycletype', '')
         reporting_date = request.POST.get('reporting_date', '')
+        app = request.POST.get('app', '')
         try:
             id = int(id)
             if cycletype == "10":
@@ -3947,6 +3948,10 @@ def reporting_formulacalculate(request):
             "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初","YE": "年末", "LYS": "去年初",
             "LYE": "去年末", "MAVG": "月平均值", "SAVG": "季平均值", "HAVG": "半年平均值", "YAVG": "年均值"
         }
+        all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
+                                                              operationtype=17)
+        for target in all_target:
+                target = Target.objects.get(id=target.id)
 
         calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(id=id)
         if len(calculatedata) > 0:
@@ -3965,12 +3970,17 @@ def reporting_formulacalculate(request):
                         if membertarget.find(':') > 0:
                             col = membertarget[membertarget.find(':') + 1:]
                             membertarget = membertarget[0:membertarget.find(':')]
-
                             if col.find(':') > 0:
                                 cond = col[col.find(':') + 1:]
                                 col = col[0:col.find(':')]
 
+                        target_name = target_codename[membertarget]
+                        target_col = data_field[col]
+                        target_cond = data_time[cond]
+                        target_english = '<' + membertarget + ':' + col + ':' + cond + '>'
+
                         membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
+                        value = ""
                         if len(membertarget) <= 0:
                             curvalue = 0
                         else:
@@ -4123,7 +4133,6 @@ def reporting_formulacalculate(request):
                             if new_date:
                                 query_res = queryset.filter(datadate__range=new_date).filter(
                                     target=membertarget).exclude(state="9")
-
                             if len(query_res) <= 0:
                                 curvalue = 0
                             else:
@@ -4154,18 +4163,13 @@ def reporting_formulacalculate(request):
                                     else:
                                         value = query_res[0].cumulativeyear
 
-                                target_name = target_codename[membertarget]
-                                target_col = data_field[col]
-                                target_cond = data_time[cond]
-                                target_english = '<' + membertarget + ':' + col + ':' + cond + '>'
-                                target_chinese = '<' + target_name + ':' + target_col + ':' + target_cond + '>' + str(value)
-                                if pre_data:
-                                    pre_data = pre_data.replace(target_english, target_chinese)
-                                else:
-                                    pre_data = formula.replace(target_english, target_chinese)
+                        target_chinese = '<' + target_name + ':' + target_col + ':' + target_cond + '>' + str(value)
+                        if pre_data:
+                            pre_data = pre_data.replace(target_english, target_chinese)
+                        else:
+                            pre_data = formula.replace(target_english, target_chinese)
 
-                                formula = formula.replace("<" + th + ">", str(value))
-
+                        formula = formula.replace("<" + th + ">", str(value))
             try:
                 curvalue = eval(formula)
             except:
