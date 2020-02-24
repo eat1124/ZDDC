@@ -3917,7 +3917,6 @@ def reporting_formulacalculate(request):
         id = request.POST.get('id', '')
         cycletype = request.POST.get('cycletype', '')
         reporting_date = request.POST.get('reporting_date', '')
-        app = request.POST.get('app', '')
         try:
             id = int(id)
             if cycletype == "10":
@@ -3948,10 +3947,6 @@ def reporting_formulacalculate(request):
             "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初","YE": "年末", "LYS": "去年初",
             "LYE": "去年末", "MAVG": "月平均值", "SAVG": "季平均值", "HAVG": "半年平均值", "YAVG": "年均值"
         }
-        all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
-                                                              operationtype=17)
-        for target in all_target:
-                target = Target.objects.get(id=target.id)
 
         calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(id=id)
         if len(calculatedata) > 0:
@@ -3977,17 +3972,14 @@ def reporting_formulacalculate(request):
                         target_name = target_codename[membertarget]
                         target_col = data_field[col]
                         target_cond = data_time[cond]
-                        target_english = '<' + membertarget + ':' + col + ':' + cond + '>'
+                        target_english = member + '>'
 
                         membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
                         value = ""
                         if len(membertarget) <= 0:
-                            curvalue = 0
+                            value = "指标不存在"
                         else:
                             membertarget = membertarget[0]
-                            if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id and membertarget.cycletype == target.cycletype and membertarget.calculateguid != guid:
-                                getcalculatedata(membertarget, date, guid)
-
                             tableyear = str(date.year)
                             queryset = getmodels("Entrydata", tableyear).objects
                             if cond == "LYS" or cond == "LYE" or (
@@ -4134,7 +4126,7 @@ def reporting_formulacalculate(request):
                                 query_res = queryset.filter(datadate__range=new_date).filter(
                                     target=membertarget).exclude(state="9")
                             if len(query_res) <= 0:
-                                curvalue = 0
+                                value = "指标不存在"
                             else:
                                 value = 0
                                 if col == 'd':
@@ -4162,20 +4154,17 @@ def reporting_formulacalculate(request):
                                         value = query_res.aggregate(Avg('cumulativeyear'))[0].cumulativeyear
                                     else:
                                         value = query_res[0].cumulativeyear
+                                value = str(value)
 
-                        target_chinese = '<' + target_name + ':' + target_col + ':' + target_cond + '>' + str(value)
+                        target_chinese = '<' + target_name + ':' + target_col + ':' + target_cond + '>(' + value + ')'
                         if pre_data:
                             pre_data = pre_data.replace(target_english, target_chinese)
                         else:
                             pre_data = formula.replace(target_english, target_chinese)
 
-                        formula = formula.replace("<" + th + ">", str(value))
-            try:
-                curvalue = eval(formula)
-            except:
-                pass
-            formula_chinese = pre_data + '=' + str(curvalue)
-            return HttpResponse(json.dumps(formula_chinese, ensure_ascii=False))
+            formula_chinese = "<div style=\"font-size:18px\"><span style=\"font-size:18px\"  class=\"label label-primary\"> " + calculatedata[0].target.name + "</span>" + formula_chinese + "<br><br></div>"
+                   #"<span style=\"font-size:18px\"  class=\"label label-primary\">#1机组发电量" + aa + "</span><button id='formulabtn_" + aa + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\"><#1_发电量:当前值:当天>221.3</button> + <发电量:当前值:当天>+1+#1机组发电量</span> 123.2<#1_发电量:当前值:当天>+221.3<发电量:当前值:当天>+1=31.12<br><br></div>")
+            return HttpResponse(formula_chinese)
 
 
 def reporting_recalculate(request):
@@ -4384,10 +4373,20 @@ def reporting_save(request):
         result = {}
         savedata = request.POST.get('savedata')
         operationtype = request.POST.get('operationtype')
+        cycletype = request.POST.get('cycletype', '')
         savedata = json.loads(savedata)
         reporting_date = request.POST.get('reporting_date', '')
         try:
-            reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
+            if cycletype == "10":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
+            if cycletype == "11":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype == "12":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype == "13":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
+            if cycletype == "14":
+                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
         except:
             return HttpResponse(0)
         for curdata in savedata:
@@ -4480,7 +4479,7 @@ def reporting_save(request):
                     pass
             if savedata.target.datatype == 'date':
                 try:
-                    savedata.curvaluedate = curdata["curvaluedate"]
+                    savedata.curvaluedate = datetime.datetime.strptime(curdata["curvaluedate"], "%Y-%m-%d %H:%M:%S")
                 except:
                     pass
             if savedata.target.datatype == 'text':

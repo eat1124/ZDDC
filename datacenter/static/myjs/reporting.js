@@ -340,6 +340,7 @@ $(document).ready(function () {
             }
     });
     $('#sample_3 tbody').on('click', 'button#edit', function () {
+        $("#formuladiv").empty();
         var table = $('#sample_3').DataTable();
         var data = table.row($(this).parents('tr')).data();
         $.getformula(data.id.toString()  );
@@ -352,9 +353,26 @@ $(document).ready(function () {
         })
     }
     $.getformula = function(btnid){
-        var aa = (parseInt(btnid) +1).toString()
-        $("#formuladiv").append("<div style=\"font-size:18px\"><span style=\"font-size:18px\"  class=\"label label-primary\">#1机组发电量" + aa + "</span><button id='formulabtn_" + aa + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\"><#1_发电量:当前值:当天>221.3</button> + <发电量:当前值:当天>+1+#1机组发电量</span> 123.2<#1_发电量:当前值:当天>+221.3<发电量:当前值:当天>+1=31.12<br><br></div>")
-        $.formulabtnclick();
+        $.ajax({
+            type: "POST",
+            url: "../../../reporting_formulacalculate/",
+            data:
+                {
+                    id: btnid,
+                    cycletype:$('#cycletype').val(),
+                    reporting_date:$('#reporting_date').val(),
+                },
+            success: function (data) {
+                $("#formuladiv").append(data)
+            },
+            error: function (e) {
+                alert("公式解析失败，请于管理员联系。");
+            }
+        });
+
+        //var aa = (parseInt(btnid) +1).toString()
+        //$("#formuladiv").append("<div style=\"font-size:18px\"><span style=\"font-size:18px\"  class=\"label label-primary\">#1机组发电量" + aa + "</span><button id='formulabtn_" + aa + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\"><#1_发电量:当前值:当天>221.3</button> + <发电量:当前值:当天>+1+#1机组发电量</span> 123.2<#1_发电量:当前值:当天>+221.3<发电量:当前值:当天>+1=31.12<br><br></div>")
+        //$.formulabtnclick();
     }
 
 
@@ -877,6 +895,7 @@ $(document).ready(function () {
             data:
                 {
                     operationtype:15,
+                    cycletype:$('#cycletype').val(),
                     savedata:JSON.stringify(savedata),
                     reporting_date:$('#reporting_date').val(),
                 },
@@ -970,6 +989,7 @@ $(document).ready(function () {
             data:
                 {
                     operationtype:16,
+                    cycletype:$('#cycletype').val(),
                     savedata:JSON.stringify(savedata),
                     reporting_date:$('#reporting_date').val(),
                 },
@@ -1063,6 +1083,7 @@ $(document).ready(function () {
             data:
                 {
                     operationtype:17,
+                    cycletype:$('#cycletype').val(),
                     savedata:JSON.stringify(savedata),
                     reporting_date:$('#reporting_date').val(),
                 },
@@ -1205,6 +1226,7 @@ $(document).ready(function () {
                 data:
                     {
                         operationtype:1,
+                        cycletype:$('#cycletype').val(),
                         savedata:JSON.stringify(savedata),
                         reporting_date:$('#reporting_date').val(),
                     },
