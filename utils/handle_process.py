@@ -91,55 +91,60 @@ class SeveralDBQuery(object):
         self.db_type = db_type
         self.connection = None
 
-        if self.db_type == "MySQL":
-            import pymysql.cursors
+        try:
+            if self.db_type == "MySQL":
+                import pymysql.cursors
 
-            self.connection = pymysql.connect(host=credit['host'],
-                                        user=credit['user'],
-                                        password=credit['passwd'],
-                                        db=credit['db'],
-                                        charset='utf8mb4',
-                                        cursorclass=pymysql.cursors.DictCursor)
-        if self.db_type == 'Oracle':
-            import cx_Oracle
+                self.connection = pymysql.connect(host=credit['host'],
+                                            user=credit['user'],
+                                            password=credit['passwd'],
+                                            db=credit['db'],
+                                            charset='utf8mb4',
+                                            cursorclass=pymysql.cursors.DictCursor)
+            if self.db_type == 'Oracle':
+                import cx_Oracle
 
-            self.connection = cx_Oracle.connect('{user}/{passwd}@{host}/{db}'.format(
-                user=credit['user'], 
-                passwd=credit['passwd'], 
-                host=credit['host'], 
-                db=credit['db']
-            ))
-        if self.db_type == 'SQL Server':
-            import pymssql
+                self.connection = cx_Oracle.connect('{user}/{passwd}@{host}/{db}'.format(
+                    user=credit['user'],
+                    passwd=credit['passwd'],
+                    host=credit['host'],
+                    db=credit['db']
+                ))
+            if self.db_type == 'SQL Server':
+                import pymssql
 
-            self.connection = pymssql.connect(
-                host=credit['host'], 
-                user=credit['user'], 
-                password=credit['passwd'], 
-                database=credit['db']
-            )
+                self.connection = pymssql.connect(
+                    host=credit['host'],
+                    user=credit['user'],
+                    password=credit['passwd'],
+                    database=credit['db']
+                )
+        except Exception as e:
+            logger.info('SeveralDBQuery >> __init__() >> 数据库连接失败: %s。' % e)
+            exit(0)
+        else:
+            if not self.connection:
+                logger.info('SeveralDBQuery >> __init__() >> 数据库未连接。')
+                exit(0)
 
     def fetch_one(self, fetch_sql):
         result = None
-        if self.connection:
-            with self.connection.cursor() as cursor:
-                cursor.execute(fetch_sql)
-                result = cursor.fetchone()
+        with self.connection.cursor() as cursor:
+            cursor.execute(fetch_sql)
+            result = cursor.fetchone()
         return result
 
     def fetch_all(self, fetch_sql):
         result = []
-        if self.connection:
-            with self.connection.cursor() as cursor:
-                cursor.execute(fetch_sql)
-                result = cursor.fetchall()
+        with self.connection.cursor() as cursor:
+            cursor.execute(fetch_sql)
+            result = cursor.fetchall()
         return result
 
     def update(self, update_sql):
-        if self.connection:
-            with self.connection.cursor() as cursor:
-                cursor.execute(update_sql)
-                self.connection.commit()
+        with self.connection.cursor() as cursor:
+            cursor.execute(update_sql)
+            self.connection.commit()
 
     def close(self):
         if self.connection:
