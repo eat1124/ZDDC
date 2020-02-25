@@ -347,9 +347,9 @@ class Extract(object):
                 if type(v) == 'str':
                     values += '"%s"' % v + ','
 
-            fields = fields if fields[:-1] else fields
-            values = values if values[:-1] else values
-            
+            fields = fields[:-1] if fields.endswith(',') else fields
+            values = values[:-1] if values.endswith(',') else values
+
             tablename = target.storage.tablename
             # 行存
             row_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
@@ -423,8 +423,8 @@ class Extract(object):
             if type(v) == 'str':
                 values += '"%s"' % v + ','
 
-        fields = fields if fields[:-1] else fields
-        values = values if values[:-1] else values
+        fields = fields[:-1] if fields.endswith(',') else fields
+        values = values[:-1] if values.endswith(',') else values
 
         # 列存，将storage存成一条记录,本地数据库
         tablename = target_list[0].storage.tablename
