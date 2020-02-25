@@ -347,6 +347,7 @@ $(document).ready(function () {
     });
 
     $.formulabtnclick = function(){
+        $(".formulabtn").unbind("click");
         $(".formulabtn").click(function () {
             $(this).parent().nextAll().remove();
             $.getformula(this.id.replace("formulabtn_",""));
@@ -364,6 +365,7 @@ $(document).ready(function () {
                 },
             success: function (data) {
                 $("#formuladiv").append(data)
+                $.formulabtnclick();
             },
             error: function (e) {
                 alert("公式解析失败，请于管理员联系。");

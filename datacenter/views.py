@@ -3961,20 +3961,20 @@ def reporting_formulacalculate(request):
             "LYE": "去年末", "MAVG": "月平均值", "SAVG": "季平均值", "HAVG": "半年平均值", "YAVG": "年均值"
         }
 
-        calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(id=id)
+        calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(id=id).select_related("target")
         if len(calculatedata) > 0:
             formula = calculatedata[0].formula
             if formula is not None:
                 formula = formula.replace(" ", "")
-            pre_data = ''
+            formula_chinese = formula + " = " + str(round(calculatedata[0].curvalue,calculatedata[0].target.digit))
             members = formula.split('>')
             for member in members:
                 if member.replace(" ", "") != "":
-                    col = "d";
-                    cond = "D";
                     if (member.find('<') >= 0):
+                        col = "d";
+                        cond = "D";
                         membertarget = member[member.find('<') + 1:]
-                        th = membertarget
+                        target_english = '<' + membertarget + '>'
                         if membertarget.find(':') > 0:
                             col = membertarget[membertarget.find(':') + 1:]
                             membertarget = membertarget[0:membertarget.find(':')]
@@ -3985,10 +3985,10 @@ def reporting_formulacalculate(request):
                         target_name = target_codename[membertarget]
                         target_col = data_field[col]
                         target_cond = data_time[cond]
-                        target_english = member + '>'
 
                         membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
                         value = ""
+                        childid=None
                         if len(membertarget) <= 0:
                             value = "指标不存在"
                         else:
@@ -4134,46 +4134,51 @@ def reporting_formulacalculate(request):
                                 new_date = (ys_newdate, ye_newdate)
 
                             if condtions:
-                                query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9")
+                                query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9").select_related("target")
                             if new_date:
                                 query_res = queryset.filter(datadate__range=new_date).filter(
                                     target=membertarget).exclude(state="9")
                             if len(query_res) <= 0:
-                                value = "指标不存在"
+                                value = "数据不存在"
                             else:
-                                value = 0
+                                value = "0"
                                 if col == 'd':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                        value = query_res.aggregate(Avg('curvalue'))[0].curvalue
+                                        value = str(round(query_res.aggregate(Avg('curvalue'))[0].curvalue, query_res[0].target.digit))
                                     else:
-                                        value = query_res[0].curvalue
+                                        value = str(round(query_res[0].curvalue, query_res[0].target.digit))
+                                        childid = str(query_res[0].id)
                                 if col == 'm':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                        value = query_res.aggregate(Avg('cumulativemonth'))[0].cumulativemonth
+                                        value = str(round(query_res.aggregate(Avg('cumulativemonth'))[0].cumulativemonth,
+                                                          query_res[0].target.digit))
                                     else:
-                                        value = query_res[0].cumulativemonth
+                                        value = str(round(query_res[0].cumulativemonth, query_res[0].target.digit))
                                 if col == 's':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                        value = query_res.aggregate(Avg('cumulativequarter'))[0].cumulativequarter
+                                        value = str(round(query_res.aggregate(Avg('cumulativequarter'))[0].cumulativequarter,
+                                                          query_res[0].target.digit))
                                     else:
-                                        value = query_res[0].cumulativequarter
+                                        value = str(round(query_res[0].cumulativequarter, query_res[0].target.digit))
                                 if col == 'h':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                        value = query_res.aggregate(Avg('cumulativehalfyear'))[0].cumulativehalfyear
+                                        value = str(
+                                            round(query_res.aggregate(Avg('cumulativehalfyear'))[0].cumulativehalfyear,
+                                                  query_res[0].target.digit))
                                     else:
-                                        value = query_res[0].cumulativehalfyear
+                                        value = str(round(query_res[0].cumulativehalfyear, query_res[0].target.digit))
                                 if col == 'y':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                        value = query_res.aggregate(Avg('cumulativeyear'))[0].cumulativeyear
+                                        value = str(
+                                            round(query_res.aggregate(Avg('cumulativeyear'))[0].cumulativeyear,
+                                                  query_res[0].target.digit))
                                     else:
-                                        value = query_res[0].cumulativeyear
-                                value = str(value)
+                                        value = str(round(query_res[0].cumulativeyear, query_res[0].target.digit))
 
                         target_chinese = '<' + target_name + ':' + target_col + ':' + target_cond + '>(' + value + ')'
-                        if pre_data:
-                            pre_data = pre_data.replace(target_english, target_chinese)
-                        else:
-                            pre_data = formula.replace(target_english, target_chinese)
+                        if childid:
+                            target_chinese = "<button id='formulabtn_" + childid + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\">" + target_chinese + "</button>"
+                        formula_chinese = formula_chinese.replace(target_english, target_chinese)
 
             formula_chinese = "<div style=\"font-size:18px\"><span style=\"font-size:18px\"  class=\"label label-primary\"> " + calculatedata[0].target.name + "</span>" + formula_chinese + "<br><br></div>"
                    #"<span style=\"font-size:18px\"  class=\"label label-primary\">#1机组发电量" + aa + "</span><button id='formulabtn_" + aa + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\"><#1_发电量:当前值:当天>221.3</button> + <发电量:当前值:当天>+1+#1机组发电量</span> 123.2<#1_发电量:当前值:当天>+221.3<发电量:当前值:当天>+1=31.12<br><br></div>")
