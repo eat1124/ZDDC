@@ -3018,6 +3018,36 @@ def target_app_del(request):
         else:
             return HttpResponse(0)
 
+def getreporting_date(date,cycletype):
+    if cycletype == "10":
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+    if cycletype == "11":
+        date = datetime.datetime.strptime(date, "%Y-%m")
+        year = date.year
+        month = date.month
+        a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
+        date = datetime.datetime(year=year, month=month, day=b)  # 构造本月月末datetime
+    if cycletype == "12":
+        date = datetime.datetime.strptime(date, "%Y-%m")
+        month = (date.month - 1) - (date.month - 1) % 3 + 1
+        if month == 10:
+            date = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+        else:
+            date = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
+    if cycletype == "13":
+        date = datetime.datetime.strptime(date, "%Y-%m")
+        month = (date.month - 1) - (date.month - 1) % 6 + 1
+        if month == 7:
+            date = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+        else:
+            date = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
+
+    if cycletype == "14":
+        date = datetime.datetime.strptime(date, "%Y")
+        date = date.replace(month=12, day=31)
+
+    return date
+
 
 def reporting_index(request, cycletype, funid):
     """
@@ -3039,22 +3069,26 @@ def reporting_index(request, cycletype, funid):
         if cycletype == '11':
             now = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
-                days=-1)).replace(day=1)
+                days=-1))
             date = now.strftime("%Y-%m")
         if cycletype == '12':
-            now = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0,
+            now=datetime.datetime.now()
+            month = (now.month - 1) - (now.month - 1) % 3 + 1
+            now = (datetime.datetime.now().replace(month=month,day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
-                days=-1)).replace(day=1)
+                days=-1))
             date = now.strftime("%Y-%m")
         if cycletype == '13':
-            now = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0,
+            now = datetime.datetime.now()
+            month = (now.month - 1) - (now.month - 1) % 6 + 1
+            now = (datetime.datetime.now().replace(month=month,day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
-                days=-1)).replace(day=1)
+                days=-1))
             date = now.strftime("%Y-%m")
         if cycletype == '14':
             now = (datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
-                days=-1)).replace(month=1, day=1)
+                days=-1))
             date = now.strftime("%Y")
 
         searchtag = ""
@@ -3205,16 +3239,7 @@ def reporting_data(request):
         operationtype = request.GET.get('operationtype', '')
         try:
             app = int(app)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date,cycletype)
         except:
             raise Http404()
         all_data = []
@@ -3438,16 +3463,7 @@ def reporting_search_data(request):
         searchapp = request.GET.get('searchapp', '')
         try:
             app = int(app)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date,cycletype)
         except:
             raise Http404()
         all_data = []
@@ -3603,17 +3619,19 @@ def getcumulative(target, date, value):
     if target.cycletype == "10":
         lastg_date = date + datetime.timedelta(days=-1)
     if target.cycletype == "11":
-        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(day=1)
+        lastg_date = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)
     if target.cycletype == "12":
-        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(day=1)
+        month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
+        lastg_date = datetime.datetime(date.year, month, 1)
+        lastg_date = newdate + datetime.timedelta(days=-1)
     if target.cycletype == "13":
-        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(day=1)
+        month = (date.month - 1) - (date.month - 1) % 6 + 1  # 10
+        lastg_date = datetime.datetime(date.year, month, 1)
+        lastg_date = newdate + datetime.timedelta(days=-1)
     if target.cycletype == "14":
-        lastg_date = (date.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(month=1, day=1)
+        lastg_date = date.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)
 
     all_data = []
     if target.operationtype == "1":
@@ -3634,19 +3652,23 @@ def getcumulative(target, date, value):
         lastcumulativehalfyear = 0
         lastcumulativeyear = 0
         try:
-            lastcumulativemonth += all_data[0].cumulativemonth
+            if lastg_date.year==date.year and lastg_date.month==date.month:
+                lastcumulativemonth += all_data[0].cumulativemonth
         except:
             pass
         try:
-            lastcumulativequarter += all_data[0].cumulativequarter
+            if lastg_date.year == date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 3 == (date.month - 1) - (date.month - 1) % 3:
+                lastcumulativequarter += all_data[0].cumulativequarter
         except:
             pass
         try:
-            lastcumulativehalfyear += all_data[0].cumulativehalfyear
+            if lastg_date.year == date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 6 == (date.month - 1) - (date.month - 1) % 6:
+                lastcumulativehalfyear += all_data[0].cumulativehalfyear
         except:
             pass
         try:
-            lastcumulativeyear += all_data[0].cumulativeyear
+            if lastg_date.year == date.year:
+                lastcumulativeyear += all_data[0].cumulativeyear
         except:
             pass
         cumulativemonth = lastcumulativemonth + value
@@ -3919,16 +3941,7 @@ def reporting_formulacalculate(request):
         reporting_date = request.POST.get('reporting_date', '')
         try:
             id = int(id)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
 
@@ -4176,16 +4189,7 @@ def reporting_recalculate(request):
 
         try:
             app = int(app)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
 
@@ -4209,16 +4213,7 @@ def reporting_new(request):
 
         try:
             app = int(app)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
 
@@ -4329,16 +4324,7 @@ def reporting_del(request):
         operationtype = request.POST.get('operationtype', '')
         try:
             app = int(app)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
 
@@ -4377,16 +4363,7 @@ def reporting_save(request):
         savedata = json.loads(savedata)
         reporting_date = request.POST.get('reporting_date', '')
         try:
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
         for curdata in savedata:
