@@ -91,7 +91,7 @@ class SeveralDBQuery(object):
         self.db_type = db_type
         self.connection = None
 
-        if seld.db_type == "MySQL":
+        if self.db_type == "MySQL":
             import pymysql.cursors
 
             self.connection = pymysql.connect(host=credit['host'],
@@ -277,19 +277,22 @@ class Extract(object):
 		# 4.datadate，配置时需放在普通字段之后，datadate格式如<#DATADATE:m:S#>，参考source_content中的时间格式，将time格式化后再转成日期格式保存
         # 获取行数据
         source_content = target.source_content
+        storagefields = target.storagefields
+        storagefields_ilst = storagefields.split(',')
 
         # 匹配出<#DATE:m:L#>
         date_com = re.compile('<.*?>')
         pre_format_list = date_com.findall(source_content)
 
-        format_date = self.format_date(time, pre_format_list[0] if pre_format_list else '')
+        if pre_format_list:
+            format_date = self.format_date(time, pre_format_list[0])
 
-        # 格式化后的SQL
-        source_content = source_content.replace(pre_format_list[0], format_date) if pre_format_list else source_content
+            # 格式化后的SQL
+            source_content = source_content.replace(pre_format_list[0], format_date)
 
         # datadate
-        pre_datadate_format_list = date_com(target.storagefields)
-        
+        pre_datadate_format_list = date_com.findall(storagefields)
+
         format_datadate = self.format_date(time, pre_datadate_format_list[0], return_type='timestamp') if pre_datadate_format_list else None
 
         result_list = []
@@ -322,9 +325,15 @@ class Extract(object):
 
         for result in result_list:
             storage = {}
+
+            ri = 0
+            for rk, rv in result.items():
+                storage[storagefields_ilst[ri]] = rv
+                ri += 1
+
             storage["savedate"] = time
             storage['target_id'] = target.id
-            if 'DATADATE' in target.storagefields:
+            if 'DATADATE' in storagefields:
                 # storage['datadate'] 
                 storage['datadate'] = format_datadate
 
@@ -345,6 +354,7 @@ class Extract(object):
             # 行存
             row_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
 
+            # print(row_save_sql)
             # db_update.update(row_save_sql)
         db_update.close()
 
@@ -426,7 +436,7 @@ class Extract(object):
             'db': settings.DATABASES['default']['NAME'],
         }
         db_update = SeveralDBQuery('MySQL', connection)
-        db_update.update(col_save_sql)
+        # db_update.update(col_save_sql)
         db_update.close()
 
     def format_date(self, date, pre_format, return_type='str'):
@@ -441,7 +451,7 @@ class Extract(object):
 
         format_params = com.findall(pre_format)
 
-        time_format, cond = format_params[0]
+        time_format, cond = format_params[0] if format_params else ['', '']
         
         # 时间点
         newdate = date  # if cond == "D":
