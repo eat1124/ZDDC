@@ -22,3 +22,8 @@
 20 handle_process 2020-02-24 Monday 23:50:39 9 
 20 handle_process 2020-02-24 Monday 23:50:49 668 
 20 handle_process 2020-02-24 Monday 23:50:49 11 
+20 handle_process 2020-02-24 Monday 23:58:12 14036 
+20 handle_process 2020-02-24 Monday 23:58:12 10 
+20 handle_process 2020-02-25 Tuesday 15:16:51 Extract >> get_row_data() >> invalid literal for int() with base 10: '' 
+20 handle_process 2020-02-25 Tuesday 18:11:50 Extract >> get_row_data() >> invalid literal for int() with base 10: '' 
+20 handle_process 2020-02-25 Tuesday 18:12:31 SeveralDBQuery >> __init__() >> 数据库未连接。 

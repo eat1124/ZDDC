@@ -397,7 +397,7 @@ class Extract(object):
 
                 try:
                     dl = DictList.objects.get(id=int(source_type))
-                except:
+                except Exception as e:
                     logger.info('Extract >> get_col_data() >> %s' % e)
                 else:
                     source_type_name = dl.name
