@@ -283,10 +283,10 @@ class Extract(object):
         # 获取行数据
         source_content = target.source_content
         storagefields = target.storagefields
-        storagefields_ilst = storagefields.split(',')
+        storagefields_list = storagefields.split(',')
 
         # 匹配出<#DATE:m:L#>
-        date_com = re.compile('<.*?>')
+        date_com = re.compile('<#.*?#>')
         pre_format_list = date_com.findall(source_content)
 
         if pre_format_list:
@@ -333,7 +333,7 @@ class Extract(object):
 
             ri = 0
             for rk, rv in result.items():
-                storage[storagefields_ilst[ri]] = rv
+                storage[storagefields_list[ri]] = rv
                 ri += 1
 
             storage["savedate"] = time
@@ -368,7 +368,7 @@ class Extract(object):
         storage["savedate"] = time
         # 格式化时间<datadate:MS>  storage['datadate'] 
 
-        date_com = re.compile('<.*?>')
+        date_com = re.compile('<#.*?#>')
         # datadate
         if 'DATADATE' in target_list[0].storagefields:
             pre_datadate_format_list = date_com.findall(target_list[0].storagefields)
@@ -380,7 +380,6 @@ class Extract(object):
             source_content = target.source_content
 
             # 匹配出<#DATE:m:L#>
-            date_com = re.compile('<.*?>')
             pre_format_list = date_com.findall(source_content)
 
             format_date = self.format_date(time, pre_format_list[0] if pre_format_list else '')
@@ -409,13 +408,13 @@ class Extract(object):
 
             # 存表
             storagefields = target.storagefields
-            storagefields_ilst = storagefields.split(',')
+            storagefields_list = storagefields.split(',')
             if result_list:
                 result = result_list[0]
                 i = 0
                 for k, v in result.items():
                     # 字段为target.storagefields
-                    storage[storagefields_ilst[i]] = v
+                    storage[storagefields_list[i]] = v
                     i += 1
 
         fields = ''
