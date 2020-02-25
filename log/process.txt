@@ -1,3 +1,24 @@
 20 handle_process 2020-02-21 Friday 14:47:18 test 
 20 handle_process 2020-02-21 Friday 15:30:18 ?????????? 
 20 handle_process 2020-02-21 Friday 15:34:32 进程启动。 
+20 handle_process 2020-02-24 Monday 23:25:15 获取列数据 
+20 handle_process 2020-02-24 Monday 23:35:22 5968 
+20 handle_process 2020-02-24 Monday 23:35:22 9 
+20 handle_process 2020-02-24 Monday 23:38:51 7392 
+20 handle_process 2020-02-24 Monday 23:38:51 9 
+20 handle_process 2020-02-24 Monday 23:38:51 Extract >> supplement() >> descriptor 'timestamp' requires a 'datetime.datetime' object but received a 'str' 
+20 handle_process 2020-02-24 Monday 23:42:18 9568 
+20 handle_process 2020-02-24 Monday 23:42:18 9 
+20 handle_process 2020-02-24 Monday 23:42:18 Extract >> supplement() >> maximum recursion depth exceeded 
+20 handle_process 2020-02-24 Monday 23:46:07 2432 
+20 handle_process 2020-02-24 Monday 23:46:07 9 
+20 handle_process 2020-02-24 Monday 23:47:23 17676 
+20 handle_process 2020-02-24 Monday 23:47:23 9 
+20 handle_process 2020-02-24 Monday 23:48:14 11916 
+20 handle_process 2020-02-24 Monday 23:48:14 9 
+20 handle_process 2020-02-24 Monday 23:48:31 5936 
+20 handle_process 2020-02-24 Monday 23:48:31 9 
+20 handle_process 2020-02-24 Monday 23:50:39 10712 
+20 handle_process 2020-02-24 Monday 23:50:39 9 
+20 handle_process 2020-02-24 Monday 23:50:49 668 
+20 handle_process 2020-02-24 Monday 23:50:49 11 
