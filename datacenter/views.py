@@ -23,6 +23,7 @@ import decimal
 import pymysql
 import psutil
 import base64
+import win32api
 
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
@@ -293,7 +294,7 @@ def process_monitor_index(request, funid):
             p_id = process_monitor.p_id
             try:
                 p_id = int(p_id)
-            except:
+            except ValueError as e:
                 process_monitor.status = "已关闭"
                 process_monitor.create_time = None
                 process_monitor.save()
@@ -401,10 +402,13 @@ def handle_process(current_process, handle_type=None):
         try:
             process_path = BASE_DIR + os.sep + "utils" + os.sep + "handle_process.py" + " {0}".format(
                 current_process.id)
-            os.popen(r"{0}".format(process_path))
+
+            win32api.ShellExecute(0, 'open', 'python', r'-i {process_path}'.format(process_path=process_path), '', 0)
+            # os.popen(r"{0}".format(process_path))
             res = "程序启动成功。"
             tag = 1
         except Exception as e:
+            print(e)
             res = "程序启动失败"
         if tag == 1:
             # 修改数据库进程状态
@@ -3014,6 +3018,36 @@ def target_app_del(request):
         else:
             return HttpResponse(0)
 
+def getreporting_date(date,cycletype):
+    if cycletype == "10":
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+    if cycletype == "11":
+        date = datetime.datetime.strptime(date, "%Y-%m")
+        year = date.year
+        month = date.month
+        a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
+        date = datetime.datetime(year=year, month=month, day=b)  # 构造本月月末datetime
+    if cycletype == "12":
+        date = datetime.datetime.strptime(date, "%Y-%m")
+        month = (date.month - 1) - (date.month - 1) % 3 + 1
+        if month == 10:
+            date = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+        else:
+            date = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
+    if cycletype == "13":
+        date = datetime.datetime.strptime(date, "%Y-%m")
+        month = (date.month - 1) - (date.month - 1) % 6 + 1
+        if month == 7:
+            date = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+        else:
+            date = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
+
+    if cycletype == "14":
+        date = datetime.datetime.strptime(date, "%Y")
+        date = date.replace(month=12, day=31)
+
+    return date
+
 
 def reporting_index(request, cycletype, funid):
     """
@@ -3035,22 +3069,26 @@ def reporting_index(request, cycletype, funid):
         if cycletype == '11':
             now = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
-                days=-1)).replace(day=1)
+                days=-1))
             date = now.strftime("%Y-%m")
         if cycletype == '12':
-            now = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0,
+            now=datetime.datetime.now()
+            month = (now.month - 1) - (now.month - 1) % 3 + 1
+            now = (datetime.datetime.now().replace(month=month,day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
-                days=-1)).replace(day=1)
+                days=-1))
             date = now.strftime("%Y-%m")
         if cycletype == '13':
-            now = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0,
+            now = datetime.datetime.now()
+            month = (now.month - 1) - (now.month - 1) % 6 + 1
+            now = (datetime.datetime.now().replace(month=month,day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
-                days=-1)).replace(day=1)
+                days=-1))
             date = now.strftime("%Y-%m")
         if cycletype == '14':
             now = (datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
-                days=-1)).replace(month=1, day=1)
+                days=-1))
             date = now.strftime("%Y")
 
         searchtag = ""
@@ -3201,16 +3239,7 @@ def reporting_data(request):
         operationtype = request.GET.get('operationtype', '')
         try:
             app = int(app)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date,cycletype)
         except:
             raise Http404()
         all_data = []
@@ -3434,16 +3463,7 @@ def reporting_search_data(request):
         searchapp = request.GET.get('searchapp', '')
         try:
             app = int(app)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date,cycletype)
         except:
             raise Http404()
         all_data = []
@@ -3599,17 +3619,19 @@ def getcumulative(target, date, value):
     if target.cycletype == "10":
         lastg_date = date + datetime.timedelta(days=-1)
     if target.cycletype == "11":
-        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(day=1)
+        lastg_date = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)
     if target.cycletype == "12":
-        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(day=1)
+        month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
+        lastg_date = datetime.datetime(date.year, month, 1)
+        lastg_date = newdate + datetime.timedelta(days=-1)
     if target.cycletype == "13":
-        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(day=1)
+        month = (date.month - 1) - (date.month - 1) % 6 + 1  # 10
+        lastg_date = datetime.datetime(date.year, month, 1)
+        lastg_date = newdate + datetime.timedelta(days=-1)
     if target.cycletype == "14":
-        lastg_date = (date.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(month=1, day=1)
+        lastg_date = date.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+            days=-1)
 
     all_data = []
     if target.operationtype == "1":
@@ -3630,19 +3652,23 @@ def getcumulative(target, date, value):
         lastcumulativehalfyear = 0
         lastcumulativeyear = 0
         try:
-            lastcumulativemonth += all_data[0].cumulativemonth
+            if lastg_date.year==data.year and lastg_date.month==data.month:
+                lastcumulativemonth += all_data[0].cumulativemonth
         except:
             pass
         try:
-            lastcumulativequarter += all_data[0].cumulativequarter
+            if lastg_date.year == data.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 3 == (date.month - 1) - (date.month - 1) % 3:
+                lastcumulativequarter += all_data[0].cumulativequarter
         except:
             pass
         try:
-            lastcumulativehalfyear += all_data[0].cumulativehalfyear
+            if lastg_date.year == data.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 6 == (date.month - 1) - (date.month - 1) % 6:
+                lastcumulativehalfyear += all_data[0].cumulativehalfyear
         except:
             pass
         try:
-            lastcumulativeyear += all_data[0].cumulativeyear
+            if lastg_date.year == data.year:
+                lastcumulativeyear += all_data[0].cumulativeyear
         except:
             pass
         cumulativemonth = lastcumulativemonth + value
@@ -3915,16 +3941,7 @@ def reporting_formulacalculate(request):
         reporting_date = request.POST.get('reporting_date', '')
         try:
             id = int(id)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
 
@@ -3961,19 +3978,21 @@ def reporting_formulacalculate(request):
                         if membertarget.find(':') > 0:
                             col = membertarget[membertarget.find(':') + 1:]
                             membertarget = membertarget[0:membertarget.find(':')]
-
                             if col.find(':') > 0:
                                 cond = col[col.find(':') + 1:]
                                 col = col[0:col.find(':')]
 
+                        target_name = target_codename[membertarget]
+                        target_col = data_field[col]
+                        target_cond = data_time[cond]
+                        target_english = member + '>'
+
                         membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
+                        value = ""
                         if len(membertarget) <= 0:
-                            curvalue = 0
+                            value = "指标不存在"
                         else:
                             membertarget = membertarget[0]
-                            if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id and membertarget.cycletype == target.cycletype and membertarget.calculateguid != guid:
-                                getcalculatedata(membertarget, date, guid)
-
                             tableyear = str(date.year)
                             queryset = getmodels("Entrydata", tableyear).objects
                             if cond == "LYS" or cond == "LYE" or (
@@ -4119,9 +4138,8 @@ def reporting_formulacalculate(request):
                             if new_date:
                                 query_res = queryset.filter(datadate__range=new_date).filter(
                                     target=membertarget).exclude(state="9")
-
                             if len(query_res) <= 0:
-                                curvalue = 0
+                                value = "指标不存在"
                             else:
                                 value = 0
                                 if col == 'd':
@@ -4149,26 +4167,17 @@ def reporting_formulacalculate(request):
                                         value = query_res.aggregate(Avg('cumulativeyear'))[0].cumulativeyear
                                     else:
                                         value = query_res[0].cumulativeyear
+                                value = str(value)
 
-                                target_name = target_codename[membertarget]
-                                target_col = data_field[col]
-                                target_cond = data_time[cond]
-                                target_english = '<' + membertarget + ':' + col + ':' + cond + '>'
-                                target_chinese = '<' + target_name + ':' + target_col + ':' + target_cond + '>' + str(value)
-                                if pre_data:
-                                    pre_data = pre_data.replace(target_english, target_chinese)
-                                else:
-                                    pre_data = formula.replace(target_english, target_chinese)
+                        target_chinese = '<' + target_name + ':' + target_col + ':' + target_cond + '>(' + value + ')'
+                        if pre_data:
+                            pre_data = pre_data.replace(target_english, target_chinese)
+                        else:
+                            pre_data = formula.replace(target_english, target_chinese)
 
-                                formula = formula.replace("<" + th + ">", str(value))
-
-            try:
-                curvalue = eval(formula)
-            except:
-                pass
-            formula_chinese = pre_data + '=' + str(curvalue)
-            print(formula_chinese)
-            return HttpResponse(json.dumps(formula_chinese, ensure_ascii=False))
+            formula_chinese = "<div style=\"font-size:18px\"><span style=\"font-size:18px\"  class=\"label label-primary\"> " + calculatedata[0].target.name + "</span>" + formula_chinese + "<br><br></div>"
+                   #"<span style=\"font-size:18px\"  class=\"label label-primary\">#1机组发电量" + aa + "</span><button id='formulabtn_" + aa + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\"><#1_发电量:当前值:当天>221.3</button> + <发电量:当前值:当天>+1+#1机组发电量</span> 123.2<#1_发电量:当前值:当天>+221.3<发电量:当前值:当天>+1=31.12<br><br></div>")
+            return HttpResponse(formula_chinese)
 
 
 def reporting_recalculate(request):
@@ -4180,16 +4189,7 @@ def reporting_recalculate(request):
 
         try:
             app = int(app)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
 
@@ -4213,16 +4213,7 @@ def reporting_new(request):
 
         try:
             app = int(app)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
 
@@ -4333,16 +4324,7 @@ def reporting_del(request):
         operationtype = request.POST.get('operationtype', '')
         try:
             app = int(app)
-            if cycletype == "10":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            if cycletype == "11":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "12":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "13":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m")
-            if cycletype == "14":
-                reporting_date = datetime.datetime.strptime(reporting_date, "%Y")
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
 
@@ -4377,10 +4359,11 @@ def reporting_save(request):
         result = {}
         savedata = request.POST.get('savedata')
         operationtype = request.POST.get('operationtype')
+        cycletype = request.POST.get('cycletype', '')
         savedata = json.loads(savedata)
         reporting_date = request.POST.get('reporting_date', '')
         try:
-            reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
         for curdata in savedata:
@@ -4473,7 +4456,7 @@ def reporting_save(request):
                     pass
             if savedata.target.datatype == 'date':
                 try:
-                    savedata.curvaluedate = curdata["curvaluedate"]
+                    savedata.curvaluedate = datetime.datetime.strptime(curdata["curvaluedate"], "%Y-%m-%d %H:%M:%S")
                 except:
                     pass
             if savedata.target.datatype == 'text':
