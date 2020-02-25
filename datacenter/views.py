@@ -3652,22 +3652,22 @@ def getcumulative(target, date, value):
         lastcumulativehalfyear = 0
         lastcumulativeyear = 0
         try:
-            if lastg_date.year==data.year and lastg_date.month==data.month:
+            if lastg_date.year==date.year and lastg_date.month==date.month:
                 lastcumulativemonth += all_data[0].cumulativemonth
         except:
             pass
         try:
-            if lastg_date.year == data.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 3 == (date.month - 1) - (date.month - 1) % 3:
+            if lastg_date.year == date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 3 == (date.month - 1) - (date.month - 1) % 3:
                 lastcumulativequarter += all_data[0].cumulativequarter
         except:
             pass
         try:
-            if lastg_date.year == data.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 6 == (date.month - 1) - (date.month - 1) % 6:
+            if lastg_date.year == date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 6 == (date.month - 1) - (date.month - 1) % 6:
                 lastcumulativehalfyear += all_data[0].cumulativehalfyear
         except:
             pass
         try:
-            if lastg_date.year == data.year:
+            if lastg_date.year == date.year:
                 lastcumulativeyear += all_data[0].cumulativeyear
         except:
             pass
