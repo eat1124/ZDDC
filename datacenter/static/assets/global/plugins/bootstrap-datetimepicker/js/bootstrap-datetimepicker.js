@@ -623,7 +623,14 @@
 										html.push('<span class="minute'+clsName+'">'+hours+':'+(i<10?'0'+i:i)+'</span>');
 								}
 			}
-			this.picker.find('.datetimepicker-minutes td').html(html.join(''));
+			var addSec = /,s{1,2},/.test(',' + this.format.parts.join(',') + ','), sSec = addSec ? '<select style="width:100%">' : '';
+				this.addSec = addSec;
+				if (addSec) {
+					var orgSec = this.viewDate.getSeconds();
+					for (var _i = 0; _i < 60; _i++) sSec += '<option value="' + _i + '"' + (_i == orgSec ? ' selected' : '') + '>' + (_i < 10 ? '0' : '') + _i + '</option>';
+					sSec += '</select>';
+				}
+			this.picker.find('.datetimepicker-minutes td').html(html.join('') + sSec);
 
 			var currentYear = this.date.getUTCFullYear();
 			var months = this.picker.find('.datetimepicker-months')
@@ -769,6 +776,7 @@
 		click: function(e) {
 			e.stopPropagation();
 			e.preventDefault();
+			if (e.target.tagName == 'SELECT' || e.target.tagName == 'OPTION') return;
 			var target = $(e.target).closest('span, td, th, legend');
 			if (target.length == 1) {
 				if (target.is('.disabled')) {
@@ -827,7 +835,7 @@
 																day     = this.viewDate.getUTCDate(),
 																hours   = this.viewDate.getUTCHours(),
 																minutes = this.viewDate.getUTCMinutes(),
-																seconds = this.viewDate.getUTCSeconds();
+																seconds = this.addSec ? this.picker.find('select').val() : this.viewDate.getUTCSeconds();
 
 							if (target.is('.month')) {
 								this.viewDate.setUTCDate(1);

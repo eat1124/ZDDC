@@ -3316,7 +3316,7 @@ def reporting_data(request):
                     "id": data.id,
                     "curvalue": curvalue,
                     "curvaluedate": curvaluedate,
-                    "curvaluetext": data.curvaluetext,
+                    "curvaluetext": data.curvaluetext if data.curvaluetext else '',
                     "cumulativemonth": cumulativemonth,
                     "cumulativequarter": cumulativequarter,
                     "cumulativehalfyear": cumulativehalfyear,

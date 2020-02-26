@@ -78,6 +78,8 @@ $(document).ready(function () {
             $('.table1_curvaluedate').datetimepicker({
                 format: 'yyyy-mm-dd hh:ii:ss',
                 autoclose: true,
+                minView: 0,
+                minuteStep: 1
             });
             if(data.aoData.length>0)
             {
