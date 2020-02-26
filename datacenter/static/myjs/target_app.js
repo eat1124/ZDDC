@@ -543,127 +543,127 @@ $(document).ready(function () {
                 "mRender": function (data, type, full) {
                 if ($("#calculate_cycletype").val()){
                     if ($("#calculate_cycletype").val() == '日' && full.cycletype_name == '日'){
-                        return "<select style='width:100px'><option value='D'>当天</option><option value='L'>前一天</option><option value='MS'>月初</option><option value='LMS'>上月初</option><option value='LME'>上月末</option>" +
-                            "<option value='SS'>季初</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='D'>当天</option><option value='L'>前一天</option><option value='LME'>上月末</option>" +
+                            "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '日' && full.cycletype_name == '月'){
-                        return "<select style='width:100px'><option value='MS'>月初</option><option value='LMS'>上月初</option><option value='LME'>上月末</option>" +
-                            "<option value='SS'>季初</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='LME'>上月末</option>" +
+                            "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '日' && full.cycletype_name == '季'){
-                        return "<select style='width:100px'><option value='SS'>季初</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '日' && full.cycletype_name == '半年'){
-                        return "<select style='width:100px'><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '日' && full.cycletype_name == '年'){
-                        return "<select style='width:100px'><option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
 
                     }
 
                     if ($("#calculate_cycletype").val() == '月' && full.cycletype_name == '日'){
-                        return "<select style='width:100px'><option value='MS'>月初</option><option value='ME'>月末</option><option value='LMS'>上月初</option><option value='LME'>上月末</option>" +
-                            "<option value='SS'>季初</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='ME'>月末</option><option value='LME'>上月末</option>" +
+                            "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '月' && full.cycletype_name == '月'){
-                        return "<select style='width:100px'><option value='MS'>月初</option><option value='ME'>月末</option><option value='LMS'>上月初</option><option value='LME'>上月末</option>" +
-                            "<option value='SS'>季初</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='ME'>月末</option><option value='LME'>上月末</option>" +
+                            "<option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '月' && full.cycletype_name == '季'){
-                        return "<select style='width:100px'><option value='SS'>季初</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '月' && full.cycletype_name == '半年'){
-                        return "<select style='width:100px'><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '月' && full.cycletype_name == '年'){
-                        return "<select style='width:100px'><option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
 
                     }
 
                     if ($("#calculate_cycletype").val() == '季' && full.cycletype_name == '日'){
-                        return "<select style='width:100px'><option value='SS'>季初</option><option value='SE'>季末</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '季' && full.cycletype_name == '月'){
-                        return "<select style='width:100px'><option value='SS'>季初</option><option value='SE'>季末</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '季' && full.cycletype_name == '季'){
-                        return "<select style='width:100px'><option value='SS'>季初</option><option value='SE'>季末</option><option value='LSS'>上季初</option><option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '季' && full.cycletype_name == '半年'){
-                        return "<select style='width:100px'><option value='HS'>半年初</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '季' && full.cycletype_name == '年'){
-                        return "<select style='width:100px'><option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
 
                     }
 
                     if ($("#calculate_cycletype").val() == '半年' && full.cycletype_name == '日'){
-                        return "<select style='width:100px'><option value='HS'>半年初</option><option value='HE'>半年末</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '半年' && full.cycletype_name == '月'){
-                        return "<select style='width:100px'><option value='HS'>半年初</option><option value='HE'>半年末</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '半年' && full.cycletype_name == '季'){
-                        return "<select style='width:100px'><option value='HS'>半年初</option><option value='HE'>半年末</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '半年' && full.cycletype_name == '半年'){
-                        return "<select style='width:100px'><option value='HS'>半年初</option><option value='HE'>半年末</option><option value='LHS'>前个半年初</option><option value='LHE'>前个半年末</option>" +
-                            "<option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '半年' && full.cycletype_name == '年'){
-                        return "<select style='width:100px'><option value='YS'>年初</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
 
                     }
 
                     if ($("#calculate_cycletype").val() == '年' && full.cycletype_name == '日'){
-                        return "<select style='width:100px'><option value='YS'>年初</option><option value='YE'>年末</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '年' && full.cycletype_name == '月'){
-                        return "<select style='width:100px'><option value='YS'>年初</option><option value='YE'>年末</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '年' && full.cycletype_name == '季'){
-                        return "<select style='width:100px'><option value='YS'>年初</option><option value='YE'>年末</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '年' && full.cycletype_name == '半年'){
-                        return "<select style='width:100px'><option value='YS'>年初</option><option value='YE'>年末</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                     if ($("#calculate_cycletype").val() == '年' && full.cycletype_name == '年'){
-                        return "<select style='width:100px'><option value='YS'>年初</option><option value='YE'>年末</option><option value='LYS'>去年初</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+                        return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
 
                     }
                 }else
