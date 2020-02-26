@@ -87,12 +87,12 @@ def getextractdata(target):
 
 class SeveralDBQuery(object):
     def __init__(self, db_type, credit):
-        # {"host":"192.168.1.66","user":"root","passwd":"password","db":"datacenter"}
-        self.db_type = db_type
+        # [{"host":"192.168.1.66","user":"root","passwd":"password","db":"datacenter"}]
+        self.db_type = db_type.upper()
         self.connection = None
 
         try:
-            if self.db_type == "MySQL":
+            if self.db_type == "MYSQL":
                 import pymysql.cursors
 
                 self.connection = pymysql.connect(host=credit['host'],
@@ -101,7 +101,7 @@ class SeveralDBQuery(object):
                                             db=credit['db'],
                                             charset='utf8mb4',
                                             cursorclass=pymysql.cursors.DictCursor)
-            if self.db_type == 'Oracle':
+            if self.db_type == 'ORACLE':
                 import cx_Oracle
 
                 self.connection = cx_Oracle.connect('{user}/{passwd}@{host}/{db}'.format(
@@ -110,7 +110,7 @@ class SeveralDBQuery(object):
                     host=credit['host'],
                     db=credit['db']
                 ))
-            if self.db_type == 'SQL Server':
+            if self.db_type == 'SQL SERVER':
                 import pymssql
 
                 self.connection = pymssql.connect(
@@ -261,12 +261,10 @@ class Extract(object):
 
                 if storage_type_name == '行':
                     self.get_row_data(o_target, now_time)
-                    logger.info('获取行数据...')
                 elif storage_type_name == '列':
                     col_ordered_targets = copy_ordered_targets.filter(storage=storage, storage__storagetype=storage.storagetype)
 
                     self.get_col_data(col_ordered_targets, now_time)
-                    logger.info('获取列数据')
                     # 剔除
                     copy_ordered_targets = copy_ordered_targets.exclude(storage=storage, storagetype=storage.storagetype)
                 else:
@@ -306,7 +304,12 @@ class Extract(object):
         if source:
             source_type_name = ''
             source_type = source.sourcetype  # Oracle/SQL Server
-            source_connection = source.connection
+
+            source_connection = ''
+            try:
+                source_connection = eval(source.connection)[0]
+            except Exception as e:
+                logger.info('Extract >> get_row_data() >> %s' % e)
 
             try:
                 dl = DictList.objects.get(id=int(source_type))
@@ -393,7 +396,12 @@ class Extract(object):
             if source:
                 source_type_name = ''
                 source_type = source.sourcetype  # Oracle/SQL Server
-                source_connection = source.connection
+
+                source_connection = ''
+                try:
+                    source_connection = eval(source.connection)[0]
+                except Exception as e:
+                    logger.info('Extract >> get_row_data() >> %s' % e)
 
                 try:
                     dl = DictList.objects.get(id=int(source_type))
@@ -603,37 +611,16 @@ def run_process(process_id, processcon, targets):
 
 
 # extract = Extract(1, 2, 2)
-# target = Target.objects.get(id=9)
+# # target = Target.objects.get(id=9)
 # time = datetime.datetime.now()
-# extract.get_row_data(target, time)
+# # extract.get_row_data(target, time)
+# targets = Target.objects.filter(Q(id=8)|Q(id=9))
+# extract.get_col_data(targets, time)
 
 # run_process(9, None, None)
 if len(sys.argv) > 1:
     run_process(sys.argv[1], None, None)
     logger.info('进程启动。')
-    # while True:
-    #     # if datetime.datetime.now().minute==10:
-    #     #     connection = pymysql.connect(host='192.168.100.154',
-    #     #                                  user='root',
-    #     #                                  password='password',
-    #     #                                  db='datacenter',
-    #     #                                  )
-    #     #     cursor = connection.cursor()
-    #     #     strsql = "select connection from datacenter_source where id=" + sys.argv[1]
-    #     #     cursor.execute(strsql)
-    #     #     data = cursor.fetchall()
-    #     #     if len(data) > 0:
-    #     #         processcon = data[0][0]
-    #     #         strsql = "select id,code,cumulative,sourcetable,sourcefields,sourceconditions from datacenter_target where (state<>'9' or state is null) and operationtype='16' and source_id=" + sys.argv[1]
-    #     #         cursor.execute(strsql)
-    #     #         targets = cursor.fetchall()
-    #     #         if targets>0:
-    #     #             mytargets = []
-    #     #             for target in targets:
-    #     #                 mytargets.append({"id":target[0],"code":target[1],"cumulative":target[2],"sourcetable":target[3],"sourcefields":target[4],"sourceconditions":target[5]})
-    #     #             run_process(sys.argv[1],processcon,mytargets)
-    #     #     connection.close()
-    #     run_process(sys.argv[1], None, None)
-    #     time.sleep(60)
 else:
     logger.info('脚本未传参。')
+
