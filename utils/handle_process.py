@@ -618,6 +618,7 @@ def run_process(process_id, processcon, targets):
 # extract.get_col_data(targets, time)
 
 # run_process(9, None, None)
+
 if len(sys.argv) > 1:
     run_process(sys.argv[1], None, None)
     logger.info('进程启动。')
