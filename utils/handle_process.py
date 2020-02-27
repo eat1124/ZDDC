@@ -24,7 +24,7 @@ from django.db.models import Q
 from django.conf import settings
 
 logger = logging.getLogger('process')
-# logger.info('test')
+
 
 def getcumulative(target, date, value):
     """
@@ -96,11 +96,11 @@ class SeveralDBQuery(object):
                 import pymysql.cursors
 
                 self.connection = pymysql.connect(host=credit['host'],
-                                            user=credit['user'],
-                                            password=credit['passwd'],
-                                            db=credit['db'],
-                                            charset='utf8mb4',
-                                            cursorclass=pymysql.cursors.DictCursor)
+                                                  user=credit['user'],
+                                                  password=credit['passwd'],
+                                                  db=credit['db'],
+                                                  charset='utf8mb4',
+                                                  cursorclass=pymysql.cursors.DictCursor)
             if self.db_type == 'ORACLE':
                 import cx_Oracle
 
@@ -155,6 +155,7 @@ class Extract(object):
     """
     先补取，后定时取数
     """
+
     def __init__(self, app_id, source_id, circle_id):
         self.app_id = app_id
         self.source_id = source_id
@@ -173,7 +174,8 @@ class Extract(object):
 
         self.pm = None
         try:
-            self.pm = ProcessMonitor.objects.get(app_admin_id=self.app_id, source_id=self.source_id, cycle_id=self.circle_id)
+            self.pm = ProcessMonitor.objects.get(app_admin_id=self.app_id, source_id=self.source_id,
+                                                 cycle_id=self.circle_id)
         except ProcessMonitor.DoesNotExist as e:
             logger.info('Extract >> __init__() >> %s' % e)
         else:
@@ -221,7 +223,7 @@ class Extract(object):
         # 定时器
         while True:
             time_now = datetime.datetime.now()
-            
+
             # 暂时注销
             # self.get_data(time_now)
             time.sleep(60)
@@ -257,7 +259,9 @@ class Extract(object):
                         self._get_data(now_time)
 
     def _get_data(self, now_time):
-        ordered_targets = Target.objects.filter(adminapp_id=self.app_id, source_id=self.source_id, cycle_id=self.circle_id).exclude(state='9').order_by('storage_id', 'storagetag')
+        ordered_targets = Target.objects.filter(adminapp_id=self.app_id, source_id=self.source_id,
+                                                cycle_id=self.circle_id).exclude(state='9').order_by('storage_id',
+                                                                                                     'storagetag')
         copy_ordered_targets = copy.deepcopy(ordered_targets)
         for o_target in ordered_targets:
             storage = o_target.storage
@@ -274,22 +278,25 @@ class Extract(object):
                 if storage_type_name == '行':
                     self.get_row_data(o_target, now_time)
                 elif storage_type_name == '列':
-                    col_ordered_targets = copy_ordered_targets.filter(storage=storage, storage__storagetype=storage.storagetype)
+                    col_ordered_targets = copy_ordered_targets.filter(storage=storage,
+                                                                      storage__storagetype=storage.storagetype)
 
                     self.get_col_data(col_ordered_targets, now_time)
                     # 剔除
-                    copy_ordered_targets = copy_ordered_targets.exclude(storage=storage, storagetype=storage.storagetype)
+                    copy_ordered_targets = copy_ordered_targets.exclude(storage=storage,
+                                                                        storagetype=storage.storagetype)
                 else:
                     logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
+                    exit(0)
         self.pm.last_time = now_time
         self.pm.save()
 
     def get_row_data(self, target, time):
         # storagefields有4个特例，
-		# 1.id，id字段不需要配置，storage表必有id字段并自增长
-		# 2.target_id,target_id字段不需要配置,代码中强制保存index.id到storage的target_id字段
-		# 3.savedate,savedate字段不需要配置,代码中强制保存time到storage的savedate字段
-		# 4.datadate，配置时需放在普通字段之后，datadate格式如<#DATADATE:m:S#>，参考source_content中的时间格式，将time格式化后再转成日期格式保存
+        # 1.id，id字段不需要配置，storage表必有id字段并自增长
+        # 2.target_id,target_id字段不需要配置,代码中强制保存index.id到storage的target_id字段
+        # 3.savedate,savedate字段不需要配置,代码中强制保存time到storage的savedate字段
+        # 4.datadate，配置时需放在普通字段之后，datadate格式如<#DATADATE:m:S#>，参考source_content中的时间格式，将time格式化后再转成日期格式保存
         # 获取行数据
         source_content = target.source_content
         storagefields = target.storagefields
@@ -308,7 +315,8 @@ class Extract(object):
         # datadate
         pre_datadate_format_list = date_com.findall(storagefields)
 
-        format_datadate = self.format_date(time, pre_datadate_format_list[0], return_type='timestamp') if pre_datadate_format_list else None
+        format_datadate = self.format_date(time, pre_datadate_format_list[0],
+                                           return_type='timestamp') if pre_datadate_format_list else None
 
         result_list = []
 
@@ -319,9 +327,12 @@ class Extract(object):
 
             source_connection = ''
             try:
-                source_connection = eval(source.connection)[0]
+                source_connection = eval(source.connection)
+                if type(source_connection) == list:
+                    source_connection = source_connection[0]
             except Exception as e:
-                logger.info('Extract >> get_row_data() >> %s' % e)
+                logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
+                exit(0)
 
             try:
                 dl = DictList.objects.get(id=int(source_type))
@@ -356,19 +367,20 @@ class Extract(object):
             for k, v in storage.items():
                 # 值不为空时，写入键值对
                 if v and v != 0:
-                    fields += k + ','
+                    fields += k.strip() + ','
                 if type(v) == int:
-                    values += v + ','
+                    values += str(v) + ','
                 else:
                     if v:
-                        values += '"%s"' % str(v) + ','
+                        values += '"%s"' % str(v).strip() + ','
 
             fields = fields[:-1] if fields.endswith(',') else fields
             values = values[:-1] if values.endswith(',') else values
 
             tablename = target.storage.tablename
             # 行存
-            row_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
+            row_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(
+                tablename=tablename, fields=fields, values=values)
 
             # db_update.update(row_save_sql)
         db_update.close()
@@ -382,7 +394,8 @@ class Extract(object):
         # datadate
         if 'DATADATE' in target_list[0].storagefields:
             pre_datadate_format_list = date_com.findall(target_list[0].storagefields)
-            format_datadate = self.format_date(time, pre_datadate_format_list[0], return_type='timestamp') if pre_datadate_format_list else None
+            format_datadate = self.format_date(time, pre_datadate_format_list[0],
+                                               return_type='timestamp') if pre_datadate_format_list else None
             storage['datadate'] = format_datadate
 
         # 获取列数据
@@ -395,7 +408,8 @@ class Extract(object):
             format_date = self.format_date(time, pre_format_list[0] if pre_format_list else '')
 
             # 格式化后的SQL
-            source_content = source_content.replace(pre_format_list[0], format_date) if pre_format_list else source_content
+            source_content = source_content.replace(pre_format_list[0],
+                                                    format_date) if pre_format_list else source_content
 
             result_list = []
 
@@ -406,9 +420,12 @@ class Extract(object):
 
                 source_connection = ''
                 try:
-                    source_connection = eval(source.connection)[0]
+                    source_connection = eval(source.connection)
+                    if type(source_connection) == list:
+                        source_connection = source_connection[0]
                 except Exception as e:
-                    logger.info('Extract >> get_row_data() >> %s' % e)
+                    logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
+                    exit(0)
 
                 try:
                     dl = DictList.objects.get(id=int(source_type))
@@ -435,23 +452,24 @@ class Extract(object):
         fields = ''
         values = ''
 
-        for k,v in storage.items():
+        for k, v in storage.items():
             # 值不为空时，写入键值对
             if v and v != 0:
-                fields += k + ','
+                fields += k.strip() + ','
             if type(v) == int:
-                values += v + ','
+                values += str(v) + ','
             else:
                 if v:
-                    values += '"%s"' % str(v) + ','
-
+                    values += '"%s"' % str(v).strip() + ','
 
         fields = fields[:-1] if fields.endswith(',') else fields
         values = values[:-1] if values.endswith(',') else values
 
         # 列存，将storage存成一条记录,本地数据库
         tablename = target_list[0].storage.tablename
-        col_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
+        col_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename,
+                                                                                                  fields=fields,
+                                                                                                  values=values)
 
         db_update = SeveralDBQuery(self.engine, self.db_info)
         # db_update.update(col_save_sql)
@@ -459,18 +477,18 @@ class Extract(object):
 
     def format_date(self, date, pre_format, return_type='str'):
         # {
-		# "D": "当前", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
-		# "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
-		# "YE": "年末", "LYS": "去年初", "LYE": "去年末"
-	    # }
+        # "D": "当前", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
+        # "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
+        # "YE": "年末", "LYS": "去年初", "LYE": "去年末"
+        # }
 
         # 匹配出时间点/格式
-        com = re.compile('.*?:([a-z A-Z]+):([a-z A-Z]+).*?') 
+        com = re.compile('.*?:([a-z A-Z]+):([a-z A-Z]+).*?')
 
         format_params = com.findall(pre_format)
 
         time_format, cond = format_params[0] if format_params else ['', '']
-        
+
         # 时间点
         newdate = date  # if cond == "D":
         if cond == "L":
@@ -481,7 +499,7 @@ class Extract(object):
             year = date.year
             month = date.month
             a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
-            newdate = datetime.datetime(year=year, month=month, day=b) 
+            newdate = datetime.datetime(year=year, month=month, day=b)
         if cond == "LME":
             date_now = date.replace(day=1)
             newdate = date_now + datetime.timedelta(days=-1)
@@ -506,7 +524,7 @@ class Extract(object):
         if cond == "SE":
             month = (date.month - 1) - (date.month - 1) % 3 + 1
             if month == 10:
-                newdate = datetime.datetime(date.year+1, 1, 1) + datetime.timedelta(days=-1)
+                newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
             else:
                 newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
         if cond == "LSS":
@@ -515,7 +533,7 @@ class Extract(object):
             newdate = newdate + datetime.timedelta(days=-1)
             newdate = datetime.datetime(newdate.year, newdate.month - 2, 1)
         if cond == "LSE":
-            month = (date.month - 1) - (date.month - 1) % 3 + 1  #10
+            month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
             newdate = datetime.datetime(date.year, month, 1)
             newdate = newdate + datetime.timedelta(days=-1)
         if cond == "HS":
@@ -554,7 +572,7 @@ class Extract(object):
                 date_init = '{:%Y}'.format(newdate)
         if return_type == 'timestamp':
             if time_format == 's':
-                date_init = datetime.datetime.strptime('{:%Y-%m-%d %H:%M:%S}'.format(newdate), '%Y-%m-%d %H:%M:%S') 
+                date_init = datetime.datetime.strptime('{:%Y-%m-%d %H:%M:%S}'.format(newdate), '%Y-%m-%d %H:%M:%S')
             if time_format == 'mi':
                 date_init = datetime.datetime.strptime('{:%Y-%m-%d %H:%M}'.format(newdate), '%Y-%m-%d %H:%M')
             if time_format == 'h':
@@ -570,7 +588,7 @@ class Extract(object):
 
     def run(self):
         # 补取()
-	    # 启动定时器，每分钟执行一次
+        # 启动定时器，每分钟执行一次
 
         # 暂时注销
         # self.supplement()
@@ -615,13 +633,14 @@ def run_process(process_id, processcon, targets):
     else:
         logger.info('run_process() >> %s' % '传入参数有误。')
 
-#
+
+# #
 # extract = Extract(1, 2, 2)
-# # target = Target.objects.get(id=9)
+# target = Target.objects.get(id=9)
 # time = datetime.datetime.now()
-# # extract.get_row_data(target, time)
-# targets = Target.objects.filter(Q(id=8)|Q(id=9))
-# extract.get_col_data(targets, time)
+# extract.get_row_data(target, time)
+# # targets = Target.objects.filter(Q(id=8)|Q(id=9))
+# # extract.get_col_data(targets, time)
 
 # run_process(9, None, None)
 
@@ -630,4 +649,3 @@ if len(sys.argv) > 1:
     logger.info('进程启动。')
 else:
     logger.info('脚本未传参。')
-
