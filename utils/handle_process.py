@@ -634,7 +634,6 @@ def run_process(process_id, processcon, targets):
         logger.info('run_process() >> %s' % '传入参数有误。')
 
 
-# #
 # extract = Extract(1, 2, 2)
 # target = Target.objects.get(id=9)
 # time = datetime.datetime.now()
