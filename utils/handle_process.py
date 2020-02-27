@@ -159,6 +159,18 @@ class Extract(object):
         self.app_id = app_id
         self.source_id = source_id
         self.circle_id = circle_id
+
+        # 本地数据库信息
+        self.db_info = {
+            'host': settings.DATABASES['default']['HOST'],
+            'user': settings.DATABASES['default']['USER'],
+            'passwd': settings.DATABASES['default']['PASSWORD'],
+            'db': settings.DATABASES['default']['NAME'],
+        }
+        self.engine = 'MySQL'
+        if 'sql_server' in settings.DATABASES['default']['ENGINE']:
+            self.engine = 'SQL Server'
+
         self.pm = None
         try:
             self.pm = ProcessMonitor.objects.get(app_admin_id=self.app_id, source_id=self.source_id, cycle_id=self.circle_id)
@@ -322,14 +334,7 @@ class Extract(object):
             result_list = db_query.fetch_all(source_content)
             db_query.close()
 
-        # 本地数据库信息
-        connection = {
-            'host': settings.DATABASES['default']['HOST'],
-            'user': settings.DATABASES['default']['USER'],
-            'passwd': settings.DATABASES['default']['PASSWORD'],
-            'db': settings.DATABASES['default']['NAME'],
-        }
-        db_update = SeveralDBQuery('MySQL', connection)
+        db_update = SeveralDBQuery(self.engine, self.db_info)
 
         for result in result_list:
             storage = {}
@@ -348,12 +353,15 @@ class Extract(object):
             fields = ''
             values = ''
 
-            for k,v in storage.items():
-                fields += k + ','
-                if type(v) == 'int':
+            for k, v in storage.items():
+                # 值不为空时，写入键值对
+                if v and v != 0:
+                    fields += k + ','
+                if type(v) == int:
                     values += v + ','
-                if type(v) == 'str':
-                    values += '"%s"' % v + ','
+                else:
+                    if v:
+                        values += '"%s"' % str(v) + ','
 
             fields = fields[:-1] if fields.endswith(',') else fields
             values = values[:-1] if values.endswith(',') else values
@@ -362,7 +370,6 @@ class Extract(object):
             # 行存
             row_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
 
-            # print(row_save_sql)
             # db_update.update(row_save_sql)
         db_update.close()
 
@@ -429,11 +436,15 @@ class Extract(object):
         values = ''
 
         for k,v in storage.items():
-            fields += k + ','
-            if type(v) == 'int':
+            # 值不为空时，写入键值对
+            if v and v != 0:
+                fields += k + ','
+            if type(v) == int:
                 values += v + ','
-            if type(v) == 'str':
-                values += '"%s"' % v + ','
+            else:
+                if v:
+                    values += '"%s"' % str(v) + ','
+
 
         fields = fields[:-1] if fields.endswith(',') else fields
         values = values[:-1] if values.endswith(',') else values
@@ -441,13 +452,8 @@ class Extract(object):
         # 列存，将storage存成一条记录,本地数据库
         tablename = target_list[0].storage.tablename
         col_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename, fields=fields, values=values)
-        connection = {
-            'host': settings.DATABASES['default']['HOST'],
-            'user': settings.DATABASES['default']['USER'],
-            'passwd': settings.DATABASES['default']['PASSWORD'],
-            'db': settings.DATABASES['default']['NAME'],
-        }
-        db_update = SeveralDBQuery('MySQL', connection)
+
+        db_update = SeveralDBQuery(self.engine, self.db_info)
         # db_update.update(col_save_sql)
         db_update.close()
 
@@ -610,12 +616,12 @@ def run_process(process_id, processcon, targets):
         logger.info('run_process() >> %s' % '传入参数有误。')
 
 
-# extract = Extract(1, 2, 2)
-# # target = Target.objects.get(id=9)
-# time = datetime.datetime.now()
-# # extract.get_row_data(target, time)
-# targets = Target.objects.filter(Q(id=8)|Q(id=9))
-# extract.get_col_data(targets, time)
+extract = Extract(1, 2, 2)
+# target = Target.objects.get(id=9)
+time = datetime.datetime.now()
+# extract.get_row_data(target, time)
+targets = Target.objects.filter(Q(id=8)|Q(id=9))
+extract.get_col_data(targets, time)
 
 # run_process(9, None, None)
 

@@ -27,3 +27,9 @@
 20 handle_process 2020-02-25 Tuesday 15:16:51 Extract >> get_row_data() >> invalid literal for int() with base 10: '' 
 20 handle_process 2020-02-25 Tuesday 18:11:50 Extract >> get_row_data() >> invalid literal for int() with base 10: '' 
 20 handle_process 2020-02-25 Tuesday 18:12:31 SeveralDBQuery >> __init__() >> 数据库未连接。 
+20 handle_process 2020-02-26 Wednesday 16:48:13 SeveralDBQuery >> __init__() >> 数据库连接失败: string indices must be integers。 
+20 handle_process 2020-02-26 Wednesday 17:07:02 Extract >> get_row_data() >> 'NoneType' object is not subscriptable 
+20 handle_process 2020-02-27 Thursday 13:33:14 col_save_sql: INSERT INTO datacenter_datacenter_extractdata(savedate,fullname,sort ,usertype ) VALUES() 
+20 handle_process 2020-02-27 Thursday 13:33:14 脚本未传参。 
+20 handle_process 2020-02-27 Thursday 14:04:07 col_save_sql: INSERT INTO datacenter_datacenter_extractdata(usertype ,savedate) VALUES("黄展翔","2020-02-27 14:02:22.227243") 
+20 handle_process 2020-02-27 Thursday 14:04:16 脚本未传参。 
