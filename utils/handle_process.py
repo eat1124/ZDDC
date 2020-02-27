@@ -257,6 +257,8 @@ class Extract(object):
                     # 判断一月第几天
                     if now_day == day_of_month:
                         self._get_data(now_time)
+        self.pm.last_time = now_time
+        self.pm.save()
 
     def _get_data(self, now_time):
         ordered_targets = Target.objects.filter(adminapp_id=self.app_id, source_id=self.source_id,
@@ -288,8 +290,6 @@ class Extract(object):
                 else:
                     logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
                     exit(0)
-        self.pm.last_time = now_time
-        self.pm.save()
 
     def get_row_data(self, target, time):
         # storagefields有4个特例，
