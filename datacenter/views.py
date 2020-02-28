@@ -183,7 +183,8 @@ def get_process_monitor_tree(request):
                                             # 更新数据库数据：进程状态
                                             p_id = int(cp.p_id) if cp.p_id else ""
                                             if p_id:
-                                                if not psutil.pid_exists(p_id):
+                                                py_process = check_py_exists(p_id)
+                                                if not py_process:
                                                     cp.status = "已关闭"
                                                     cp.save()
                                                     status = "已关闭"
@@ -246,7 +247,8 @@ def get_process_monitor_tree(request):
                         # 更新数据库数据：进程状态
                         p_id = int(f_cp.p_id) if f_cp.p_id else ""
                         if p_id:
-                            if not psutil.pid_exists(p_id):
+                            py_process = check_py_exists(p_id)
+                            if not py_process:
                                 f_cp.status = "已关闭"
                                 f_cp.save()
                                 f_status = "已关闭"
@@ -283,6 +285,20 @@ def get_process_monitor_tree(request):
         return HttpResponseRedirect("/login")
 
 
+def check_py_exists(pid):
+    process = None
+    try:
+        pid = int(pid)
+        if psutil.pid_exists(pid):
+            process = psutil.Process(pid=pid)
+            if 'python.exe' not in process.name():
+                process = None
+    except:
+        pass
+
+    return process
+
+
 def process_monitor_index(request, funid):
     """
     进程监控
@@ -299,7 +315,8 @@ def process_monitor_index(request, funid):
                 process_monitor.create_time = None
                 process_monitor.save()
             else:
-                if not psutil.pid_exists(p_id):
+                py_process = check_py_exists(p_id)
+                if not py_process:
                     process_monitor.status = "已关闭"
                     process_monitor.create_time = None
                     process_monitor.p_id = ""
@@ -418,24 +435,19 @@ def handle_process(current_process, handle_type=None):
     elif handle_type == "DESTROY":
         pid = current_process.p_id
         if pid:
-            all_process = psutil.process_iter()
-            for p in all_process:
-                if int(pid) == p.pid:
-                    try:
-                        p.terminate()
+            py_process = check_py_exists(pid)
+            if py_process:
+                py_process.terminate()
 
-                        # 修改数据库进程状态
-                        current_process.status = "已关闭"
-                        current_process.create_time = None
-                        current_process.p_id = ""
-                        current_process.save()
-                        res = "程序终止成功。"
-                        tag = 1
-                    except:
-                        res = "程序终止失败。"
-                    break
-                else:
-                    res = "未找到该进程"
+                # 修改数据库进程状态
+                current_process.status = "已关闭"
+                current_process.create_time = None
+                current_process.p_id = ""
+                current_process.save()
+                res = "程序终止成功。"
+                tag = 1
+            else:
+                res = "未找到该进程"
         else:
             res = "该进程不存在。"
     else:
