@@ -379,9 +379,6 @@ $(document).ready(function () {
         //$.formulabtnclick();
     }
 
-
-
-
     $('#sample_4').dataTable({
         "bAutoWidth": true,
         "bSort": false,
