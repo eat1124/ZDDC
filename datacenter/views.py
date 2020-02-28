@@ -3206,7 +3206,7 @@ def reporting_index(request, cycletype, funid):
                        "extracttag": extracttag,
                        "calculatetag": calculatetag,
                        "searchtagclass": searchtagclass,
-                       "metertagtagclass": searchtagclass,
+                       "metertagclass": metertagclass,
                        "entrytagclass": entrytagclass,
                        "extracttagclass": extracttagclass,
                        "calculatetagclass": calculatetagclass,
