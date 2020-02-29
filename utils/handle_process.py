@@ -192,10 +192,10 @@ class Extract(object):
 
             # start_time加上一分钟，低于end_time继续循环补取，超过则停止
             while True:
-                one_minute_plus = start_time + datetime.timedelta(minutes=1)
+                start_time = start_time + datetime.timedelta(minutes=1)
                 # 取数
-                self.get_data(one_minute_plus)
-                if one_minute_plus > end_time:
+                self.get_data(start_time)
+                if start_time > end_time:
                     break
         else:
             logger.info('Extract >> supplement() >> 首次取数，不进行补取。')
@@ -225,7 +225,7 @@ class Extract(object):
             time_now = datetime.datetime.now()
 
             # 暂时注销
-            # self.get_data(time_now)
+            self.get_data(time_now)
             time.sleep(60)
 
     def get_data(self, now_time):
@@ -286,7 +286,7 @@ class Extract(object):
                     self.get_col_data(col_ordered_targets, now_time)
                     # 剔除
                     copy_ordered_targets = copy_ordered_targets.exclude(storage=storage,
-                                                                        storagetype=storage.storagetype)
+                                                                        storage__storagetype=storage.storagetype)
                 else:
                     logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
                     exit(0)
@@ -391,89 +391,91 @@ class Extract(object):
         # 格式化时间<datadate:MS>  storage['datadate'] 
 
         date_com = re.compile('<#.*?#>')
-        # datadate
-        if 'DATADATE' in target_list[0].storagefields:
-            pre_datadate_format_list = date_com.findall(target_list[0].storagefields)
-            format_datadate = self.format_date(time, pre_datadate_format_list[0],
-                                               return_type='timestamp') if pre_datadate_format_list else None
-            storage['datadate'] = format_datadate
 
-        # 获取列数据
-        for target in target_list:
-            source_content = target.source_content
+        if target_list:
+            # datadate
+            if 'DATADATE' in target_list[0].storagefields:
+                pre_datadate_format_list = date_com.findall(target_list[0].storagefields)
+                format_datadate = self.format_date(time, pre_datadate_format_list[0],
+                                                   return_type='timestamp') if pre_datadate_format_list else None
+                storage['datadate'] = format_datadate
 
-            # 匹配出<#DATE:m:L#>
-            pre_format_list = date_com.findall(source_content)
+            # 获取列数据
+            for target in target_list:
+                source_content = target.source_content
 
-            format_date = self.format_date(time, pre_format_list[0] if pre_format_list else '')
+                # 匹配出<#DATE:m:L#>
+                pre_format_list = date_com.findall(source_content)
 
-            # 格式化后的SQL
-            source_content = source_content.replace(pre_format_list[0],
-                                                    format_date) if pre_format_list else source_content
+                format_date = self.format_date(time, pre_format_list[0] if pre_format_list else '')
 
-            result_list = []
+                # 格式化后的SQL
+                source_content = source_content.replace(pre_format_list[0],
+                                                        format_date) if pre_format_list else source_content
 
-            source = target.source
-            if source:
-                source_type_name = ''
-                source_type = source.sourcetype  # Oracle/SQL Server
+                result_list = []
 
-                source_connection = ''
-                try:
-                    source_connection = eval(source.connection)
-                    if type(source_connection) == list:
-                        source_connection = source_connection[0]
-                except Exception as e:
-                    logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
-                    exit(0)
+                source = target.source
+                if source:
+                    source_type_name = ''
+                    source_type = source.sourcetype  # Oracle/SQL Server
 
-                try:
-                    dl = DictList.objects.get(id=int(source_type))
-                except Exception as e:
-                    logger.info('Extract >> get_col_data() >> %s' % e)
+                    source_connection = ''
+                    try:
+                        source_connection = eval(source.connection)
+                        if type(source_connection) == list:
+                            source_connection = source_connection[0]
+                    except Exception as e:
+                        logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
+                        exit(0)
+
+                    try:
+                        dl = DictList.objects.get(id=int(source_type))
+                    except Exception as e:
+                        logger.info('Extract >> get_col_data() >> %s' % e)
+                    else:
+                        source_type_name = dl.name
+
+                    db_query = SeveralDBQuery(source_type_name, source_connection)
+                    result_list = db_query.fetch_all(source_content)
+                    db_query.close()
+
+                # 存表
+                storagefields = target.storagefields
+                storagefields_list = storagefields.split(',')
+                if result_list:
+                    result = result_list[0]
+                    i = 0
+                    for k, v in result.items():
+                        # 字段为target.storagefields
+                        storage[storagefields_list[i]] = v
+                        i += 1
+
+            fields = ''
+            values = ''
+
+            for k, v in storage.items():
+                # 值不为空时，写入键值对
+                if v and v != 0:
+                    fields += k.strip() + ','
+                if type(v) == int:
+                    values += str(v) + ','
                 else:
-                    source_type_name = dl.name
+                    if v:
+                        values += '"%s"' % str(v).strip() + ','
 
-                db_query = SeveralDBQuery(source_type_name, source_connection)
-                result_list = db_query.fetch_all(source_content)
-                db_query.close()
+            fields = fields[:-1] if fields.endswith(',') else fields
+            values = values[:-1] if values.endswith(',') else values
 
-            # 存表
-            storagefields = target.storagefields
-            storagefields_list = storagefields.split(',')
-            if result_list:
-                result = result_list[0]
-                i = 0
-                for k, v in result.items():
-                    # 字段为target.storagefields
-                    storage[storagefields_list[i]] = v
-                    i += 1
+            # 列存，将storage存成一条记录,本地数据库
+            tablename = target_list[0].storage.tablename
+            col_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
+                                                                                                      fields=fields,
+                                                                                                      values=values)
 
-        fields = ''
-        values = ''
-
-        for k, v in storage.items():
-            # 值不为空时，写入键值对
-            if v and v != 0:
-                fields += k.strip() + ','
-            if type(v) == int:
-                values += str(v) + ','
-            else:
-                if v:
-                    values += '"%s"' % str(v).strip() + ','
-
-        fields = fields[:-1] if fields.endswith(',') else fields
-        values = values[:-1] if values.endswith(',') else values
-
-        # 列存，将storage存成一条记录,本地数据库
-        tablename = target_list[0].storage.tablename
-        col_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(tablename=tablename,
-                                                                                                  fields=fields,
-                                                                                                  values=values)
-
-        db_update = SeveralDBQuery(self.engine, self.db_info)
-        # db_update.update(col_save_sql)
-        db_update.close()
+            db_update = SeveralDBQuery(self.engine, self.db_info)
+            # db_update.update(col_save_sql)
+            db_update.close()
 
     def format_date(self, date, pre_format, return_type='str'):
         # {
@@ -591,7 +593,7 @@ class Extract(object):
         # 启动定时器，每分钟执行一次
 
         # 暂时注销
-        # self.supplement()
+        self.supplement()
         self.set_timer()
 
 
