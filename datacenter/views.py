@@ -1590,7 +1590,6 @@ def storage_data(request):
                 "validtime": validtime,
                 "sort": storage.sort,
             })
-        print(result)
         return JsonResponse({"data": result})
 
 
@@ -1736,7 +1735,6 @@ def cycle_save(request):
         per_time = request.POST.get('per_time', '')
         per_month = request.POST.get('per_month', '')
         per_week = request.POST.get('per_week', '')
-        print(request.POST)
         try:
             id = int(id)
         except:

@@ -25,6 +25,34 @@ from django.conf import settings
 
 logger = logging.getLogger('process')
 
+dict_list = DictList.objects.exclude(state='9').values('id', 'name')
+
+# 本地数据库信息
+pro_db_engine = 'MySQL'
+if 'sql_server' in settings.DATABASES['default']['ENGINE']:
+    pro_db_engine = 'SQL Server'
+
+db_info = {
+    'host': settings.DATABASES['default']['HOST'],
+    'user': settings.DATABASES['default']['USER'],
+    'passwd': settings.DATABASES['default']['PASSWORD'],
+    'db': settings.DATABASES['default']['NAME'],
+}
+
+
+def get_dict_name(key):
+    name = ''
+    try:
+        key = int(key)
+    except:
+        pass
+    else:
+        for dl in dict_list:
+            if key == dl['id']:
+                name = dl['name']
+                break
+    return name
+
 
 def getcumulative(target, date, value):
     """
@@ -160,18 +188,6 @@ class Extract(object):
         self.app_id = app_id
         self.source_id = source_id
         self.circle_id = circle_id
-
-        # 本地数据库信息
-        self.db_info = {
-            'host': settings.DATABASES['default']['HOST'],
-            'user': settings.DATABASES['default']['USER'],
-            'passwd': settings.DATABASES['default']['PASSWORD'],
-            'db': settings.DATABASES['default']['NAME'],
-        }
-        self.engine = 'MySQL'
-        if 'sql_server' in settings.DATABASES['default']['ENGINE']:
-            self.engine = 'SQL Server'
-
         self.pm = None
         try:
             self.pm = ProcessMonitor.objects.get(app_admin_id=self.app_id, source_id=self.source_id,
@@ -269,24 +285,18 @@ class Extract(object):
             storage = o_target.storage
             if storage:
                 # 从DictList中获取
-                storage_type_name = ''
-                try:
-                    dl = DictList.objects.get(id=int(storage.storagetype))
-                except Exception as e:
-                    logger.info('Extract >> _get_data() >> %s' % e)
-                else:
-                    storage_type_name = dl.name
+                storage_type_name = get_dict_name(storage.storagetype)
 
                 if storage_type_name == '行':
                     self.get_row_data(o_target, now_time)
                 elif storage_type_name == '列':
                     col_ordered_targets = copy_ordered_targets.filter(storage=storage,
-                                                                      storage__storagetype=storage.storagetype)
+                                                                      storagetag=o_target.storagetag)
 
                     self.get_col_data(col_ordered_targets, now_time)
                     # 剔除
                     copy_ordered_targets = copy_ordered_targets.exclude(storage=storage,
-                                                                        storage__storagetype=storage.storagetype)
+                                                                        storagetag=o_target.storagetag)
                 else:
                     logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
                     exit(0)
@@ -322,8 +332,8 @@ class Extract(object):
 
         source = target.source
         if source:
-            source_type_name = ''
             source_type = source.sourcetype  # Oracle/SQL Server
+            source_type_name = get_dict_name(source_type)
 
             source_connection = ''
             try:
@@ -334,56 +344,56 @@ class Extract(object):
                 logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
                 exit(0)
 
-            try:
-                dl = DictList.objects.get(id=int(source_type))
-            except Exception as e:
-                logger.info('Extract >> get_row_data() >> %s' % e)
-            else:
-                source_type_name = dl.name
-
             db_query = SeveralDBQuery(source_type_name, source_connection)
             result_list = db_query.fetch_all(source_content)
             db_query.close()
 
-        db_update = SeveralDBQuery(self.engine, self.db_info)
+        if not result_list:
+            # 未取到数据(save:指标，周期，数据源，应用)
+            self.record_exception_data(target)
+        else:
+            db_update = SeveralDBQuery(pro_db_engine, db_info)
 
-        for result in result_list:
-            storage = {}
+            for result in result_list:
+                storage = {}
 
-            ri = 0
-            for rk, rv in result.items():
-                storage[storagefields_list[ri]] = rv
-                ri += 1
+                ri = 0
+                for rk, rv in result.items():
+                    storage[storagefields_list[ri]] = rv
+                    ri += 1
 
-            storage["savedate"] = time
-            storage['target_id'] = target.id
-            if 'DATADATE' in storagefields:
-                # storage['datadate'] 
-                storage['datadate'] = format_datadate
+                storage["savedate"] = time
+                storage['target_id'] = target.id
+                if 'DATADATE' in storagefields:
+                    # storage['datadate']
+                    storage['datadate'] = format_datadate
 
-            fields = ''
-            values = ''
+                fields = ''
+                values = ''
 
-            for k, v in storage.items():
-                # 值不为空时，写入键值对
-                if v and v != 0:
-                    fields += k.strip() + ','
-                if type(v) == int:
-                    values += str(v) + ','
-                else:
-                    if v:
-                        values += '"%s"' % str(v).strip() + ','
+                for k, v in storage.items():
+                    # 值不为空时，写入键值对
+                    if v and v != 0:
+                        fields += k.strip() + ','
+                    if type(v) == int:
+                        values += str(v) + ','
+                    else:
+                        if v:
+                            values += '"%s"' % str(v).strip() + ','
 
-            fields = fields[:-1] if fields.endswith(',') else fields
-            values = values[:-1] if values.endswith(',') else values
+                fields = fields[:-1] if fields.endswith(',') else fields
+                values = values[:-1] if values.endswith(',') else values
 
-            tablename = target.storage.tablename
-            # 行存
-            row_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(
-                tablename=tablename, fields=fields, values=values)
+                tablename = target.storage.tablename
+                # 行存
+                row_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(
+                    tablename=tablename, fields=fields, values=values)
 
-            # db_update.update(row_save_sql)
-        db_update.close()
+                # try:
+                #     db_update.update(row_save_sql)
+                # except:
+                #     self.record_exception_data(target)
+            db_update.close()
 
     def get_col_data(self, target_list, time):
         storage = {}
@@ -417,8 +427,8 @@ class Extract(object):
 
                 source = target.source
                 if source:
-                    source_type_name = ''
                     source_type = source.sourcetype  # Oracle/SQL Server
+                    source_type_name = get_dict_name(source_type)
 
                     source_connection = ''
                     try:
@@ -428,13 +438,6 @@ class Extract(object):
                     except Exception as e:
                         logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
                         exit(0)
-
-                    try:
-                        dl = DictList.objects.get(id=int(source_type))
-                    except Exception as e:
-                        logger.info('Extract >> get_col_data() >> %s' % e)
-                    else:
-                        source_type_name = dl.name
 
                     db_query = SeveralDBQuery(source_type_name, source_connection)
                     result_list = db_query.fetch_all(source_content)
@@ -470,10 +473,10 @@ class Extract(object):
             # 列存，将storage存成一条记录,本地数据库
             tablename = target_list[0].storage.tablename
             col_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
-                                                                                                      fields=fields,
-                                                                                                      values=values)
+                                                                                           fields=fields,
+                                                                                           values=values)
 
-            db_update = SeveralDBQuery(self.engine, self.db_info)
+            db_update = SeveralDBQuery(pro_db_engine, db_info)
             # db_update.update(col_save_sql)
             db_update.close()
 
@@ -588,6 +591,24 @@ class Extract(object):
 
         return date_init
 
+    def record_exception_data(self, target):
+        """
+        记录异常数据
+        :param target:
+        :return:
+        """
+        try:
+            exception_data = ExceptionData()
+            exception_data.target = target
+            exception_data.app_id = self.app_id
+            exception_data.cycle_id = self.circle_id
+            exception_data.source_id = self.source_id
+            exception_data.supplement_times = 0
+            exception_data.extract_error_time = datetime.datetime.now()
+            exception_data.save()
+        except:
+            pass
+
     def run(self):
         # 补取()
         # 启动定时器，每分钟执行一次
@@ -630,8 +651,66 @@ def run_process(process_id, processcon, targets):
             app_id = update_pm.app_admin_id
             source_id = update_pm.source_id
             circle_id = update_pm.cycle_id
-            extract = Extract(app_id, source_id, circle_id)
-            extract.run()
+
+            # 根据数据源类型来判断进程
+            try:
+                source = Source.objects.get(id=source_id)
+            except Source.DoesNotExist as e:
+                pass
+            else:
+                process_type = source.type
+                if process_type == '1':
+                    # 数据补取
+                    while True:
+                        exception_data = ExceptionData.objects.exclude(state='9')
+                        for ed in exception_data:
+                            supplement_times = ed.supplement_times
+                            # if supplement_times <= 10:
+                            #     # 补取...
+                            #     pass
+                            #     # supplement_times += 1
+                            # else:
+                            #     pass
+
+                        time.sleep(60 * 60 * 24)  # 定时1日
+                elif process_type == '2':
+                    while True:
+                        # 数据清理：根据存储配置中的数据保留周期，定时去删除表中的过期数据
+                        now_time = datetime.datetime.now()
+                        # 遍历所有storage
+                        storages = Storage.objects.exclude(state='9')
+                        for storage in storages:
+                            valid_time = get_dict_name(storage.validtime)
+                            table_name = storage.tablename
+
+                            if valid_time == '一年':
+                                aft_time = now_time + datetime.timedelta(days=-365)
+                                clean_sql = r"""DELETE FROM {table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
+                                    table_name=table_name, savedate=aft_time)
+
+                                db_update = SeveralDBQuery(pro_db_engine, db_info)
+                                # db_update.update(clean_sql)
+                            elif valid_time == '一个月':
+                                aft_time = now_time + datetime.timedelta(days=-30)
+                                clean_sql = r"""DELETE FROM {table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
+                                    table_name=table_name, savedate=aft_time)
+
+                                db_update = SeveralDBQuery(pro_db_engine, db_info)
+                                # db_update.update(clean_sql)
+                            else:
+                                # 永久
+                                pass
+                        time.sleep(60 * 60 * 24)  # 定时1日
+                elif process_type == '3':
+                    # 数据服务
+                    pass
+                elif process_type == '4':
+                    # 短信服务
+                    pass
+                else:
+                    # 取数进程
+                    extract = Extract(app_id, source_id, circle_id)
+                    extract.run()
     else:
         logger.info('run_process() >> %s' % '传入参数有误。')
 
@@ -643,7 +722,7 @@ def run_process(process_id, processcon, targets):
 # # targets = Target.objects.filter(Q(id=8)|Q(id=9))
 # # extract.get_col_data(targets, time)
 
-# run_process(9, None, None)
+# run_process(11, None, None)
 if len(sys.argv) > 1:
     run_process(sys.argv[1], None, None)
     logger.info('进程启动。')

@@ -359,7 +359,7 @@ class ExceptionData(models.Model):
     app = models.ForeignKey(App, null=True, verbose_name='应用')
     cycle = models.ForeignKey(Cycle, null=True, verbose_name='周期')
     extract_error_time = models.DateTimeField('取数失败时间', null=True, blank=True)
-    supplement_times = models.IntegerField('补取次数', blank=True, null=True)
+    supplement_times = models.IntegerField('补取次数', null=True, default=0)
     last_supplement_time = models.DateTimeField('最新补取时间', null=True, blank=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
