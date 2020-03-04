@@ -101,7 +101,7 @@ WSGI_APPLICATION = 'ZDDC.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'datacenter_1',
+        'NAME': 'datacenter',
         'USER': 'root',
         'PASSWORD': 'password',
         # 'HOST': '192.168.1.66',

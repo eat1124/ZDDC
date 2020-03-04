@@ -1,4 +1,148 @@
+
 $(document).ready(function () {
+    function seasonFunction(){
+        renderSeasonDate(document.getElementById('season'), 1);
+        function renderSeasonDate(ohd, sgl) {
+            var ele = $(ohd);
+            laydate.render({
+                elem: ohd,
+                type: 'month',
+                format: 'yyyy-第M季度',
+                range: sgl ? null : '~',
+                min: "1900-1-1",
+                max: "2999-12-31",
+                btns: ['clear', 'confirm'],
+                ready: function () {
+                    var hd = $("#layui-laydate" + ele.attr("lay-key"));
+                    if (hd.length > 0) {
+                        hd.click(function () {
+                            ren($(this));
+                        });
+                    }
+                    ren(hd);
+                },
+
+                done: function (value) {
+                    var finaltime = '';
+                    if (value){
+                        value = value.split('-');
+                        var year = value[0];
+                        var seasson = value[1];
+                        if (seasson == '第1季度'){
+
+                            var timeend = '03-31';
+                            finaltime =  year + '-' + timeend
+                        }
+                        if (seasson == '第2季度'){
+                            var timeend = '07-31';
+                            finaltime =  year + '-' + timeend
+                        }
+                        if (seasson == '第3季度'){
+                            var timeend = '10-31';
+                            finaltime = year + '-' + timeend
+                        }
+                        if (seasson == '第4季度'){
+                            var timeend = '12-31';
+                            finaltime = year + '-' + timeend
+                        }
+                    }
+                    $('#reporting_date').val(finaltime)
+                    var table1 = $('#sample_1').DataTable();
+                    table1.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15").load();
+                    var table2 = $('#sample_2').DataTable();
+                    table2.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=16").load();
+                    var table3 = $('#sample_3').DataTable();
+                    table3.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=17").load();
+                    var table4 = $('#sample_4').DataTable();
+                    table4.ajax.url("../../../reporting_search_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()).load();
+                    var table5 = $('#sample_5').DataTable();
+                    table5.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1").load();
+                }
+
+            });
+            var ren = function (thiz) {
+                var mls = thiz.find(".laydate-month-list");
+                mls.each(function (i, e) {
+                    $(this).find("li").each(function (inx, ele) {
+                        var cx = ele.innerHTML;
+                        if (inx < 4) {
+                            ele.innerHTML = cx.replace(/月/g, "季度");
+                        } else {
+                            ele.style.display = "none";
+                        }
+                    });
+                });
+            }
+        }
+    }
+
+    function yearFunction(){
+        renderYearDate(document.getElementById('year'), 1);
+        function renderYearDate(ohd, sgl) {
+            var ele = $(ohd);
+            laydate.render({
+                elem: ohd,
+                type: 'month',
+                format: 'yyyy-第M半年度',
+                range: sgl ? null : '~',
+                min: "1900-1-1",
+                max: "2999-12-31",
+                btns: ['clear', 'confirm'],
+                ready: function () {
+                    var hd = $("#layui-laydate" + ele.attr("lay-key"));
+                    if (hd.length > 0) {
+                        hd.click(function () {
+                            ren($(this));
+                        });
+                    }
+                    ren(hd);
+                },
+
+                done: function (value) {
+                    var finaltime = '';
+                    if (value){
+                        value = value.split('-');
+                        var year = value[0];
+                        var seasson = value[1];
+                        if (seasson == '第1半年度'){
+                            var timeend = '06-30';
+                            finaltime = year + '-' + timeend
+                        }
+                        if (seasson == '第2半年度'){
+                            var timeend = '12-31';
+                            finaltime = year + '-' + timeend
+                        }
+                    }
+                    $('#reporting_date').val(finaltime)
+                    var table1 = $('#sample_1').DataTable();
+                    table1.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15").load();
+                    var table2 = $('#sample_2').DataTable();
+                    table2.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=16").load();
+                    var table3 = $('#sample_3').DataTable();
+                    table3.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=17").load();
+                    var table4 = $('#sample_4').DataTable();
+                    table4.ajax.url("../../../reporting_search_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()).load();
+                    var table5 = $('#sample_5').DataTable();
+                    table5.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1").load();
+                }
+
+            });
+            var ren = function (thiz) {
+                var mls = thiz.find(".laydate-month-list");
+                mls.each(function (i, e) {
+                    $(this).find("li").each(function (inx, ele) {
+                        var cx = ele.innerHTML;
+                        if (inx < 2) {
+                            ele.innerHTML = cx.replace(/月/g, "半年度");
+                        } else {
+                            ele.style.display = "none";
+                        }
+                    });
+                });
+            }
+        }
+    }
+
     $('#sample_1').dataTable({
         "bAutoWidth": true,
         "bSort": false,
@@ -774,6 +918,7 @@ $(document).ready(function () {
         table4.ajax.url("../../../reporting_search_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()).load();
         var table5 = $('#sample_5').DataTable();
         table5.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1").load();
+
     })
     $('#searchapp').change(function () {
         var table4 = $('#sample_4').DataTable();
@@ -796,21 +941,19 @@ $(document).ready(function () {
             minView: 3,
         });
     }
+
     if($('#cycletype').val()=="12") {
-        $('#reporting_date').datetimepicker({
-            format: 'yyyy-mm',
-            autoclose: true,
-            startView: 3,
-            minView: 3,
-        });
+        seasonFunction()
+        $('#reporting_date').hide();
+        $('#season').show()
+
     }
+
     if($('#cycletype').val()=="13") {
-        $('#reporting_date').datetimepicker({
-            format: 'yyyy-mm',
-            autoclose: true,
-            startView: 3,
-            minView: 3,
-        });
+        yearFunction()
+        $('#reporting_date').hide();
+        $('#year').show()
+
     }
     if($('#cycletype').val()=="14") {
         $('#reporting_date').datetimepicker({
@@ -1245,3 +1388,4 @@ $(document).ready(function () {
     })
 
 });
+
