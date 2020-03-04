@@ -24,6 +24,7 @@ import pymysql
 import psutil
 import base64
 import win32api
+import calendar
 
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
@@ -42,7 +43,7 @@ from django.utils.encoding import escape_uri_path
 from django.core.mail import send_mail
 from django.forms.models import model_to_dict
 from django.template.response import TemplateResponse
-import calendar
+from django.views.generic import View
 
 from datacenter.tasks import *
 from .models import *
@@ -55,6 +56,56 @@ funlist = []
 
 info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Admin@2017", "token": "",
         "lastlogin": 0}
+
+
+class DataCenter(View):
+    """
+    数据服务
+    """
+    def get(self, request):
+        # 2020-02-20
+        result = {}
+        target_name = request.GET.get('target_name', '')
+        date = request.GET.get('date', '')
+
+        if not target_name:
+            return JsonResponse({
+                'status': 0,
+                'data': {},
+                'msg': '指标名称未传入。'
+            })
+
+        try:
+            date = datetime.datetime.strptime(date, '%Y-%m-%d')
+
+            # >=当天0时 <昨日0时
+            end_time = date + datetime.timedelta(days=1)
+        except:
+            return JsonResponse({
+                'status': 0,
+                'data': {},
+                'msg': '传入时间有误。'
+            })
+        extract_data = getmodels('Extractdata', str(date.year)).objects.exclude(state='9').filter(datadate__gte=date, datadate__lt=end_time,
+                                                                                             target__name=target_name)
+        data_list = []
+        for ed in extract_data:
+            data_list.append({
+                'target_name': ed.target.name,
+                'datadate': ed.datadate,
+                'curvalue': ed.curvalue,
+                'curvaluedate': ed.curvaluedate,
+                'curvaluetext': ed.curvaluetext,
+                'cumulativemonth': ed.cumulativemonth,
+                'cumulativequarter': ed.cumulativequarter,
+                'cumulativehalfyear': ed.cumulativehalfyear,
+                'cumulativeyear': ed.cumulativeyear,
+            })
+        result['status'] = 1
+        result['data'] = data_list
+        result['msg'] = '获取数据成功。'
+
+        return JsonResponse(result)
 
 
 def getmodels(modelname, year):
@@ -609,7 +660,7 @@ def get_exception_data(request):
         except ValueError as e:
             print(e)
         else:
-            exceptions = ExceptionData.objects.filter(app_id=app_id,source_id=source_id,cycle_id=circle_id)
+            exceptions = ExceptionData.objects.filter(app_id=app_id, source_id=source_id, cycle_id=circle_id)
             for exception in exceptions:
                 result.append({
                     'id': exception.id,
@@ -3027,7 +3078,8 @@ def target_app_del(request):
         else:
             return HttpResponse(0)
 
-def getreporting_date(date,cycletype):
+
+def getreporting_date(date, cycletype):
     if cycletype == "10":
         date = datetime.datetime.strptime(date, "%Y-%m-%d")
     if cycletype == "11":
@@ -3084,7 +3136,7 @@ def reporting_index(request, cycletype, funid):
         if cycletype == '12':
             now = datetime.datetime.now()
             month = (now.month - 1) - (now.month - 1) % 3 + 1
-            now = (datetime.datetime.now().replace(month=month,day=1, hour=0, minute=0, second=0,
+            now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
                 days=-1))
             year = now.strftime("%Y")
@@ -3108,7 +3160,7 @@ def reporting_index(request, cycletype, funid):
         if cycletype == '13':
             now = datetime.datetime.now()
             month = (now.month - 1) - (now.month - 1) % 6 + 1
-            now = (datetime.datetime.now().replace(month=month,day=1, hour=0, minute=0, second=0,
+            now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
                 days=-1))
             year = now.strftime("%Y")
@@ -3276,7 +3328,7 @@ def reporting_data(request):
         operationtype = request.GET.get('operationtype', '')
         try:
             app = int(app)
-            reporting_date = getreporting_date(reporting_date,cycletype)
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             raise Http404()
         all_data = []
@@ -3500,7 +3552,7 @@ def reporting_search_data(request):
         searchapp = request.GET.get('searchapp', '')
         try:
             app = int(app)
-            reporting_date = getreporting_date(reporting_date,cycletype)
+            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             raise Http404()
         all_data = []
@@ -3689,17 +3741,19 @@ def getcumulative(target, date, value):
         lastcumulativehalfyear = 0
         lastcumulativeyear = 0
         try:
-            if lastg_date.year==date.year and lastg_date.month==date.month:
+            if lastg_date.year == date.year and lastg_date.month == date.month:
                 lastcumulativemonth += all_data[0].cumulativemonth
         except:
             pass
         try:
-            if lastg_date.year == date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 3 == (date.month - 1) - (date.month - 1) % 3:
+            if lastg_date.year == date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 3 == (
+                    date.month - 1) - (date.month - 1) % 3:
                 lastcumulativequarter += all_data[0].cumulativequarter
         except:
             pass
         try:
-            if lastg_date.year == date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 6 == (date.month - 1) - (date.month - 1) % 6:
+            if lastg_date.year == date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 6 == (
+                    date.month - 1) - (date.month - 1) % 6:
                 lastcumulativehalfyear += all_data[0].cumulativehalfyear
         except:
             pass
@@ -3839,7 +3893,7 @@ def getcalculatedata(target, date, guid):
                     if cond == "SE":
                         month = (date.month - 1) - (date.month - 1) % 3 + 1
                         if month == 10:
-                            newdate = datetime.datetime(date.year+1, 1, 1) + datetime.timedelta(days=-1)
+                            newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
                         else:
                             newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
                         condtions = {'datadate': newdate}
@@ -3850,7 +3904,7 @@ def getcalculatedata(target, date, guid):
                         newdate = datetime.datetime(newdate.year, newdate.month - 2, 1)
                         condtions = {'datadate': newdate}
                     if cond == "LSE":
-                        month = (date.month - 1) - (date.month - 1) % 3 + 1  #10
+                        month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
                         newdate = datetime.datetime(date.year, month, 1)
                         newdate = newdate + datetime.timedelta(days=-1)
                         condtions = {'datadate': newdate}
@@ -3913,7 +3967,8 @@ def getcalculatedata(target, date, guid):
                     if condtions:
                         query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9")
                     if new_date:
-                        query_res = queryset.filter(datadate__range=new_date).filter(target=membertarget).exclude(state="9")
+                        query_res = queryset.filter(datadate__range=new_date).filter(target=membertarget).exclude(
+                            state="9")
 
                     if len(query_res) <= 0:
                         curvalue = 0
@@ -3925,22 +3980,22 @@ def getcalculatedata(target, date, guid):
                             else:
                                 value = query_res[0].curvalue
                         if col == 'm':
-                            if cond == "MAVG" or  cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                            if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                 value = query_res.aggregate(Avg('cumulativemonth'))[0].cumulativemonth
                             else:
                                 value = query_res[0].cumulativemonth
                         if col == 's':
-                            if cond == "MAVG" or  cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                            if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                 value = query_res.aggregate(Avg('cumulativequarter'))[0].cumulativequarter
                             else:
                                 value = query_res[0].cumulativequarter
                         if col == 'h':
-                            if cond == "MAVG" or  cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                            if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                 value = query_res.aggregate(Avg('cumulativehalfyear'))[0].cumulativehalfyear
                             else:
                                 value = query_res[0].cumulativehalfyear
                         if col == 'y':
-                            if cond == "MAVG" or  cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                            if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                 value = query_res.aggregate(Avg('cumulativeyear'))[0].cumulativeyear
                             else:
                                 value = query_res[0].cumulativeyear
@@ -3993,17 +4048,18 @@ def reporting_formulacalculate(request):
         data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积"}
         data_time = {
             "D": "当天", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末",
-            "SS": "季初", "SE": "季末","LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末",
-            "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初","YE": "年末", "LYS": "去年初",
+            "SS": "季初", "SE": "季末", "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末",
+            "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初", "YE": "年末", "LYS": "去年初",
             "LYE": "去年末", "MAVG": "月平均值", "SAVG": "季平均值", "HAVG": "半年平均值", "YAVG": "年均值"
         }
 
-        calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(id=id).select_related("target")
+        calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(
+            id=id).select_related("target")
         if len(calculatedata) > 0:
             formula = calculatedata[0].formula
             if formula is not None:
                 formula = formula.replace(" ", "")
-            formula_chinese = formula + " = " + str(round(calculatedata[0].curvalue,calculatedata[0].target.digit))
+            formula_chinese = formula + " = " + str(round(calculatedata[0].curvalue, calculatedata[0].target.digit))
             members = formula.split('>')
             for member in members:
                 if member.replace(" ", "") != "":
@@ -4025,7 +4081,7 @@ def reporting_formulacalculate(request):
 
                         membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
                         value = ""
-                        childid=None
+                        childid = None
                         if len(membertarget) <= 0:
                             value = "指标不存在"
                         else:
@@ -4171,7 +4227,8 @@ def reporting_formulacalculate(request):
                                 new_date = (ys_newdate, ye_newdate)
 
                             if condtions:
-                                query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9").select_related("target")
+                                query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(
+                                    state="9").select_related("target")
                             if new_date:
                                 query_res = queryset.filter(datadate__range=new_date).filter(
                                     target=membertarget).exclude(state="9")
@@ -4181,20 +4238,23 @@ def reporting_formulacalculate(request):
                                 value = "0"
                                 if col == 'd':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                        value = str(round(query_res.aggregate(Avg('curvalue'))[0].curvalue, query_res[0].target.digit))
+                                        value = str(round(query_res.aggregate(Avg('curvalue'))[0].curvalue,
+                                                          query_res[0].target.digit))
                                     else:
                                         value = str(round(query_res[0].curvalue, query_res[0].target.digit))
                                         childid = str(query_res[0].id)
                                 if col == 'm':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                        value = str(round(query_res.aggregate(Avg('cumulativemonth'))[0].cumulativemonth,
-                                                          query_res[0].target.digit))
+                                        value = str(
+                                            round(query_res.aggregate(Avg('cumulativemonth'))[0].cumulativemonth,
+                                                  query_res[0].target.digit))
                                     else:
                                         value = str(round(query_res[0].cumulativemonth, query_res[0].target.digit))
                                 if col == 's':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                        value = str(round(query_res.aggregate(Avg('cumulativequarter'))[0].cumulativequarter,
-                                                          query_res[0].target.digit))
+                                        value = str(
+                                            round(query_res.aggregate(Avg('cumulativequarter'))[0].cumulativequarter,
+                                                  query_res[0].target.digit))
                                     else:
                                         value = str(round(query_res[0].cumulativequarter, query_res[0].target.digit))
                                 if col == 'h':
@@ -4217,8 +4277,9 @@ def reporting_formulacalculate(request):
                             target_chinese = "<button id='formulabtn_" + childid + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\">" + target_chinese + "</button>"
                         formula_chinese = formula_chinese.replace(target_english, target_chinese)
 
-            formula_chinese = "<div style=\"font-size:18px\"><span style=\"font-size:18px\"  class=\"label label-primary\"> " + calculatedata[0].target.name + "</span>" + formula_chinese + "<br><br></div>"
-                   #"<span style=\"font-size:18px\"  class=\"label label-primary\">#1机组发电量" + aa + "</span><button id='formulabtn_" + aa + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\"><#1_发电量:当前值:当天>221.3</button> + <发电量:当前值:当天>+1+#1机组发电量</span> 123.2<#1_发电量:当前值:当天>+221.3<发电量:当前值:当天>+1=31.12<br><br></div>")
+            formula_chinese = "<div style=\"font-size:18px\"><span style=\"font-size:18px\"  class=\"label label-primary\"> " + \
+                              calculatedata[0].target.name + "</span>" + formula_chinese + "<br><br></div>"
+            # "<span style=\"font-size:18px\"  class=\"label label-primary\">#1机组发电量" + aa + "</span><button id='formulabtn_" + aa + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\"><#1_发电量:当前值:当天>221.3</button> + <发电量:当前值:当天>+1+#1机组发电量</span> 123.2<#1_发电量:当前值:当天>+221.3<发电量:当前值:当天>+1=31.12<br><br></div>")
             return HttpResponse(formula_chinese)
 
 

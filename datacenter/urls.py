@@ -199,4 +199,7 @@ urlpatterns = [
     # 邀请
     url(r'^invite/$', invite),
     url(r'^get_all_users/$', get_all_users),
+
+    # 数据服务
+    url(r'^datacenter/$', DataCenter.as_view())
 ]
