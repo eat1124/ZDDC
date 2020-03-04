@@ -807,9 +807,9 @@ def run_process(process_id, processcon, targets):
 # # targets = Target.objects.filter(Q(id=8)|Q(id=9))
 # # extract.get_col_data(targets, time)
 
-run_process(12, None, None)
-# if len(sys.argv) > 1:
-#     run_process(sys.argv[1], None, None)
-#     logger.info('进程启动。')
-# else:
-#     logger.info('脚本未传参。')
+# run_process(12, None, None)
+if len(sys.argv) > 1:
+    run_process(sys.argv[1], None, None)
+    logger.info('进程启动。')
+else:
+    logger.info('脚本未传参。')
