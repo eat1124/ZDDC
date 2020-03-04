@@ -203,9 +203,11 @@ class Extract(object):
                                                  cycle_id=self.circle_id)
         except ProcessMonitor.DoesNotExist as e:
             logger.info('Extract >> __init__() >> %s' % e)
+            self.record_log('进程不存在。')
         else:
             if not self.pm:
                 logger.info('Extract >> supplement() >> 该进程不存在，取数进程启动失败。')
+                self.record_log('进程不存在。')
                 exit(0)
 
     def supplement(self):
@@ -233,13 +235,11 @@ class Extract(object):
             now_time = datetime.datetime.strptime('{:%Y-%m-%d %H:%M}'.format(datetime.datetime.now()), '%Y-%m-%d %H:%M')
         except Exception as e:
             logger.info('Extract >> supplement() >> %s' % e)
-            exit(0)
         else:
             try:
                 delta_time = (now_time - aft_last_time).total_seconds()
             except Exception as e:
                 logger.info('Extract >> supplement() >> %s' % e)
-                exit(0)
             else:
                 if delta_time > 60:
                     self.supplement()
@@ -313,6 +313,7 @@ class Extract(object):
                             self.record_exception_data(cot)
                 else:
                     logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
+                    self.record_log('指标{target}的storagetag为空。'.format(target=o_target.name))
 
     def supplement_exception_data(self):
         process_monitor = ProcessMonitor.objects.exclude(state='9')
@@ -337,6 +338,7 @@ class Extract(object):
                             if ed.supplement_times < 10:
                                 if not self.get_row_data(ed.target, ed.extract_error_time):
                                     ed.supplement_times += 1
+                                    ed.last_supplement_time = datetime.datetime.now()
                                     ed.save()
                                 else:
                                     ed.state = '9'
@@ -354,6 +356,7 @@ class Extract(object):
                             if not self.get_col_data(target_list, ed.extract_error_time):
                                 for cod in col_ordered_data:
                                     cod.supplement_times += 1
+                                    cod.last_supplement_time = datetime.datetime.now()
                                     cod.save()
                             else:
                                 # 剔除
@@ -406,6 +409,7 @@ class Extract(object):
                     source_connection = source_connection[0]
             except Exception as e:
                 logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
+                self.record_log('指标{target}对应的数据源配置认证信息错误。'.format(target=target.name))
             else:
                 try:
                     db_query = SeveralDBQuery(source_type_name, source_connection)
@@ -503,6 +507,7 @@ class Extract(object):
                             source_connection = source_connection[0]
                     except Exception as e:
                         logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
+                        self.record_log('指标{target}对应的数据源配置认证信息错误。'.format(target=target.name))
                         exit(0)
 
                     db_query = SeveralDBQuery(source_type_name, source_connection)
@@ -684,10 +689,21 @@ class Extract(object):
         except:
             pass
 
+    def record_log(self, msg):
+        try:
+            log = LogInfo()
+            log.source_id = self.source_id
+            log.app_id = self.app_id
+            log.cycle_id = self.circle_id
+            log.create_time = datetime.datetime.now()
+            log.content = msg
+            log.save()
+        except:
+            pass
+
     def run(self):
         # 补取()
         # 启动定时器，每分钟执行一次
-
         # 暂时注销
         self.supplement()
         self.set_timer()
