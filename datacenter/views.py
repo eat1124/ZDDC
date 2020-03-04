@@ -3037,19 +3037,19 @@ def getreporting_date(date,cycletype):
         a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
         date = datetime.datetime(year=year, month=month, day=b)  # 构造本月月末datetime
     if cycletype == "12":
-        date = datetime.datetime.strptime(date, "%Y-%m")
-        month = (date.month - 1) - (date.month - 1) % 3 + 1
-        if month == 10:
-            date = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-        else:
-            date = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        # month = (date.month - 1) - (date.month - 1) % 3 + 1
+        # if month == 10:
+        #     date = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+        # else:
+        #     date = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
     if cycletype == "13":
-        date = datetime.datetime.strptime(date, "%Y-%m")
-        month = (date.month - 1) - (date.month - 1) % 6 + 1
-        if month == 7:
-            date = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-        else:
-            date = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        # month = (date.month - 1) - (date.month - 1) % 6 + 1
+        # if month == 7:
+        #     date = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+        # else:
+        #     date = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
 
     if cycletype == "14":
         date = datetime.datetime.strptime(date, "%Y")
@@ -3080,20 +3080,46 @@ def reporting_index(request, cycletype, funid):
                                                    microsecond=0) + datetime.timedelta(
                 days=-1))
             date = now.strftime("%Y-%m")
+        seasondate = ''
         if cycletype == '12':
-            now=datetime.datetime.now()
+            now = datetime.datetime.now()
             month = (now.month - 1) - (now.month - 1) % 3 + 1
             now = (datetime.datetime.now().replace(month=month,day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
                 days=-1))
-            date = now.strftime("%Y-%m")
+            year = now.strftime("%Y")
+            if now.month in (1, 2, 3):
+                season = '第1季度'
+                seasondate = year + '-' + season
+                date = year + '-' + "03-31"
+            if now.month in (4, 5, 6):
+                season = '第2季度'
+                seasondate = year + '-' + season
+                date = year + '-' + "06-31"
+            if now.month in (7, 8, 9):
+                season = '第3季度'
+                seasondate = year + '-' + season
+                date = year + '-' + "09-31"
+            if now.month in (10, 11, 12):
+                season = '第4季度'
+                seasondate = year + '-' + season
+                date = year + '-' + "12-31"
+        yeardate = ''
         if cycletype == '13':
             now = datetime.datetime.now()
             month = (now.month - 1) - (now.month - 1) % 6 + 1
             now = (datetime.datetime.now().replace(month=month,day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
                 days=-1))
-            date = now.strftime("%Y-%m")
+            year = now.strftime("%Y")
+            if now.month in (1, 2, 3, 4, 5, 6):
+                season = '第1半年度'
+                yeardate = year + '-' + season
+                date = year + '-' + "06-30"
+            if now.month in (7, 8, 9, 10, 11, 12):
+                season = '第2半年度'
+                yeardate = year + '-' + season
+                date = year + '-' + "12-31"
         if cycletype == '14':
             now = (datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0,
                                                    microsecond=0) + datetime.timedelta(
@@ -3209,6 +3235,8 @@ def reporting_index(request, cycletype, funid):
                        "cycletype": cycletype,
                        "app": app,
                        "date": date,
+                       "seasondate": seasondate,
+                       "yeardate": yeardate,
                        "searchtag": searchtag,
                        "metertag": metertag,
                        "entrytag": entrytag,

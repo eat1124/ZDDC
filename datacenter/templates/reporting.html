@@ -8,9 +8,11 @@
         <div class="col-md-10 col-lg-10">
             <input style="width:150px; float:right;" id="reporting_date" autocomplete="off" type="datetime" name="reporting_date" value="{{ date }}"
                                            class="form-control">
+            <input  style="width:150px; float:right; display: none" autocomplete="off" id="season" type="text" name="season" value="{{ seasondate }}" class="form-control">
+            <input  style="width:150px; float:right; display: none" autocomplete="off" id="year" type="text" name="year" value="{{ yeardate }}" class="form-control">
             <input hidden id="app" type="text" name="app" value="{{ app }}">
             <input hidden id="cycletype" type="text" name="cycletype" value="{{ cycletype }}">
-            <input hidden id="savechangedata" type="text" name="savechangedata">
+
         </div>
     </div>
 </header>
@@ -450,5 +452,7 @@
 <script src="/static/assets/global/plugins/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"
     type="text/javascript"></script>
 <script src="/static/assets/global/plugins/math.js"></script>
+<script src="/static/assets/global/plugins/laydate/laydate.js"></script>
+
 {% endblock %}
 
