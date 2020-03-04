@@ -157,22 +157,31 @@ class SeveralDBQuery(object):
 
     def fetch_one(self, fetch_sql):
         result = None
-        with self.connection.cursor() as cursor:
-            cursor.execute(fetch_sql)
-            result = cursor.fetchone()
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute(fetch_sql)
+                result = cursor.fetchone()
+        except:
+            pass
         return result
 
     def fetch_all(self, fetch_sql):
         result = []
-        with self.connection.cursor() as cursor:
-            cursor.execute(fetch_sql)
-            result = cursor.fetchall()
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute(fetch_sql)
+                result = cursor.fetchall()
+        except:
+            pass
         return result
 
     def update(self, update_sql):
-        with self.connection.cursor() as cursor:
-            cursor.execute(update_sql)
-            self.connection.commit()
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute(update_sql)
+                self.connection.commit()
+        except:
+            pass
 
     def close(self):
         if self.connection:
@@ -288,18 +297,73 @@ class Extract(object):
                 storage_type_name = get_dict_name(storage.storagetype)
 
                 if storage_type_name == '行':
-                    self.get_row_data(o_target, now_time)
+                    # 未取到数据(save:指标，周期，数据源，应用)
+                    if not self.get_row_data(o_target, now_time):
+                        self.record_exception_data(o_target)
                 elif storage_type_name == '列':
                     col_ordered_targets = copy_ordered_targets.filter(storage=storage,
                                                                       storagetag=o_target.storagetag)
 
-                    self.get_col_data(col_ordered_targets, now_time)
-                    # 剔除
-                    copy_ordered_targets = copy_ordered_targets.exclude(storage=storage,
-                                                                        storagetag=o_target.storagetag)
+                    if self.get_col_data(col_ordered_targets, now_time):
+                        # 剔除
+                        copy_ordered_targets = copy_ordered_targets.exclude(storage=storage,
+                                                                            storagetag=o_target.storagetag)
+                    else:
+                        for cot in col_ordered_targets:
+                            self.record_exception_data(cot)
                 else:
                     logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
-                    exit(0)
+
+    def supplement_exception_data(self):
+        process_monitor = ProcessMonitor.objects.exclude(state='9')
+
+        for pm in process_monitor:
+            app_id = pm.app_admin_id
+            source_id = pm.source_id
+            circle_id = pm.cycle_id
+
+            if all([app_id, source_id, circle_id]):
+                # 进程 > 异常补取 > 行：target直接补取；列：集合所有target_list
+                exception_data = ExceptionData.objects.exclude(state='9').filter(app_id=app_id, source_id=source_id,
+                                                                                 cycle_id=circle_id)
+                copy_exception_data = copy.deepcopy(exception_data)
+
+                for ed in exception_data:
+                    storage = ed.target.storage
+                    if storage:
+                        storage_type_name = get_dict_name(storage.storagetype)
+
+                        if storage_type_name == '行':
+                            if ed.supplement_times < 10:
+                                if not self.get_row_data(ed.target, ed.extract_error_time):
+                                    ed.supplement_times += 1
+                                    ed.save()
+                                else:
+                                    ed.state = '9'
+                                    ed.save()
+                            else:
+                                pass
+                        elif storage_type_name == '列':
+                            col_ordered_data = copy_exception_data.filter(target__storage=storage,
+                                                                             target__storagetag=ed.target.storagetag)
+
+                            target_list = []
+                            for cod in col_ordered_data:
+                                target_list.append(cod.target)
+
+                            if not self.get_col_data(target_list, ed.extract_error_time):
+                                for cod in col_ordered_data:
+                                    cod.supplement_times += 1
+                                    cod.save()
+                            else:
+                                # 剔除
+                                copy_exception_data = copy_exception_data.exclude(target__storage=storage,
+                                                                                   target__storagetag=ed.target.storagetag)
+                                for cod in col_ordered_data:
+                                    cod.state = '9'
+                                    cod.save()
+                        else:
+                            logger.info('Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
 
     def get_row_data(self, target, time):
         # storagefields有4个特例，
@@ -342,15 +406,16 @@ class Extract(object):
                     source_connection = source_connection[0]
             except Exception as e:
                 logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
-                exit(0)
-
-            db_query = SeveralDBQuery(source_type_name, source_connection)
-            result_list = db_query.fetch_all(source_content)
-            db_query.close()
+            else:
+                try:
+                    db_query = SeveralDBQuery(source_type_name, source_connection)
+                    result_list = db_query.fetch_all(source_content)
+                    db_query.close()
+                except:
+                    pass
 
         if not result_list:
-            # 未取到数据(save:指标，周期，数据源，应用)
-            self.record_exception_data(target)
+            return False
         else:
             db_update = SeveralDBQuery(pro_db_engine, db_info)
 
@@ -386,14 +451,15 @@ class Extract(object):
 
                 tablename = target.storage.tablename
                 # 行存
-                row_save_sql = """INSERT INTO datacenter_{tablename}({fields}) VALUES({values})""".format(
+                row_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(
                     tablename=tablename, fields=fields, values=values)
 
-                # try:
-                #     db_update.update(row_save_sql)
-                # except:
-                #     self.record_exception_data(target)
+                try:
+                    db_update.update(row_save_sql)
+                except:
+                    return False
             db_update.close()
+            return True
 
     def get_col_data(self, target_list, time):
         storage = {}
@@ -457,28 +523,38 @@ class Extract(object):
             fields = ''
             values = ''
 
-            for k, v in storage.items():
-                # 值不为空时，写入键值对
-                if v and v != 0:
-                    fields += k.strip() + ','
-                if type(v) == int:
-                    values += str(v) + ','
+            if storage:
+                for k, v in storage.items():
+                    # 值不为空时，写入键值对
+                    if v and v != 0:
+                        fields += k.strip() + ','
+                    if type(v) == int:
+                        values += str(v) + ','
+                    else:
+                        if v:
+                            values += '"%s"' % str(v).strip() + ','
+
+                fields = fields[:-1] if fields.endswith(',') else fields
+                values = values[:-1] if values.endswith(',') else values
+
+                # 列存，将storage存成一条记录,本地数据库
+                tablename = target_list[0].storage.tablename
+                col_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
+                                                                                               fields=fields,
+                                                                                               values=values)
+
+                try:
+                    db_update = SeveralDBQuery(pro_db_engine, db_info)
+                    # db_update.update(col_save_sql)
+                    db_update.close()
+                except:
+                    return False
                 else:
-                    if v:
-                        values += '"%s"' % str(v).strip() + ','
-
-            fields = fields[:-1] if fields.endswith(',') else fields
-            values = values[:-1] if values.endswith(',') else values
-
-            # 列存，将storage存成一条记录,本地数据库
-            tablename = target_list[0].storage.tablename
-            col_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
-                                                                                           fields=fields,
-                                                                                           values=values)
-
-            db_update = SeveralDBQuery(pro_db_engine, db_info)
-            # db_update.update(col_save_sql)
-            db_update.close()
+                    return True
+            else:
+                return False
+        else:
+            return False
 
     def format_date(self, date, pre_format, return_type='str'):
         # {
@@ -600,10 +676,9 @@ class Extract(object):
         try:
             exception_data = ExceptionData()
             exception_data.target = target
-            exception_data.app_id = self.app_id
-            exception_data.cycle_id = self.circle_id
-            exception_data.source_id = self.source_id
-            exception_data.supplement_times = 0
+            exception_data.app_id = target.app_id
+            exception_data.cycle_id = target.cycle_id
+            exception_data.source_id = target.source_id
             exception_data.extract_error_time = datetime.datetime.now()
             exception_data.save()
         except:
@@ -662,15 +737,9 @@ def run_process(process_id, processcon, targets):
                 if process_type == '1':
                     # 数据补取
                     while True:
-                        exception_data = ExceptionData.objects.exclude(state='9')
-                        for ed in exception_data:
-                            supplement_times = ed.supplement_times
-                            # if supplement_times <= 10:
-                            #     # 补取...
-                            #     pass
-                            #     # supplement_times += 1
-                            # else:
-                            #     pass
+                        # 补取
+                        extract = Extract(app_id, source_id, circle_id)
+                        extract.supplement_exception_data()
 
                         time.sleep(60 * 60 * 24)  # 定时1日
                 elif process_type == '2':
@@ -722,9 +791,9 @@ def run_process(process_id, processcon, targets):
 # # targets = Target.objects.filter(Q(id=8)|Q(id=9))
 # # extract.get_col_data(targets, time)
 
-# run_process(11, None, None)
-if len(sys.argv) > 1:
-    run_process(sys.argv[1], None, None)
-    logger.info('进程启动。')
-else:
-    logger.info('脚本未传参。')
+run_process(12, None, None)
+# if len(sys.argv) > 1:
+#     run_process(sys.argv[1], None, None)
+#     logger.info('进程启动。')
+# else:
+#     logger.info('脚本未传参。')

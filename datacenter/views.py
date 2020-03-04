@@ -609,8 +609,7 @@ def get_exception_data(request):
         except ValueError as e:
             print(e)
         else:
-            exceptions = ExceptionData.objects.filter(state='0').filter(
-                Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id))
+            exceptions = ExceptionData.objects.filter(app_id=app_id,source_id=source_id,cycle_id=circle_id)
             for exception in exceptions:
                 result.append({
                     'id': exception.id,
