@@ -948,9 +948,7 @@ $(document).ready(function () {
         $('#season').show()
 
     }
-    $('#season').change(function () {
 
-    })
     if($('#cycletype').val()=="13") {
         yearFunction()
         $('#reporting_date').hide();
