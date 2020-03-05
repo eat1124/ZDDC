@@ -62,6 +62,7 @@ class DataCenter(View):
     """
     数据服务
     """
+
     def get(self, request):
         # 2020-02-20
         result = {}
@@ -86,8 +87,9 @@ class DataCenter(View):
                 'data': {},
                 'msg': '传入时间有误。'
             })
-        extract_data = getmodels('Extractdata', str(date.year)).objects.exclude(state='9').filter(datadate__gte=date, datadate__lt=end_time,
-                                                                                             target__name=target_name)
+        extract_data = getmodels('Extractdata', str(date.year)).objects.exclude(state='9').filter(datadate__gte=date,
+                                                                                                  datadate__lt=end_time,
+                                                                                                  target__name=target_name)
         data_list = []
         for ed in extract_data:
             data_list.append({
@@ -105,7 +107,7 @@ class DataCenter(View):
         result['data'] = data_list
         result['msg'] = '获取数据成功。'
 
-        return JsonResponse(result)
+        return JsonResponse(result, json_dumps_params={'ensure_ascii': False})
 
 
 def getmodels(modelname, year):
@@ -676,7 +678,8 @@ def get_exception_data(request):
         except ValueError as e:
             print(e)
         else:
-            exceptions = ExceptionData.objects.filter(app_id=app_id, source_id=source_id, cycle_id=circle_id).exclude(state=9)
+            exceptions = ExceptionData.objects.filter(app_id=app_id, source_id=source_id, cycle_id=circle_id).exclude(
+                state=9)
             for exception in exceptions:
                 result.append({
                     'id': exception.id,
