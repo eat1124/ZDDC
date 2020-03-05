@@ -11,7 +11,7 @@ $(document).ready(function () {
                 range: sgl ? null : '~',
                 min: "1900-1-1",
                 max: "2999-12-31",
-                btns: ['clear', 'confirm'],
+                btns: ['confirm'],
                 ready: function () {
                     var hd = $("#layui-laydate" + ele.attr("lay-key"));
                     if (hd.length > 0) {
@@ -23,13 +23,13 @@ $(document).ready(function () {
                 },
 
                 done: function (value) {
+                    console.log(value, '888888888888')
                     var finaltime = '';
                     if (value){
                         value = value.split('-');
                         var year = value[0];
                         var seasson = value[1];
                         if (seasson == '第1季度'){
-
                             var timeend = '03-31';
                             finaltime =  year + '-' + timeend
                         }
@@ -65,6 +65,7 @@ $(document).ready(function () {
                 mls.each(function (i, e) {
                     $(this).find("li").each(function (inx, ele) {
                         var cx = ele.innerHTML;
+                        console.log(cx)
                         if (inx < 4) {
                             ele.innerHTML = cx.replace(/月/g, "季度");
                         } else {
@@ -87,7 +88,7 @@ $(document).ready(function () {
                 range: sgl ? null : '~',
                 min: "1900-1-1",
                 max: "2999-12-31",
-                btns: ['clear', 'confirm'],
+                btns: [ 'confirm'],
                 ready: function () {
                     var hd = $("#layui-laydate" + ele.attr("lay-key"));
                     if (hd.length > 0) {
@@ -132,6 +133,7 @@ $(document).ready(function () {
                 mls.each(function (i, e) {
                     $(this).find("li").each(function (inx, ele) {
                         var cx = ele.innerHTML;
+                         console.log(cx, 'wch')
                         if (inx < 2) {
                             ele.innerHTML = cx.replace(/月/g, "半年度");
                         } else {
