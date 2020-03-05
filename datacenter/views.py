@@ -523,6 +523,19 @@ def process_run(request):
         except ValueError as e:
             print(e)
 
+        # 进程操作记入日志
+        def record_log(app_id, source_id, circle_id, msg):
+            try:
+                log = LogInfo()
+                log.source_id = source_id
+                log.app_id = app_id
+                log.cycle_id = circle_id
+                log.create_time = datetime.datetime.now()
+                log.content = msg
+                log.save()
+            except:
+                pass
+
         # 固定进程
         current_process = ProcessMonitor.objects.filter(source_id=source_id).exclude(state='9')
 
@@ -550,12 +563,14 @@ def process_run(request):
                     res = "请勿重复执行该程序。"
                 else:
                     tag, res = handle_process(current_process, handle_type="RUN")
+                    record_log(app_id, source_id, circle_id, '进程启动成功。')
             elif operate == 'stop':
                 if current_process.status != "运行中":
                     tag = 0
                     res = "当前进程未在运行中。"
                 else:
                     tag, res = handle_process(current_process, handle_type="DESTROY")
+                    record_log(app_id, source_id, circle_id, '进程关闭成功。')
             elif operate == 'restart':
                 if current_process.status != "运行中":
                     tag = 0
@@ -564,6 +579,7 @@ def process_run(request):
                     tag, res = handle_process(current_process, handle_type="DESTROY")
                     if tag == 1:
                         tag, res = handle_process(current_process, handle_type="RUN")
+                        record_log(app_id, source_id, circle_id, '进程重启成功。')
                     else:
                         tag = 0
                         res = "关闭进程失败。"
@@ -583,7 +599,7 @@ def process_run(request):
                 current_process.cycle_id = circle_id
             current_process.save()
             tag, res = handle_process(current_process, handle_type="RUN")
-
+            record_log(app_id, source_id, circle_id, '进程启动成功。')
             return JsonResponse({
                 'tag': tag,
                 'res': res,
@@ -660,7 +676,7 @@ def get_exception_data(request):
         except ValueError as e:
             print(e)
         else:
-            exceptions = ExceptionData.objects.filter(app_id=app_id, source_id=source_id, cycle_id=circle_id)
+            exceptions = ExceptionData.objects.filter(app_id=app_id, source_id=source_id, cycle_id=circle_id).exclude(state=9)
             for exception in exceptions:
                 result.append({
                     'id': exception.id,

@@ -149,11 +149,9 @@ class SeveralDBQuery(object):
                 )
         except Exception as e:
             logger.info('SeveralDBQuery >> __init__() >> 数据库连接失败: %s。' % e)
-            exit(0)
         else:
             if not self.connection:
                 logger.info('SeveralDBQuery >> __init__() >> 数据库未连接。')
-                exit(0)
 
     def fetch_one(self, fetch_sql):
         result = None
@@ -203,12 +201,9 @@ class Extract(object):
                                                  cycle_id=self.circle_id)
         except ProcessMonitor.DoesNotExist as e:
             logger.info('Extract >> __init__() >> %s' % e)
-            self.record_log('进程不存在。')
         else:
             if not self.pm:
                 logger.info('Extract >> supplement() >> 该进程不存在，取数进程启动失败。')
-                self.record_log('进程不存在。')
-                exit(0)
 
     def supplement(self):
         # 补取
@@ -313,7 +308,6 @@ class Extract(object):
                             self.record_exception_data(cot)
                 else:
                     logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
-                    self.record_log('指标{target}的storagetag为空。'.format(target=o_target.name))
 
     def supplement_exception_data(self):
         process_monitor = ProcessMonitor.objects.exclude(state='9')
@@ -409,7 +403,6 @@ class Extract(object):
                     source_connection = source_connection[0]
             except Exception as e:
                 logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
-                self.record_log('指标{target}对应的数据源配置认证信息错误。'.format(target=target.name))
             else:
                 try:
                     db_query = SeveralDBQuery(source_type_name, source_connection)
@@ -507,8 +500,6 @@ class Extract(object):
                             source_connection = source_connection[0]
                     except Exception as e:
                         logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
-                        self.record_log('指标{target}对应的数据源配置认证信息错误。'.format(target=target.name))
-                        exit(0)
 
                     db_query = SeveralDBQuery(source_type_name, source_connection)
                     result_list = db_query.fetch_all(source_content)
@@ -686,18 +677,6 @@ class Extract(object):
             exception_data.source_id = target.source_id
             exception_data.extract_error_time = datetime.datetime.now()
             exception_data.save()
-        except:
-            pass
-
-    def record_log(self, msg):
-        try:
-            log = LogInfo()
-            log.source_id = self.source_id
-            log.app_id = self.app_id
-            log.cycle_id = self.circle_id
-            log.create_time = datetime.datetime.now()
-            log.content = msg
-            log.save()
         except:
             pass
 
