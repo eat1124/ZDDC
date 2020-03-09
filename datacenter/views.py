@@ -710,11 +710,11 @@ def get_log_info(request):
             print(e)
         else:
             log_infos = LogInfo.objects.filter(
-                Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id))
+                Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id)).order_by('-create_time')
 
-            for log_info in log_infos:
+            for num, log_info in enumerate(log_infos):
                 result.append({
-                    'id': log_info.id,
+                    'id': num + 1,
                     'create_time': '{:%Y-%m-%d %H:%M:%S}'.format(
                         log_info.create_time) if log_info.create_time else '',
                     'content': log_info.content,
