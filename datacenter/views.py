@@ -3184,11 +3184,11 @@ def reporting_index(request, cycletype, funid):
                 days=-1))
             year = now.strftime("%Y")
             if now.month in (1, 2, 3, 4, 5, 6):
-                season = '第1半年度'
+                season = '1半年度'
                 yeardate = year + '-' + season
                 date = year + '-' + "06-30"
             if now.month in (7, 8, 9, 10, 11, 12):
-                season = '第2半年度'
+                season = '2半年度'
                 yeardate = year + '-' + season
                 date = year + '-' + "12-31"
         if cycletype == '14':
@@ -4025,7 +4025,7 @@ def getcalculatedata(target, date, guid):
     except:
         pass
 
-    calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(target_id=target.id)
+    calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(target_id=target.id).filter(datadate=date)
     if len(calculatedata) > 0:
         calculatedata = calculatedata[0]
     else:

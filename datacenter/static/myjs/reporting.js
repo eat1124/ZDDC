@@ -23,30 +23,29 @@ $(document).ready(function () {
                 },
 
                 done: function (value) {
-                    console.log(value, '888888888888')
                     var finaltime = '';
                     if (value){
                         value = value.split('-');
                         var year = value[0];
-                        var seasson = value[1];
-                        if (seasson == '第1季度'){
+                        var season = value[1];
+                        if (season == '第1季度'){
                             var timeend = '03-31';
-                            finaltime =  year + '-' + timeend
+                            finaltime =  year + '-' + timeend;
                         }
-                        if (seasson == '第2季度'){
+                        if (season == '第2季度'){
                             var timeend = '07-31';
                             finaltime =  year + '-' + timeend
                         }
-                        if (seasson == '第3季度'){
+                        if (season == '第3季度'){
                             var timeend = '10-31';
                             finaltime = year + '-' + timeend
                         }
-                        if (seasson == '第4季度'){
+                        if (season == '第4季度'){
                             var timeend = '12-31';
                             finaltime = year + '-' + timeend
                         }
                     }
-                    $('#reporting_date').val(finaltime)
+                    $('#reporting_date').val(finaltime);
                     var table1 = $('#sample_1').DataTable();
                     table1.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15").load();
                     var table2 = $('#sample_2').DataTable();
@@ -65,7 +64,6 @@ $(document).ready(function () {
                 mls.each(function (i, e) {
                     $(this).find("li").each(function (inx, ele) {
                         var cx = ele.innerHTML;
-                        console.log(cx)
                         if (inx < 4) {
                             ele.innerHTML = cx.replace(/月/g, "季度");
                         } else {
@@ -84,7 +82,7 @@ $(document).ready(function () {
             laydate.render({
                 elem: ohd,
                 type: 'month',
-                format: 'yyyy-第M半年度',
+                format: 'yyyy-M半年度',
                 range: sgl ? null : '~',
                 min: "1900-1-1",
                 max: "2999-12-31",
@@ -104,17 +102,18 @@ $(document).ready(function () {
                     if (value){
                         value = value.split('-');
                         var year = value[0];
-                        var seasson = value[1];
-                        if (seasson == '第1半年度'){
+                        var halfyear = value[1];
+
+                        if (halfyear == '1半年度'){
                             var timeend = '06-30';
                             finaltime = year + '-' + timeend
                         }
-                        if (seasson == '第2半年度'){
+                        if (halfyear == '2半年度'){
                             var timeend = '12-31';
                             finaltime = year + '-' + timeend
                         }
                     }
-                    $('#reporting_date').val(finaltime)
+                    $('#reporting_date').val(finaltime);
                     var table1 = $('#sample_1').DataTable();
                     table1.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15").load();
                     var table2 = $('#sample_2').DataTable();
@@ -133,9 +132,10 @@ $(document).ready(function () {
                 mls.each(function (i, e) {
                     $(this).find("li").each(function (inx, ele) {
                         var cx = ele.innerHTML;
-                         console.log(cx, 'wch')
                         if (inx < 2) {
-                            ele.innerHTML = cx.replace(/月/g, "半年度");
+                            cx = cx.replace(/月/g, "半年度");
+                            ele.innerHTML = cx.replace(/第/g, "");
+
                         } else {
                             ele.style.display = "none";
                         }
