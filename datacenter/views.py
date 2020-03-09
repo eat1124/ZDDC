@@ -3116,11 +3116,6 @@ def getreporting_date(date, cycletype):
         #     date = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
     if cycletype == "13":
         date = datetime.datetime.strptime(date, "%Y-%m-%d")
-        # month = (date.month - 1) - (date.month - 1) % 6 + 1
-        # if month == 7:
-        #     date = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-        # else:
-        #     date = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
 
     if cycletype == "14":
         date = datetime.datetime.strptime(date, "%Y")
@@ -3166,11 +3161,11 @@ def reporting_index(request, cycletype, funid):
             if now.month in (4, 5, 6):
                 season = '第2季度'
                 seasondate = year + '-' + season
-                date = year + '-' + "06-31"
+                date = year + '-' + "06-30"
             if now.month in (7, 8, 9):
                 season = '第3季度'
                 seasondate = year + '-' + season
-                date = year + '-' + "09-31"
+                date = year + '-' + "09-30"
             if now.month in (10, 11, 12):
                 season = '第4季度'
                 seasondate = year + '-' + season
@@ -3731,11 +3726,11 @@ def getcumulative(target, date, value):
             days=-1)
     if target.cycletype == "12":
         month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
-        lastg_date = datetime.datetime(date.year, month, 1)
+        newdate = datetime.datetime(date.year, month, 1)
         lastg_date = newdate + datetime.timedelta(days=-1)
     if target.cycletype == "13":
         month = (date.month - 1) - (date.month - 1) % 6 + 1  # 10
-        lastg_date = datetime.datetime(date.year, month, 1)
+        newdate = datetime.datetime(date.year, month, 1)
         lastg_date = newdate + datetime.timedelta(days=-1)
     if target.cycletype == "14":
         lastg_date = date.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(

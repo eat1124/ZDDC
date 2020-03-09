@@ -33,11 +33,11 @@ $(document).ready(function () {
                             finaltime =  year + '-' + timeend;
                         }
                         if (season == '第2季度'){
-                            var timeend = '07-31';
+                            var timeend = '06-30';
                             finaltime =  year + '-' + timeend
                         }
                         if (season == '第3季度'){
-                            var timeend = '10-31';
+                            var timeend = '9-30';
                             finaltime = year + '-' + timeend
                         }
                         if (season == '第4季度'){
