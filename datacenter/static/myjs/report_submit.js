@@ -1,4 +1,135 @@
 $(document).ready(function() {
+    function seasonFunction(){
+        renderSeasonDate(document.getElementById('season'), 1);
+        function renderSeasonDate(ohd, sgl) {
+            var ele = $(ohd);
+            laydate.render({
+                elem: ohd,
+                type: 'month',
+                format: 'yyyy-第M季度',
+                range: sgl ? null : '~',
+                min: "1900-1-1",
+                max: "2999-12-31",
+                btns: ['confirm'],
+                ready: function () {
+                    var hd = $("#layui-laydate" + ele.attr("lay-key"));
+                    if (hd.length > 0) {
+                        hd.click(function () {
+                            ren($(this));
+                        });
+                    }
+                    ren(hd);
+                },
+
+                done: function (value) {
+                    var finaltime = '';
+                    if (value){
+                        value = value.split('-');
+                        var year = value[0];
+                        var season = value[1];
+                        if (season == '第1季度'){
+                            var timeend = '03-31';
+                            finaltime =  year + '-' + timeend;
+                        }
+                        if (season == '第2季度'){
+                            var timeend = '06-30';
+                            finaltime =  year + '-' + timeend
+                        }
+                        if (season == '第3季度'){
+                            var timeend = '09-30';
+                            finaltime = year + '-' + timeend
+                        }
+                        if (season == '第4季度'){
+                            var timeend = '12-31';
+                            finaltime = year + '-' + timeend
+                        }
+                    }
+                    $('#reporting_date').val(finaltime);
+                    var table02 = $('#sample_1').DataTable();
+                    table02.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
+
+                }
+
+            });
+            var ren = function (thiz) {
+                var mls = thiz.find(".laydate-month-list");
+                mls.each(function (i, e) {
+                    $(this).find("li").each(function (inx, ele) {
+                        var cx = ele.innerHTML;
+                        if (inx < 4) {
+                            ele.innerHTML = cx.replace(/月/g, "季度").replace(/一/g, "第1").replace(/二/g, "第2").replace(/三/g, "第3").replace(/四/g, "第4");
+                        } else {
+                            ele.style.display = "none";
+                        }
+                    });
+                });
+            }
+        }
+    }
+
+    function yearFunction(){
+        renderYearDate(document.getElementById('year'), 1);
+        function renderYearDate(ohd, sgl) {
+            var ele = $(ohd);
+            laydate.render({
+                elem: ohd,
+                type: 'month',
+                format: 'yyyy-h半年',
+                range: sgl ? null : '~',
+                min: "1900-1-1",
+                max: "2999-12-31",
+                btns: [ 'confirm'],
+                ready: function () {
+                    var hd = $("#layui-laydate" + ele.attr("lay-key"));
+                    if (hd.length > 0) {
+                        hd.click(function () {
+                            ren($(this));
+                        });
+                    }
+                    ren(hd);
+                },
+
+                done: function (value) {
+                    var finaltime = '';
+                    if (value){
+                        value = value.split('-');
+                        var year = value[0];
+                        var halfyear = value[1];
+
+                        if (halfyear == '上半年'){
+                            var timeend = '06-30';
+                            finaltime = year + '-' + timeend
+                        }
+                        if (halfyear == '下半年'){
+                            var timeend = '12-31';
+                            finaltime = year + '-' + timeend
+                        }
+                    }
+                    $('#reporting_date').val(finaltime);
+                        var table02 = $('#sample_1').DataTable();
+                        table02.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
+
+                }
+
+            });
+            var ren = function (thiz) {
+                var mls = thiz.find(".laydate-month-list");
+                mls.each(function (i, e) {
+                    $(this).find("li").each(function (inx, ele) {
+                        var cx = ele.innerHTML;
+                        if (inx < 2) {
+                            cx = cx.replace(/月/g, "半年");
+                            ele.innerHTML = cx.replace(/一/g, "上").replace(/二/g, "下");
+
+                        } else {
+                            ele.style.display = "none";
+                        }
+                    });
+                });
+            }
+        }
+    }
+
     $('#sample_1').dataTable({
         "bAutoWidth": true,
         "bSort": false,
@@ -164,6 +295,9 @@ $(document).ready(function() {
         $('#reporting_date').val(temp_json_date[report_type]);
 
         if (report_type == "22") {
+            $('#year').hide();
+            $('#season').hide();
+            $('#reporting_date').show();
             $('#reporting_date').datetimepicker({
                 format: 'yyyy-mm-dd',
                 autoclose: true,
@@ -178,6 +312,9 @@ $(document).ready(function() {
             });
         }
         if (report_type == "23") {
+            $('#year').hide();
+            $('#season').hide();
+            $('#reporting_date').show();
             $('#reporting_date').datetimepicker({
                 format: 'yyyy-mm',
                 autoclose: true,
@@ -192,34 +329,21 @@ $(document).ready(function() {
             });
         }
         if (report_type == "24") {
-            $('#reporting_date').datetimepicker({
-                format: 'yyyy-mm',
-                autoclose: true,
-                startView: 3,
-                minView: 3,
-            });
-            $('#report_time').datetimepicker({
-                format: 'yyyy-mm',
-                autoclose: true,
-                startView: 3,
-                minView: 3,
-            });
+            seasonFunction();
+            $('#reporting_date').hide();
+            $('#year').hide();
+            $('#season').show();
         }
         if (report_type == "25") {
-            $('#reporting_date').datetimepicker({
-                format: 'yyyy-mm',
-                autoclose: true,
-                startView: 3,
-                minView: 3,
-            });
-            $('#report_time').datetimepicker({
-                format: 'yyyy-mm',
-                autoclose: true,
-                startView: 3,
-                minView: 3,
-            });
+            yearFunction();
+            $('#reporting_date').hide();
+            $('#season').hide();
+            $('#year').show();
         }
         if (report_type == "26") {
+            $('#year').hide();
+            $('#season').hide();
+            $('#reporting_date').show();
             $('#reporting_date').datetimepicker({
                 format: 'yyyy',
                 autoclose: true,
@@ -235,6 +359,7 @@ $(document).ready(function() {
         }
         var table01 = $('#sample_1').DataTable();
         table01.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
+
     });
 
     // 根据时间过滤报表
@@ -242,6 +367,7 @@ $(document).ready(function() {
         var table02 = $('#sample_1').DataTable();
 
         table02.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
+
     });
 
 
