@@ -3179,11 +3179,11 @@ def reporting_index(request, cycletype, funid):
                 days=-1))
             year = now.strftime("%Y")
             if now.month in (1, 2, 3, 4, 5, 6):
-                season = '1半年度'
+                season = '上半年'
                 yeardate = year + '-' + season
                 date = year + '-' + "06-30"
             if now.month in (7, 8, 9, 10, 11, 12):
-                season = '2半年度'
+                season = '下半年'
                 yeardate = year + '-' + season
                 date = year + '-' + "12-31"
         if cycletype == '14':
