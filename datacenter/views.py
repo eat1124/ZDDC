@@ -3109,11 +3109,6 @@ def getreporting_date(date, cycletype):
         date = datetime.datetime(year=year, month=month, day=b)  # 构造本月月末datetime
     if cycletype == "12":
         date = datetime.datetime.strptime(date, "%Y-%m-%d")
-        # month = (date.month - 1) - (date.month - 1) % 3 + 1
-        # if month == 10:
-        #     date = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-        # else:
-        #     date = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
     if cycletype == "13":
         date = datetime.datetime.strptime(date, "%Y-%m-%d")
 

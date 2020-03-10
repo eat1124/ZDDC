@@ -37,7 +37,7 @@ $(document).ready(function () {
                             finaltime =  year + '-' + timeend
                         }
                         if (season == '第3季度'){
-                            var timeend = '9-30';
+                            var timeend = '09-30';
                             finaltime = year + '-' + timeend
                         }
                         if (season == '第4季度'){
