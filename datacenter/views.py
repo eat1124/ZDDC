@@ -1310,6 +1310,13 @@ def app_save(request):
         app_code = request.POST.get("app_code", "")
         remark = request.POST.get("remark", "")
         sort = request.POST.get("sort", "")
+        work_data = []
+
+        try:
+            work_data = json.loads(request.POST.get("work_data", ""))
+        except:
+            pass
+
         try:
             id = int(id)
         except:
@@ -1325,6 +1332,38 @@ def app_save(request):
                 if remark.strip() == '':
                     result["res"] = '说明不能为空。'
                 else:
+                    def save_work(app):
+                        wd_list = []
+                        for wd in work_data:
+                            try:
+                                wd_id = int(wd[0])
+                            except:
+                                work = Work()
+                                work.app = app
+                                work.name = wd[1]
+                                work.code = wd[2]
+                                work.remark = wd[3]
+                                if wd[4]:
+                                    work.core = wd[4]
+                                if wd[5]:
+                                    work.sort = int(wd[5])
+                                work.save()
+                            else:
+                                wd_list.append(wd_id)
+                                try:
+                                    work = Work.objects.get(id=wd_id)
+                                    work.name = wd[1]
+                                    work.code = wd[2]
+                                    work.remark = wd[3]
+                                    if wd[4]:
+                                        work.core = wd[4]
+                                    if wd[5]:
+                                        work.sort = int(wd[5])
+                                    work.save()
+                                except:
+                                    pass
+                        app.work_set.exclude(id__in=wd_list).update(state='9')
+
                     if id == 0:
                         all_app = App.objects.filter(
                             code=app_code).exclude(state="9")
@@ -1337,6 +1376,7 @@ def app_save(request):
                             app_save.remark = remark
                             app_save.sort = int(sort) if sort else None
                             app_save.save()
+                            save_work(app_save)
                             result["res"] = "保存成功。"
                             result["data"] = app_save.id
                     else:
@@ -1350,9 +1390,9 @@ def app_save(request):
                                 app_save.name = app_name
                                 app_save.code = app_code
                                 app_save.remark = remark
-                                app_save.sort = int(
-                                    sort) if sort else None
+                                app_save.sort = int(sort) if sort else None
                                 app_save.save()
+                                save_work(app_save)
                                 result["res"] = "保存成功。"
                                 result["data"] = app_save.id
                             except Exception as e:
@@ -1396,12 +1436,22 @@ def app_data(request):
 
         all_app = App.objects.exclude(state="9").order_by("sort")
         for app in all_app:
+            # 应用对应的所有业务
+            works = app.work_set.exclude(state='9').order_by('sort')
+
+            work_list = []
+
+            for work in works:
+                tmp_list = [work.id, work.name, work.code, work.remark, work.core, work.sort]
+                work_list.append(tmp_list)
+
             result.append({
                 "id": app.id,
                 "name": app.name,
                 "code": app.code,
                 "remark": app.remark,
                 "sort": app.sort,
+                "works": json.dumps(work_list, ensure_ascii=False),
             })
 
         return JsonResponse({"data": result})
