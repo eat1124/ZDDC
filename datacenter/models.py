@@ -373,3 +373,20 @@ class LogInfo(models.Model):
     cycle = models.ForeignKey(Cycle, null=True, verbose_name='周期')
     create_time = models.DateTimeField('时间', null=True, blank=True)
     content = models.TextField('日志内容', null=True, blank=True)
+
+
+class Work(models.Model):
+    """
+    业务字表: 业务名称、业务编号、说明、排序、核心业务（是/否选项，只能有一个核心业务）
+    """
+    app = models.ForeignKey(App, null=True, verbose_name='应用')
+    name = models.CharField('业务名称', blank=True, default='', max_length=64)
+    code = models.CharField('业务编号', blank=True, default='', max_length=128)
+    remark = models.TextField('说明', blank=True, default='')
+    sort = models.IntegerField('排序', default=0)
+    core_choices = (
+        (1, '是'),
+        (0, '否')
+    )
+    core = models.IntegerField('是否核心业务', choices=core_choices, default=0)
+    state = models.CharField('状态', blank=True, default='', max_length=20)
