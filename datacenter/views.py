@@ -3888,7 +3888,7 @@ def getcalculatedata(target, date, guid):
 
                     tableyear = str(date.year)
                     queryset = getmodels("Entrydata", tableyear).objects
-                    if cond == "LYS" or cond == "LYE" or ((cond == "LHS" or cond == "LHS") and int(date.month) < 7):
+                    if cond == "LYS" or cond == "LYE" or ((cond == "LSS" or cond == "LSE") and int(date.month) < 4) or ((cond == "LHS" or cond == "LHE") and int(date.month) < 7) or ((cond == "LMS" or cond == "LME") and int(date.month) < 2):
                         tableyear = str(int(date.year) - 1)
                     operationtype = membertarget.operationtype
                     if operationtype == "1":
@@ -3993,72 +3993,63 @@ def getcalculatedata(target, date, guid):
 
                     new_date = ""
                     if cond == "MAVG":
-                        year = date.year
-                        month = date.month
-                        a, b = calendar.monthrange(year, month)
-                        me_newdate = datetime.datetime(year=year, month=month, day=b)
                         ms_newdate = date.replace(day=1)
+                        me_newdate = date
                         new_date = (ms_newdate, me_newdate)
 
                     if cond == "SAVG":
                         month = (date.month - 1) - (date.month - 1) % 3 + 1
                         ss_newdate = datetime.datetime(date.year, month, 1)
-                        if month == 10:
-                            se_newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-                        else:
-                            se_newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
+                        se_newdate = date
                         new_date = (ss_newdate, se_newdate)
 
                     if cond == "HAVG":
                         month = (date.month - 1) - (date.month - 1) % 6 + 1
                         hs_newdate = datetime.datetime(date.year, month, 1)
-                        if month == 7:
-                            he_newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-                        else:
-                            he_newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
+                        he_newdate = date
                         new_date = (hs_newdate, he_newdate)
 
                     if cond == "YAVG":
                         ys_newdate = date.replace(month=1, day=1)
-                        ye_newdate = date.replace(month=12, day=31)
+                        ye_newdate = date
                         new_date = (ys_newdate, ye_newdate)
-
+                    print(new_date)
                     if condtions:
                         query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9")
                     if new_date:
                         query_res = queryset.filter(datadate__range=new_date).filter(target=membertarget).exclude(
                             state="9")
-
                     if len(query_res) <= 0:
                         curvalue = 0
                     else:
                         value = 0
                         if col == 'd':
                             if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                value = query_res.aggregate(Avg('curvalue'))[0].curvalue
+                                value = query_res.aggregate(Avg('curvalue'))["curvalue__avg"]
                             else:
                                 value = query_res[0].curvalue
                         if col == 'm':
                             if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                value = query_res.aggregate(Avg('cumulativemonth'))[0].cumulativemonth
+                                value = query_res.aggregate(Avg('cumulativemonth'))["cumulativemonth__avg"]
                             else:
                                 value = query_res[0].cumulativemonth
                         if col == 's':
                             if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                value = query_res.aggregate(Avg('cumulativequarter'))[0].cumulativequarter
+                                value = query_res.aggregate(Avg('cumulativequarter'))["cumulativequarter__avg"]
                             else:
                                 value = query_res[0].cumulativequarter
                         if col == 'h':
                             if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                value = query_res.aggregate(Avg('cumulativehalfyear'))[0].cumulativehalfyear
+                                value = query_res.aggregate(Avg('cumulativehalfyear'))["cumulativehalfyear__avg"]
                             else:
                                 value = query_res[0].cumulativehalfyear
                         if col == 'y':
                             if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                value = query_res.aggregate(Avg('cumulativeyear'))[0].cumulativeyear
+                                value = query_res.aggregate(Avg('cumulativeyear'))["cumulativeyear__avg"]
                             else:
                                 value = query_res[0].cumulativeyear
-                        formula = formula.replace("<" + th + ">", str(value));
+
+                        formula = formula.replace("<" + th + ">", str(value))
 
     try:
         curvalue = eval(formula)
@@ -4147,8 +4138,7 @@ def reporting_formulacalculate(request):
                             membertarget = membertarget[0]
                             tableyear = str(date.year)
                             queryset = getmodels("Entrydata", tableyear).objects
-                            if cond == "LYS" or cond == "LYE" or (
-                                    (cond == "LHS" or cond == "LHS") and int(date.month) < 7):
+                            if cond == "LYS" or cond == "LYE" or ((cond == "LSS" or cond == "LSE") and int(date.month) < 4) or ((cond == "LHS" or cond == "LHE") and int(date.month) < 7) or ((cond == "LMS" or cond == "LME") and int(date.month) < 2):
                                 tableyear = str(int(date.year) - 1)
                             operationtype = membertarget.operationtype
                             if operationtype == "1":
@@ -4253,36 +4243,25 @@ def reporting_formulacalculate(request):
 
                             new_date = ""
                             if cond == "MAVG":
-                                year = date.year
-                                month = date.month
-                                a, b = calendar.monthrange(year, month)
-                                me_newdate = datetime.datetime(year=year, month=month, day=b)
                                 ms_newdate = date.replace(day=1)
+                                me_newdate = date
                                 new_date = (ms_newdate, me_newdate)
 
                             if cond == "SAVG":
                                 month = (date.month - 1) - (date.month - 1) % 3 + 1
                                 ss_newdate = datetime.datetime(date.year, month, 1)
-                                if month == 10:
-                                    se_newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-                                else:
-                                    se_newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(
-                                        days=-1)
+                                se_newdate = date
                                 new_date = (ss_newdate, se_newdate)
 
                             if cond == "HAVG":
                                 month = (date.month - 1) - (date.month - 1) % 6 + 1
                                 hs_newdate = datetime.datetime(date.year, month, 1)
-                                if month == 7:
-                                    he_newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-                                else:
-                                    he_newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(
-                                        days=-1)
+                                he_newdate = date
                                 new_date = (hs_newdate, he_newdate)
 
                             if cond == "YAVG":
                                 ys_newdate = date.replace(month=1, day=1)
-                                ye_newdate = date.replace(month=12, day=31)
+                                ye_newdate = date
                                 new_date = (ys_newdate, ye_newdate)
 
                             if condtions:
@@ -4297,7 +4276,7 @@ def reporting_formulacalculate(request):
                                 value = "0"
                                 if col == 'd':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                        value = str(round(query_res.aggregate(Avg('curvalue'))[0].curvalue,
+                                        value = str(round(query_res.aggregate(Avg('curvalue'))["curvalue__avg"],
                                                           query_res[0].target.digit))
                                     else:
                                         value = str(round(query_res[0].curvalue, query_res[0].target.digit))
@@ -4305,28 +4284,28 @@ def reporting_formulacalculate(request):
                                 if col == 'm':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                         value = str(
-                                            round(query_res.aggregate(Avg('cumulativemonth'))[0].cumulativemonth,
+                                            round(query_res.aggregate(Avg('cumulativemonth'))['cumulativemonth__avg'],
                                                   query_res[0].target.digit))
                                     else:
                                         value = str(round(query_res[0].cumulativemonth, query_res[0].target.digit))
                                 if col == 's':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                         value = str(
-                                            round(query_res.aggregate(Avg('cumulativequarter'))[0].cumulativequarter,
+                                            round(query_res.aggregate(Avg('cumulativequarter'))['cumulativequarter__avg'],
                                                   query_res[0].target.digit))
                                     else:
                                         value = str(round(query_res[0].cumulativequarter, query_res[0].target.digit))
                                 if col == 'h':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                         value = str(
-                                            round(query_res.aggregate(Avg('cumulativehalfyear'))[0].cumulativehalfyear,
+                                            round(query_res.aggregate(Avg('cumulativehalfyear'))['cumulativehalfyear__avg'],
                                                   query_res[0].target.digit))
                                     else:
                                         value = str(round(query_res[0].cumulativehalfyear, query_res[0].target.digit))
                                 if col == 'y':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                         value = str(
-                                            round(query_res.aggregate(Avg('cumulativeyear'))[0].cumulativeyear,
+                                            round(query_res.aggregate(Avg('cumulativeyear'))['cumulativeyear__avg'],
                                                   query_res[0].target.digit))
                                     else:
                                         value = str(round(query_res[0].cumulativeyear, query_res[0].target.digit))
