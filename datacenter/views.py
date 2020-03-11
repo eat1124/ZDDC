@@ -3109,11 +3109,6 @@ def getreporting_date(date, cycletype):
         date = datetime.datetime(year=year, month=month, day=b)  # 构造本月月末datetime
     if cycletype == "12":
         date = datetime.datetime.strptime(date, "%Y-%m-%d")
-        # month = (date.month - 1) - (date.month - 1) % 3 + 1
-        # if month == 10:
-        #     date = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-        # else:
-        #     date = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
     if cycletype == "13":
         date = datetime.datetime.strptime(date, "%Y-%m-%d")
 
@@ -3179,11 +3174,11 @@ def reporting_index(request, cycletype, funid):
                 days=-1))
             year = now.strftime("%Y")
             if now.month in (1, 2, 3, 4, 5, 6):
-                season = '1半年度'
+                season = '上半年'
                 yeardate = year + '-' + season
                 date = year + '-' + "06-30"
             if now.month in (7, 8, 9, 10, 11, 12):
-                season = '2半年度'
+                season = '下半年'
                 yeardate = year + '-' + season
                 date = year + '-' + "12-31"
         if cycletype == '14':
@@ -4655,22 +4650,54 @@ def report_submit_index(request, funid):
             days=-1)
         date2 = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
             days=-1)).replace(day=1)
-        date3 = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(day=1)
-        date4 = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(day=1)
-        date5 = (datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0,
-                                                 microsecond=0) + datetime.timedelta(
-            days=-1)).replace(month=1, day=1)
+
+        date3 = ""
+        seasondate = ""
+        now = datetime.datetime.now()
+        month = (now.month - 1) - (now.month - 1) % 3 + 1
+        now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1))
+        year = now.strftime("%Y")
+        if now.month in (1, 2, 3):
+            season = '第1季度'
+            seasondate = year + '-' + season
+            date3 = year + '-' + "03-31"
+        if now.month in (4, 5, 6):
+            season = '第2季度'
+            seasondate = year + '-' + season
+            date3 = year + '-' + "06-30"
+        if now.month in (7, 8, 9):
+            season = '第3季度'
+            seasondate = year + '-' + season
+            date3 = year + '-' + "09-30"
+        if now.month in (10, 11, 12):
+            season = '第4季度'
+            seasondate = year + '-' + season
+            date3 = year + '-' + "12-31"
+
+        date4 = ""
+        yeardate = ""
+        now = datetime.datetime.now()
+        month = (now.month - 1) - (now.month - 1) % 6 + 1
+        now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1))
+        year = now.strftime("%Y")
+        if now.month in (1, 2, 3, 4, 5, 6):
+            season = '上半年'
+            yeardate = year + '-' + season
+            date4 = year + '-' + "06-30"
+        if now.month in (7, 8, 9, 10, 11, 12):
+            season = '下半年'
+            yeardate = year + '-' + season
+            date4 = year + '-' + "12-31"
+
+        date5 = (datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0,microsecond=0) + datetime.timedelta(days=-1)).replace(month=1, day=1)
 
         temp_dict = {
             "22": date1.strftime("%Y-%m-%d"),
             "23": date2.strftime("%Y-%m"),
-            "24": date3.strftime("%Y-%m"),
-            "25": date4.strftime("%Y-%m"),
+            "24": date3,
+            "25": date4,
             "26": date5.strftime("%Y"),
         }
-
         return render(request, 'report_submit.html',
                       {'username': request.user.userinfo.fullname,
                        "report_type_list": report_type_list,
@@ -4679,6 +4706,8 @@ def report_submit_index(request, funid):
                        "id": id,
                        "date": json.dumps(temp_dict),
                        "dateday": date1.strftime("%Y-%m-%d"),
+                       "seasondate": seasondate,
+                       "yeardate": yeardate,
                        "adminapp": adminapp,
                        "funid": funid,
                        "pagefuns": getpagefuns(funid)})
@@ -4697,8 +4726,12 @@ def report_submit_data(request):
         if search_date:
             if search_report_type == "22":
                 search_date = datetime.datetime.strptime(search_date, "%Y-%m-%d")
-            elif search_report_type in ["23", "24", "25"]:
+            elif search_report_type == "23":
                 search_date = datetime.datetime.strptime(search_date, "%Y-%m")
+            elif search_report_type == "24":
+                search_date = search_date
+            elif search_report_type == "25":
+                search_date = search_date
             elif search_report_type == "26":
                 search_date = datetime.datetime.strptime(
                     datetime.datetime.strptime(search_date, "%Y").strftime("%Y-%m-%d"), "%Y-%m-%d")
@@ -4746,10 +4779,10 @@ def report_submit_data(request):
                 if c_report_time:
                     if report_type == "年报":
                         report_time = c_report_time.strftime('%Y')
-                    if report_type in ["月报", "半年报", "季报"]:
-                        report_time = c_report_time.strftime('%Y-%m')
-                    if report_type == "日报":
+                    if report_type in ["半年报", "季报", "日报"]:
                         report_time = c_report_time.strftime('%Y-%m-%d')
+                    if report_type == "月报":
+                        report_time = c_report_time.strftime('%Y-%m')
                 c_report_info_list = []
                 current_report_submit_info_set = report_submit_1[0].reportsubmitinfo_set.exclude(state="9")
                 for report_submit_info in current_report_submit_info_set:
@@ -4767,10 +4800,10 @@ def report_submit_data(request):
                 if c_report_time:
                     if report_type == "年报":
                         report_time = c_report_time.strftime('%Y')
-                    if report_type in ["月报", "半年报", "季报"]:
-                        report_time = c_report_time.strftime('%Y-%m')
-                    if report_type == "日报":
+                    if report_type in ["半年报", "季报", "日报"]:
                         report_time = c_report_time.strftime('%Y-%m-%d')
+                    if report_type == "月报":
+                        report_time = c_report_time.strftime('%Y-%m')
                 c_report_info_list = []
                 current_report_submit_info_set = report_submit_0[0].reportsubmitinfo_set.exclude(state="9")
                 for report_submit_info in current_report_submit_info_set:

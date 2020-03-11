@@ -37,7 +37,7 @@ $(document).ready(function () {
                             finaltime =  year + '-' + timeend
                         }
                         if (season == '第3季度'){
-                            var timeend = '9-30';
+                            var timeend = '09-30';
                             finaltime = year + '-' + timeend
                         }
                         if (season == '第4季度'){
@@ -65,7 +65,7 @@ $(document).ready(function () {
                     $(this).find("li").each(function (inx, ele) {
                         var cx = ele.innerHTML;
                         if (inx < 4) {
-                            ele.innerHTML = cx.replace(/月/g, "季度");
+                            ele.innerHTML = cx.replace(/月/g, "季度").replace(/一/g, "第1").replace(/二/g, "第2").replace(/三/g, "第3").replace(/四/g, "第4");
                         } else {
                             ele.style.display = "none";
                         }
@@ -82,7 +82,7 @@ $(document).ready(function () {
             laydate.render({
                 elem: ohd,
                 type: 'month',
-                format: 'yyyy-M半年度',
+                format: 'yyyy-h半年',
                 range: sgl ? null : '~',
                 min: "1900-1-1",
                 max: "2999-12-31",
@@ -104,11 +104,11 @@ $(document).ready(function () {
                         var year = value[0];
                         var halfyear = value[1];
 
-                        if (halfyear == '1半年度'){
+                        if (halfyear == '上半年'){
                             var timeend = '06-30';
                             finaltime = year + '-' + timeend
                         }
-                        if (halfyear == '2半年度'){
+                        if (halfyear == '下半年'){
                             var timeend = '12-31';
                             finaltime = year + '-' + timeend
                         }
@@ -133,8 +133,8 @@ $(document).ready(function () {
                     $(this).find("li").each(function (inx, ele) {
                         var cx = ele.innerHTML;
                         if (inx < 2) {
-                            cx = cx.replace(/月/g, "半年度");
-                            ele.innerHTML = cx.replace(/第/g, "");
+                            cx = cx.replace(/月/g, "半年");
+                            ele.innerHTML = cx.replace(/一/g, "上").replace(/二/g, "下");
 
                         } else {
                             ele.style.display = "none";
