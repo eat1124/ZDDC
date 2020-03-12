@@ -384,9 +384,5 @@ class Work(models.Model):
     code = models.CharField('业务编号', blank=True, default='', max_length=128)
     remark = models.TextField('说明', blank=True, default='')
     sort = models.IntegerField('排序', default=0)
-    core_choices = (
-        (1, '是'),
-        (0, '否')
-    )
-    core = models.IntegerField('是否核心业务', choices=core_choices, default=0)
+    core = models.CharField('是否核心业务', blank=True, default='否', max_length=20)
     state = models.CharField('状态', blank=True, default='', max_length=20)

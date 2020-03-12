@@ -70,8 +70,6 @@ $(document).ready(function () {
         $("#remark").val(data.remark);
         $("#sort").val(data.sort);
         work_data = JSON.parse(data.works);
-        console.log(typeof (work_data))
-        console.log(work_data)
         loadWorkData();
     });
 
@@ -81,14 +79,25 @@ $(document).ready(function () {
         $("#app_code").val("");
         $("#remark").val("");
         $("#sort").val("");
+
     });
 
     $('#save').click(function () {
         var table = $('#sample_1').DataTable();
         var table2 = $('#sample_2').DataTable();
 
-        var work_data = JSON.stringify(table2.data().toArray());
-
+        var table2_list = [];
+        table2.rows().eq(0).each(function (index) {
+            var row = table2.row(index).node();
+            var work_id = $(row).find('td').eq(0).text().trim();
+            var name = $(row).find('td').eq(1).text().trim();
+            var code = $(row).find('td').eq(2).text().trim();
+            var remark = $(row).find('td').eq(3).text().trim();
+            var core = $(row).find('td').eq(4).text().trim();
+            var sort = $(row).find('td').eq(5).text().trim();
+            table2_list.push([work_id, name, code, remark, core, sort])
+        });
+        var work_data = JSON.stringify(table2_list);
         $.ajax({
             type: "POST",
             dataType: 'json',
@@ -164,26 +173,39 @@ $(document).ready(function () {
                 completed = true;
             }
         });
-        $('#sample_2 tbody').on('click', 'button#del_work', function () {
-            if (confirm("确定要删除该条数据？")) {
-                var table = $('#sample_2').DataTable();
-                table.row($(this).parents('tr')).remove().draw();
-            }
-        });
-        $('#sample_2 tbody').on('click', 'button#edit_work', function () {
-            var table = $('#sample_2').DataTable();
-            var data = table.row($(this).parents('tr')).data();
-            $("#work_id").val(data[0]);
-            $("#work_name").val(data[1]);
-            $("#work_code").val(data[2]);
-            $("#work_remark").val(data[3]);
-            $("#core_work").val(data[4]);
-            $("#work_sort").val(data[5]);
-        });
     }
 
+    $('#sample_2 tbody').on('click', 'button#del_work', function () {
+        if (confirm("确定要删除该条数据？")) {
+            var table = $('#sample_2').DataTable();
+            table.row($(this).parents('tr')).remove().draw();
+        }
+    });
+    $('#sample_2 tbody').on('click', 'button#edit_work', function () {
+        var table = $('#sample_2').DataTable();
+        var dataNode = table.row($(this).parents('tr'));
+        var data = dataNode.data();
+
+        table.rows().eq(0).each(function (index) {
+            var row = table.row(index).node();
+            if (index == dataNode.index()) {
+                var tdNodes = $(row).find('td');
+                $("#work_id").val(tdNodes.eq(0).text());
+                $("#work_name").val(tdNodes.eq(1).text());
+                $("#work_code").val(tdNodes.eq(2).text());
+                $("#work_remark").val(tdNodes.eq(3).text());
+                $("#core_work").val(tdNodes.eq(4).text());
+                $("#work_sort").val(tdNodes.eq(5).text());
+                return false;
+            }
+        });
+
+        // 写入修改的是第几行
+        $('#edit_row').val(dataNode.index())
+    });
+
     $('#static').on('show.bs.modal', function () {
-        if ($('#work_id') == '0') {
+        if ($('#id').val() == '0') {
             work_data = [];
         }
         loadWorkData();
@@ -194,7 +216,7 @@ $(document).ready(function () {
         $("#work_name").val("");
         $("#work_code").val("");
         $("#work_remark").val("");
-        $("#core_work").val("");
+        $("#core_work").val("否");
         $("#work_sort").val("");
     });
 
@@ -215,9 +237,9 @@ $(document).ready(function () {
                     var name_duplicated = false;
                     table.rows().eq(0).each(function (index) {
                         var row = table.row(index).node();
-                        if (name == $(row).children().eq(1).text().trim()) {
+                        if (name == $(row).find('td').eq(1).text().trim()) {
                             name_duplicated = true;
-                            return;
+                            return false;
                         }
                     });
 
@@ -225,9 +247,9 @@ $(document).ready(function () {
                         var code_duplicated = false;
                         table.rows().eq(0).each(function (index) {
                             var row = table.row(index).node();
-                            if (code == $(row).children().eq(2).text().trim()) {
+                            if (code == $(row).find('td').eq(2).text().trim()) {
                                 code_duplicated = true;
-                                return;
+                                return false;
                             }
                         });
                         if (!code_duplicated) {
@@ -236,7 +258,7 @@ $(document).ready(function () {
 
                             table.rows().eq(0).each(function (index) {
                                 var row = table.row(index).node();
-                                if ($(row).children().eq(0).text().trim() == '暂无') {
+                                if ($(row).find('td').eq(0).text().trim() == '暂无') {
                                     $(row).css('color', 'red');
                                 }
                             });
@@ -248,10 +270,50 @@ $(document).ready(function () {
                         alert('业务名称已存在。')
                     }
                 } else {
-                    // 修改时，直接修改当前行
-                    // ...
+                    var name_duplicated2 = false;
+                    table.rows().eq(0).each(function (index) {
+                        var row = table.row(index).node();
+                        if (name == $(row).find('td').eq(1).text().trim()) {
+                            // 除本身外
+                            if (!index == $('#edit_row').val()) {
+                                name_duplicated2 = true;
+                                return false;
+                            }
+                        }
+                    });
+                    if (!name_duplicated2) {
+                        var code_duplicated2 = false;
+                        table.rows().eq(0).each(function (index) {
+                            var row = table.row(index).node();
+                            if (code == $(row).find('td').eq(2).text().trim()) {
+                                if (!index == $('#edit_row').val()) {
+                                    code_duplicated2 = true;
+                                    return false;
+                                }
+                            }
+                        });
+                        if (!code_duplicated2) {
+                            // 修改时，直接修改当前行，除本身外不得重复
+                            table.rows().eq(0).each(function (index) {
+                                if (index == $('#edit_row').val()) {
+                                    var tdNodes = $(table.row(index).node()).find('td');
+                                    tdNodes.eq(0).text(work_id);
+                                    tdNodes.eq(1).text(name);
+                                    tdNodes.eq(2).text(code);
+                                    tdNodes.eq(3).text(remark);
+                                    tdNodes.eq(4).text(core_work);
+                                    tdNodes.eq(5).text(sort);
+                                    $('#static1').modal('hide');
+                                }
+                            });
+                            $('#static1').modal('hide');
+                        } else {
+                            alert('业务编号已存在。')
+                        }
+                    } else {
+                        alert('业务名称已存在。')
+                    }
                 }
-
             } else {
                 alert('业务编号未填写。')
             }

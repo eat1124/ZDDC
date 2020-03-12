@@ -1316,7 +1316,7 @@ def app_save(request):
             work_data = json.loads(request.POST.get("work_data", ""))
         except:
             pass
-
+        print(work_data)
         try:
             id = int(id)
         except:
@@ -1332,26 +1332,17 @@ def app_save(request):
                 if remark.strip() == '':
                     result["res"] = '说明不能为空。'
                 else:
-                    def save_work(app):
-                        wd_list = []
-                        for wd in work_data:
-                            try:
-                                wd_id = int(wd[0])
-                            except:
-                                work = Work()
-                                work.app = app
-                                work.name = wd[1]
-                                work.code = wd[2]
-                                work.remark = wd[3]
-                                if wd[4]:
-                                    work.core = wd[4]
-                                if wd[5]:
-                                    work.sort = int(wd[5])
-                                work.save()
-                            else:
-                                wd_list.append(wd_id)
+                    if not work_data:
+                        result["res"] = '至少配置一个业务。'
+                    else:
+                        def save_work(app):
+                            wd_list = []
+                            for wd in work_data:
                                 try:
-                                    work = Work.objects.get(id=wd_id)
+                                    wd_id = int(wd[0])
+                                except:
+                                    work = Work()
+                                    work.app = app
                                     work.name = wd[1]
                                     work.code = wd[2]
                                     work.remark = wd[3]
@@ -1360,33 +1351,30 @@ def app_save(request):
                                     if wd[5]:
                                         work.sort = int(wd[5])
                                     work.save()
-                                except:
-                                    pass
-                        app.work_set.exclude(id__in=wd_list).update(state='9')
+                                    wd_list.append(work.id)
+                                else:
+                                    wd_list.append(wd_id)
+                                    try:
+                                        work = Work.objects.get(id=wd_id)
+                                        work.name = wd[1]
+                                        work.code = wd[2]
+                                        work.remark = wd[3]
+                                        if wd[4]:
+                                            work.core = wd[4]
+                                        if wd[5]:
+                                            work.sort = int(wd[5])
+                                        work.save()
+                                    except:
+                                        pass
+                            app.work_set.exclude(id__in=wd_list).update(state='9')
 
-                    if id == 0:
-                        all_app = App.objects.filter(
-                            code=app_code).exclude(state="9")
-                        if (len(all_app) > 0):
-                            result["res"] = '存储代码:' + app_code + '已存在。'
-                        else:
-                            app_save = App()
-                            app_save.name = app_name
-                            app_save.code = app_code
-                            app_save.remark = remark
-                            app_save.sort = int(sort) if sort else None
-                            app_save.save()
-                            save_work(app_save)
-                            result["res"] = "保存成功。"
-                            result["data"] = app_save.id
-                    else:
-                        all_app = App.objects.filter(code=app_code).exclude(
-                            id=id).exclude(state="9")
-                        if (len(all_app) > 0):
-                            result["res"] = '存储代码:' + app_code + '已存在。'
-                        else:
-                            try:
-                                app_save = App.objects.get(id=id)
+                        if id == 0:
+                            all_app = App.objects.filter(
+                                code=app_code).exclude(state="9")
+                            if (len(all_app) > 0):
+                                result["res"] = '存储代码:' + app_code + '已存在。'
+                            else:
+                                app_save = App()
                                 app_save.name = app_name
                                 app_save.code = app_code
                                 app_save.remark = remark
@@ -1395,9 +1383,25 @@ def app_save(request):
                                 save_work(app_save)
                                 result["res"] = "保存成功。"
                                 result["data"] = app_save.id
-                            except Exception as e:
-                                print(e)
-                                result["res"] = "修改失败。"
+                        else:
+                            all_app = App.objects.filter(code=app_code).exclude(
+                                id=id).exclude(state="9")
+                            if (len(all_app) > 0):
+                                result["res"] = '存储代码:' + app_code + '已存在。'
+                            else:
+                                try:
+                                    app_save = App.objects.get(id=id)
+                                    app_save.name = app_name
+                                    app_save.code = app_code
+                                    app_save.remark = remark
+                                    app_save.sort = int(sort) if sort else None
+                                    app_save.save()
+                                    save_work(app_save)
+                                    result["res"] = "保存成功。"
+                                    result["data"] = app_save.id
+                                except Exception as e:
+                                    print(e)
+                                    result["res"] = "修改失败。"
         return JsonResponse(result)
 
 
