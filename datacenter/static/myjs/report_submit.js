@@ -343,7 +343,7 @@ $(document).ready(function() {
                 finaltime = year + '-' + timeend
             }
             if (month == '09'){
-                var timeend = '第三季度';
+                var timeend = '第3季度';
                 finaltime = year + '-' + timeend
             }
             if (month == '06'){
