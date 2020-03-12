@@ -9,6 +9,7 @@ $(document).ready(function () {
             {"data": "name"},
             {"data": "code"},
             {"data": "remark"},
+            {'data': "works"},
             {"data": "sort"},
             {"data": null}
         ],
@@ -18,6 +19,19 @@ $(document).ready(function () {
             "data": null,
             "width": "100px",
             "defaultContent": "<button  id='edit' title='编辑' data-toggle='modal'  data-target='#static'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button><button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>"
+        }, {
+            "targets": -3,
+            "mRender": function (data, type, full) {
+                var work_data = JSON.parse(data);
+                var pre_work = '';
+                for (var i = 0; i < work_data.length; i++) {
+                    pre_work += work_data[i][1] + '，';
+                }
+                if (pre_work.endsWith('，')) {
+                    pre_work = pre_work.slice(0, -1)
+                }
+                return pre_work
+            }
         }],
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",
