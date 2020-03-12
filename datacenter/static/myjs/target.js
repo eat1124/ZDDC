@@ -504,7 +504,7 @@ $(document).ready(function () {
                     }
                     if ($("#calculate_cycletype").val() == '月' && full.cycletype_name == '月'){
                         return "<select style='width:100px'><option value='ME'>月末</option><option value='LME'>上月末</option>" +
-                            "<option value='LSE'>上季末</option><option value='HS'>半年初</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
                             "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
 
                     }

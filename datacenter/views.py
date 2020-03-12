@@ -4013,7 +4013,7 @@ def getcalculatedata(target, date, guid):
                         ys_newdate = date.replace(month=1, day=1)
                         ye_newdate = date
                         new_date = (ys_newdate, ye_newdate)
-                    print(new_date)
+
                     if condtions:
                         query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9")
                     if new_date:
