@@ -253,16 +253,29 @@ $(document).ready(function () {
                             }
                         });
                         if (!code_duplicated) {
-                            var load_list = ['暂无', name, code, remark, core_work, sort];
-                            table.row.add(load_list).draw();
-
+                            // 核心业务只许有一个
+                            var core_unique = false;
                             table.rows().eq(0).each(function (index) {
                                 var row = table.row(index).node();
-                                if ($(row).find('td').eq(0).text().trim() == '暂无') {
-                                    $(row).css('color', 'red');
+                                if (core_work == $(row).find('td').eq(4).text().trim() && core_work == '是') {
+                                    core_unique = true;
+                                    return false;
                                 }
                             });
-                            $('#static1').modal('hide');
+                            if (!core_unique) {
+                                var load_list = ['暂无', name, code, remark, core_work, sort];
+                                table.row.add(load_list).draw();
+
+                                table.rows().eq(0).each(function (index) {
+                                    var row = table.row(index).node();
+                                    if ($(row).find('td').eq(0).text().trim() == '暂无') {
+                                        $(row).css('color', 'red');
+                                    }
+                                });
+                                $('#static1').modal('hide');
+                            } else {
+                                alert('核心业务仅可设置一个。')
+                            }
                         } else {
                             alert('业务编号已存在。')
                         }
@@ -293,20 +306,35 @@ $(document).ready(function () {
                             }
                         });
                         if (!code_duplicated2) {
-                            // 修改时，直接修改当前行，除本身外不得重复
+                            // 核心业务只许有一个
+                            var core_unique2 = false;
                             table.rows().eq(0).each(function (index) {
-                                if (index == $('#edit_row').val()) {
-                                    var tdNodes = $(table.row(index).node()).find('td');
-                                    tdNodes.eq(0).text(work_id);
-                                    tdNodes.eq(1).text(name);
-                                    tdNodes.eq(2).text(code);
-                                    tdNodes.eq(3).text(remark);
-                                    tdNodes.eq(4).text(core_work);
-                                    tdNodes.eq(5).text(sort);
-                                    $('#static1').modal('hide');
+                                var row = table.row(index).node();
+                                if (core_work == $(row).find('td').eq(4).text().trim() && core_work == '是') {
+                                    if (!index == $('#edit_row').val()) {
+                                        core_unique2 = true;
+                                        return false;
+                                    }
                                 }
                             });
-                            $('#static1').modal('hide');
+                            if (!core_unique2) {
+                                // 修改时，直接修改当前行，除本身外不得重复
+                                table.rows().eq(0).each(function (index) {
+                                    if (index == $('#edit_row').val()) {
+                                        var tdNodes = $(table.row(index).node()).find('td');
+                                        tdNodes.eq(0).text(work_id);
+                                        tdNodes.eq(1).text(name);
+                                        tdNodes.eq(2).text(code);
+                                        tdNodes.eq(3).text(remark);
+                                        tdNodes.eq(4).text(core_work);
+                                        tdNodes.eq(5).text(sort);
+                                        $('#static1').modal('hide');
+                                    }
+                                });
+                                $('#static1').modal('hide');
+                            } else {
+                                alert('核心业务仅可设置一个。')
+                            }
                         } else {
                             alert('业务编号已存在。')
                         }
