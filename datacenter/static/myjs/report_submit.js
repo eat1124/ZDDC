@@ -332,12 +332,50 @@ $(document).ready(function() {
             seasonFunction();
             $('#reporting_date').hide();
             $('#year').hide();
+
+            var reporting_date = $('#reporting_date').val();
+            var value = reporting_date.split('-');
+            var year = value[0];
+            var month = value[1];
+            var finaltime = '';
+            if (month == '12'){
+                var timeend = '第4季度';
+                finaltime = year + '-' + timeend
+            }
+            if (month == '09'){
+                var timeend = '第三季度';
+                finaltime = year + '-' + timeend
+            }
+            if (month == '06'){
+                var timeend = '第2季度';
+                finaltime = year + '-' + timeend
+            }
+            if (month == '03'){
+                var timeend = '第1季度';
+                finaltime = year + '-' + timeend
+            }
+            $('#season').val(finaltime);
             $('#season').show();
         }
         if (report_type == "25") {
             yearFunction();
             $('#reporting_date').hide();
             $('#season').hide();
+
+            var reporting_date = $('#reporting_date').val();
+            var value = reporting_date.split('-');
+            var year = value[0];
+            var month = value[1];
+            var finaltime = '';
+            if (month == '12'){
+                var timeend = '下半年';
+                finaltime = year + '-' + timeend
+            }
+            if (month == '06'){
+                var timeend = '上半年';
+                finaltime = year + '-' + timeend
+            }
+            $('#year').val(finaltime);
             $('#year').show();
         }
         if (report_type == "26") {

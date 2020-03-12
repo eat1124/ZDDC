@@ -499,7 +499,7 @@ $(document).ready(function () {
         "bAutoWidth": true,
         "bSort": false,
         "bProcessing": true,
-        "ajax": "../../target_data/?search_adminapp=" + $('#adminapp').val(),
+        "ajax": "../../target_data/",
         "columns": [
             {"data": "id"},
             {"data": "name"},
@@ -696,7 +696,7 @@ $(document).ready(function () {
 
     $('#search_adminapp,#search_app,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3,#datatype').change(function () {
         var table = $('#sample_3').DataTable();
-        table.ajax.url("../../target_data?search_adminapp=" + $('#adminapp').val() + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val() + "&datatype=" + $('#datatype').val()).load();
+        table.ajax.url("../../target_data?search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val() + "&datatype=" + $('#datatype').val()).load();
     });
 
 
