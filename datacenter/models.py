@@ -124,11 +124,6 @@ class Target(models.Model):
     cycle = models.ForeignKey(Cycle, null=True)
     source = models.ForeignKey(Source, null=True)
 
-    # sourcetable = models.CharField("数据源表", blank=True, null=True, max_length=2000)
-    # sourcefields = models.CharField("数据源字段", blank=True, null=True, max_length=2000)
-    # sourceconditions = models.CharField("数据源条件", blank=True, null=True, max_length=2000)
-    # sourcesis = models.CharField("数据源sis点", blank=True, null=True, max_length=2000)
-
     source_content = models.TextField('数据源内容', blank=True, null=True)
 
     storage = models.ForeignKey(Storage, null=True)
@@ -137,6 +132,8 @@ class Target(models.Model):
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
     remark = models.TextField("说明", blank=True, null=True)
+
+    work = models.ForeignKey('Work', null=True, verbose_name='业务')
 
 
 class ReportModel(models.Model):
