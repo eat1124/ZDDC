@@ -237,12 +237,9 @@ $(document).ready(function () {
 
         var works_data = eval(data.works);
         for (var i = 0; i < works_data.length; i++) {
-            if (data.work_selected == works_data[i].id) {
-                $('#work_edit').append('<option value="' + works_data[i].id + '" selected>' + works_data[i].name + '</option>');
-            } else {
-                $('#work_edit').append('<option value="' + works_data[i].id + '">' + works_data[i].name + '</option>');
-            }
+            $('#work_edit').append('<option value="' + works_data[i].id + '">' + works_data[i].name + '</option>');
         }
+        $('#work_edit').val(data.work_selected);
 
         // 判断是否展示存储标识
         if (data.storage_type == '列') {
@@ -297,7 +294,7 @@ $(document).ready(function () {
     });
 
 
-    $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit').change(function () {
+    $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit,#works').change(function () {
         var table = $('#sample_1').DataTable();
         table.ajax.url("../target_data?search_adminapp=" + $('#search_adminapp').val() + "&search_app=" + $('#search_app').val() +
             "&search_operationtype=" + $('#search_operationtype').val() + "&search_cycletype=" + $('#search_cycletype').val() +
@@ -382,10 +379,7 @@ $(document).ready(function () {
         $("#formula").val("");
         $("#cycle").val("");
         $("#source").val("");
-        // $("#sourcetable").val("");
-        // $("#sourcesis").val("");
-        // $("#sourcefields").val("");
-        // $("#sourceconditions").val("");
+
         $("#source_content").val("");
 
         $("#storage").val("");

@@ -2538,7 +2538,7 @@ def target_data(request):
                 "sort": target.sort,
                 "state": target.state,
                 "remark": target.remark,
-                
+
                 'work_selected': work_selected,
                 'works': str(works),
             })
@@ -2904,7 +2904,7 @@ def target_app_index(request, funid):
         adminapp = ""
         try:
             cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
-            adminapp = cur_fun[0].app_id
+            adminapp = cur_fun[0].app
         except:
             return HttpResponseRedirect("/index")
 
@@ -2981,6 +2981,12 @@ def target_app_index(request, funid):
                 "storage_id": i.id,
                 "storage_type": storage_type_display,
             })
+
+        # 所有业务
+        works_list = []
+        if adminapp:
+            works_list = adminapp.work_set.exclude(state='9').values('id', 'name', 'core')
+
         return render(request, 'target_app.html',
                       {'username': request.user.userinfo.fullname,
                        "operation_type_list": operation_type_list,
@@ -2990,7 +2996,8 @@ def target_app_index(request, funid):
                        "source_list": source_list,
                        "cycle_list": cycle_list,
                        "storage_list": storage_list,
-                       "adminapp": adminapp,
+                       "adminapp": adminapp.id if adminapp else '',
+                       "works_list": works_list,
                        "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
@@ -3908,7 +3915,9 @@ def getcalculatedata(target, date, guid):
 
                     tableyear = str(date.year)
                     queryset = getmodels("Entrydata", tableyear).objects
-                    if cond == "LYS" or cond == "LYE" or ((cond == "LSS" or cond == "LSE") and int(date.month) < 4) or ((cond == "LHS" or cond == "LHE") and int(date.month) < 7) or ((cond == "LMS" or cond == "LME") and int(date.month) < 2):
+                    if cond == "LYS" or cond == "LYE" or ((cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
+                            (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
+                            (cond == "LMS" or cond == "LME") and int(date.month) < 2):
                         tableyear = str(int(date.year) - 1)
                     operationtype = membertarget.operationtype
                     if operationtype == "1":
@@ -4076,7 +4085,8 @@ def getcalculatedata(target, date, guid):
     except:
         pass
 
-    calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(target_id=target.id).filter(datadate=date)
+    calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(
+        target_id=target.id).filter(datadate=date)
     if len(calculatedata) > 0:
         calculatedata = calculatedata[0]
     else:
@@ -4158,7 +4168,10 @@ def reporting_formulacalculate(request):
                             membertarget = membertarget[0]
                             tableyear = str(date.year)
                             queryset = getmodels("Entrydata", tableyear).objects
-                            if cond == "LYS" or cond == "LYE" or ((cond == "LSS" or cond == "LSE") and int(date.month) < 4) or ((cond == "LHS" or cond == "LHE") and int(date.month) < 7) or ((cond == "LMS" or cond == "LME") and int(date.month) < 2):
+                            if cond == "LYS" or cond == "LYE" or (
+                                    (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
+                                    (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
+                                    (cond == "LMS" or cond == "LME") and int(date.month) < 2):
                                 tableyear = str(int(date.year) - 1)
                             operationtype = membertarget.operationtype
                             if operationtype == "1":
@@ -4311,14 +4324,16 @@ def reporting_formulacalculate(request):
                                 if col == 's':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                         value = str(
-                                            round(query_res.aggregate(Avg('cumulativequarter'))['cumulativequarter__avg'],
-                                                  query_res[0].target.digit))
+                                            round(
+                                                query_res.aggregate(Avg('cumulativequarter'))['cumulativequarter__avg'],
+                                                query_res[0].target.digit))
                                     else:
                                         value = str(round(query_res[0].cumulativequarter, query_res[0].target.digit))
                                 if col == 'h':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                         value = str(
-                                            round(query_res.aggregate(Avg('cumulativehalfyear'))['cumulativehalfyear__avg'],
+                                            round(query_res.aggregate(Avg('cumulativehalfyear'))[
+                                                      'cumulativehalfyear__avg'],
                                                   query_res[0].target.digit))
                                     else:
                                         value = str(round(query_res[0].cumulativehalfyear, query_res[0].target.digit))
@@ -4704,7 +4719,8 @@ def report_submit_index(request, funid):
         seasondate = ""
         now = datetime.datetime.now()
         month = (now.month - 1) - (now.month - 1) % 3 + 1
-        now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1))
+        now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0,
+                                               microsecond=0) + datetime.timedelta(days=-1))
         year = now.strftime("%Y")
         if now.month in (1, 2, 3):
             season = '第1季度'
@@ -4727,7 +4743,8 @@ def report_submit_index(request, funid):
         yeardate = ""
         now = datetime.datetime.now()
         month = (now.month - 1) - (now.month - 1) % 6 + 1
-        now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1))
+        now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0,
+                                               microsecond=0) + datetime.timedelta(days=-1))
         year = now.strftime("%Y")
         if now.month in (1, 2, 3, 4, 5, 6):
             season = '上半年'
@@ -4738,7 +4755,8 @@ def report_submit_index(request, funid):
             yeardate = year + '-' + season
             date4 = year + '-' + "12-31"
 
-        date5 = (datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0,microsecond=0) + datetime.timedelta(days=-1)).replace(month=1, day=1)
+        date5 = (datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0,
+                                                 microsecond=0) + datetime.timedelta(days=-1)).replace(month=1, day=1)
 
         temp_dict = {
             "22": date1.strftime("%Y-%m-%d"),

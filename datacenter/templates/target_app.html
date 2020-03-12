@@ -21,6 +21,20 @@
                             <div class="col-md-12">
                                 <div class="col-md-6">
                                     <div class="form-group ">
+                                        <label class="col-md-3 control-label">业务</label>
+                                        <div class="col-md-7">
+                                            <select class="form-control" id="works"
+                                                    name="works">
+                                                <option selected value="">全部</option>
+                                                {% for wl in works_list %}
+                                                    <option value="{{ wl.id }}">{{ wl.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group ">
                                         <label class="col-md-3 control-label">操作类型</label>
                                         <div class="col-md-7">
                                             <select class="form-control" id="search_operationtype"
@@ -33,6 +47,8 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-md-12">
                                 <div class="col-md-6">
                                     <div class="form-group ">
                                         <label class="col-md-3 control-label">周期类型</label>
@@ -46,9 +62,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-12">
-
                                 <div class="col-md-6">
                                     <div class="form-group ">
                                         <label class="col-md-3 control-label">业务类型</label>
@@ -63,8 +76,11 @@
                                         </div>
                                     </div>
                                 </div>
+
+                            </div>
+                            <div class="col-md-12">
                                 <div class="col-md-6">
-                                    <div class="form-group ">
+                                    <div class="form-group">
                                         <label class="col-md-3 control-label">机组</label>
                                         <div class="col-md-7">
                                             <select class="form-control" id="search_unit" name="search_unit">
@@ -78,6 +94,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                 </div>
@@ -199,6 +216,14 @@
 
                             <div class="form-group">
                                 <label class="col-md-2 control-label"><span
+                                        style="color:red; "></span>业务</label>
+                                <div class="col-md-4">
+                                    <input type="text" id="work_list" value="{{ works_list }}" hidden>
+                                    <select class="form-control" id="work_edit" name="work_edit">
+
+                                    </select>
+                                </div>
+                                <label class="col-md-2 control-label"><span
                                         style="color:red; ">*</span>数据类型</label>
                                 <div class="col-md-4">
                                     <select class="form-control" id="datatype" name="datatype">
@@ -207,6 +232,9 @@
                                         <option value="text">文本</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div class="form-group" id="magnification_digit">
                                 <label class="col-md-2 control-label" id="is_cumulative">是否累积</label>
                                 <div class="col-md-4">
                                     <select class="form-control" id="cumulative" name="cumulative">
@@ -214,22 +242,11 @@
                                         <option value="否">否</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <div class="form-group" id="magnification_digit">
                                 <label class="col-md-2 control-label"><span
                                         style="color:red; ">*</span>倍率</label>
                                 <div class="col-md-4">
                                     <input id="magnification" type="number" name="magnification" class="form-control "
                                            placeholder="1">
-                                    <div class="form-control-focus"></div>
-
-                                </div>
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>保留位数</label>
-                                <div class="col-md-4">
-                                    <input id="digit" type="number" name="digit" class="form-control "
-                                           placeholder="2">
                                     <div class="form-control-focus"></div>
 
                                 </div>
@@ -257,6 +274,14 @@
                                 <div class="col-md-4">
                                     <input id="sort" type="number" name="sort" class="form-control"
                                            placeholder="">
+                                    <div class="form-control-focus"></div>
+
+                                </div>
+                                <label class="col-md-2 control-label" id="is_digit"><span
+                                        style="color:red; ">*</span>保留位数</label>
+                                <div class="col-md-4">
+                                    <input id="digit" type="number" name="digit" class="form-control "
+                                           placeholder="2">
                                     <div class="form-control-focus"></div>
 
                                 </div>
