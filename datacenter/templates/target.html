@@ -33,6 +33,21 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group ">
+                                        <label class="col-md-3 control-label">业务</label>
+                                        <div class="col-md-7">
+                                            <input type="text" id="app_list" name="app_list" value="{{ app_list }}"
+                                                   hidden>
+                                            <select class="form-control" id="works" name="works"
+                                                    class="dropdown-header">
+
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="col-md-6">
+                                    <div class="form-group ">
                                         <label class="col-md-3 control-label">查询应用</label>
                                         <div class="col-md-7">
                                             <select class="form-control" id="search_app" name="search_app">
@@ -44,9 +59,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                            </div>
-                            <div class="col-md-12">
                                 <div class="col-md-6">
                                     <div class="form-group ">
                                         <label class="col-md-3 control-label">操作类型</label>
@@ -61,6 +73,8 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-md-12">
                                 <div class="col-md-6">
                                     <div class="form-group ">
                                         <label class="col-md-3 control-label">周期类型</label>
@@ -74,9 +88,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-12">
-
                                 <div class="col-md-6">
                                     <div class="form-group ">
                                         <label class="col-md-3 control-label">业务类型</label>
@@ -91,6 +102,8 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-md-12">
                                 <div class="col-md-6">
                                     <div class="form-group ">
                                         <label class="col-md-3 control-label">机组</label>
@@ -103,6 +116,8 @@
                                             </select>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="col-md-6">
                                 </div>
                             </div>
                         </div>
@@ -228,18 +243,24 @@
                                         {% endfor %}
                                     </select>
                                 </div>
+                                <label class="col-md-2 control-label">业务</label>
+                                <div class="col-md-4">
+                                    <select id="work_edit" name="work_edit" class="form-control">
+
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <label class="col-md-2 control-label">查询应用</label>
                                 <div class="col-md-4">
-                                    <select id="app" name="app" placeholder="testt test" class="form-control select2"
+                                    <select id="app" name="app" class="form-control select2"
                                             multiple>
                                         {% for app in app_list %}
                                             <option value="{{ app.app_id }}">{{ app.app_name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
-                            </div>
-
-                            <div class="form-group">
                                 <label class="col-md-2 control-label"><span
                                         style="color:red; ">*</span>数据类型</label>
                                 <div class="col-md-4">
@@ -249,6 +270,9 @@
                                         <option value="text">文本</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div class="form-group" id="magnification_digit">
                                 <label class="col-md-2 control-label" id="is_cumulative">是否累积</label>
                                 <div class="col-md-4">
                                     <select class="form-control" id="cumulative" name="cumulative">
@@ -256,44 +280,28 @@
                                         <option value="否">否</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <div class="form-group" id="magnification_digit">
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>倍率</label>
+                                <label class="col-md-2 control-label"><span style="color:red; ">*</span>倍率</label>
                                 <div class="col-md-4">
                                     <input id="magnification" type="number" name="magnification" class="form-control "
                                            placeholder="1">
                                     <div class="form-control-focus"></div>
 
                                 </div>
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>保留位数</label>
-                                <div class="col-md-4">
-                                    <input id="digit" type="number" name="digit" class="form-control "
-                                           placeholder="2">
-                                    <div class="form-control-focus"></div>
-
-                                </div>
                             </div>
-
                             <div class="form-group" id="upperlimit_lowerlimit">
                                 <label class="col-md-2 control-label">上限</label>
                                 <div class="col-md-4">
                                     <input id="upperlimit" type="number" name="upperlimit" class="form-control "
                                            placeholder="">
                                     <div class="form-control-focus"></div>
-
                                 </div>
                                 <label class="col-md-2 control-label">下限</label>
                                 <div class="col-md-4">
                                     <input id="lowerlimit" type="number" name="lowerlimit" class="form-control "
                                            placeholder="">
                                     <div class="form-control-focus"></div>
-
                                 </div>
                             </div>
-
                             <div class="form-group">
                                 <label class="col-md-2 control-label">排序</label>
                                 <div class="col-md-4">
@@ -302,8 +310,14 @@
                                     <div class="form-control-focus"></div>
 
                                 </div>
+                                <label class="col-md-2 control-label" id="is_digit"><span
+                                        style="color:red; ">*</span>保留位数</label>
+                                <div class="col-md-4">
+                                    <input id="digit" type="number" name="digit" class="form-control "
+                                           placeholder="2">
+                                    <div class="form-control-focus"></div>
+                                </div>
                             </div>
-
                             <div id="calculate">
                                 <hr style="height:1px;border:none;border-top:1px solid #87cefa;"/>
                                 <div class="form-group">

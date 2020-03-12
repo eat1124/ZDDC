@@ -2292,9 +2292,13 @@ def target_index(request, funid):
 
         applist = App.objects.all().exclude(state='9')
         for i in applist:
+            # 业务
+            works = i.work_set.exclude(state='9').values('id', 'name', 'core')
+
             app_list.append({
                 "app_name": i.name,
                 "app_id": i.id,
+                "works": works,
             })
 
         c_dict_index_1 = DictIndex.objects.filter(
@@ -2388,7 +2392,6 @@ def target_index(request, funid):
 
 def target_data(request):
     if request.user.is_authenticated():
-
         result = []
         search_adminapp = request.GET.get('search_adminapp', '')
         search_app = request.GET.get('search_app', '')
@@ -2398,6 +2401,7 @@ def target_data(request):
         search_unit = request.GET.get('search_unit', '')
         search_app_noselect = request.GET.get('search_app_noselect', '')
         datatype = request.GET.get('datatype', '')
+        works = request.GET.get('works', '')
 
         all_target = Target.objects.exclude(state="9").order_by("sort")
         if search_adminapp != "":
@@ -2425,18 +2429,13 @@ def target_data(request):
             all_target = all_target.filter(unit=search_unit)
         if datatype != "":
             all_target = all_target.filter(datatype=datatype)
-
-        storagelist = Storage.objects.all().exclude(state='9')
+        try:
+            works = int(works)
+            all_target = all_target.filter(work_id=works)
+        except:
+            pass
 
         all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
-
-        # for i in storagelist:
-        #     storage_type = i.storagetype
-        #     storage_type_display = ""
-        #     for dict in all_dict_list:
-        #         if storage_type == str(dict['id']):
-        #             storage_type_display = dict['name']
-        #             break
 
         for target in all_target:
             operationtype = target.operationtype
@@ -2486,7 +2485,7 @@ def target_data(request):
             except:
                 pass
 
-            # ...
+            # 存储类型
             storage_type_display = ""
             storage = target.storage
             if storage:
@@ -2496,6 +2495,13 @@ def target_data(request):
                         if storage_type == str(dict['id']):
                             storage_type_display = dict['name']
                             break
+
+            # 根据adminapp过滤出业务，并选中的业务
+            work_selected = target.work.id if target.work else ''
+            admin_app = target.adminapp
+            works = []
+            if admin_app:
+                works = admin_app.work_set.exclude(state='9').values('id', 'name')
 
             result.append({
                 "operationtype_name": operationtype,
@@ -2521,10 +2527,6 @@ def target_data(request):
                 "formula": target.formula,
                 "cycle": target.cycle_id,
                 "source": target.source_id,
-                # "sourcetable": target.sourcetable,
-                # "sourcefields": target.sourcefields,
-                # "sourceconditions": target.sourceconditions,
-                # "sourcesis": target.sourcesis,
                 "source_content": target.source_content,
                 "storage": target.storage_id,
 
@@ -2536,6 +2538,9 @@ def target_data(request):
                 "sort": target.sort,
                 "state": target.state,
                 "remark": target.remark,
+                
+                'work_selected': work_selected,
+                'works': str(works),
             })
         return JsonResponse({"data": result})
 
@@ -2575,10 +2580,7 @@ def target_save(request):
 
         cycle = request.POST.get("cycle", "")
         source = request.POST.get("source", "")
-        # sourcetable = request.POST.get("sourcetable", "")
-        # sourcesis = request.POST.get("sourcesis", "")
-        # sourcefields = request.POST.get("sourcefields", "")
-        # sourceconditions = request.POST.get("sourceconditions", "")
+
         source_content = request.POST.get("source_content", "")
 
         storage = request.POST.get("storage", "")
@@ -2586,6 +2588,8 @@ def target_save(request):
         storagefields = request.POST.get("storagefields", "")
 
         savetype = request.POST.get("savetype", "")
+
+        works = request.POST.get('works', '')
 
         all_app = App.objects.exclude(state="9")
         all_cycle = Cycle.objects.exclude(state="9")
@@ -2640,6 +2644,15 @@ def target_save(request):
                                                 target_save.cycletype = cycletype
                                                 target_save.businesstype = businesstype
                                                 target_save.unit = unit
+
+                                                # 业务
+                                                try:
+                                                    works = int(works)
+                                                except:
+                                                    pass
+                                                else:
+                                                    target_save.work_id = works
+
                                                 if datatype == 'numbervalue':
                                                     try:
                                                         target_save.magnification = float(magnification)
@@ -2709,10 +2722,7 @@ def target_save(request):
                                                         target_save.source = my_source
                                                     except:
                                                         pass
-                                                    # target_save.sourcetable = sourcetable
-                                                    # target_save.sourcesis = sourcesis
-                                                    # target_save.sourcefields = sourcefields
-                                                    # target_save.sourceconditions = sourceconditions
+
                                                     target_save.source_content = source_content
                                                     try:
                                                         storage_id = int(storage)
@@ -2756,6 +2766,15 @@ def target_save(request):
                                                     target_save.cycletype = cycletype
                                                     target_save.businesstype = businesstype
                                                     target_save.unit = unit
+
+                                                    # 业务
+                                                    try:
+                                                        works = int(works)
+                                                    except:
+                                                        pass
+                                                    else:
+                                                        target_save.work_id = works
+
                                                     if datatype == 'numbervalue':
                                                         try:
                                                             target_save.magnification = float(magnification)
@@ -2824,10 +2843,7 @@ def target_save(request):
                                                             target_save.source = my_source
                                                         except:
                                                             pass
-                                                        # target_save.sourcetable = sourcetable
-                                                        # target_save.sourcesis = sourcesis
-                                                        # target_save.sourcefields = sourcefields
-                                                        # target_save.sourceconditions = sourceconditions
+
                                                         target_save.source_content = source_content
                                                         try:
                                                             storage_id = int(storage)
@@ -2853,7 +2869,7 @@ def target_save(request):
                                                 except Exception as e:
                                                     result["res"] = "修改失败。"
 
-    return JsonResponse(result)
+        return JsonResponse(result)
 
 
 def target_del(request):
