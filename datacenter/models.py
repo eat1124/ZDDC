@@ -139,6 +139,18 @@ class Target(models.Model):
     is_repeat = models.CharField("数据重复时", blank=True, null=True, max_length=20)
 
 
+class Constant(models.Model):
+    """
+    常数维护
+    """
+    name = models.CharField("常数名称", max_length=100)
+    code = models.CharField("常数代码", blank=True, max_length=50)
+    adminapp = models.ForeignKey(App, null=True, related_name='constant_adminapp_set')
+    sort = models.IntegerField("排序", blank=True, null=True)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+    unity = models.CharField("单位", blank=True, null=True, max_length=20)
+
+
 class ReportModel(models.Model):
     """
     报表模板
