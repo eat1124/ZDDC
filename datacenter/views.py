@@ -4313,7 +4313,8 @@ def reporting_formulacalculate(request):
                                                           query_res[0].target.digit))
                                     else:
                                         value = str(round(query_res[0].curvalue, query_res[0].target.digit))
-                                        childid = str(query_res[0].id)
+                                        if operationtype == "17":
+                                            childid = str(query_res[0].id)
                                 if col == 'm':
                                     if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                         value = str(
