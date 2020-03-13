@@ -2542,6 +2542,7 @@ def target_data(request):
                 'work_selected': work_selected,
                 'works': str(works),
                 "unity": target.unity,
+                "is_repeat": target.is_repeat
             })
         return JsonResponse({"data": result})
 
@@ -2587,7 +2588,7 @@ def target_save(request):
         storage = request.POST.get("storage", "")
         storagetag = request.POST.get("storagetag", "")
         storagefields = request.POST.get("storagefields", "")
-
+        is_repeat = request.POST.get("is_repeat", "")
         savetype = request.POST.get("savetype", "")
 
         works = request.POST.get('works', '')
@@ -2728,6 +2729,10 @@ def target_save(request):
 
                                                     target_save.source_content = source_content
                                                     try:
+                                                        target_save.is_repeat = int(is_repeat)
+                                                    except:
+                                                        pass
+                                                    try:
                                                         storage_id = int(storage)
                                                         my_storage = all_storage.get(id=storage_id)
                                                         target_save.storage = my_storage
@@ -2849,6 +2854,10 @@ def target_save(request):
                                                             pass
 
                                                         target_save.source_content = source_content
+                                                        try:
+                                                            target_save.is_repeat = int(is_repeat)
+                                                        except:
+                                                            pass
                                                         try:
                                                             storage_id = int(storage)
                                                             my_storage = all_storage.get(id=storage_id)

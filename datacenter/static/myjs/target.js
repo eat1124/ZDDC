@@ -233,6 +233,7 @@ $(document).ready(function () {
         $("#storage").val(data.storage);
         $("#storagetag").val(data.storagetag);
         $("#storagefields").val(data.storagefields);
+        $("#is_repeat").val(data.is_repeat);
 
         // 过滤出所有works
         $('#work_edit').empty();
@@ -388,6 +389,7 @@ $(document).ready(function () {
         $("#storage").val("");
         $("#storagetag").val("");
         $("#storagefields").val("");
+        $("#is_repeat").val("1");
 
         ajaxFunction();
         analysisFunction();
@@ -436,6 +438,7 @@ $(document).ready(function () {
                     storage: $("#storage").val(),
                     storagetag: $("#storagetag").val(),
                     storagefields: $("#storagefields").val(),
+                    is_repeat: $("#is_repeat").val(),
 
                     works: $('#work_edit').val(),
                 },

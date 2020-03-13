@@ -439,6 +439,16 @@
                                                    id="storage_{{ storage.storage_id }}" hidden>
                                         {% endfor %}
                                     </div>
+                                    <label class="col-md-2 control-label">数据重复时</label>
+                                    <div class="col-md-4">
+                                        <select class="form-control" id="is_repeat" name="is_repeat">
+                                            <option value="1" selected>最新</option>
+                                            <option value="2">平均值</option>
+                                        </select>
+                                        <div class="form-control-focus"></div>
+
+                                    </div>
+
                                     <div hidden>
                                         <label class="col-md-2 control-label">存储标识</label>
                                         <div class="col-md-4">
