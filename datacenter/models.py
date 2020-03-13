@@ -18,6 +18,7 @@ class Fun(models.Model):
     pnode = models.ForeignKey('self', blank=True, null=True, related_name='children', verbose_name='父节点')
     name = models.CharField("功能名称", max_length=100)
     app = models.ForeignKey(App, blank=True, null=True)
+    work = models.ForeignKey('Work', null=True, verbose_name='业务')
     sort = models.IntegerField("排序", blank=True, null=True)
     funtype = models.CharField("类型", blank=True, null=True, max_length=20)
     url = models.CharField("地址", blank=True, null=True, max_length=256)
