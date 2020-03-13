@@ -163,6 +163,7 @@ $(document).ready(function () {
     }
 
     var search_app_list = eval($('#search_app_list').val());
+    console.log(search_app_list)
     function workSelectInit() {
         $('#works').empty();
         var pre = '<option selected value="" >全部</option>';
