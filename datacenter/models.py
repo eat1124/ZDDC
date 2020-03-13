@@ -149,6 +149,7 @@ class Constant(models.Model):
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
     unity = models.CharField("单位", blank=True, null=True, max_length=20)
+    value = models.DecimalField("常数值", null=True, max_digits=20, decimal_places=5)
 
 
 class ReportModel(models.Model):
