@@ -5702,17 +5702,22 @@ def get_fun_tree(parent, selectid, all_app):
             "app_state": "",
         })
         for app in all_app:
+            works = app.work_set.exclude(state='9').values('id', 'name')
             app_select_list.append({
                 "app_name": app.name,
                 "id": app.id,
-                "app_state": "selected" if app.id == current_app_id else ""
+                "app_state": "selected" if app.id == current_app_id else "",
+                "works": str(works),
             })
+
+        selected_work = child.work_id
 
         node["data"] = {"url": child.url,
                         "icon": child.icon,
                         "pname": parent.name,
                         "app_list": app_select_list,
-                        "app_div_show": True if child.funtype == "fun" else False
+                        "app_div_show": True if child.funtype == "fun" else False,
+                        "selected_work": selected_work
                         }
         node["children"] = get_fun_tree(child, selectid, all_app)
 
@@ -5740,6 +5745,7 @@ def function(request, funid):
             icon = ""
             app_list = []
             pre_app_select_list = []
+            works_select_list = []
             hiddendiv = "hidden"
             app_hidden_div = ""
             all_app = App.objects.exclude(state="9")
@@ -5754,6 +5760,7 @@ def function(request, funid):
                 url = request.POST.get('url')
                 icon = request.POST.get('icon')
                 app = request.POST.get('app', '')
+                works = request.POST.get('works', '')
                 try:
                     id = int(id)
                 except:
@@ -5768,6 +5775,11 @@ def function(request, funid):
                 else:
                     selectid = id
                     title = name
+
+                try:
+                    works = int(works)
+                except:
+                    pass
 
                 if name.strip() == '':
                     errors.append('功能名称不能为空。')
@@ -5795,6 +5807,7 @@ def function(request, funid):
                             funsave.icon = icon
                             funsave.sort = sort if sort else None
                             funsave.app_id = int(app) if app else None
+                            funsave.work_id = works
                             funsave.save()
 
                             title = name
@@ -5813,16 +5826,41 @@ def function(request, funid):
                                 funsave.url = url
                                 funsave.icon = icon
                                 funsave.app_id = int(app) if app else None
+                                funsave.work_id = works
                                 funsave.save()
 
                                 title = name
                         # 保存成功后，重新刷新页面，重新构造app_select_list
                         for c_app in all_app:
+                            works_list = c_app.work_set.exclude(state='9').values('id', 'name')
                             pre_app_select_list.append({
                                 "app_name": c_app.name,
                                 "id": c_app.id,
-                                "app_state": "selected" if str(c_app.id) == app else ""
+                                "app_state": "selected" if str(c_app.id) == app else "",
                             })
+                        # 保存成功后，重新构造 works_select_list
+                        try:
+                            select_app = App.objects.get(id=app)
+                        except App.DoesNotExist as e:
+                            pass
+                        else:
+                            works_list = select_app.work_set.exclude(state='9')
+                            if works_list.exists():
+                                for work in works_list:
+                                    if work.id == works:
+                                        # selected
+                                        works_select_list.append({
+                                            'id': work.id,
+                                            'name': work.name,
+                                            'selected': 'selected'
+                                        })
+                                    else:
+                                        works_select_list.append({
+                                            'id': work.id,
+                                            'name': work.name,
+                                            'selected': ''
+                                        })
+
                         if mytype == "node":
                             app_hidden_div = "hidden"
                         else:
@@ -5852,17 +5890,22 @@ def function(request, funid):
                         "app_state": "",
                     })
                     for app in all_app:
+                        works = app.work_set.exclude(state='9').values('id', 'name')
                         app_select_list.append({
                             "app_name": app.name,
                             "id": app.id,
-                            "app_state": "selected" if app.id == current_app_id else ""
+                            "app_state": "selected" if app.id == current_app_id else "",
+                            "works": str(works),
                         })
+
+                    selected_work = rootnode.work_id
 
                     root["data"] = {"url": rootnode.url,
                                     "icon": rootnode.icon,
                                     "pname": "无",
                                     "app_list": app_select_list,
-                                    "app_div_show": True if rootnode.funtype == "fun" else False
+                                    "app_div_show": True if rootnode.funtype == "fun" else False,
+                                    "selected_work": selected_work,
                                     }
                     try:
                         if int(selectid) == rootnode.id:
@@ -5878,7 +5921,7 @@ def function(request, funid):
             return render(request, 'function.html',
                           {'username': request.user.userinfo.fullname, 'errors': errors, "id": id,
                            "pid": pid, "pname": pname, "name": name, "url": url, "icon": icon, "title": title,
-                           "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata,
+                           "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata, "works_select_list": works_select_list,
                            "app_select_list": pre_app_select_list, "app_hidden_div": app_hidden_div,
                            "pagefuns": getpagefuns(funid, request=request)})
         except Exception as e:

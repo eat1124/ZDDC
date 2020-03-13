@@ -451,7 +451,7 @@ $(document).ready(function () {
             }
         });
         ajaxFunction()
-    })
+    });
 
 
     $('#error').click(function () {

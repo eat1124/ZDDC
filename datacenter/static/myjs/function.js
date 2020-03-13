@@ -31,6 +31,7 @@ $(function () {
                             alert("无法在功能下新建节点或功能。");
                         } else {
                             $("#app_div").show();
+                            $("#works_div").show();
                             $('input:radio[name=radio2]')[0].checked = true;
                             $("#title").text("新建");
                             $("#id").val("0");
@@ -144,12 +145,13 @@ $(function () {
 
             if (data.node.data.app_div_show) {
                 $("#app_div").show();
+                $("#works_div").show();
             } else {
                 $("#app_div").hide();
+                $("#works_div").hide();
             }
             $("#app").empty();
             for (var i = 0; i < data.node.data.app_list.length; i++) {
-                console.log(data.node.data.app_list[i].app_state)
                 $("#app").append("<option " + data.node.data.app_list[i].app_state + " value='" + data.node.data.app_list[i].id + "' >" + data.node.data.app_list[i].app_name + "</option>");
             }
 
@@ -171,6 +173,24 @@ $(function () {
                     alert($(event.target).parents('li').attr('id'));
                 }
             }
+
+            // 业务
+            var app_list = data.node.data.app_list;
+            var app_id = $('#app').val();
+            $('#works').empty();
+            var pre_works_options = '<option></option>';
+            for (var i = 0; i < app_list.length; i++) {
+                if (app_list[i].id == app_id) {
+                    var works = eval(app_list[i].works);
+                    if (works) {
+                        for (var j = 0; j < works.length; j++) {
+                            pre_works_options += '<option ' + ' value="' + works[j].id + '">' + works[j].name + ' </option>';
+                        }
+                    }
+                }
+            }
+            $('#works').append(pre_works_options);
+            $('#works').val(data.node.data.selected_work);
         });
 
     $("#error").click(function () {
@@ -184,8 +204,10 @@ $(function () {
         $("input:radio[name=radio2]").change(function () {
             if ($("#fun:checked").val() == "fun") {
                 $("#app_div").show();
+                $("#works_div").show();
             } else {
                 $("#app_div").hide();
+                $("#works_div").hide();
             }
         })
     });
