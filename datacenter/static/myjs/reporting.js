@@ -191,6 +191,7 @@ $(document).ready(function () {
         "columns": [
             {"data": "id"},
             {"data": "target_name"},
+            {"data": "target_unity"},
             {"data": "target_code"},
             {"data": "target_businesstypename"},
             {"data": "target_unitname"},
@@ -297,6 +298,7 @@ $(document).ready(function () {
         "columns": [
             {"data": "id"},
             {"data": "target_name"},
+            {"data": "target_unity"},
             {"data": "target_code"},
             {"data": "target_businesstypename"},
             {"data": "target_unitname"},
@@ -414,6 +416,7 @@ $(document).ready(function () {
         "columns": [
             {"data": "id"},
             {"data": "target_name"},
+            {"data": "target_unity"},
             {"data": "target_code"},
             {"data": "target_businesstypename"},
             {"data": "target_unitname"},
@@ -563,6 +566,7 @@ $(document).ready(function () {
         "columns": [
             {"data": "target_id"},
             {"data": "target_name"},
+            {"data": "target_unity"},
             {"data": "target_code"},
             {"data": "target_businesstypename"},
             {"data": "target_unitname"},

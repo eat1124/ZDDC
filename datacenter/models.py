@@ -135,6 +135,21 @@ class Target(models.Model):
     remark = models.TextField("说明", blank=True, null=True)
 
     work = models.ForeignKey('Work', null=True, verbose_name='业务')
+    unity = models.CharField("单位", blank=True, null=True, max_length=20)
+    is_repeat = models.CharField("数据重复时", blank=True, null=True, max_length=20)
+
+
+class Constant(models.Model):
+    """
+    常数维护
+    """
+    name = models.CharField("常数名称", max_length=100)
+    code = models.CharField("常数代码", blank=True, max_length=50)
+    adminapp = models.ForeignKey(App, null=True, related_name='constant_adminapp_set')
+    sort = models.IntegerField("排序", blank=True, null=True)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+    unity = models.CharField("单位", blank=True, null=True, max_length=20)
+    value = models.DecimalField("常数值", null=True, max_digits=20, decimal_places=5)
 
 
 class ReportModel(models.Model):
