@@ -3201,205 +3201,224 @@ def reporting_index(request, cycletype, funid):
     数据填报
     """
     if request.user.is_authenticated():
-        app = ""
         try:
             cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
             app = cur_fun[0].app_id
         except:
             return HttpResponseRedirect("/index")
-        now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1)
-        date = now.strftime("%Y-%m-%d")
-        if cycletype == '10':
+        else:
             now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
                 days=-1)
             date = now.strftime("%Y-%m-%d")
-        if cycletype == '11':
-            now = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0,
-                                                   microsecond=0) + datetime.timedelta(
-                days=-1))
-            date = now.strftime("%Y-%m")
-        seasondate = ''
-        if cycletype == '12':
-            now = datetime.datetime.now()
-            month = (now.month - 1) - (now.month - 1) % 3 + 1
-            now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0,
-                                                   microsecond=0) + datetime.timedelta(
-                days=-1))
-            year = now.strftime("%Y")
-            if now.month in (1, 2, 3):
-                season = '第1季度'
-                seasondate = year + '-' + season
-                date = year + '-' + "03-31"
-            if now.month in (4, 5, 6):
-                season = '第2季度'
-                seasondate = year + '-' + season
-                date = year + '-' + "06-30"
-            if now.month in (7, 8, 9):
-                season = '第3季度'
-                seasondate = year + '-' + season
-                date = year + '-' + "09-30"
-            if now.month in (10, 11, 12):
-                season = '第4季度'
-                seasondate = year + '-' + season
-                date = year + '-' + "12-31"
-        yeardate = ''
-        if cycletype == '13':
-            now = datetime.datetime.now()
-            month = (now.month - 1) - (now.month - 1) % 6 + 1
-            now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0,
-                                                   microsecond=0) + datetime.timedelta(
-                days=-1))
-            year = now.strftime("%Y")
-            if now.month in (1, 2, 3, 4, 5, 6):
-                season = '上半年'
-                yeardate = year + '-' + season
-                date = year + '-' + "06-30"
-            if now.month in (7, 8, 9, 10, 11, 12):
-                season = '下半年'
-                yeardate = year + '-' + season
-                date = year + '-' + "12-31"
-        if cycletype == '14':
-            now = (datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0,
-                                                   microsecond=0) + datetime.timedelta(
-                days=-1))
-            date = now.strftime("%Y")
+            if cycletype == '10':
+                now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+                    days=-1)
+                date = now.strftime("%Y-%m-%d")
+            if cycletype == '11':
+                now = (datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0,
+                                                       microsecond=0) + datetime.timedelta(
+                    days=-1))
+                date = now.strftime("%Y-%m")
+            seasondate = ''
+            if cycletype == '12':
+                now = datetime.datetime.now()
+                month = (now.month - 1) - (now.month - 1) % 3 + 1
+                now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0,
+                                                       microsecond=0) + datetime.timedelta(
+                    days=-1))
+                year = now.strftime("%Y")
+                if now.month in (1, 2, 3):
+                    season = '第1季度'
+                    seasondate = year + '-' + season
+                    date = year + '-' + "03-31"
+                if now.month in (4, 5, 6):
+                    season = '第2季度'
+                    seasondate = year + '-' + season
+                    date = year + '-' + "06-30"
+                if now.month in (7, 8, 9):
+                    season = '第3季度'
+                    seasondate = year + '-' + season
+                    date = year + '-' + "09-30"
+                if now.month in (10, 11, 12):
+                    season = '第4季度'
+                    seasondate = year + '-' + season
+                    date = year + '-' + "12-31"
+            yeardate = ''
+            if cycletype == '13':
+                now = datetime.datetime.now()
+                month = (now.month - 1) - (now.month - 1) % 6 + 1
+                now = (datetime.datetime.now().replace(month=month, day=1, hour=0, minute=0, second=0,
+                                                       microsecond=0) + datetime.timedelta(
+                    days=-1))
+                year = now.strftime("%Y")
+                if now.month in (1, 2, 3, 4, 5, 6):
+                    season = '上半年'
+                    yeardate = year + '-' + season
+                    date = year + '-' + "06-30"
+                if now.month in (7, 8, 9, 10, 11, 12):
+                    season = '下半年'
+                    yeardate = year + '-' + season
+                    date = year + '-' + "12-31"
+            if cycletype == '14':
+                now = (datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0,
+                                                       microsecond=0) + datetime.timedelta(
+                    days=-1))
+                date = now.strftime("%Y")
 
-        searchtag = ""
-        metertag = ""
-        entrytag = ""
-        extracttag = ""
-        calculatetag = ""
+            searchtag = ""
+            metertag = ""
+            entrytag = ""
+            extracttag = ""
+            calculatetag = ""
 
-        searchtagclass = ""
-        metertagclass = ""
-        entrytagclass = ""
-        extracttagclass = ""
-        calculatetagclass = ""
+            searchtagclass = ""
+            metertagclass = ""
+            entrytagclass = ""
+            extracttagclass = ""
+            calculatetagclass = ""
 
-        searchtagtabclass = ""
-        metertagtabclass = ""
-        entrytagtabclass = ""
-        extracttagtabclass = ""
-        calculatetagtabclass = ""
+            searchtagtabclass = ""
+            metertagtabclass = ""
+            entrytagtabclass = ""
+            extracttagtabclass = ""
+            calculatetagtabclass = ""
 
-        meternew = ""
-        entrynew = ""
-        extractnew = ""
-        calculatenew = ""
+            meternew = ""
+            entrynew = ""
+            extractnew = ""
+            calculatenew = ""
 
-        meterreset = ""
-        entryreset = ""
-        extractreset = ""
-        calculatereset = ""
-        curapp = App.objects.filter(id=app)
-        search_target = Target.objects.exclude(state='9').exclude(adminapp_id=app).filter(cycletype=cycletype,
-                                                                                          app__in=curapp)
+            meterreset = ""
+            entryreset = ""
+            extractreset = ""
+            calculatereset = ""
+            curapp = App.objects.filter(id=app)
+            search_target = Target.objects.exclude(state='9').exclude(adminapp_id=app).filter(cycletype=cycletype,
+                                                                                              app__in=curapp)
 
-        meter_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
-                                                                operationtype='1')
-        entry_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
-                                                                operationtype='15')
-        extract_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
-                                                                  operationtype='16')
-        calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
-                                                                    operationtype='17')
+            meter_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+                                                                    operationtype='1')
+            entry_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+                                                                    operationtype='15')
+            extract_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+                                                                      operationtype='16')
+            calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+                                                                        operationtype='17')
 
-        meter_data = getmodels("Meterdata", str(now.year)).objects.exclude(state="9").filter(target__adminapp_id=app,
-                                                                                             target__cycletype=cycletype,
-                                                                                             datadate=now)
-        entry_data = getmodels("Entrydata", str(now.year)).objects.exclude(state="9").filter(target__adminapp_id=app,
-                                                                                             target__cycletype=cycletype,
-                                                                                             datadate=now)
-        extract_data = getmodels("Extractdata", str(now.year)).objects.exclude(state="9").filter(
-            target__adminapp_id=app,
-            target__cycletype=cycletype, datadate=now)
-        calculate_data = getmodels("Calculatedata", str(now.year)).objects.exclude(state="9").filter(
-            target__adminapp_id=app,
-            target__cycletype=cycletype, datadate=now)
-        search_app = []
-        if len(search_target) <= 0:
-            searchtag = "display: none;"
-        else:
-            for target in search_target:
-                if target.adminapp is not None:
-                    cursearchapp = {"id": target.adminapp.id, "name": target.adminapp.name}
-                    if cursearchapp not in search_app:
-                        search_app.append(cursearchapp)
+            meter_data = getmodels("Meterdata", str(now.year)).objects.exclude(state="9").filter(
+                target__adminapp_id=app,
+                target__cycletype=cycletype,
+                datadate=now)
+            entry_data = getmodels("Entrydata", str(now.year)).objects.exclude(state="9").filter(
+                target__adminapp_id=app,
+                target__cycletype=cycletype,
+                datadate=now)
+            extract_data = getmodels("Extractdata", str(now.year)).objects.exclude(state="9").filter(
+                target__adminapp_id=app,
+                target__cycletype=cycletype, datadate=now)
+            calculate_data = getmodels("Calculatedata", str(now.year)).objects.exclude(state="9").filter(
+                target__adminapp_id=app,
+                target__cycletype=cycletype, datadate=now)
+            search_app = []
+            check_search_app = []
+            # 只有该功能对应的业务为核心业务，才显示数据查询标签
+            work = cur_fun[0].work
+            core = work.core if work else ""
 
-        if len(meter_target) <= 0 and len(meter_data) <= 0:
-            metertag = "display: none;"
-        if len(entry_target) <= 0 and len(entry_data) <= 0:
-            entrytag = "display: none;"
-        if len(extract_target) <= 0 and len(extract_data) <= 0:
-            extracttag = "display: none;"
-        if len(calculate_target) <= 0 and len(calculate_data) <= 0:
-            calculatetag = "display: none;"
-        if len(meter_data) <= 0:
-            meterreset = "display: none;"
-        else:
-            meternew = "display: none;"
+            if len(search_target) <= 0 and core != '是':
+                searchtag = "display: none;"
+            else:
+                for target in search_target:
+                    if target.adminapp is not None:
+                        works = target.adminapp.work_set.exclude(state='9').values('id', 'name')
+                        cursearchapp = {
+                            "id": target.adminapp.id,
+                            "name": target.adminapp.name,
+                            'works': works,
+                        }
+                        check_cursearchapp = {
+                            "id": target.adminapp.id,
+                            "name": target.adminapp.name,
+                        }
+                        if check_cursearchapp not in check_search_app:
+                            search_app.append(cursearchapp)
+                            check_search_app.append(check_cursearchapp)
 
-        if len(search_target) > 0:
-            searchtagclass = "class=active"
-            searchtagtabclass = "active in"
-        elif len(meter_target) > 0:
-            metertagclass = "class=active"
-            metertagtabclass = "active in"
-        elif len(entry_target) > 0:
-            entrytagclass = "class=active"
-            entrytagtabclass = "active in"
-        elif len(extract_target) > 0:
-            extracttagclass = "class=active"
-            extracttagtabclass = "active in"
-        elif len(calculate_target) > 0:
-            calculatetagclass = "class=active"
-            calculatetagtabclass = "active in"
+            if len(meter_target) <= 0 and len(meter_data) <= 0:
+                metertag = "display: none;"
+            if len(entry_target) <= 0 and len(entry_data) <= 0:
+                entrytag = "display: none;"
+            if len(extract_target) <= 0 and len(extract_data) <= 0:
+                extracttag = "display: none;"
+            if len(calculate_target) <= 0 and len(calculate_data) <= 0:
+                calculatetag = "display: none;"
+            if len(meter_data) <= 0:
+                meterreset = "display: none;"
+            else:
+                meternew = "display: none;"
 
-        if len(entry_data) <= 0:
-            entryreset = "display: none;"
-        else:
-            entrynew = "display: none;"
-        if len(extract_data) <= 0:
-            extractreset = "display: none;"
-        else:
-            extractnew = "display: none;"
-        if len(calculate_data) <= 0:
-            calculatereset = "display: none;"
-        else:
-            calculatenew = "display: none;"
+            if len(search_target) > 0:
+                searchtagclass = "class=active"
+                searchtagtabclass = "active in"
+            elif len(meter_target) > 0:
+                metertagclass = "class=active"
+                metertagtabclass = "active in"
+            elif len(entry_target) > 0:
+                entrytagclass = "class=active"
+                entrytagtabclass = "active in"
+            elif len(extract_target) > 0:
+                extracttagclass = "class=active"
+                extracttagtabclass = "active in"
+            elif len(calculate_target) > 0:
+                calculatetagclass = "class=active"
+                calculatetagtabclass = "active in"
 
-        return render(request, 'reporting.html',
-                      {'username': request.user.userinfo.fullname,
-                       "cycletype": cycletype,
-                       "app": app,
-                       "date": date,
-                       "seasondate": seasondate,
-                       "yeardate": yeardate,
-                       "searchtag": searchtag,
-                       "metertag": metertag,
-                       "entrytag": entrytag,
-                       "extracttag": extracttag,
-                       "calculatetag": calculatetag,
-                       "searchtagclass": searchtagclass,
-                       "metertagclass": metertagclass,
-                       "entrytagclass": entrytagclass,
-                       "extracttagclass": extracttagclass,
-                       "calculatetagclass": calculatetagclass,
-                       "searchtagtabclass": searchtagtabclass,
-                       "metertagtabclass": metertagtabclass,
-                       "entrytagtabclass": entrytagtabclass,
-                       "extracttagtabclass": extracttagtabclass,
-                       "calculatetagtabclass": calculatetagtabclass,
-                       "meternew": meternew,
-                       "entrynew": entrynew,
-                       "extractnew": extractnew,
-                       "calculatenew": calculatenew,
-                       "meterreset": meterreset,
-                       "entryreset": entryreset,
-                       "extractreset": extractreset,
-                       "calculatereset": calculatereset,
-                       "search_app": search_app,
-                       "pagefuns": getpagefuns(funid)})
+            if len(entry_data) <= 0:
+                entryreset = "display: none;"
+            else:
+                entrynew = "display: none;"
+            if len(extract_data) <= 0:
+                extractreset = "display: none;"
+            else:
+                extractnew = "display: none;"
+            if len(calculate_data) <= 0:
+                calculatereset = "display: none;"
+            else:
+                calculatenew = "display: none;"
+
+            return render(request, 'reporting.html',
+                          {'username': request.user.userinfo.fullname,
+                           "cycletype": cycletype,
+                           "app": app,
+                           "date": date,
+                           "seasondate": seasondate,
+                           "yeardate": yeardate,
+                           "searchtag": searchtag,
+                           "metertag": metertag,
+                           "entrytag": entrytag,
+                           "extracttag": extracttag,
+                           "calculatetag": calculatetag,
+                           "searchtagclass": searchtagclass,
+                           "metertagclass": metertagclass,
+                           "entrytagclass": entrytagclass,
+                           "extracttagclass": extracttagclass,
+                           "calculatetagclass": calculatetagclass,
+                           "searchtagtabclass": searchtagtabclass,
+                           "metertagtabclass": metertagtabclass,
+                           "entrytagtabclass": entrytagtabclass,
+                           "extracttagtabclass": extracttagtabclass,
+                           "calculatetagtabclass": calculatetagtabclass,
+                           "meternew": meternew,
+                           "entrynew": entrynew,
+                           "extractnew": extractnew,
+                           "calculatenew": calculatenew,
+                           "meterreset": meterreset,
+                           "entryreset": entryreset,
+                           "extractreset": extractreset,
+                           "calculatereset": calculatereset,
+                           "search_app": search_app,
+                           "pagefuns": getpagefuns(funid),
+                           "funid": funid})
     else:
         return HttpResponseRedirect("/login")
 
@@ -3412,6 +3431,7 @@ def reporting_data(request):
         cycletype = request.GET.get('cycletype', '')
         reporting_date = request.GET.get('reporting_date', '')
         operationtype = request.GET.get('operationtype', '')
+        funid = request.GET.get('funid', '')
         try:
             app = int(app)
             reporting_date = getreporting_date(reporting_date, cycletype)
@@ -3419,212 +3439,217 @@ def reporting_data(request):
             raise Http404()
         all_data = []
 
-        if operationtype == "1":
-            all_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app, target__cycletype=cycletype,
-                datadate=reporting_date).select_related("target")
-        if operationtype == "15":
-            all_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app, target__cycletype=cycletype,
-                datadate=reporting_date).select_related("target")
-        if operationtype == "16":
-            all_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app,
-                target__cycletype=cycletype,
-                datadate=reporting_date).select_related("target")
-        if operationtype == "17":
-            all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app,
-                target__cycletype=cycletype,
-                datadate=reporting_date).select_related("target")
-        for data in all_data:
-            businesstypename = data.target.businesstype
-            unitname = data.target.unit
-            try:
-                businesstype_dict_list = DictList.objects.filter(id=int(data.target.businesstype))
-                if businesstype_dict_list.exists():
-                    businesstype_dict_list = businesstype_dict_list[0]
-                    businesstypename = businesstype_dict_list.name
-            except:
-                pass
-            try:
-                unit_dict_list = DictList.objects.filter(id=int(data.target.unit))
-                if unit_dict_list.exists():
-                    unit_dict_list = unit_dict_list[0]
-                    unitname = unit_dict_list.name
-            except:
-                pass
-            curvalue = ""
-            curvaluedate = ""
-            cumulativemonth = ""
-            cumulativequarter = ""
-            cumulativehalfyear = ""
-            cumulativeyear = ""
-            try:
-                curvalue = round(data.curvalue, data.target.digit)
-            except:
-                pass
-            try:
-                curvaluedate = data.curvaluedate.strftime('%Y-%m-%d %H:%M:%S') if data.curvaluedate else "",
-            except:
-                pass
-            if data.target.cumulative == '是':
-
+        try:
+            funid = int(funid)
+            fun = Fun.objects.get(id=funid)
+            work = fun.work
+        except:
+            pass
+        else:
+            if operationtype == "1":
+                all_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                    target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
+                    target__work=work).select_related("target")
+            if operationtype == "15":
+                all_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                    target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
+                    target__work=work).select_related("target")
+            if operationtype == "16":
+                all_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                    target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
+                    target__work=work).select_related("target")
+            if operationtype == "17":
+                all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                    target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
+                    target__work=work).select_related("target")
+            for data in all_data:
+                businesstypename = data.target.businesstype
+                unitname = data.target.unit
                 try:
-                    cumulativemonth = round(data.cumulativemonth, data.target.digit)
+                    businesstype_dict_list = DictList.objects.filter(id=int(data.target.businesstype))
+                    if businesstype_dict_list.exists():
+                        businesstype_dict_list = businesstype_dict_list[0]
+                        businesstypename = businesstype_dict_list.name
                 except:
                     pass
                 try:
-                    cumulativequarter = round(data.cumulativequarter, data.target.digit)
+                    unit_dict_list = DictList.objects.filter(id=int(data.target.unit))
+                    if unit_dict_list.exists():
+                        unit_dict_list = unit_dict_list[0]
+                        unitname = unit_dict_list.name
+                except:
+                    pass
+                curvalue = ""
+                curvaluedate = ""
+                cumulativemonth = ""
+                cumulativequarter = ""
+                cumulativehalfyear = ""
+                cumulativeyear = ""
+                try:
+                    curvalue = round(data.curvalue, data.target.digit)
                 except:
                     pass
                 try:
-                    cumulativehalfyear = round(data.cumulativehalfyear, data.target.digit)
+                    curvaluedate = data.curvaluedate.strftime('%Y-%m-%d %H:%M:%S') if data.curvaluedate else "",
                 except:
                     pass
-                try:
-                    cumulativeyear = round(data.cumulativeyear, data.target.digit)
-                except:
-                    pass
-            if operationtype in ("15", "16", "17"):
-                result.append({
-                    "id": data.id,
-                    "curvalue": curvalue,
-                    "curvaluedate": curvaluedate,
-                    "curvaluetext": data.curvaluetext if data.curvaluetext else '',
-                    "cumulativemonth": cumulativemonth,
-                    "cumulativequarter": cumulativequarter,
-                    "cumulativehalfyear": cumulativehalfyear,
-                    "cumulativeyear": cumulativeyear,
-                    "target_id": data.target.id,
-                    "target_name": data.target.name,
-                    "target_code": data.target.code,
-                    "target_businesstype": data.target.businesstype,
-                    "target_unit": data.target.unit,
-                    "target_businesstypename": businesstypename,
-                    "target_unitname": unitname,
-                    "target_datatype": data.target.datatype,
-                    "target_cumulative": data.target.cumulative,
-                    "target_magnification": data.target.magnification,
-                    "target_upperlimit": data.target.upperlimit,
-                    "target_lowerlimit": data.target.lowerlimit,
-                })
-            elif operationtype == "1":
-                zerodata = data.zerodata
-                twentyfourdata = data.twentyfourdata
-                metervalue = data.twentyfourdata
-                meterchangedata_id = ""
-                oldtable_zerodata = ""
-                oldtable_twentyfourdata = ""
-                oldtable_value = ""
-                oldtable_magnification = ""
-                oldtable_finalvalue = ""
-                newtable_zerodata = ""
-                newtable_twentyfourdata = ""
-                newtable_value = ""
-                newtable_magnification = ""
-                newtable_finalvalue = ""
-                finalvalue = ""
+                if data.target.cumulative == '是':
 
-                all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=data.id)
-                if len(all_changedata) > 0:
-                    meterchangedata_id = all_changedata[0].id
-                    oldtable_zerodata = all_changedata[0].oldtable_zerodata
-                    oldtable_twentyfourdata = all_changedata[0].oldtable_twentyfourdata
-                    oldtable_value = all_changedata[0].oldtable_value
-                    oldtable_magnification = all_changedata[0].oldtable_magnification
-                    oldtable_finalvalue = all_changedata[0].oldtable_finalvalue
-                    newtable_zerodata = all_changedata[0].newtable_zerodata
-                    newtable_twentyfourdata = all_changedata[0].newtable_twentyfourdata
-                    newtable_value = all_changedata[0].newtable_value
-                    newtable_magnification = all_changedata[0].newtable_magnification
-                    newtable_finalvalue = all_changedata[0].newtable_finalvalue
-                    finalvalue = all_changedata[0].finalvalue
-                    if data.target.cumulative == '是':
-                        try:
-                            oldtable_zerodata = round(data.oldtable_zerodata, data.target.digit)
-                        except:
-                            pass
-                        try:
-                            oldtable_twentyfourdata = round(data.oldtable_twentyfourdata, data.target.digit)
-                        except:
-                            pass
-                        try:
-                            oldtable_value = round(data.oldtable_value, data.target.digit)
-                        except:
-                            pass
-                        try:
-                            oldtable_magnification = round(data.oldtable_magnification, data.target.digit)
-                        except:
-                            pass
-                        try:
-                            oldtable_finalvalue = round(data.oldtable_finalvalue, data.target.digit)
-                        except:
-                            pass
-                        try:
-                            newtable_zerodata = round(data.newtable_zerodata, data.target.digit)
-                        except:
-                            pass
-                        try:
-                            newtable_twentyfourdata = round(data.newtable_twentyfourdata, data.target.digit)
-                        except:
-                            pass
-                        try:
-                            newtable_value = round(data.newtable_value, data.target.digit)
-                        except:
-                            pass
-                        try:
-                            newtable_magnification = round(data.newtable_magnification, data.target.digit)
-                        except:
-                            pass
-                        try:
-                            newtable_finalvalue = round(data.newtable_finalvalue, data.target.digit)
-                        except:
-                            pass
-                        try:
-                            finalvalue = round(data.finalvalue, data.target.digit)
-                        except:
-                            pass
+                    try:
+                        cumulativemonth = round(data.cumulativemonth, data.target.digit)
+                    except:
+                        pass
+                    try:
+                        cumulativequarter = round(data.cumulativequarter, data.target.digit)
+                    except:
+                        pass
+                    try:
+                        cumulativehalfyear = round(data.cumulativehalfyear, data.target.digit)
+                    except:
+                        pass
+                    try:
+                        cumulativeyear = round(data.cumulativeyear, data.target.digit)
+                    except:
+                        pass
+                if operationtype in ("15", "16", "17"):
+                    result.append({
+                        "id": data.id,
+                        "curvalue": curvalue,
+                        "curvaluedate": curvaluedate,
+                        "curvaluetext": data.curvaluetext if data.curvaluetext else '',
+                        "cumulativemonth": cumulativemonth,
+                        "cumulativequarter": cumulativequarter,
+                        "cumulativehalfyear": cumulativehalfyear,
+                        "cumulativeyear": cumulativeyear,
+                        "target_id": data.target.id,
+                        "target_name": data.target.name,
+                        "target_code": data.target.code,
+                        "target_businesstype": data.target.businesstype,
+                        "target_unit": data.target.unit,
+                        "target_businesstypename": businesstypename,
+                        "target_unitname": unitname,
+                        "target_datatype": data.target.datatype,
+                        "target_cumulative": data.target.cumulative,
+                        "target_magnification": data.target.magnification,
+                        "target_upperlimit": data.target.upperlimit,
+                        "target_lowerlimit": data.target.lowerlimit,
+                    })
+                elif operationtype == "1":
+                    zerodata = data.zerodata
+                    twentyfourdata = data.twentyfourdata
+                    metervalue = data.twentyfourdata
+                    meterchangedata_id = ""
+                    oldtable_zerodata = ""
+                    oldtable_twentyfourdata = ""
+                    oldtable_value = ""
+                    oldtable_magnification = ""
+                    oldtable_finalvalue = ""
+                    newtable_zerodata = ""
+                    newtable_twentyfourdata = ""
+                    newtable_value = ""
+                    newtable_magnification = ""
+                    newtable_finalvalue = ""
+                    finalvalue = ""
 
-                result.append({
-                    "id": data.id,
-                    "curvalue": curvalue,
-                    "curvaluedate": curvaluedate,
-                    "curvaluetext": data.curvaluetext,
-                    "cumulativemonth": cumulativemonth,
-                    "cumulativequarter": cumulativequarter,
-                    "cumulativehalfyear": cumulativehalfyear,
-                    "cumulativeyear": cumulativeyear,
-                    "target_id": data.target.id,
-                    "target_name": data.target.name,
-                    "target_code": data.target.code,
-                    "target_businesstype": data.target.businesstype,
-                    "target_unit": data.target.unit,
-                    "target_businesstypename": businesstypename,
-                    "target_unitname": unitname,
-                    "target_datatype": data.target.datatype,
-                    "target_cumulative": data.target.cumulative,
-                    "target_magnification": data.target.magnification,
-                    "target_upperlimit": data.target.upperlimit,
-                    "target_lowerlimit": data.target.lowerlimit,
+                    all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=data.id)
+                    if len(all_changedata) > 0:
+                        meterchangedata_id = all_changedata[0].id
+                        oldtable_zerodata = all_changedata[0].oldtable_zerodata
+                        oldtable_twentyfourdata = all_changedata[0].oldtable_twentyfourdata
+                        oldtable_value = all_changedata[0].oldtable_value
+                        oldtable_magnification = all_changedata[0].oldtable_magnification
+                        oldtable_finalvalue = all_changedata[0].oldtable_finalvalue
+                        newtable_zerodata = all_changedata[0].newtable_zerodata
+                        newtable_twentyfourdata = all_changedata[0].newtable_twentyfourdata
+                        newtable_value = all_changedata[0].newtable_value
+                        newtable_magnification = all_changedata[0].newtable_magnification
+                        newtable_finalvalue = all_changedata[0].newtable_finalvalue
+                        finalvalue = all_changedata[0].finalvalue
+                        if data.target.cumulative == '是':
+                            try:
+                                oldtable_zerodata = round(data.oldtable_zerodata, data.target.digit)
+                            except:
+                                pass
+                            try:
+                                oldtable_twentyfourdata = round(data.oldtable_twentyfourdata, data.target.digit)
+                            except:
+                                pass
+                            try:
+                                oldtable_value = round(data.oldtable_value, data.target.digit)
+                            except:
+                                pass
+                            try:
+                                oldtable_magnification = round(data.oldtable_magnification, data.target.digit)
+                            except:
+                                pass
+                            try:
+                                oldtable_finalvalue = round(data.oldtable_finalvalue, data.target.digit)
+                            except:
+                                pass
+                            try:
+                                newtable_zerodata = round(data.newtable_zerodata, data.target.digit)
+                            except:
+                                pass
+                            try:
+                                newtable_twentyfourdata = round(data.newtable_twentyfourdata, data.target.digit)
+                            except:
+                                pass
+                            try:
+                                newtable_value = round(data.newtable_value, data.target.digit)
+                            except:
+                                pass
+                            try:
+                                newtable_magnification = round(data.newtable_magnification, data.target.digit)
+                            except:
+                                pass
+                            try:
+                                newtable_finalvalue = round(data.newtable_finalvalue, data.target.digit)
+                            except:
+                                pass
+                            try:
+                                finalvalue = round(data.finalvalue, data.target.digit)
+                            except:
+                                pass
 
-                    "zerodata": zerodata,
-                    "twentyfourdata": twentyfourdata,
-                    "metervalue": metervalue,
-                    "meterchangedata_id": meterchangedata_id,
-                    "oldtable_zerodata": oldtable_zerodata,
-                    "oldtable_twentyfourdata": oldtable_twentyfourdata,
-                    "oldtable_value": oldtable_value,
-                    "oldtable_magnification": oldtable_magnification,
-                    "oldtable_finalvalue": oldtable_finalvalue,
-                    "newtable_zerodata": newtable_zerodata,
-                    "newtable_twentyfourdata": newtable_twentyfourdata,
-                    "newtable_value": newtable_value,
-                    "newtable_magnification": newtable_magnification,
-                    "newtable_finalvalue": newtable_finalvalue,
-                    "finalvalue": finalvalue,
+                    result.append({
+                        "id": data.id,
+                        "curvalue": curvalue,
+                        "curvaluedate": curvaluedate,
+                        "curvaluetext": data.curvaluetext,
+                        "cumulativemonth": cumulativemonth,
+                        "cumulativequarter": cumulativequarter,
+                        "cumulativehalfyear": cumulativehalfyear,
+                        "cumulativeyear": cumulativeyear,
+                        "target_id": data.target.id,
+                        "target_name": data.target.name,
+                        "target_code": data.target.code,
+                        "target_businesstype": data.target.businesstype,
+                        "target_unit": data.target.unit,
+                        "target_businesstypename": businesstypename,
+                        "target_unitname": unitname,
+                        "target_datatype": data.target.datatype,
+                        "target_cumulative": data.target.cumulative,
+                        "target_magnification": data.target.magnification,
+                        "target_upperlimit": data.target.upperlimit,
+                        "target_lowerlimit": data.target.lowerlimit,
 
-                })
+                        "zerodata": zerodata,
+                        "twentyfourdata": twentyfourdata,
+                        "metervalue": metervalue,
+                        "meterchangedata_id": meterchangedata_id,
+                        "oldtable_zerodata": oldtable_zerodata,
+                        "oldtable_twentyfourdata": oldtable_twentyfourdata,
+                        "oldtable_value": oldtable_value,
+                        "oldtable_magnification": oldtable_magnification,
+                        "oldtable_finalvalue": oldtable_finalvalue,
+                        "newtable_zerodata": newtable_zerodata,
+                        "newtable_twentyfourdata": newtable_twentyfourdata,
+                        "newtable_value": newtable_value,
+                        "newtable_magnification": newtable_magnification,
+                        "newtable_finalvalue": newtable_finalvalue,
+                        "finalvalue": finalvalue,
+
+                    })
         return JsonResponse({"data": result})
 
 
@@ -3636,22 +3661,34 @@ def reporting_search_data(request):
         cycletype = request.GET.get('cycletype', '')
         reporting_date = request.GET.get('reporting_date', '')
         searchapp = request.GET.get('searchapp', '')
+        works = request.GET.get('works', '')
         try:
             app = int(app)
             reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             raise Http404()
         all_data = []
+        # 查询的内容目前为非本应用的有查询权限的查询指标，应该再加上本应用内的非核心业务的指标
+        # >> 除本应用核心业务之外的所有指标
+        except_works = Work.objects.exclude(state='9').filter(app_id=app, core='是')
+
         curapp = App.objects.get(id=app)
-        all_target = Target.objects.exclude(state="9").exclude(adminapp=curapp).filter(app=curapp,
-                                                                                       cycletype=cycletype).order_by(
-            "adminapp", "operationtype", "sort")
+        all_target = Target.objects.exclude(state="9").exclude(work__in=except_works).\
+            filter(app=curapp, cycletype=cycletype).order_by("adminapp", "operationtype", "sort")
         if searchapp != "":
             try:
                 cursearchapp = App.objects.get(id=int(searchapp))
                 all_target = all_target.filter(adminapp=cursearchapp)
             except:
                 pass
+        
+        if works != "":
+            try:
+                works = int(works)
+                all_target = all_target.filter(work_id=works)
+            except Exception as e:
+                print(e)
+            
         for target in all_target:
             curtargetdata = {"target": target, "zerodata": "", "twentyfourdata": "", "metervalue": "", "curvalue": "",
                              "curvaluedate": "", "curvaluetext": "", "cumulativemonth": "", "cumulativequarter": "",
@@ -5921,7 +5958,8 @@ def function(request, funid):
             return render(request, 'function.html',
                           {'username': request.user.userinfo.fullname, 'errors': errors, "id": id,
                            "pid": pid, "pname": pname, "name": name, "url": url, "icon": icon, "title": title,
-                           "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata, "works_select_list": works_select_list,
+                           "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata,
+                           "works_select_list": works_select_list,
                            "app_select_list": pre_app_select_list, "app_hidden_div": app_hidden_div,
                            "pagefuns": getpagefuns(funid, request=request)})
         except Exception as e:
