@@ -135,6 +135,7 @@ class Target(models.Model):
     remark = models.TextField("说明", blank=True, null=True)
 
     work = models.ForeignKey('Work', null=True, verbose_name='业务')
+    unity = models.CharField("单位", blank=True, null=True, max_length=20)
 
 
 class ReportModel(models.Model):
