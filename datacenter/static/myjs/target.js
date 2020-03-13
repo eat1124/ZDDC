@@ -66,6 +66,7 @@ $(document).ready(function () {
         "columns": [
             {"data": "id"},
             {"data": "name"},
+            {"data": "unity"},
             {"data": "code"},
             {"data": "operationtype_name"},
             {"data": "cycletype_name"},
@@ -223,6 +224,7 @@ $(document).ready(function () {
         $("#datatype").val(data.datatype);
         $("#cumulative").val(data.cumulative);
         $("#sort").val(data.sort);
+        $("#unity").val(data.unity);
         $("#formula").val(data.formula);
         $("#cycle").val(data.cycle);
         $("#source").val(data.source);
@@ -376,6 +378,7 @@ $(document).ready(function () {
         $("#datatype").val("numbervalue");
         $("#cumulative").val("是");
         $("#sort").val("");
+        $("#unity").val("");
         $("#formula").val("");
         $("#cycle").val("");
         $("#source").val("");
@@ -424,7 +427,7 @@ $(document).ready(function () {
                     datatype: $("#datatype").val(),
                     cumulative: $("#cumulative").val(),
                     sort: $("#sort").val(),
-
+                    unity: $("#unity").val(),
                     formula: $("#formula").val(),
 
                     cycle: $("#cycle").val(),

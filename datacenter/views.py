@@ -2541,6 +2541,7 @@ def target_data(request):
 
                 'work_selected': work_selected,
                 'works': str(works),
+                "unity": target.unity,
             })
         return JsonResponse({"data": result})
 
@@ -2590,6 +2591,7 @@ def target_save(request):
         savetype = request.POST.get("savetype", "")
 
         works = request.POST.get('works', '')
+        unity = request.POST.get('unity', '')
 
         all_app = App.objects.exclude(state="9")
         all_cycle = Cycle.objects.exclude(state="9")
@@ -2644,6 +2646,7 @@ def target_save(request):
                                                 target_save.cycletype = cycletype
                                                 target_save.businesstype = businesstype
                                                 target_save.unit = unit
+                                                target_save.unity = unity
 
                                                 # 业务
                                                 try:
@@ -2766,6 +2769,7 @@ def target_save(request):
                                                     target_save.cycletype = cycletype
                                                     target_save.businesstype = businesstype
                                                     target_save.unit = unit
+                                                    target_save.unity = unity
 
                                                     # 业务
                                                     try:
@@ -3498,6 +3502,7 @@ def reporting_data(request):
                     "cumulativeyear": cumulativeyear,
                     "target_id": data.target.id,
                     "target_name": data.target.name,
+                    "target_unity": data.target.unity,
                     "target_code": data.target.code,
                     "target_businesstype": data.target.businesstype,
                     "target_unit": data.target.unit,
@@ -3597,6 +3602,7 @@ def reporting_data(request):
                     "cumulativeyear": cumulativeyear,
                     "target_id": data.target.id,
                     "target_name": data.target.name,
+                    "target_unity": data.target.unity,
                     "target_code": data.target.code,
                     "target_businesstype": data.target.businesstype,
                     "target_unit": data.target.unit,
@@ -3764,6 +3770,7 @@ def reporting_search_data(request):
                 "cumulativeyear": cumulativeyear,
                 "target_id": data["target"].id,
                 "target_name": data["target"].name,
+                "target_unity": data["target"].unity,
                 "target_code": data["target"].code,
                 "target_businesstype": data["target"].businesstype,
                 "target_unit": data["target"].unit,

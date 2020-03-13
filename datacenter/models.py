@@ -136,6 +136,7 @@ class Target(models.Model):
 
     work = models.ForeignKey('Work', null=True, verbose_name='业务')
     unity = models.CharField("单位", blank=True, null=True, max_length=20)
+    is_repeat = models.CharField("数据重复时", blank=True, null=True, max_length=20)
 
 
 class ReportModel(models.Model):
