@@ -1248,13 +1248,13 @@ $(document).ready(function () {
             success: function (data) {
                 if (data == 1) {
                     table.ajax.reload();
-                    alert("计算成功！");
+                    alert("提取成功！");
                 }
                 else
-                    alert("计算失败，请于管理员联系。");
+                    alert("提取失败，请于管理员联系。");
             },
             error: function (e) {
-                alert("计算失败，请于管理员联系。");
+                alert("提取失败，请于管理员联系。");
             }
         });
     });

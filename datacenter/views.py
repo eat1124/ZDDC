@@ -4640,6 +4640,65 @@ def reporting_recalculate(request):
         return HttpResponse(1)
 
 
+def reporting_reextract(request):
+    if request.user.is_authenticated():
+        app = request.POST.get('app', '')
+        cycletype = request.POST.get('cycletype', '')
+        reporting_date = request.POST.get('reporting_date', '')
+        operationtype = request.POST.get('operationtype', '')
+
+        try:
+            app = int(app)
+            reporting_date = getreporting_date(reporting_date, cycletype)
+        except:
+            return HttpResponse(0)
+
+
+
+        guid = uuid.uuid1()
+        all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
+                                                              operationtype=operationtype)
+        for target in all_target:
+            if operationtype == "16":
+                extractdata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                target_id=target.id).filter(datadate=reporting_date)
+                if len(extractdata) > 0:
+                    extractdata = extractdata[0]
+                    tablename = ""
+                    try:
+                        tablename = target.storage.tablename
+                    except:
+                        pass
+                    if tablename != "":
+                        cursor = connection.cursor()
+                        strsql = "select  curvalue from " + tablename + " where target_id = " + str(
+                            target.id) + " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'"
+                        cursor.execute(strsql)
+                        rows = cursor.fetchall()
+                        if len(rows) > 0:
+                            try:
+                                if target.is_repeat=='2':
+                                    rownum=0
+                                    rowvalue=0
+                                    for row in rows:
+                                        if row[0] is not None:
+                                            rowvalue+=row[0]
+                                            rownum+=1
+                                    extractdata.curvalue = rowvalue/rownum
+                                else:
+                                    extractdata.curvalue = rows[0][0]
+                            except:
+                                pass
+                    if target.cumulative == "是":
+                        cumulative = getcumulative(target, reporting_date, extractdata.curvalue)
+                        extractdata.cumulativemonth = cumulative["cumulativemonth"]
+                        extractdata.cumulativequarter = cumulative["cumulativequarter"]
+                        extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                        extractdata.cumulativeyear = cumulative["cumulativeyear"]
+                    extractdata.save()
+        return HttpResponse(1)
+
+
 def reporting_new(request):
     if request.user.is_authenticated():
         app = request.POST.get('app', '')
