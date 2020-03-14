@@ -3288,7 +3288,7 @@ def constant_save(request):
                 else:
                     if id == 0:
                         all_constant = Constant.objects.filter(code=code).exclude(state="9")
-                        all_target = Target.objects.filter(code=code).exculde(state="9")
+                        all_target = Target.objects.filter(code=code).exclude(state="9")
                         if (len(all_constant) > 0):
                             result["res"] = '常数代码:' + code + '已存在。'
                         if (len(all_target) > 0):
