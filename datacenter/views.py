@@ -2557,11 +2557,17 @@ def target_data(request):
 def target_formula_data(request):
     if request.user.is_authenticated():
         all_target = Target.objects.exclude(state="9")
+        all_constant = Constant.objects.exclude(state="9")
         formula_analysis_data = {}
         for target in all_target:
             analysis_code = target.code
             analysis_name = target.name
             formula_analysis_data[analysis_code] = analysis_name
+        for constant in all_constant:
+            analysis_code = constant.code
+            analysis_name = constant.name
+            formula_analysis_data[analysis_code] = analysis_name
+
         return HttpResponse(json.dumps(formula_analysis_data, ensure_ascii=False))
 
 
@@ -2635,11 +2641,13 @@ def target_save(request):
                                     result["res"] = '数据类型不能为空。'
                                 else:
                                     if id == 0:
-                                        all_target = Target.objects.filter(
-                                            code=code).exclude(state="9")
+                                        all_target = Target.objects.filter(code=code).exclude(state="9")
+                                        all_constant = Constant.objects.filter(code=code).exclude(state="9")
                                         if (len(all_target) > 0):
                                             result["res"] = '指标代码:' + \
                                                             code + '已存在。'
+                                        if (len(all_constant) > 0):
+                                            result["res"] = '常数库内已存在:' + code + '。'
                                         else:
                                             all_target = Target.objects.filter(
                                                 name=name).exclude(state="9")
@@ -2760,11 +2768,14 @@ def target_save(request):
                                                 result["res"] = "保存成功。"
                                                 result["data"] = target_save.id
                                     else:
-                                        all_target = Target.objects.filter(code=code).exclude(
-                                            id=id).exclude(state="9")
+                                        all_target = Target.objects.filter(code=code).exclude(id=id).exclude(state="9")
+                                        all_constant = Constant.objects.filter(code=code).exclude(state="9")
                                         if (len(all_target) > 0):
                                             result["res"] = '指标代码:' + \
                                                             code + '已存在。'
+                                        if (len(all_constant) > 0):
+                                            result["res"] = '常数库内已存在:' + code + '。'
+
                                         else:
                                             all_target = Target.objects.filter(name=name).exclude(
                                                 id=id).exclude(state="9")
@@ -3232,6 +3243,7 @@ def constant_data(request):
             except:
                 pass
             value = remove_decimal(decimal.Decimal(constant.value))
+
             result.append({
                 "adminapp_name": adminapp_name,
                 "id": constant.id,
@@ -3276,8 +3288,11 @@ def constant_save(request):
                 else:
                     if id == 0:
                         all_constant = Constant.objects.filter(code=code).exclude(state="9")
+                        all_target = Target.objects.filter(code=code).exculde(state="9")
                         if (len(all_constant) > 0):
                             result["res"] = '常数代码:' + code + '已存在。'
+                        if (len(all_target) > 0):
+                            result["res"] = '指标库内已存在:' + code + '。'
                         else:
                             all_constant = Constant.objects.filter(name=name).exclude(state="9")
                             if (len(all_constant) > 0):
@@ -3305,8 +3320,11 @@ def constant_save(request):
 
                     else:
                         all_constant = Constant.objects.filter(code=code).exclude(id=id).exclude(state="9")
+                        all_target = Target.objects.filter(code=code).exclude(state="9")
                         if (len(all_constant) > 0):
                             result["res"] = '常数代码:' + code + '已存在。'
+                        if (len(all_target) > 0):
+                            result["res"] = '指标库内已存在:' + code + '。'
                         else:
                             all_constant = Constant.objects.filter(name=name).exclude(id=id).exclude(state="9")
                             if (len(all_constant) > 0):

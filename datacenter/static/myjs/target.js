@@ -136,7 +136,7 @@ $(document).ready(function () {
         var formula_data = ($("#formula").val()).replace(/\s*/g, "");
         var formula_analysis_data_str = $("#formula_analysis_data").val();
         var formula_analysis_data = JSON.parse(formula_analysis_data_str);
-        var data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积"};
+        var data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积", 'C': '常数'};
         var data_time = {
             "D": "当天", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
             "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
@@ -151,6 +151,7 @@ $(document).ready(function () {
         for (var i = 0; i < formula_data_list.length; i++) {
             var formula_data_pre = formula_data_list[i].split(':');
             var formula_data_pre_list = formula_data_pre;
+
             if (formula_data_pre[0] in formula_analysis_data) {
                 formula_data_pre1 = formula_analysis_data[formula_data_pre[0]];
                 formula_data_pre_list[0] = formula_data_pre1
@@ -535,6 +536,7 @@ $(document).ready(function () {
             "data": null,
             "mRender": function (data, type, full) {
                 if ($("#calculate_cycletype").val()) {
+
                     if ($("#calculate_cycletype").val() == '日' && full.cycletype_name == '日') {
                         return "<select style='width:100px'><option value='D'>当天</option><option value='L'>前一天</option><option value='LME'>上月末</option>" +
                             "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
@@ -717,6 +719,56 @@ $(document).ready(function () {
             $('#storagetag').parent().parent().hide();
         }
     });
+
+    $('#sample_4').dataTable({
+        "bAutoWidth": true,
+        "bSort": false,
+        "bProcessing": true,
+        "ajax": "../constant_data/",
+        "columns": [
+            {"data": "id"},
+            {"data": "name"},
+            {"data": "code"},
+            {"data": "value"},
+            {"data": null}
+        ],
+
+        "columnDefs": [{
+            "targets": -1,
+            "data": null,
+            "defaultContent": "<button  id='select' title='选择'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-check'></i></button>"
+            }
+        ],
+        "oLanguage": {
+            "sLengthMenu": "每页显示 _MENU_ 条记录",
+            "sZeroRecords": "抱歉， 没有找到",
+            "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+            "sInfoEmpty": "没有数据",
+            "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+            "sSearch": "搜索",
+            "oPaginate": {
+                "sFirst": "首页",
+                "sPrevious": "前一页",
+                "sNext": "后一页",
+                "sLast": "尾页"
+            },
+            "sZeroRecords": "没有检索到数据",
+        },
+    });
+
+    $('#sample_4 tbody').on('click', 'button#select', function () {
+        var table = $('#sample_4').DataTable();
+        var data1 = table.row($(this).parents('tr')).data().code;
+        var select = '<' + data1 + ':' + 'C' + '>';
+        var data = $('#formula').val();
+        var seat = $('#formula').attr("seat");
+        data = data.slice(0, seat) + select + data.slice(seat);
+        $('#formula').val(data);
+        analysisFunction();
+        $('#myModal').modal('hide');
+    });
+
+
 });
 
 
