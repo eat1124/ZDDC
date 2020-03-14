@@ -2638,7 +2638,7 @@ def target_save(request):
                                                 name=name).exclude(state="9")
                                             if (len(all_target) > 0):
                                                 result["res"] = '指标名称:' + \
-                                                                code + '已存在。'
+                                                                name + '已存在。'
                                             else:
                                                 target_save = Target()
                                                 target_save.name = name
@@ -2763,7 +2763,7 @@ def target_save(request):
                                                 id=id).exclude(state="9")
                                             if (len(all_target) > 0):
                                                 result["res"] = '指标名称:' + \
-                                                                code + '已存在。'
+                                                                name + '已存在。'
                                             else:
                                                 try:
                                                     target_save = Target.objects.get(
@@ -3186,6 +3186,183 @@ def target_app_del(request):
             return HttpResponse(1)
         else:
             return HttpResponse(0)
+
+
+def constant_index(request, funid):
+    if request.user.is_authenticated():
+        app_list = []
+        applist = App.objects.all().exclude(state='9')
+        for i in applist:
+            app_list.append({
+                "app_name": i.name,
+                "app_id": i.id,
+            })
+
+        return render(request, 'constant.html',
+                      {'username': request.user.userinfo.fullname,
+                       "app_list": app_list,
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def constant_data(request):
+    if request.user.is_authenticated():
+        search_adminapp = request.GET.get('search_adminapp', '')
+
+        result = []
+        all_constant = Constant.objects.exclude(state="9").order_by("sort")
+        if search_adminapp != "":
+            if search_adminapp == 'null':
+                all_constant = all_constant.filter(adminapp=None)
+            else:
+                curadminapp = App.objects.get(id=int(search_adminapp))
+                all_constant = all_constant.filter(adminapp=curadminapp)
+
+        for constant in all_constant:
+            adminapp_name = ""
+            try:
+                adminapp_name = constant.adminapp.name
+            except:
+                pass
+
+            result.append({
+                "adminapp_name": adminapp_name,
+                "id": constant.id,
+                "name": constant.name,
+                "unity": constant.unity,
+                "code": constant.code,
+                "value": constant.value,
+                "adminapp": constant.adminapp_id,
+                "sort": constant.sort,
+                "state": constant.state,
+            })
+        return JsonResponse({"data": result})
+
+
+def constant_save(request):
+    if request.user.is_authenticated():
+        id = request.POST.get("id", "")
+        name = request.POST.get("name", "")
+        code = request.POST.get("code", "")
+        value = request.POST.get("value", "")
+        adminapp = request.POST.get("adminapp", "")
+        sort = request.POST.get("sort", "")
+        unity = request.POST.get("unity", "")
+
+        all_app = App.objects.exclude(state="9")
+
+        try:
+            id = int(id)
+        except:
+            raise Http404()
+
+        result = {}
+
+        if name.strip() == '':
+            result["res"] = '常数名称不能为空。'
+        else:
+            if code.strip() == '':
+                result["res"] = '常数代码不能为空。'
+            else:
+                if value.strip() == '':
+                    result["res"] = '常数值不能为空。'
+                else:
+                    if id == 0:
+                        all_constant = Constant.objects.filter(code=code).exclude(state="9")
+                        if (len(all_constant) > 0):
+                            result["res"] = '常数代码:' + code + '已存在。'
+                        else:
+                            all_constant = Constant.objects.filter(name=name).exclude(state="9")
+                            if (len(all_constant) > 0):
+                                result["res"] = '常数名称:' + name + '已存在。'
+                            else:
+                                constant_save = Constant()
+                                constant_save.name = name
+                                constant_save.code = code
+                                constant_save.value = float(value)
+                                constant_save.unity = unity
+
+                                try:
+                                    app_id = int(adminapp)
+                                    my_app = all_app.get(id=app_id)
+                                    constant_save.adminapp = my_app
+                                except:
+                                    pass
+                                try:
+                                    constant_save.sort = int(sort)
+                                except:
+                                    pass
+                                constant_save.save()
+                                result["res"] = "保存成功。"
+                                result["data"] = constant_save.id
+
+                    else:
+                        all_constant = Constant.objects.filter(code=code).exclude(id=id).exclude(state="9")
+                        if (len(all_constant) > 0):
+                            result["res"] = '常数代码:' + code + '已存在。'
+                        else:
+                            all_constant = Constant.objects.filter(name=name).exclude(id=id).exclude(state="9")
+                            if (len(all_constant) > 0):
+                                result["res"] = '常数名称:' + name + '已存在。'
+                            else:
+                                try:
+                                    constant_save = Constant.objects.get(id=id)
+                                    constant_save.name = name
+                                    constant_save.code = code
+                                    constant_save.value = float(value)
+                                    constant_save.unity = unity
+
+                                    try:
+                                        app_id = int(adminapp)
+                                        my_app = all_app.get(id=app_id)
+                                        constant_save.adminapp = my_app
+                                    except:
+                                        pass
+                                    try:
+                                        constant_save.sort = int(sort)
+                                    except:
+                                        pass
+
+                                    constant_save.save()
+                                    result["res"] = "保存成功。"
+                                    result["data"] = constant_save.id
+                                except Exception as e:
+                                    result["res"] = "修改失败。"
+
+        return JsonResponse(result)
+
+
+def constant_del(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            id = request.POST.get('id', '')
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+            constant = Constant.objects.get(id=id)
+            constant.state = "9"
+            constant.save()
+            return HttpResponse(1)
+        else:
+            return HttpResponse(0)
+
+
+def constant_app_index(request, funid):
+    if request.user.is_authenticated():
+        try:
+            cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
+            adminapp = cur_fun[0].app
+        except:
+            return HttpResponseRedirect("/index")
+
+        return render(request, 'constant_app.html',
+                      {'username': request.user.userinfo.fullname,
+                       "adminapp": adminapp.id if adminapp else '',
+                       "pagefuns": getpagefuns(funid)})
+    else:
+        return HttpResponseRedirect("/login")
 
 
 def getreporting_date(date, cycletype):

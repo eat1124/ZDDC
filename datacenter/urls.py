@@ -95,6 +95,15 @@ urlpatterns = [
     url(r'^target_importapp/$', target_importapp),
     url(r'^target_app_del/$', target_app_del),
 
+    # 常数维护
+    url(r'^constant/$', constant_index, {'funid': '39'}),
+    url(r'^constant_data/$', constant_data),
+    url(r'^constant_save/$', constant_save),
+    url(r'^constant_del/$', constant_del),
+
+    # 应用常数维护
+    url(r'^constant_app/(?P<funid>\d+)/$', constant_app_index),
+
     #报表模板管理
     url(r'^report/$', report_index, {'funid': '14'}),
     url(r'^report_data/$', report_data),
