@@ -330,7 +330,7 @@ $(document).ready(function () {
         $("#is_repeat").val("1");
 
         // 业务
-        $('#work_list').empty();
+        $('#work_edit').empty();
 
         var work_list = eval($('#work_list').val());
         for (var i = 0; i < work_list.length; i++) {
