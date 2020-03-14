@@ -462,77 +462,120 @@
                     <input hidden id="id" type="text" name="id">
                 </div>
 
-                <div class="modal-body">
-                    <div class="table-toolbar">
-                        <div id="error">
-                            {% if errors %}
-                                {% for error in errors %}
-                                    <div class="alert alert-danger ">{{ error }}</div>
-                                    <span> {% endfor %}</span>
+                <ul id="navtabs" class="nav nav-tabs">
+                    <li class="active">
+                        <a href="#tab_1_1" id='tabcheck1' data-toggle="tab"> 指标 </a>
+                    </li>
+                    <li>
+                        <a href="#tab_1_2" id='tabcheck2' data-toggle="tab" > 常数 </a>
+                    </li>
+                </ul>
 
-                            {% endif %}
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="panel-body">
-                                    <div class="bs-example form-horizontal activate-form">
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <div class="col-md-6">
-                                                    <div class="form-group ">
-                                                        <label class="col-md-3 control-label">操作类型</label>
-                                                        <div class="col-md-7">
-                                                            <select class="form-control" id="search_operationtype3"
-                                                                    name="search_operationtype3">
-                                                                <option selected value="">全部</option>
-                                                                {% for operation_type in operation_type_list %}
-                                                                    <option value="{{ operation_type.operation_type_id }}">{{ operation_type.operation_type_name }}</option>
-                                                                {% endfor %}
-                                                            </select>
+                <div id="myTabContent1" class="tab-content">
+                    <div class="tab-pane fade active in" id="tab_1_1">
+                        <div class="table-toolbar">
+                            <div id="error">
+                                {% if errors %}
+                                    {% for error in errors %}
+                                        <div class="alert alert-danger ">{{ error }}</div>
+                                        <span> {% endfor %}</span>
+
+                                {% endif %}
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="panel-body">
+                                        <div class="bs-example form-horizontal activate-form">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group ">
+                                                            <label class="col-md-3 control-label">管理应用</label>
+                                                            <div class="col-md-7">
+                                                                <select class="form-control" id="search_adminapp3"
+                                                                        name="search_adminapp3">
+                                                                    <option selected value="">全部</option>
+                                                                    {% for app in app_list %}
+                                                                        <option value="{{ app.app_id }}">{{ app.app_name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group ">
+                                                            <label class="col-md-3 control-label">查询应用</label>
+                                                            <div class="col-md-7">
+                                                                <select class="form-control" id="search_app3"
+                                                                        name="search_app3">
+                                                                    <option selected value="">全部</option>
+                                                                    {% for app in app_list %}
+                                                                        <option value="{{ app.app_id }}">{{ app.app_name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group ">
+                                                            <label class="col-md-3 control-label">操作类型</label>
+                                                            <div class="col-md-7">
+                                                                <select class="form-control" id="search_operationtype3"
+                                                                        name="search_operationtype3">
+                                                                    <option selected value="">全部</option>
+                                                                    {% for operation_type in operation_type_list %}
+                                                                        <option value="{{ operation_type.operation_type_id }}">{{ operation_type.operation_type_name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group ">
+                                                            <label class="col-md-3 control-label">周期类型</label>
+                                                            <div class="col-md-7">
+                                                                <select class="form-control" id="search_cycletype3"
+                                                                        name="search_cycletype3">
+                                                                    <option selected value="">全部</option>
+                                                                    {% for cycle_type in cycle_type_list %}
+                                                                        <option value="{{ cycle_type.cycle_type_id }}">{{ cycle_type.cycle_type_name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group ">
-                                                        <label class="col-md-3 control-label">周期类型</label>
-                                                        <div class="col-md-7">
-                                                            <select class="form-control" id="search_cycletype3"
-                                                                    name="search_cycletype3">
-                                                                <option selected value="">全部</option>
-                                                                {% for cycle_type in cycle_type_list %}
-                                                                    <option value="{{ cycle_type.cycle_type_id }}">{{ cycle_type.cycle_type_name }}</option>
-                                                                {% endfor %}
-                                                            </select>
+                                                <div class="col-md-12">
+
+                                                    <div class="col-md-6">
+                                                        <div class="form-group ">
+                                                            <label class="col-md-3 control-label">业务类型</label>
+                                                            <div class="col-md-7">
+                                                                <select class="form-control" id="search_businesstype3"
+                                                                        name="search_businesstype3">
+                                                                    <option selected value="">全部</option>
+                                                                    {% for business_type in business_type_list %}
+                                                                        <option value="{{ business_type.business_type_id }}">{{ business_type.business_type_name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-12">
-                                                <div class="col-md-6">
-                                                    <div class="form-group ">
-                                                        <label class="col-md-3 control-label">业务类型</label>
-                                                        <div class="col-md-7">
-                                                            <select class="form-control" id="search_businesstype3"
-                                                                    name="search_businesstype3">
-                                                                <option selected value="">全部</option>
-                                                                {% for business_type in business_type_list %}
-                                                                    <option value="{{ business_type.business_type_id }}">{{ business_type.business_type_name }}</option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group ">
-                                                        <label class="col-md-3 control-label">机组</label>
-                                                        <div class="col-md-7">
-                                                            <select class="form-control" id="search_unit3"
-                                                                    name="search_unit3">
-                                                                <option selected value="">全部</option>
-                                                                {% for unit in unit_list %}
-                                                                    <option value="{{ unit.unit_id }}">{{ unit.unit_name }}</option>
-                                                                {% endfor %}
-                                                            </select>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group ">
+                                                            <label class="col-md-3 control-label">机组</label>
+                                                            <div class="col-md-7">
+                                                                <select class="form-control" id="search_unit3"
+                                                                        name="search_unit3">
+                                                                    <option selected value="">全部</option>
+                                                                    {% for unit in unit_list %}
+                                                                        <option value="{{ unit.unit_id }}">{{ unit.unit_name }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -542,27 +585,57 @@
                                 </div>
                             </div>
                         </div>
+                        <table class="table table-striped table-bordered table-hover table-checkable order-column"
+                               id="sample_3">
+                            <thead>
+                            <tr>
+                                <th style="width:40px;"> 序号</th>
+                                <th> 指标名称</th>
+                                <th> 指标代码</th>
+                                <th> 是否累积</th>
+                                <th> 周期类型</th>
+                                <th> 数据字段</th>
+                                <th> 数据时间</th>
+                                <th style="width:50px;"> 操作</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade" id="tab_1_2">
+                        <div class="table-toolbar">
+                            <div id="error">
+                                {% if errors %}
+                                    {% for error in errors %}
+                                        <div class="alert alert-danger ">{{ error }}</div>
+                                        <span> {% endfor %}</span>
+
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <table class="table table-striped table-bordered table-hover table-checkable order-column"
+                               id="sample_4">
+                            <thead>
+                            <tr>
+                                <th style="width:40px;"> 序号</th>
+                                <th> 常数名称</th>
+                                <th> 常数代码</th>
+                                <th> 常数值</th>
+                                <th style="width:50px;"> 操作</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+
+                            </tbody>
+                        </table>
+
                     </div>
 
-                    <table class="table table-striped table-bordered table-hover table-checkable order-column"
-                           id="sample_3">
-                        <thead>
-                        <tr>
-                            <th style="width:60px;"> 序号</th>
-                            <th> 指标名称</th>
-                            <th> 指标代码</th>
-                            <th> 是否累积</th>
-                            <th> 周期类型</th>
-                            <th> 数据字段</th>
-                            <th> 数据时间</th>
-                            <th style="width:60px;" id="select"> 操作</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-
-                        </tbody>
-                    </table>
                 </div>
 
                 <div class="modal-footer">
