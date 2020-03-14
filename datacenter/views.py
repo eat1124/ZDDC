@@ -58,6 +58,13 @@ info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Ad
         "lastlogin": 0}
 
 
+def remove_decimal(num):
+    """
+    移除小数点后多余的0
+    """
+    return num.to_integral() if num == num.to_integral() else num.normalize()
+
+
 class DataCenter(View):
     """
     数据服务
@@ -3209,7 +3216,6 @@ def constant_index(request, funid):
 def constant_data(request):
     if request.user.is_authenticated():
         search_adminapp = request.GET.get('search_adminapp', '')
-
         result = []
         all_constant = Constant.objects.exclude(state="9").order_by("sort")
         if search_adminapp != "":
@@ -3225,14 +3231,14 @@ def constant_data(request):
                 adminapp_name = constant.adminapp.name
             except:
                 pass
-
+            value = remove_decimal(decimal.Decimal(constant.value))
             result.append({
                 "adminapp_name": adminapp_name,
                 "id": constant.id,
                 "name": constant.name,
                 "unity": constant.unity,
                 "code": constant.code,
-                "value": constant.value,
+                "value": value,
                 "adminapp": constant.adminapp_id,
                 "sort": constant.sort,
                 "state": constant.state,

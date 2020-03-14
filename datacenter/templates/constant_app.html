@@ -62,7 +62,7 @@
                                         style="color:red; ">*</span>常数名称</label>
                                 <div class="col-md-4">
                                     <input id="name" type="text" name="name" class="form-control "
-                                           placeholder="">
+                                           placeholder="" autocomplete="off">
                                     <div class="form-control-focus"></div>
 
                                 </div>
@@ -70,7 +70,7 @@
                                         style="color:red; ">*</span>常数代码</label>
                                 <div class="col-md-4">
                                     <input id="code" type="text" name="code" class="form-control "
-                                           placeholder="">
+                                           placeholder="" autocomplete="off">
                                     <div class="form-control-focus"></div>
 
                                 </div>
@@ -80,8 +80,8 @@
                                 <label class="col-md-2 control-label"><span
                                         style="color:red; ">*</span>常数值</label>
                                 <div class="col-md-4">
-                                    <input id="value" type="text" name="value" class="form-control "
-                                           placeholder="">
+                                    <input id="value" type="number" name="value" class="form-control "
+                                           placeholder="" onkeyup="fiveDecimal(this)" onblur="fiveDecimal(this)">
                                     <div class="form-control-focus"></div>
                                 </div>
                                 <label class="col-md-2 control-label">排序</label>
