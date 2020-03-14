@@ -4490,7 +4490,16 @@ def reporting_new(request):
                     rows = cursor.fetchall()
                     if len(rows) > 0:
                         try:
-                            extractdata.curvalue = rows[0][0]
+                            if target.is_repeat=='2':
+                                rownum=0
+                                rowvalue=0
+                                for row in rows:
+                                    if row[0] is not None:
+                                        rowvalue+=row[0]
+                                        rownum+=1
+                                extractdata.curvalue = rowvalue/rownum
+                            else:
+                                extractdata.curvalue = rows[0][0]
                         except:
                             pass
                 if target.cumulative == "是":

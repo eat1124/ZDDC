@@ -1155,6 +1155,32 @@ $(document).ready(function () {
             }
         });
     })
+    $('#reset2').click(function () {
+        var table = $('#sample_3').DataTable();
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_recalculate/",
+            data:
+                {
+                    operationtype:17,
+                    reporting_date:$('#reporting_date').val(),
+                    app: $('#app').val(),
+                    cycletype:$('#cycletype').val(),
+                },
+            success: function (data) {
+                if (data == 1) {
+                    table.ajax.reload();
+                    alert("计算成功！");
+                }
+                else
+                    alert("计算失败，请于管理员联系。");
+            },
+            error: function (e) {
+                alert("计算失败，请于管理员联系。");
+            }
+        });
+    });
 
     $("#new3").click(function () {
         var table = $('#sample_3').DataTable();
