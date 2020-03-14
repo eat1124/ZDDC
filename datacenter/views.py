@@ -2646,146 +2646,17 @@ def target_save(request):
                                         if (len(all_target) > 0):
                                             result["res"] = '指标代码:' + \
                                                             code + '已存在。'
-                                        if (len(all_constant) > 0):
-                                            result["res"] = '常数库内已存在:' + code + '。'
                                         else:
-                                            all_target = Target.objects.filter(
-                                                name=name).exclude(state="9")
-                                            if (len(all_target) > 0):
-                                                result["res"] = '指标名称:' + \
-                                                                name + '已存在。'
+                                            if (len(all_constant) > 0):
+                                                result["res"] = '常数库内已存在:' + code + '。'
                                             else:
-                                                target_save = Target()
-                                                target_save.name = name
-                                                target_save.code = code
-                                                target_save.operationtype = operationtype
-                                                target_save.cycletype = cycletype
-                                                target_save.businesstype = businesstype
-                                                target_save.unit = unit
-                                                target_save.unity = unity
-
-                                                # 业务
-                                                try:
-                                                    works = int(works)
-                                                except:
-                                                    pass
+                                                all_target = Target.objects.filter(
+                                                    name=name).exclude(state="9")
+                                                if (len(all_target) > 0):
+                                                    result["res"] = '指标名称:' + \
+                                                                    name + '已存在。'
                                                 else:
-                                                    target_save.work_id = works
-
-                                                if datatype == 'numbervalue':
-                                                    try:
-                                                        target_save.magnification = float(magnification)
-                                                    except:
-                                                        pass
-                                                    try:
-                                                        target_save.digit = int(digit)
-                                                    except:
-                                                        pass
-                                                    try:
-                                                        target_save.upperlimit = float(upperlimit)
-                                                    except:
-                                                        pass
-                                                    try:
-                                                        target_save.lowerlimit = float(lowerlimit)
-                                                    except:
-                                                        pass
-                                                    target_save.cumulative = cumulative
-
-                                                if datatype == 'date' or datatype == 'text':
-                                                    magnification = request.POST.get("")
-                                                    digit = request.POST.get("")
-                                                    upperlimit = request.POST.get("")
-                                                    lowerlimit = request.POST.get("")
-                                                    cumulative = request.POST.get("")
-                                                    try:
-                                                        target_save.magnification = magnification
-                                                    except:
-                                                        pass
-                                                    try:
-                                                        target_save.digit = digit
-                                                    except:
-                                                        pass
-                                                    try:
-                                                        target_save.upperlimit = upperlimit
-                                                    except:
-                                                        pass
-                                                    try:
-                                                        target_save.lowerlimit = lowerlimit
-                                                    except:
-                                                        pass
-                                                    target_save.cumulative = cumulative
-                                                target_save.datatype = datatype
-                                                try:
-                                                    app_id = int(adminapp)
-                                                    my_app = all_app.get(id=app_id)
-                                                    target_save.adminapp = my_app
-                                                except:
-                                                    pass
-
-                                                try:
-                                                    target_save.sort = int(sort)
-                                                except:
-                                                    pass
-                                                if operationtype == '17':
-                                                    target_save.formula = formula
-                                                if operationtype in ['1', '16']:
-                                                    try:
-                                                        cycle_id = int(cycle)
-                                                        my_cycle = all_cycle.get(id=cycle_id)
-                                                        target_save.cycle = my_cycle
-                                                    except:
-                                                        pass
-                                                    try:
-                                                        source_id = int(source)
-                                                        my_source = all_source.get(id=source_id)
-                                                        target_save.source = my_source
-                                                    except:
-                                                        pass
-
-                                                    target_save.source_content = source_content
-                                                    try:
-                                                        target_save.is_repeat = int(is_repeat)
-                                                    except:
-                                                        pass
-                                                    try:
-                                                        storage_id = int(storage)
-                                                        my_storage = all_storage.get(id=storage_id)
-                                                        target_save.storage = my_storage
-                                                    except:
-                                                        pass
-                                                    target_save.storagetag = storagetag
-                                                    target_save.storagefields = storagefields
-                                                target_save.save()
-                                                # 存入多对多app
-                                                if savetype != 'app':
-                                                    for app_id in app_list:
-                                                        try:
-                                                            app_id = int(app_id)
-                                                            my_app = all_app.get(id=app_id)
-                                                            target_save.app.add(my_app)
-                                                        except:
-                                                            pass
-                                                result["res"] = "保存成功。"
-                                                result["data"] = target_save.id
-                                    else:
-                                        all_target = Target.objects.filter(code=code).exclude(id=id).exclude(state="9")
-                                        all_constant = Constant.objects.filter(code=code).exclude(state="9")
-                                        if (len(all_target) > 0):
-                                            result["res"] = '指标代码:' + \
-                                                            code + '已存在。'
-                                        if (len(all_constant) > 0):
-                                            result["res"] = '常数库内已存在:' + code + '。'
-
-                                        else:
-                                            all_target = Target.objects.filter(name=name).exclude(
-                                                id=id).exclude(state="9")
-                                            if (len(all_target) > 0):
-                                                result["res"] = '指标名称:' + \
-                                                                name + '已存在。'
-                                            else:
-                                                try:
-                                                    target_save = Target.objects.get(
-                                                        id=id)
+                                                    target_save = Target()
                                                     target_save.name = name
                                                     target_save.code = code
                                                     target_save.operationtype = operationtype
@@ -2820,6 +2691,7 @@ def target_save(request):
                                                         except:
                                                             pass
                                                         target_save.cumulative = cumulative
+
                                                     if datatype == 'date' or datatype == 'text':
                                                         magnification = request.POST.get("")
                                                         digit = request.POST.get("")
@@ -2887,7 +2759,6 @@ def target_save(request):
                                                     target_save.save()
                                                     # 存入多对多app
                                                     if savetype != 'app':
-                                                        target_save.app.clear()
                                                         for app_id in app_list:
                                                             try:
                                                                 app_id = int(app_id)
@@ -2897,8 +2768,138 @@ def target_save(request):
                                                                 pass
                                                     result["res"] = "保存成功。"
                                                     result["data"] = target_save.id
-                                                except Exception as e:
-                                                    result["res"] = "修改失败。"
+                                    else:
+                                        all_target = Target.objects.filter(code=code).exclude(id=id).exclude(state="9")
+                                        all_constant = Constant.objects.filter(code=code).exclude(state="9")
+                                        if (len(all_target) > 0):
+                                            result["res"] = '指标代码:' + \
+                                                            code + '已存在。'
+                                        else:
+                                            if (len(all_constant) > 0):
+                                                result["res"] = '常数库内已存在:' + code + '。'
+                                            else:
+                                                all_target = Target.objects.filter(name=name).exclude(
+                                                    id=id).exclude(state="9")
+                                                if (len(all_target) > 0):
+                                                    result["res"] = '指标名称:' + \
+                                                                    name + '已存在。'
+                                                else:
+                                                    try:
+                                                        target_save = Target.objects.get(
+                                                            id=id)
+                                                        target_save.name = name
+                                                        target_save.code = code
+                                                        target_save.operationtype = operationtype
+                                                        target_save.cycletype = cycletype
+                                                        target_save.businesstype = businesstype
+                                                        target_save.unit = unit
+                                                        target_save.unity = unity
+
+                                                        # 业务
+                                                        try:
+                                                            works = int(works)
+                                                        except:
+                                                            pass
+                                                        else:
+                                                            target_save.work_id = works
+
+                                                        if datatype == 'numbervalue':
+                                                            try:
+                                                                target_save.magnification = float(magnification)
+                                                            except:
+                                                                pass
+                                                            try:
+                                                                target_save.digit = int(digit)
+                                                            except:
+                                                                pass
+                                                            try:
+                                                                target_save.upperlimit = float(upperlimit)
+                                                            except:
+                                                                pass
+                                                            try:
+                                                                target_save.lowerlimit = float(lowerlimit)
+                                                            except:
+                                                                pass
+                                                            target_save.cumulative = cumulative
+                                                        if datatype == 'date' or datatype == 'text':
+                                                            magnification = request.POST.get("")
+                                                            digit = request.POST.get("")
+                                                            upperlimit = request.POST.get("")
+                                                            lowerlimit = request.POST.get("")
+                                                            cumulative = request.POST.get("")
+                                                            try:
+                                                                target_save.magnification = magnification
+                                                            except:
+                                                                pass
+                                                            try:
+                                                                target_save.digit = digit
+                                                            except:
+                                                                pass
+                                                            try:
+                                                                target_save.upperlimit = upperlimit
+                                                            except:
+                                                                pass
+                                                            try:
+                                                                target_save.lowerlimit = lowerlimit
+                                                            except:
+                                                                pass
+                                                            target_save.cumulative = cumulative
+                                                        target_save.datatype = datatype
+                                                        try:
+                                                            app_id = int(adminapp)
+                                                            my_app = all_app.get(id=app_id)
+                                                            target_save.adminapp = my_app
+                                                        except:
+                                                            pass
+
+                                                        try:
+                                                            target_save.sort = int(sort)
+                                                        except:
+                                                            pass
+                                                        if operationtype == '17':
+                                                            target_save.formula = formula
+                                                        if operationtype in ['1', '16']:
+                                                            try:
+                                                                cycle_id = int(cycle)
+                                                                my_cycle = all_cycle.get(id=cycle_id)
+                                                                target_save.cycle = my_cycle
+                                                            except:
+                                                                pass
+                                                            try:
+                                                                source_id = int(source)
+                                                                my_source = all_source.get(id=source_id)
+                                                                target_save.source = my_source
+                                                            except:
+                                                                pass
+
+                                                            target_save.source_content = source_content
+                                                            try:
+                                                                target_save.is_repeat = int(is_repeat)
+                                                            except:
+                                                                pass
+                                                            try:
+                                                                storage_id = int(storage)
+                                                                my_storage = all_storage.get(id=storage_id)
+                                                                target_save.storage = my_storage
+                                                            except:
+                                                                pass
+                                                            target_save.storagetag = storagetag
+                                                            target_save.storagefields = storagefields
+                                                        target_save.save()
+                                                        # 存入多对多app
+                                                        if savetype != 'app':
+                                                            target_save.app.clear()
+                                                            for app_id in app_list:
+                                                                try:
+                                                                    app_id = int(app_id)
+                                                                    my_app = all_app.get(id=app_id)
+                                                                    target_save.app.add(my_app)
+                                                                except:
+                                                                    pass
+                                                        result["res"] = "保存成功。"
+                                                        result["data"] = target_save.id
+                                                    except Exception as e:
+                                                        result["res"] = "修改失败。"
 
         return JsonResponse(result)
 
@@ -3291,47 +3292,15 @@ def constant_save(request):
                         all_target = Target.objects.filter(code=code).exclude(state="9")
                         if (len(all_constant) > 0):
                             result["res"] = '常数代码:' + code + '已存在。'
-                        if (len(all_target) > 0):
-                            result["res"] = '指标库内已存在:' + code + '。'
                         else:
-                            all_constant = Constant.objects.filter(name=name).exclude(state="9")
-                            if (len(all_constant) > 0):
-                                result["res"] = '常数名称:' + name + '已存在。'
+                            if (len(all_target) > 0):
+                                result["res"] = '指标库内已存在:' + code + '。'
                             else:
-                                constant_save = Constant()
-                                constant_save.name = name
-                                constant_save.code = code
-                                constant_save.value = float(value)
-                                constant_save.unity = unity
-
-                                try:
-                                    app_id = int(adminapp)
-                                    my_app = all_app.get(id=app_id)
-                                    constant_save.adminapp = my_app
-                                except:
-                                    pass
-                                try:
-                                    constant_save.sort = int(sort)
-                                except:
-                                    pass
-                                constant_save.save()
-                                result["res"] = "保存成功。"
-                                result["data"] = constant_save.id
-
-                    else:
-                        all_constant = Constant.objects.filter(code=code).exclude(id=id).exclude(state="9")
-                        all_target = Target.objects.filter(code=code).exclude(state="9")
-                        if (len(all_constant) > 0):
-                            result["res"] = '常数代码:' + code + '已存在。'
-                        if (len(all_target) > 0):
-                            result["res"] = '指标库内已存在:' + code + '。'
-                        else:
-                            all_constant = Constant.objects.filter(name=name).exclude(id=id).exclude(state="9")
-                            if (len(all_constant) > 0):
-                                result["res"] = '常数名称:' + name + '已存在。'
-                            else:
-                                try:
-                                    constant_save = Constant.objects.get(id=id)
+                                all_constant = Constant.objects.filter(name=name).exclude(state="9")
+                                if (len(all_constant) > 0):
+                                    result["res"] = '常数名称:' + name + '已存在。'
+                                else:
+                                    constant_save = Constant()
                                     constant_save.name = name
                                     constant_save.code = code
                                     constant_save.value = float(value)
@@ -3347,12 +3316,46 @@ def constant_save(request):
                                         constant_save.sort = int(sort)
                                     except:
                                         pass
-
                                     constant_save.save()
                                     result["res"] = "保存成功。"
                                     result["data"] = constant_save.id
-                                except Exception as e:
-                                    result["res"] = "修改失败。"
+
+                    else:
+                        all_constant = Constant.objects.filter(code=code).exclude(id=id).exclude(state="9")
+                        all_target = Target.objects.filter(code=code).exclude(state="9")
+                        if (len(all_constant) > 0):
+                            result["res"] = '常数代码:' + code + '已存在。'
+                        else:
+                            if (len(all_target) > 0):
+                                result["res"] = '指标库内已存在:' + code + '。'
+                            else:
+                                all_constant = Constant.objects.filter(name=name).exclude(id=id).exclude(state="9")
+                                if (len(all_constant) > 0):
+                                    result["res"] = '常数名称:' + name + '已存在。'
+                                else:
+                                    try:
+                                        constant_save = Constant.objects.get(id=id)
+                                        constant_save.name = name
+                                        constant_save.code = code
+                                        constant_save.value = float(value)
+                                        constant_save.unity = unity
+
+                                        try:
+                                            app_id = int(adminapp)
+                                            my_app = all_app.get(id=app_id)
+                                            constant_save.adminapp = my_app
+                                        except:
+                                            pass
+                                        try:
+                                            constant_save.sort = int(sort)
+                                        except:
+                                            pass
+
+                                        constant_save.save()
+                                        result["res"] = "保存成功。"
+                                        result["data"] = constant_save.id
+                                    except Exception as e:
+                                        result["res"] = "修改失败。"
 
         return JsonResponse(result)
 

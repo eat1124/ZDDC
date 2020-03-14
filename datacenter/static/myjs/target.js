@@ -136,7 +136,7 @@ $(document).ready(function () {
         var formula_data = ($("#formula").val()).replace(/\s*/g, "");
         var formula_analysis_data_str = $("#formula_analysis_data").val();
         var formula_analysis_data = JSON.parse(formula_analysis_data_str);
-        var data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积", 'C': '常数'};
+        var data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积", 'c': '常数'};
         var data_time = {
             "D": "当天", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
             "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
@@ -759,7 +759,7 @@ $(document).ready(function () {
     $('#sample_4 tbody').on('click', 'button#select', function () {
         var table = $('#sample_4').DataTable();
         var data1 = table.row($(this).parents('tr')).data().code;
-        var select = '<' + data1 + ':' + 'C' + '>';
+        var select = '<' + data1 + ':' + 'c' + '>';
         var data = $('#formula').val();
         var seat = $('#formula').attr("seat");
         data = data.slice(0, seat) + select + data.slice(seat);
