@@ -140,7 +140,7 @@ $(document).ready(function () {
                     var table5 = $('#sample_5').DataTable();
                     table5.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
                         "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1" +
-                        "&funid=" + $('#funid').val(),).load();
+                        "&funid=" + $('#funid').val()).load();
                 }
 
             });
@@ -1233,14 +1233,14 @@ $(document).ready(function () {
         });
     })
     $('#reset2').click(function () {
-        var table = $('#sample_3').DataTable();
+        var table = $('#sample_2').DataTable();
         $.ajax({
             type: "POST",
             dataType: 'json',
-            url: "../../../reporting_recalculate/",
+            url: "../../../reporting_reextract/",
             data:
                 {
-                    operationtype:17,
+                    operationtype:16,
                     reporting_date:$('#reporting_date').val(),
                     app: $('#app').val(),
                     cycletype:$('#cycletype').val(),
