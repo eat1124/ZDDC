@@ -4115,33 +4115,6 @@ def getcumulative(target, date, value):
             "cumulativehalfyear": cumulativehalfyear, "cumulativeyear": cumulativeyear}
 
 
-def getextractdata(target, date):
-    """
-    数据提取
-    """
-    curvalue = 0
-
-    con = target.source.connection
-    con = json.loads(con)
-    db = pymysql.connect(con[0]["host"], con[0]["user"], con[0]["passwd"], con[0]["db"])
-    # SQL Server
-    # db = pymssql.connect(con[0]["host"], con[0]["user"], con[0]["passwd"], con[0]["db"])
-    cursor = db.cursor()
-
-    # strsql = """
-    # SELECT {sourcefields} FROM dbo.{sourcetable} WHERE {sourceconditions}
-    # """.format(sourcefields=target.sourcefields, sourcetable=target.sourcetable, sourceconditions=target.sourceconditions)
-    strsql = "select " + target.sourcefields + " from " + target.sourcetable + " where " + target.sourceconditions
-    cursor.execute(strsql)
-    data = cursor.fetchall()
-    if len(data) > 0:
-        curvalue = data[0][0]
-    db.close()
-    print("Database version : %s " % curvalue)
-
-    return curvalue
-
-
 def getcalculatedata(target, date, guid):
     """
     数据计算
@@ -4164,6 +4137,8 @@ def getcalculatedata(target, date, guid):
                     if col.find(':') > 0:
                         cond = col[col.find(':') + 1:]
                         col = col[0:col.find(':')]
+
+                # 查询常数库value值
                 membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
                 if len(membertarget) <= 0:
                     curvalue = 0

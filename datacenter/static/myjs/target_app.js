@@ -161,7 +161,6 @@ $(document).ready(function () {
     }
 
     $('#sample_1 tbody').on('click', 'button#edit', function () {
-        $('#sample_3').DataTable().ajax.reload();
 
         var table = $('#sample_1').DataTable();
         var data = table.row($(this).parents('tr')).data();
@@ -171,7 +170,6 @@ $(document).ready(function () {
         $("#code").val(data.code);
         $("#operationtype").val(data.operationtype);
         $("#cycletype").val(data.cycletype);
-        $("#calculate_cycletype").val(data.cycletype_name);
         $("#businesstype").val(data.businesstype);
         $("#unit").val(data.unit);
         $("#magnification").val(data.magnification);
@@ -249,10 +247,9 @@ $(document).ready(function () {
             analysisFunction();
         });
 
-        if ($('#datatype').val() == 'numbervalue' || $('#datatype').val() == 'date' || $('#datatype').val() == 'text') {
-            var table = $('#sample_3').DataTable();
-            table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
-        }
+        var table = $('#sample_3').DataTable();
+        table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
+
 
     });
 
@@ -286,17 +283,20 @@ $(document).ready(function () {
             $('#digit').hide();
             $('#magnification_digit').hide();
             $('#upperlimit_lowerlimit').hide();
+            $('#calculate').hide();
+            $('#calculate_analysis').hide();
         }
         if ($('#datatype option:selected').text() == '数值') {
             $('#is_digit').show();
             $('#digit').show();
             $('#magnification_digit').show();
             $('#upperlimit_lowerlimit').show();
+            $('#calculate').show();
+            $('#calculate_analysis').show();
         }
     });
 
     $("#new").click(function () {
-        $('#sample_3').DataTable().ajax.reload();
 
         $('#calculate').hide();
         $('#calculate_analysis').hide();
@@ -306,7 +306,7 @@ $(document).ready(function () {
         $("#name").val("");
         $("#code").val("");
         $("#operationtype").val("");
-        $("#cycletype").val("");
+        $("#cycletype").val("10");
         $("#businesstype").val("");
         $("#unit").val("");
         $("#magnification").val("1");
@@ -347,10 +347,9 @@ $(document).ready(function () {
             analysisFunction();
         });
 
-        if ($('#datatype').val() == 'numbervalue') {
-            var table = $('#sample_3').DataTable();
-            table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
-        }
+        var table = $('#sample_3').DataTable();
+        table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
+
     });
 
     $('#save').click(function () {
@@ -497,14 +496,33 @@ $(document).ready(function () {
 
     });
 
-    // 右键菜单栏
+
     $('#formula').contextmenu({
         target: '#context-menu2',
         onItem: function (context, e) {
         }
     });
 
-    // 点击事件插入指标
+    $('#cycletype').change(function () {
+        if ($('#cycletype').val() == '10') {
+            $('#cycletype').val('10')
+        }
+        if ($('#cycletype').val() == '11') {
+            $('#cycletype').val('11')
+        }
+        if ($('#cycletype').val() == '12') {
+            $('#cycletype').val('12')
+        }
+        if ($('#cycletype').val() == '13') {
+            $('#cycletype').val('13')
+        }
+        if ($('#cycletype').val() == '14') {
+            $('#cycletype').val('14')
+        }
+        loadcycleData()
+    });
+
+
     $('#collect').click(function () {
         getTxt1CursorPosition("formula");
 
@@ -517,8 +535,12 @@ $(document).ready(function () {
 
     });
 
-    // 模态框表格数据
-    $('#sample_3').dataTable({
+    var completed = false;
+    function loadcycleData() {
+        if (completed) {
+            $('#sample_3').dataTable().fnDestroy();
+        }
+        $('#sample_3').dataTable({
         "bAutoWidth": true,
         "bSort": false,
         "bProcessing": true,
@@ -559,140 +581,137 @@ $(document).ready(function () {
                     return ""
                 }
             },
+        }, {
+            "targets": -2,
+            "data": null,
+            "mRender": function (data, type, full) {
+                    if ($("#cycletype").val() == '10' && full.cycletype_name == '日') {
+                        return "<select style='width:100px'><option value='D'>当天</option><option value='L'>前一天</option><option value='LME'>上月末</option>" +
+                            "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '10' && full.cycletype_name == '月') {
+                        return "<select style='width:100px'><option value='LME'>上月末</option>" +
+                            "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '10' && full.cycletype_name == '季') {
+                        return "<select style='width:100px'><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '10' && full.cycletype_name == '半年') {
+                        return "<select style='width:100px'><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '10' && full.cycletype_name == '年') {
+                        return "<select style='width:100px'><option value='LYE'>去年末</option></select>"
+
+                    }
+
+                    if ($("#cycletype").val() == '11' && full.cycletype_name == '日') {
+                        return "<select style='width:100px'><option value='ME'>月末</option><option value='LME'>上月末</option>" +
+                            "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '11' && full.cycletype_name == '月') {
+                        return "<select style='width:100px'><option value='ME'>月末</option><option value='LME'>上月末</option>" +
+                            "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '11' && full.cycletype_name == '季') {
+                        return "<select style='width:100px'><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '11' && full.cycletype_name == '半年') {
+                        return "<select style='width:100px'><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '11' && full.cycletype_name == '年') {
+                        return "<select style='width:100px'><option value='LYE'>去年末</option></select>"
+
+                    }
+
+                    if ($("#cycletype").val() == '12' && full.cycletype_name == '日') {
+                        return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '12' && full.cycletype_name == '月') {
+                        return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '12' && full.cycletype_name == '季') {
+                        return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '12' && full.cycletype_name == '半年') {
+                        return "<select style='width:100px'><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '12' && full.cycletype_name == '年') {
+                        return "<select style='width:100px'><option value='LYE'>去年末</option></select>"
+
+                    }
+
+                    if ($("#cycletype").val() == '13' && full.cycletype_name == '日') {
+                        return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '13' && full.cycletype_name == '月') {
+                        return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '13' && full.cycletype_name == '季') {
+                        return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '13' && full.cycletype_name == '半年') {
+                        return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
+                            "<option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '13' && full.cycletype_name == '年') {
+                        return "<select style='width:100px'><option value='LYE'>去年末</option></select>"
+
+                    }
+
+                    if ($("#cycletype").val() == '14' && full.cycletype_name == '日') {
+                        return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '14' && full.cycletype_name == '月') {
+                        return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '14' && full.cycletype_name == '季') {
+                        return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '14' && full.cycletype_name == '半年') {
+                        return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
+
+                    }
+                    if ($("#cycletype").val() == '14' && full.cycletype_name == '年') {
+                        return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option></select>"
+
+                    }
+
+            }
         },
-            {
-                "targets": -2,
-                "data": null,
-                "mRender": function (data, type, full) {
-                    if ($("#calculate_cycletype").val()) {
-                        if ($("#calculate_cycletype").val() == '日' && full.cycletype_name == '日') {
-                            return "<select style='width:100px'><option value='D'>当天</option><option value='L'>前一天</option><option value='LME'>上月末</option>" +
-                                "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '日' && full.cycletype_name == '月') {
-                            return "<select style='width:100px'><option value='LME'>上月末</option>" +
-                                "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '日' && full.cycletype_name == '季') {
-                            return "<select style='width:100px'><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '日' && full.cycletype_name == '半年') {
-                            return "<select style='width:100px'><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '日' && full.cycletype_name == '年') {
-                            return "<select style='width:100px'><option value='LYE'>去年末</option></select>"
-
-                        }
-
-                        if ($("#calculate_cycletype").val() == '月' && full.cycletype_name == '日') {
-                            return "<select style='width:100px'><option value='ME'>月末</option><option value='LME'>上月末</option>" +
-                                "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '月' && full.cycletype_name == '月') {
-                            return "<select style='width:100px'><option value='ME'>月末</option><option value='LME'>上月末</option>" +
-                                "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '月' && full.cycletype_name == '季') {
-                            return "<select style='width:100px'><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '月' && full.cycletype_name == '半年') {
-                            return "<select style='width:100px'><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '月' && full.cycletype_name == '年') {
-                            return "<select style='width:100px'><option value='LYE'>去年末</option></select>"
-
-                        }
-
-                        if ($("#calculate_cycletype").val() == '季' && full.cycletype_name == '日') {
-                            return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '季' && full.cycletype_name == '月') {
-                            return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '季' && full.cycletype_name == '季') {
-                            return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '季' && full.cycletype_name == '半年') {
-                            return "<select style='width:100px'><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '季' && full.cycletype_name == '年') {
-                            return "<select style='width:100px'><option value='LYE'>去年末</option></select>"
-
-                        }
-
-                        if ($("#calculate_cycletype").val() == '半年' && full.cycletype_name == '日') {
-                            return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '半年' && full.cycletype_name == '月') {
-                            return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '半年' && full.cycletype_name == '季') {
-                            return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '半年' && full.cycletype_name == '半年') {
-                            return "<select style='width:100px'><option value='HE'>半年末</option><option value='LHE'>前个半年末</option>" +
-                                "<option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '半年' && full.cycletype_name == '年') {
-                            return "<select style='width:100px'><option value='LYE'>去年末</option></select>"
-
-                        }
-
-                        if ($("#calculate_cycletype").val() == '年' && full.cycletype_name == '日') {
-                            return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '年' && full.cycletype_name == '月') {
-                            return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '年' && full.cycletype_name == '季') {
-                            return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '年' && full.cycletype_name == '半年') {
-                            return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option><option value='YAVG'>年平均值</option></select>"
-
-                        }
-                        if ($("#calculate_cycletype").val() == '年' && full.cycletype_name == '年') {
-                            return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option></select>"
-
-                        }
-                    } else
-                        return ""
-                }
-            },
             {
                 "targets": -1,
                 "data": null,
@@ -714,8 +733,13 @@ $(document).ready(function () {
                 "sLast": "尾页"
             },
             "sZeroRecords": "没有检索到数据"
+        },
+        initComplete: function (settings, json) {
+            completed = true;
         }
     });
+    }
+    loadcycleData();
 
     $('#search_adminapp,#search_app,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3,#datatype').change(function () {
         var table = $('#sample_3').DataTable();
