@@ -163,7 +163,7 @@ $(document).ready(function () {
     }
 
     var search_app_list = eval($('#search_app_list').val());
-    console.log(search_app_list)
+
     function workSelectInit() {
         $('#works').empty();
         var pre = '<option selected value="" >全部</option>';
@@ -1240,17 +1240,16 @@ $(document).ready(function () {
             url: "../../../reporting_reextract/",
             data:
                 {
-                    operationtype:16,
-                    reporting_date:$('#reporting_date').val(),
+                    operationtype: 16,
+                    reporting_date: $('#reporting_date').val(),
                     app: $('#app').val(),
-                    cycletype:$('#cycletype').val(),
+                    cycletype: $('#cycletype').val(),
                 },
             success: function (data) {
                 if (data == 1) {
                     table.ajax.reload();
                     alert("提取成功！");
-                }
-                else
+                } else
                     alert("提取失败，请于管理员联系。");
             },
             error: function (e) {
@@ -1500,6 +1499,18 @@ $(document).ready(function () {
             }
         });
     })
+
+    // nav_tab切换事件
+    $('#navtabs a').click(function (e) {
+        var nodeId = $(this).prop('id');
+        // 数据查询
+        if (nodeId == 'tabcheck4') {
+            var table = $('#sample_4').DataTable();
+            table.ajax.url("../../../reporting_search_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+                "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()
+            ).load();
+        }
+    });
 
 });
 
