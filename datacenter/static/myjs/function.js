@@ -132,6 +132,7 @@ $(function () {
             $("#pname").val(data.node.data.pname);
             $("#url").val(data.node.data.url);
             $("#icon").val(data.node.data.icon);
+            $('#app_list').val(JSON.stringify(data.node.data.app_list));
             if (data.node.type == "fun") {
                 $('input:radio[name=radio2]')[0].checked = true;
             }
@@ -178,20 +179,35 @@ $(function () {
             var app_list = data.node.data.app_list;
             var app_id = $('#app').val();
             $('#works').empty();
-            var pre_works_options = '<option></option>';
-            for (var i = 0; i < app_list.length; i++) {
-                if (app_list[i].id == app_id) {
-                    var works = eval(app_list[i].works);
-                    if (works) {
-                        for (var j = 0; j < works.length; j++) {
-                            pre_works_options += '<option ' + ' value="' + works[j].id + '">' + works[j].name + ' </option>';
-                        }
-                    }
-                }
-            }
-            $('#works').append(pre_works_options);
+
+            var work_options = customWorkOptions(app_id, app_list);
+            $('#works').append(work_options);
             $('#works').val(data.node.data.selected_work);
         });
+
+    function customWorkOptions(app_id, app_list) {
+        var pre_works_options = '<option></option>';
+        for (var i = 0; i < app_list.length; i++) {
+            if (app_list[i].id == app_id) {
+                var works = eval(app_list[i].works);
+                if (works) {
+                    for (var j = 0; j < works.length; j++) {
+                        pre_works_options += '<option ' + ' value="' + works[j].id + '">' + works[j].name + ' </option>';
+                    }
+                }
+                break;
+            }
+        }
+        return pre_works_options;
+    }
+
+    $('#app').change(function () {
+        var app_id = $(this).val();
+        var app_list = JSON.parse($('#app_list').val());
+        $('#works').empty();
+        var work_options = customWorkOptions(app_id, app_list);
+        $('#works').append(work_options);
+    });
 
     $("#error").click(function () {
         $(this).hide();
