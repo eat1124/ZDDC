@@ -884,7 +884,6 @@ def report_index(request, funid):
                                             server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
                                                                       remote_password, remote_platform)
                                             result = server_obj.run("")
-                                            print(result)
                                             if result["exec_tag"] != 0:
                                                 write_tag = False
 
@@ -1323,7 +1322,6 @@ def app_save(request):
             work_data = json.loads(request.POST.get("work_data", ""))
         except:
             pass
-        print(work_data)
         try:
             id = int(id)
         except:
@@ -3680,7 +3678,6 @@ def reporting_data(request):
                     target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
                     target__work=work).order_by("target__sort").select_related("target")
             for data in all_data:
-                print(data.id)
                 businesstypename = data.target.businesstype
                 unitname = data.target.unit
                 try:
@@ -9681,7 +9678,6 @@ def revoke_current_task(request):
             stop_url = "http://127.0.0.1:5555/api/task/revoke/{0}?terminate=true".format(
                 task_id)
             response = requests.post(stop_url)
-            print(response.text)
             task_content = "异步任务被自主关闭。"
 
             # 终止任务
