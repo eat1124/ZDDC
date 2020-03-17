@@ -281,10 +281,10 @@ $(document).ready(function () {
         var table = $('#sample_1').DataTable();
         var data = table.row($(this).parents('tr')).data();
         if (data.target_cumulative == '是') {
-            $('#table1_cumulativemonth_' + data.id).val(Number(data.cumulativemonth) - Number(data.curvalue) + Number($('#table1_curvalue_' + data.id).val()))
-            $('#table1_cumulativequarter_' + data.id).val(Number(data.cumulativequarter) - Number(data.curvalue) + Number($('#table1_curvalue_' + data.id).val()))
-            $('#table1_cumulativehalfyear_' + data.id).val(Number(data.cumulativehalfyear) - Number(data.curvalue) + Number($('#table1_curvalue_' + data.id).val()))
-            $('#table1_cumulativeyear_' + data.id).val(Number(data.cumulativeyear) - Number(data.curvalue) + Number($('#table1_curvalue_' + data.id).val()))
+            $('#table1_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))));   // math.js精度计算
+            $('#table1_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))));
+            $('#table1_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))));
+            $('#table1_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))))
         }
     });
 
@@ -394,10 +394,10 @@ $(document).ready(function () {
         var table = $('#sample_2').DataTable();
         var data = table.row($(this).parents('tr')).data();
         if (data.target_cumulative == '是') {
-            $('#table2_cumulativemonth_' + data.id).val(Number(data.cumulativemonth) - Number(data.curvalue) + Number($('#table2_curvalue_' + data.id).val()))
-            $('#table2_cumulativequarter_' + data.id).val(Number(data.cumulativequarter) - Number(data.curvalue) + Number($('#table2_curvalue_' + data.id).val()))
-            $('#table2_cumulativehalfyear_' + data.id).val(Number(data.cumulativehalfyear) - Number(data.curvalue) + Number($('#table2_curvalue_' + data.id).val()))
-            $('#table2_cumulativeyear_' + data.id).val(Number(data.cumulativeyear) - Number(data.curvalue) + Number($('#table2_curvalue_' + data.id).val()))
+            $('#table2_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))));   // math.js精度计算
+            $('#table2_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))));
+            $('#table2_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))));
+            $('#table2_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))))
         }
         if (Number($('#table2_curvalue_' + data.id).val()) == 0) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
@@ -513,10 +513,10 @@ $(document).ready(function () {
         var table = $('#sample_3').DataTable();
         var data = table.row($(this).parents('tr')).data();
         if (data.target_cumulative == '是') {
-            $('#table3_cumulativemonth_' + data.id).val(Number(data.cumulativemonth) - Number(data.curvalue) + Number($('#table3_curvalue_' + data.id).val()))
-            $('#table3_cumulativequarter_' + data.id).val(Number(data.cumulativequarter) - Number(data.curvalue) + Number($('#table3_curvalue_' + data.id).val()))
-            $('#table3_cumulativehalfyear_' + data.id).val(Number(data.cumulativehalfyear) - Number(data.curvalue) + Number($('#table3_curvalue_' + data.id).val()))
-            $('#table3_cumulativeyear_' + data.id).val(Number(data.cumulativeyear) - Number(data.curvalue) + Number($('#table3_curvalue_' + data.id).val()))
+            $('#table3_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))));   // math.js精度计算
+            $('#table3_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))));
+            $('#table3_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))));
+            $('#table3_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))))
         }
     });
     $('#sample_3 tbody').on('click', 'button#edit', function () {
@@ -642,7 +642,7 @@ $(document).ready(function () {
                     if (full.meterchangedata_id) {
                         disabled = "disabled"
                     }
-                    return "<input " + disabled + "   style = 'width:90px;height:26px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
+                    return "<input " + disabled + "   style = 'width:70px;height:26px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
                 }
             },
             {
@@ -652,19 +652,19 @@ $(document).ready(function () {
                     if (full.meterchangedata_id) {
                         disabled = "disabled"
                     }
-                    return "<input " + disabled + "  style = 'width:90px;height:26px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
+                    return "<input " + disabled + "  style = 'width:70px;height:26px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -8,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style = 'width:90px;height:26px;' id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style = 'width:70px;height:26px;' id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -7,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style = 'width:90px;height:26px;' id='table5_magnification_" + full.id + "' name='table5_magnification'  type='text' value='" + full.target_magnification + "'></input>"
+                    return "<input disabled style = 'width:70px;height:26px;' id='table5_magnification_" + full.id + "' name='table5_magnification'  type='text' value='" + full.target_magnification + "'></input>"
                 }
             },
             {
@@ -675,46 +675,46 @@ $(document).ready(function () {
                         disabled = "disabled"
                     }
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input " + disabled + "   style = 'width:90px;height:26px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input " + disabled + "   style = 'width:70px;height:26px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
-                        return "<input " + disabled + "   class='table5_curvaluedate' style = 'width:90px;height:26px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        return "<input " + disabled + "   class='table5_curvaluedate' style = 'width:70px;height:26px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                     }
                     if (full.target_datatype == 'text') {
-                        return "<input " + disabled + "   style = 'width:90px;height:26px;' id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        return "<input " + disabled + "   style = 'width:70px;height:26px;' id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
                     }
                 }
             },
             {
                 "targets": -5,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style = 'width:90px;height:26px;' id='table5_cumulativemonth_" + full.id + "' name='table5_cumulativemonth'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style = 'width:70px;height:26px;' id='table5_cumulativemonth_" + full.id + "' name='table5_cumulativemonth'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -4,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style = 'width:90px;height:26px;' id='table5_cumulativequarter_" + full.id + "' name='table5_cumulativequarter'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style = 'width:70px;height:26px;' id='table5_cumulativequarter_" + full.id + "' name='table5_cumulativequarter'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -3,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style = 'width:90px;height:26px;' id='table5_cumulativehalfyear_" + full.id + "' name='table5_cumulativehalfyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style = 'width:70px;height:26px;' id='table5_cumulativehalfyear_" + full.id + "' name='table5_cumulativehalfyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -2,
                 "mRender": function (data, type, full) {
-                    return "<input disabled  style = 'width:90px;height:26px;'id='table5_cumulativeyear_" + full.id + "' name='table5_cumulativeyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled  style = 'width:70px;height:26px;'id='table5_cumulativeyear_" + full.id + "' name='table5_cumulativeyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -1,
                 "data": null,
-                "width": "100px",
+                "width": "10px",
                 "defaultContent": "<button  id='edit' title='换表' data-toggle='modal'  data-target='#static5'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>"
-            }
+            },
         ],
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",
@@ -760,7 +760,6 @@ $(document).ready(function () {
         var data = table.row($(this).parents('tr')).data();
         $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())), math.bignumber(Number($('#table5_zerodata_' + data.id).val())))));
         $('#table5_curvalue_' + data.id).val(math.number(math.multiply(math.bignumber(Number($('#table5_metervalue_' + data.id).val())), math.bignumber(Number(data.target_magnification)))))
-        // $('#table5_curvalue_' + data.id).val(Number($('#table5_metervalue_' + data.id).val()) * Number(data.target_magnification))
         if (data.target_cumulative == '是') {
             $('#table5_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));   // math.js精度计算
             $('#table5_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
@@ -778,7 +777,6 @@ $(document).ready(function () {
         var data = table.row($(this).parents('tr')).data();
         $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())), math.bignumber(Number($('#table5_zerodata_' + data.id).val())))))
         $('#table5_curvalue_' + data.id).val(math.number(math.multiply(math.bignumber(Number($('#table5_metervalue_' + data.id).val())), math.bignumber(Number(data.target_magnification)))))
-        // $('#table5_curvalue_' + data.id).val(Number($('#table5_metervalue_' + data.id).val()) * Number(data.target_magnification))
         if (data.target_cumulative == '是') {
             $('#table5_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
             $('#table5_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
@@ -795,10 +793,10 @@ $(document).ready(function () {
         var table = $('#sample_5').DataTable();
         var data = table.row($(this).parents('tr')).data();
         if (data.target_cumulative == '是') {
-            $('#table5_cumulativemonth_' + data.id).val(Number(data.cumulativemonth) - Number(data.curvalue) + Number($('#table5_curvalue_' + data.id).val()))
-            $('#table5_cumulativequarter_' + data.id).val(Number(data.cumulativequarter) - Number(data.curvalue) + Number($('#table5_curvalue_' + data.id).val()))
-            $('#table5_cumulativehalfyear_' + data.id).val(Number(data.cumulativehalfyear) - Number(data.curvalue) + Number($('#table5_curvalue_' + data.id).val()))
-            $('#table5_cumulativeyear_' + data.id).val(Number(data.cumulativeyear) - Number(data.curvalue) + Number($('#table5_curvalue_' + data.id).val()))
+            $('#table5_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
+            $('#table5_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
+            $('#table5_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
+            $('#table5_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))))
         }
     });
 
@@ -808,7 +806,7 @@ $(document).ready(function () {
         var data = table.row($(this).parents('tr')).data();
         $.each(data5, function (i, item) {
             if (item.id == data.id) {
-                data = item
+                data = item;
                 return false
             }
         })
@@ -838,42 +836,41 @@ $(document).ready(function () {
         } else {
             $("#oldtable_zerodata").val($('#table5_zerodata_' + data.id).val());
             $("#oldtable_twentyfourdata").val($('#table5_zerodata_' + data.id).val());
-            $("#oldtable_value").val(Number($("#oldtable_twentyfourdata").val()) - Number($("#oldtable_zerodata").val()));
+            $('#oldtable_value').val(math.number(math.subtract(math.bignumber(Number($("#oldtable_twentyfourdata").val())), math.bignumber(Number($("#oldtable_zerodata").val())))));
             $("#oldtable_magnification").val($('#table5_magnification_' + data.id).val());
-            $("#oldtable_finalvalue").val(Number($("#oldtable_value").val()) * Number(data.target_magnification));
+            $("#oldtable_finalvalue").val(math.number(math.multiply(math.bignumber(Number($("#oldtable_value").val())), math.bignumber(Number(data.target_magnification)))));
 
             $("#newtable_zerodata").val($('#table5_zerodata_' + data.id).val());
             $("#newtable_twentyfourdata").val($('#table5_twentyfourdata_' + data.id).val());
-            $("#newtable_value").val(Number($("#newtable_twentyfourdata").val()) - Number($("#newtable_zerodata").val()));
+            $('#newtable_value').val(math.number(math.subtract(math.bignumber(Number($("#newtable_twentyfourdata").val())), math.bignumber(Number($("#newtable_zerodata").val())))));
             $("#newtable_magnification").val($('#table5_magnification_' + data.id).val());
-            $("#newtable_finalvalue").val(Number($("#newtable_value").val()) * Number(data.target_magnification));
-            $("#finalvalue").val(Number($("#oldtable_finalvalue").val()) + Number($("#newtable_finalvalue").val()));
-
+            $('#newtable_finalvalue').val(math.number(math.multiply(math.bignumber(Number($("#newtable_value").val())), math.bignumber(Number($("#newtable_magnification").val())))));
+            $("#finalvalue").val(math.number(math.add(math.bignumber(Number($("#oldtable_finalvalue").val())), math.bignumber(Number($("#newtable_finalvalue").val())))));
         }
     });
 
     $("#oldtable_zerodata").bind('input propertychange', function () {
-        $('#oldtable_value').val(math.number(math.subtract(math.bignumber(Number($("#oldtable_twentyfourdata").val())), math.bignumber(Number($("#oldtable_zerodata").val())))))
-        $('#oldtable_finalvalue').val(Number($('#oldtable_value').val()) * Number($("#oldtable_magnification").val()))
+        $('#oldtable_value').val(math.number(math.subtract(math.bignumber(Number($("#oldtable_twentyfourdata").val())), math.bignumber(Number($("#oldtable_zerodata").val())))));
+        $("#oldtable_finalvalue").val(math.number(math.multiply(math.bignumber(Number($("#oldtable_value").val())), math.bignumber(Number($("#oldtable_magnification").val())))));
         $("#finalvalue").val(math.number(math.add(math.bignumber(Number($("#oldtable_finalvalue").val())), math.bignumber(Number($("#newtable_finalvalue").val())))))
     });
     $("#newtable_zerodata").bind('input propertychange', function () {
-        $('#newtable_value').val(math.number(math.subtract(math.bignumber(Number($("#newtable_twentyfourdata").val())), math.bignumber(Number($("#newtable_zerodata").val())))))
-        $('#newtable_finalvalue').val(math.number(math.multiply(math.bignumber(Number($("#newtable_value").val())), math.bignumber(Number($("#newtable_magnification").val())))))
+        $('#newtable_value').val(math.number(math.subtract(math.bignumber(Number($("#newtable_twentyfourdata").val())), math.bignumber(Number($("#newtable_zerodata").val())))));
+        $('#newtable_finalvalue').val(math.number(math.multiply(math.bignumber(Number($("#newtable_value").val())), math.bignumber(Number($("#newtable_magnification").val())))));
         $("#finalvalue").val(math.number(math.add(math.bignumber(Number($("#oldtable_finalvalue").val())), math.bignumber(Number($("#newtable_finalvalue").val())))))
     });
     $("#oldtable_twentyfourdata").bind('input propertychange', function () {
-        $('#oldtable_value').val(math.number(math.subtract(math.bignumber(Number($("#oldtable_twentyfourdata").val())), math.bignumber(Number($("#oldtable_zerodata").val())))))
-        $('#oldtable_finalvalue').val(Number($('#oldtable_value').val()) * Number($("#oldtable_magnification").val()))
+        $('#oldtable_value').val(math.number(math.subtract(math.bignumber(Number($("#oldtable_twentyfourdata").val())), math.bignumber(Number($("#oldtable_zerodata").val())))));
+        $("#oldtable_finalvalue").val(math.number(math.multiply(math.bignumber(Number($("#oldtable_value").val())), math.bignumber(Number($("#oldtable_magnification").val())))));
         $("#finalvalue").val(math.number(math.add(math.bignumber(Number($("#oldtable_finalvalue").val())), math.bignumber(Number($("#newtable_finalvalue").val())))))
     });
     $("#newtable_twentyfourdata").bind('input propertychange', function () {
-        $('#newtable_value').val(math.number(math.subtract(math.bignumber(Number($("#newtable_twentyfourdata").val())), math.bignumber(Number($("#newtable_zerodata").val())))))
-        $('#newtable_finalvalue').val(math.number(math.multiply(math.bignumber(Number($("#newtable_value").val())), math.bignumber(Number($("#newtable_magnification").val())))))
+        $('#newtable_value').val(math.number(math.subtract(math.bignumber(Number($("#newtable_twentyfourdata").val())), math.bignumber(Number($("#newtable_zerodata").val())))));
+        $('#newtable_finalvalue').val(math.number(math.multiply(math.bignumber(Number($("#newtable_value").val())), math.bignumber(Number($("#newtable_magnification").val())))));
         $("#finalvalue").val(math.number(math.add(math.bignumber(Number($("#oldtable_finalvalue").val())), math.bignumber(Number($("#newtable_finalvalue").val())))))
     });
     $("#newtable_magnification").bind('input propertychange', function () {
-        $('#newtable_finalvalue').val(math.number(math.multiply(math.bignumber(Number($("#newtable_value").val())), math.bignumber(Number($("#newtable_magnification").val())))))
+        $('#newtable_finalvalue').val(math.number(math.multiply(math.bignumber(Number($("#newtable_value").val())), math.bignumber(Number($("#newtable_magnification").val())))));
         $("#finalvalue").val(math.number(math.add(math.bignumber(Number($("#oldtable_finalvalue").val())), math.bignumber(Number($("#newtable_finalvalue").val())))))
 
     });
@@ -891,14 +888,14 @@ $(document).ready(function () {
             $("#table5_curvalue_" + id).val($("#finalvalue").val());
             $("#table5_zerodata_" + id).val($("#oldtable_zerodata").val());
             $("#table5_twentyfourdata_" + id).val($("#newtable_twentyfourdata").val());
-            $("#table5_metervalue_" + id).val(Number($("#table5_twentyfourdata_" + id).val()) - Number($("#table5_zerodata_" + id).val()));
-            $("#table5_curvalue_" + id).attr("disabled", "disabled")
-            $("#table5_twentyfourdata_" + id).attr("disabled", "disabled")
-            $("#table5_zerodata_" + id).attr("disabled", "disabled")
-            var newcumulativemonth = ""
-            var newcumulativequarter = ""
-            var newcumulativehalfyear = ""
-            var newcumulativeyear = ""
+            $("#table5_metervalue_" + id).val(math.number(math.subtract(math.bignumber(Number($("#table5_twentyfourdata_" + id).val())), math.bignumber(Number($("#table5_zerodata_" + id).val())))));
+            $("#table5_curvalue_" + id).attr("disabled", "disabled");
+            $("#table5_twentyfourdata_" + id).attr("disabled", "disabled");
+            $("#table5_zerodata_" + id).attr("disabled", "disabled");
+            var newcumulativemonth = "";
+            var newcumulativequarter = "";
+            var newcumulativehalfyear = "";
+            var newcumulativeyear = "";
             if (cumulative == '是') {
                 newcumulativemonth = math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativemonth)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val()))));
                 newcumulativequarter = math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativequarter)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val()))));
