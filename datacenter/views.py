@@ -3655,7 +3655,7 @@ def reporting_data(request):
         except:
             raise Http404()
         all_data = []
-
+        work = None
         try:
             funid = int(funid)
             fun = Fun.objects.get(id=funid)
@@ -3769,7 +3769,7 @@ def reporting_data(request):
                     newtable_finalvalue = ""
                     finalvalue = ""
 
-                    all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=data.id)
+                    all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=data.id,datadate=reporting_date)
                     if len(all_changedata) > 0:
                         meterchangedata_id = all_changedata[0].id
                         oldtable_zerodata = all_changedata[0].oldtable_zerodata
@@ -4632,6 +4632,14 @@ def reporting_recalculate(request):
         cycletype = request.POST.get('cycletype', '')
         reporting_date = request.POST.get('reporting_date', '')
         operationtype = request.POST.get('operationtype', '')
+        funid = request.POST.get('funid', '')
+        work = None
+        try:
+            funid = int(funid)
+            fun = Fun.objects.get(id=funid)
+            work = fun.work
+        except:
+            pass
 
         try:
             app = int(app)
@@ -4641,7 +4649,7 @@ def reporting_recalculate(request):
 
         guid = uuid.uuid1()
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
-                                                              operationtype=operationtype)
+                                                              operationtype=operationtype,work=work)
         for target in all_target:
             if operationtype == "17":
                 target = Target.objects.get(id=target.id)
@@ -4656,6 +4664,14 @@ def reporting_reextract(request):
         cycletype = request.POST.get('cycletype', '')
         reporting_date = request.POST.get('reporting_date', '')
         operationtype = request.POST.get('operationtype', '')
+        funid = request.POST.get('funid', '')
+        work = None
+        try:
+            funid = int(funid)
+            fun = Fun.objects.get(id=funid)
+            work = fun.work
+        except:
+            pass
 
         try:
             app = int(app)
@@ -4667,7 +4683,7 @@ def reporting_reextract(request):
 
         guid = uuid.uuid1()
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
-                                                              operationtype=operationtype)
+                                                              operationtype=operationtype,work=work)
         for target in all_target:
             if operationtype == "16":
                 extractdata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
@@ -4715,6 +4731,14 @@ def reporting_new(request):
         cycletype = request.POST.get('cycletype', '')
         reporting_date = request.POST.get('reporting_date', '')
         operationtype = request.POST.get('operationtype', '')
+        funid = request.POST.get('funid', '')
+        work = None
+        try:
+            funid = int(funid)
+            fun = Fun.objects.get(id=funid)
+            work = fun.work
+        except:
+            pass
 
         try:
             app = int(app)
@@ -4725,7 +4749,7 @@ def reporting_new(request):
         # 生成本次计算guid
         guid = uuid.uuid1()
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
-                                                              operationtype=operationtype)
+                                                              operationtype=operationtype,work=work)
         for target in all_target:
             # 电表走字
             if operationtype == "1":
@@ -4836,6 +4860,14 @@ def reporting_del(request):
         cycletype = request.POST.get('cycletype', '')
         reporting_date = request.POST.get('reporting_date', '')
         operationtype = request.POST.get('operationtype', '')
+        funid = request.POST.get('funid', '')
+        work = None
+        try:
+            funid = int(funid)
+            fun = Fun.objects.get(id=funid)
+            work = fun.work
+        except:
+            pass
         try:
             app = int(app)
             reporting_date = getreporting_date(reporting_date, cycletype)
@@ -4846,20 +4878,24 @@ def reporting_del(request):
         if operationtype == "1":
             all_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app, target__cycletype=cycletype,
+                    target__work=work,
                 datadate=reporting_date)
         if operationtype == "15":
             all_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app, target__cycletype=cycletype,
+                    target__work=work,
                 datadate=reporting_date)
         if operationtype == "16":
             all_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
                 target__cycletype=cycletype,
+                    target__work=work,
                 datadate=reporting_date)
         if operationtype == "17":
             all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
                 target__cycletype=cycletype,
+                    target__work=work,
                 datadate=reporting_date)
         for data in all_data:
             data.state = "9"

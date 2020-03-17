@@ -1045,6 +1045,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     reporting_date: $('#reporting_date').val(),
                     operationtype: 15,
+                    funid:$('#funid').val(),
 
                 },
             success: function (data) {
@@ -1074,6 +1075,7 @@ $(document).ready(function () {
                         cycletype: $('#cycletype').val(),
                         reporting_date: $('#reporting_date').val(),
                         operationtype: 15,
+                        funid:$('#funid').val(),
 
                     },
                 success: function (data) {
@@ -1119,6 +1121,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     savedata: JSON.stringify(savedata),
                     reporting_date: $('#reporting_date').val(),
+                    funid:$('#funid').val(),
                 },
             success: function (data) {
                 var myres = data["res"];
@@ -1144,6 +1147,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     reporting_date: $('#reporting_date').val(),
                     operationtype: 16,
+                    funid:$('#funid').val(),
 
                 },
             success: function (data) {
@@ -1174,6 +1178,7 @@ $(document).ready(function () {
                         cycletype: $('#cycletype').val(),
                         reporting_date: $('#reporting_date').val(),
                         operationtype: 16,
+                        funid:$('#funid').val(),
 
                     },
                 success: function (data) {
@@ -1220,6 +1225,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     savedata: JSON.stringify(savedata),
                     reporting_date: $('#reporting_date').val(),
+                    funid:$('#funid').val(),
                 },
             success: function (data) {
                 var myres = data["res"];
@@ -1245,6 +1251,7 @@ $(document).ready(function () {
                     reporting_date: $('#reporting_date').val(),
                     app: $('#app').val(),
                     cycletype: $('#cycletype').val(),
+                    funid:$('#funid').val(),
                 },
             success: function (data) {
                 if (data == 1) {
@@ -1270,6 +1277,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     reporting_date: $('#reporting_date').val(),
                     operationtype: 17,
+                    funid:$('#funid').val(),
 
                 },
             success: function (data) {
@@ -1300,6 +1308,7 @@ $(document).ready(function () {
                         cycletype: $('#cycletype').val(),
                         reporting_date: $('#reporting_date').val(),
                         operationtype: 17,
+                        funid:$('#funid').val(),
 
                     },
                 success: function (data) {
@@ -1346,6 +1355,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     savedata: JSON.stringify(savedata),
                     reporting_date: $('#reporting_date').val(),
+                    funid:$('#funid').val(),
                 },
             success: function (data) {
                 var myres = data["res"];
@@ -1371,6 +1381,7 @@ $(document).ready(function () {
                     reporting_date: $('#reporting_date').val(),
                     app: $('#app').val(),
                     cycletype: $('#cycletype').val(),
+                    funid:$('#funid').val(),
                 },
             success: function (data) {
                 if (data == 1) {
@@ -1397,6 +1408,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     reporting_date: $('#reporting_date').val(),
                     operationtype: 1,
+                    funid:$('#funid').val(),
 
                 },
             success: function (data) {
@@ -1426,6 +1438,7 @@ $(document).ready(function () {
                         cycletype: $('#cycletype').val(),
                         reporting_date: $('#reporting_date').val(),
                         operationtype: 1,
+                        funid:$('#funid').val(),
 
                     },
                 success: function (data) {
@@ -1487,6 +1500,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     savedata: JSON.stringify(savedata),
                     reporting_date: $('#reporting_date').val(),
+                    funid:$('#funid').val(),
                 },
             success: function (data) {
                 var myres = data["res"];
@@ -1502,16 +1516,16 @@ $(document).ready(function () {
     })
 
     // nav_tab切换事件
-    $('#navtabs a').click(function (e) {
-        var nodeId = $(this).prop('id');
-        // 数据查询
-        if (nodeId == 'tabcheck4') {
-            var table = $('#sample_4').DataTable();
-            table.ajax.url("../../../reporting_search_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
-                "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()
-            ).load();
-        }
-    });
+    // $('#navtabs a').click(function (e) {
+    //     var nodeId = $(this).prop('id');
+    //     // 数据查询
+    //     if (nodeId == 'tabcheck4') {
+    //         var table = $('#sample_4').DataTable();
+    //         table.ajax.url("../../../reporting_search_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+    //             "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()
+    //         ).load();
+    //     }
+    // });
 
 });
 
