@@ -3511,7 +3511,7 @@ def reporting_index(request, cycletype, funid):
             calculatereset = ""
             curapp = App.objects.filter(id=app)
 
-            if work.core=='是':
+            if work is not None and work.core=='是':
                 search_target = Target.objects.exclude(state='9').filter(cycletype=cycletype).filter((Q(app__in=curapp)&~Q(adminapp_id=app))|(Q(adminapp_id=app)&~Q(work__core='是')))
             else:
                 search_target = None
