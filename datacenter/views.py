@@ -4146,6 +4146,7 @@ def getcalculatedata(target, date, guid):
                         col = col[0:col.find(':')]
 
                 # 查询常数库value值
+                value = ""
                 if membertarget in constant_code:
                     memberconstant = Constant.objects.filter(code=membertarget).exclude(state="9")
                     if len(memberconstant) <= 0:
