@@ -759,8 +759,9 @@ $(document).ready(function () {
     $('#sample_5 tbody').on('change', 'input[name="table5_zerodata"]', function () {
         var table = $('#sample_5').DataTable();
         var data = table.row($(this).parents('tr')).data();
-        $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())), math.bignumber(Number($('#table5_zerodata_' + data.id).val())))))
-        $('#table5_curvalue_' + data.id).val(Number($('#table5_metervalue_' + data.id).val()) * Number(data.target_magnification))
+        $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())), math.bignumber(Number($('#table5_zerodata_' + data.id).val())))));
+        $('#table5_curvalue_' + data.id).val(math.number(math.multiply(math.bignumber(Number($('#table5_metervalue_' + data.id).val())), math.bignumber(Number(data.target_magnification)))))
+        // $('#table5_curvalue_' + data.id).val(Number($('#table5_metervalue_' + data.id).val()) * Number(data.target_magnification))
         if (data.target_cumulative == '是') {
             $('#table5_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));   // math.js精度计算
             $('#table5_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
@@ -777,7 +778,8 @@ $(document).ready(function () {
         var table = $('#sample_5').DataTable();
         var data = table.row($(this).parents('tr')).data();
         $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())), math.bignumber(Number($('#table5_zerodata_' + data.id).val())))))
-        $('#table5_curvalue_' + data.id).val(Number($('#table5_metervalue_' + data.id).val()) * Number(data.target_magnification))
+        $('#table5_curvalue_' + data.id).val(math.number(math.multiply(math.bignumber(Number($('#table5_metervalue_' + data.id).val())), math.bignumber(Number(data.target_magnification)))))
+        // $('#table5_curvalue_' + data.id).val(Number($('#table5_metervalue_' + data.id).val()) * Number(data.target_magnification))
         if (data.target_cumulative == '是') {
             $('#table5_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
             $('#table5_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));

@@ -3542,7 +3542,7 @@ def reporting_index(request, cycletype, funid):
             # 只有该功能对应的业务为核心业务，才显示数据查询标签
             core = work.core if work else ""
 
-            if len(search_target) <= 0:
+            if search_target is None or len(search_target) <= 0:
                 searchtag = "display: none;"
             else:
                 for target in search_target:
@@ -3574,7 +3574,7 @@ def reporting_index(request, cycletype, funid):
             else:
                 meternew = "display: none;"
 
-            if len(search_target) > 0:
+            if search_target is  not None and len(search_target) > 0:
                 searchtagclass = "class=active"
                 searchtagtabclass = "active in"
             elif len(meter_target) > 0:
