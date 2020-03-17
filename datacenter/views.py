@@ -3755,7 +3755,7 @@ def reporting_data(request):
                 elif operationtype == "1":
                     zerodata = data.zerodata
                     twentyfourdata = data.twentyfourdata
-                    metervalue = data.twentyfourdata
+                    metervalue = data.metervalue
                     meterchangedata_id = ""
                     oldtable_zerodata = ""
                     oldtable_twentyfourdata = ""
