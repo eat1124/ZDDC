@@ -3421,6 +3421,7 @@ def reporting_index(request, cycletype, funid):
         try:
             cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
             app = cur_fun[0].app_id
+            work = cur_fun[0].work
         except:
             return HttpResponseRedirect("/index")
         else:
@@ -3509,16 +3510,18 @@ def reporting_index(request, cycletype, funid):
             extractreset = ""
             calculatereset = ""
             curapp = App.objects.filter(id=app)
-            search_target = Target.objects.exclude(state='9').exclude(adminapp_id=app).filter(cycletype=cycletype,
-                                                                                              app__in=curapp)
 
-            meter_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+            if work.core=='是':
+                search_target = Target.objects.exclude(state='9').filter(cycletype=cycletype).filter((Q(app__in=curapp)&~Q(adminapp_id=app))|(Q(adminapp_id=app)&~Q(work__core='是')))
+            else:
+                search_target = None
+            meter_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,work=work,
                                                                     operationtype='1')
-            entry_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+            entry_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,work=work,
                                                                     operationtype='15')
-            extract_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+            extract_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,work=work,
                                                                       operationtype='16')
-            calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,
+            calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,work=work,
                                                                         operationtype='17')
 
             meter_data = getmodels("Meterdata", str(now.year)).objects.exclude(state="9").filter(target__adminapp_id=app,
@@ -3537,15 +3540,14 @@ def reporting_index(request, cycletype, funid):
             check_search_app = []
 
             # 只有该功能对应的业务为核心业务，才显示数据查询标签
-            work = cur_fun[0].work
             core = work.core if work else ""
 
-            if len(search_target) <= 0 and core != '是':
+            if len(search_target) <= 0:
                 searchtag = "display: none;"
             else:
                 for target in search_target:
                     if target.adminapp is not None:
-                        works = target.adminapp.work_set.exclude(state='9').values('id', 'name')
+                        works = target.adminapp.work_set.exclude(state='9').exclude(id=work.id).values('id', 'name')
                         cursearchapp = {
                             "id": target.adminapp.id,
                             "name": target.adminapp.name,
@@ -3893,7 +3895,7 @@ def reporting_search_data(request):
 
         curapp = App.objects.get(id=app)
         all_target = Target.objects.exclude(state="9").exclude(work__in=except_works).\
-            filter(app=curapp, cycletype=cycletype).order_by("adminapp", "operationtype", "sort")
+            filter(cycletype=cycletype).filter(Q(app=curapp)|Q(adminapp=curapp)).order_by("adminapp", "operationtype", "sort")
 
         if searchapp != "":
             try:
