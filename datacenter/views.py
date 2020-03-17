@@ -4343,7 +4343,7 @@ def getcalculatedata(target, date, guid):
     calculatedata.target = target
     calculatedata.datadate = date
     calculatedata.curvalue = curvalue
-    calculatedata.curvalue = decimal.Decimal(float(calculatedata.metervalue) * float(target.magnification))
+    calculatedata.curvalue = decimal.Decimal(float(calculatedata.curvalue) * float(target.magnification))
     calculatedata.curvalue = round(calculatedata.curvalue, target.digit)
     if target.cumulative == "是":
         cumulative = getcumulative(target, date, decimal.Decimal(str(calculatedata.curvalue)))
@@ -4717,7 +4717,7 @@ def reporting_reextract(request):
                                 else:
                                     extractdata.curvalue = rows[0][0]
                                 extractdata.curvalue = decimal.Decimal(
-                                    float(extractdata.metervalue) * float(target.magnification))
+                                    float(extractdata.curvalue) * float(target.magnification))
                                 extractdata.curvalue = round(extractdata.curvalue, target.digit)
                             except:
                                 pass
@@ -4844,7 +4844,7 @@ def reporting_new(request):
                                 extractdata.curvalue = rowvalue/rownum
                             else:
                                 extractdata.curvalue = rows[0][0]
-                            extractdata.curvalue = decimal.Decimal(float(extractdata.metervalue) * float(target.magnification))
+                            extractdata.curvalue = decimal.Decimal(float(extractdata.curvalue) * float(target.magnification))
                             extractdata.curvalue = round(extractdata.curvalue, target.digit)
                         except:
                             pass
