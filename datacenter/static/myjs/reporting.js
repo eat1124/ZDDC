@@ -616,7 +616,6 @@ $(document).ready(function () {
             {"data": "id"},
             {"data": "target_name"},
             {"data": "target_code"},
-            {"data": "target_businesstypename"},
             {"data": "target_unitname"},
             {"data": "target_cumulative"},
             {"data": "zerodata"},
