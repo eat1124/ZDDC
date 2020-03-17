@@ -3666,20 +3666,21 @@ def reporting_data(request):
             if operationtype == "1":
                 all_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
-                    target__work=work).select_related("target")
+                    target__work=work).order_by("target__sort").select_related("target")
             if operationtype == "15":
                 all_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
-                    target__work=work).select_related("target")
+                    target__work=work).order_by("target__sort").select_related("target")
             if operationtype == "16":
                 all_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
-                    target__work=work).select_related("target")
+                    target__work=work).order_by("target__sort").select_related("target")
             if operationtype == "17":
                 all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
-                    target__work=work).select_related("target")
+                    target__work=work).order_by("target__sort").select_related("target")
             for data in all_data:
+                print(data.id)
                 businesstypename = data.target.businesstype
                 unitname = data.target.unit
                 try:
@@ -4749,7 +4750,7 @@ def reporting_new(request):
         # 生成本次计算guid
         guid = uuid.uuid1()
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
-                                                              operationtype=operationtype,work=work)
+                                                              operationtype=operationtype,work=work).order_by("sort")
         for target in all_target:
             # 电表走字
             if operationtype == "1":
