@@ -1098,13 +1098,13 @@ def report_app_index(request, funid):
                                             remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
                                                 file_name)
                                             # remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
-                                            url_visited = "http://192.168.100.224:8000/download_file?file_name={0}".format(
+                                            url_visited = "http://127.0.0.1:8000/download_file?file_name={0}".format(
                                                 file_name)
                                             remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                 local_script_dir, remote_file_dir, url_visited)
-                                            remote_ip = "192.168.100.151"
-                                            remote_user = "Administrator"
-                                            remote_password = "tesunet@2017"
+                                            remote_ip = "127.0.0.1"
+                                            remote_user = "administrator"
+                                            remote_password = "password01!"
                                             remote_platform = "Windows"
                                             server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
                                                                       remote_password, remote_platform)
@@ -4699,7 +4699,7 @@ def reporting_reextract(request):
                     if tablename != "":
                         cursor = connection.cursor()
                         strsql = "select  curvalue from " + tablename + " where target_id = " + str(
-                            target.id) + " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'"
+                            target.id) + " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'  order by id desc"
                         cursor.execute(strsql)
                         rows = cursor.fetchall()
                         if len(rows) > 0:
@@ -4777,7 +4777,7 @@ def reporting_new(request):
                 if tablename != "":
                     cursor = connection.cursor()
                     strsql = "select  curvalue from " + tablename + " where  target_id = " + str(
-                        target.id) + " and  datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'"
+                        target.id) + " and  datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'  order by id desc"
                     cursor.execute(strsql)
                     rows = cursor.fetchall()
                     if len(rows) > 0:
@@ -4827,7 +4827,7 @@ def reporting_new(request):
                 if tablename != "":
                     cursor = connection.cursor()
                     strsql = "select  curvalue from " + tablename + " where target_id = " + str(
-                        target.id) + " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'"
+                        target.id) + " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "' order by id desc"
                     cursor.execute(strsql)
                     rows = cursor.fetchall()
                     if len(rows) > 0:
