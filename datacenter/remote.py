@@ -120,14 +120,25 @@ class ServerByPara(object):
 
 
 if __name__ == '__main__':
-    script_dir = r"C:\Users\Administrator\Desktop\test.ps1"
-    remote_file_dir = 'C:\\Users\\Administrator\\Desktop\\数据中心_操作指南.doc'
-    url_visited = 'http://192.168.100.220:8000/download_file/?file_name="{0}"'.format("数据中心_操作指南.doc")
-    remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(script_dir,
-                                                                                                remote_file_dir,
-                                                                                                url_visited)
-    remote_ip = "192.168.100.151"
-    remote_user = "Administrator"
+    # script_dir = r"C:\Users\Administrator\Desktop\request.ps1"
+    remote_file_dir = 'C:\\Users\\Administrator\\Desktop\\ip.bat'
+    url_visited = 'http://192.168.65.85:8000/download_file/?file_name="{0}"'.format("ip.bat")
+    # remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(script_dir,
+    #                                                                                             remote_file_dir,
+    #                                                                                             url_visited)
+    #
+
+    remote_cmd = 'echo $Response=Invoke-WebRequest -Uri {url_visited} > C:\\Users\\Administrator\\Desktop\\2.bat&'.format(
+        url_visited=url_visited) + \
+                 'echo try{ >> C:\\Users\\Administrator\\Desktop\\2.bat&' + \
+                 'echo    [System.IO.File]::WriteAllBytes({remote_file_dir}, $Response.Content) >> C:\\Users\\Administrator\\Desktop\\2.bat&'.format(
+                     remote_file_dir=remote_file_dir) + \
+                 'echo }catch{ >> C:\\Users\\Administrator\\Desktop\\2.bat&' + \
+                 'echo   [System.Console]::WriteLine($_.Exception.Message) >> C:\\Users\\Administrator\\Desktop\\2.bat&' + \
+                 'echo } >> C:\\Users\\Administrator\\Desktop\\2.bat'
+
+    remote_ip = "192.168.100.154"
+    remote_user = "administrator"
     remote_password = "tesunet@2017"
     remote_platform = "Windows"
     server_obj = ServerByPara(r"{0}".format(remote_cmd), remote_ip, remote_user, remote_password, remote_platform)

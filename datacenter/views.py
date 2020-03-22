@@ -58,6 +58,83 @@ info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Ad
         "lastlogin": 0}
 
 
+def report_server(request, funid):
+    if request.user.is_authenticated():
+        rs = ReportServer.objects.first()
+        id, report_server, user_name, password, report_file_path, web_server, ps_script_path = 0, '', '', '', '', '', ''
+        if rs:
+            id = rs.id
+            report_server = rs.report_server
+            user_name = rs.username
+            password = rs.password
+            report_file_path = rs.report_file_path
+            web_server = rs.web_server
+            ps_script_path = rs.ps_script_path
+
+        return render(request, 'report_server.html',
+                      {'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid),
+                       'id': id, 'report_server': report_server, 'user_name': user_name,
+                       'password': password, 'report_file_path': report_file_path,
+                       'web_server': web_server, 'ps_script_path': ps_script_path
+                       })
+    else:
+        return HttpResponseRedirect('/login')
+
+
+def report_server_save(request):
+    if request.user.is_authenticated():
+        id = request.POST.get('id', '')
+        report_server = request.POST.get('report_server', '')
+        username = request.POST.get('username', '')
+        password = request.POST.get('password', '')
+        report_file_path = request.POST.get('report_file_path', '')
+        web_server = request.POST.get('web_server', '')
+        ps_script_path = request.POST.get('ps_script_path', '')
+
+        status = 0
+        data = ''
+
+        try:
+            id = int(id)
+        except:
+            status = 0
+            data = '网络连接异常。'
+        else:
+            if id == 0:
+                rs = ReportServer()
+                rs.report_server = report_server
+                rs.username = username
+                rs.password = password
+                rs.report_file_path = report_file_path
+                rs.web_server = web_server
+                rs.ps_script_path = ps_script_path
+                rs.save()
+                status = 1
+                data = '保存成功。'
+            else:
+                try:
+                    rs = ReportServer.objects.get(id=id)
+                except ReportServer.DoesNotExist as e:
+                    status = 0
+                    data = '报表记录不存在。'
+                else:
+                    rs.report_server = report_server
+                    rs.username = username
+                    rs.password = password
+                    rs.report_file_path = report_file_path
+                    rs.web_server = web_server
+                    rs.ps_script_path = ps_script_path
+                    rs.save()
+                    status = 1
+                    data = '保存成功。'
+        return JsonResponse({
+            'status': status,
+            'data': data
+        })
+    else:
+        return HttpResponseRedirect('/login')
+
+
 def remove_decimal(num):
     """
     移除小数点后多余的0
@@ -850,42 +927,89 @@ def report_index(request, funid):
                                     if app.strip() == '':
                                         errors.append('关联应用不能为空。')
                                     else:
-                                        write_tag = True
+                                        write_tag = False
                                         # 新增 或者 修改(且有my_file存在) 时写入文件
                                         if id == 0 or id != 0 and my_file:
-                                            # try:
-                                            #     file_handler = FileHandler()
-                                            #     ftp = file_handler.ftp_connect()
-                                            #     # file_handler.download_file(ftp, r"docker.py", r"C:\Users\Administrator\Desktop\docker.py")
-                                            #     file_handler.upload_file(ftp, file_name, fp=my_file)
-                                            #     ftp.quit()
-                                            #     write_tag = False
-                                            # except Exception as e:
-                                            #     print(e)
-                                            #     write_tag = True
+                                            # 判断请求服务器下载文件条件是否满足
+                                            # ps_script_path/report_file_path/web_server/report_server/username/password
+                                            rs = ReportServer.objects.first()
+                                            if not rs:
+                                                errors.append('报表服务器参数未配置，报表上传失败。')
+                                            elif not rs.report_server:
+                                                errors.append('报表服务器地址未配置，报表上传失败。')
+                                            elif not rs.username:
+                                                errors.append('报表服务器用户名未配置，报表上传失败。')
+                                            elif not rs.password:
+                                                errors.append('报表服务器密码未配置，报表上传失败。')
+                                            elif not rs.report_file_path:
+                                                errors.append('报表存放路径未配置，报表上传失败。')
+                                            elif not rs.web_server:
+                                                errors.append('Web服务器地址未配置，报表上传失败。')
+                                            elif not rs.ps_script_path:
+                                                errors.append('PowerShell脚本存放路径未配置，报表上传失败。')
+                                            else:
+                                                with open(myfilepath, 'wb+') as f:
+                                                    for chunk in my_file.chunks():
+                                                        f.write(chunk)
+                                                # 只要有文件写入，就发送请求
+                                                # 远程执行命令，令远程windows发送请求下载文件
+                                                pre_ps_path = os.path.join(rs.ps_script_path, 'report_ps')
+                                                ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
+                                                report_file_path = os.path.join(rs.report_file_path, file_name)
+                                                remote_ip = rs.report_server
+                                                remote_user = rs.username
+                                                remote_password = rs.password
+                                                remote_platform = "Windows"
+                                                # report_file_path = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
+                                                #     file_name)
 
-                                            with open(myfilepath, 'wb+') as f:
-                                                for chunk in my_file.chunks():
-                                                    f.write(chunk)
-                                            # 只要有文件写入，就发送请求
-                                            # 远程执行命令，令远程windows发送请求下载文件
-                                            local_script_dir = "C:\\Users\\Administrator\\Desktop\\test.ps1"
-                                            remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
-                                                file_name)
-                                            # remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
-                                            url_visited = "http://192.168.100.224:8000/download_file?file_name={0}".format(
-                                                file_name)
-                                            remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                local_script_dir, remote_file_dir, url_visited)
-                                            remote_ip = "192.168.100.151"
-                                            remote_user = "Administrator"
-                                            remote_password = "tesunet@2017"
-                                            remote_platform = "Windows"
-                                            server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
-                                                                      remote_password, remote_platform)
-                                            result = server_obj.run("")
-                                            if result["exec_tag"] != 0:
-                                                write_tag = False
+                                                # 判断ps脚本是否存在
+                                                # 若不存在，创建路径，写入文件
+                                                ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(pre_ps_path=pre_ps_path)
+                                                ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
+                                                                         remote_password, remote_platform)
+                                                ps_result = ps_script.run("")
+
+                                                if ps_result['exec_tag'] == 1:
+                                                    errors.append(ps_result['log'])
+                                                else:
+                                                    # 写入脚本文件
+                                                    ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
+                                                                'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
+                                                                'echo try{ >> %s &' % ps_script_path + \
+                                                                'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
+                                                                'echo }catch{ >> %s &' % ps_script_path + \
+                                                                'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
+                                                                'echo } >> %s &' % ps_script_path
+                                                    ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
+                                                                             remote_password, remote_platform)
+                                                    ps_upload_result = ps_upload.run("")
+
+                                                    if ps_upload_result['exec_tag'] == 1:
+                                                        errors.append(ps_upload_result['log'])
+                                                    else:
+                                                        # 判断报表路径是否存在
+                                                        # 若不存在，提示不存在，报表上传失败
+                                                        report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(report_file_path=rs.report_file_path)
+                                                        rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
+                                                                                 remote_password, remote_platform)
+                                                        rc_result = rc.run("")
+
+                                                        if rc_result['exec_tag'] == 1:
+                                                            errors.append(rc_result['log'])
+                                                        else:
+                                                            url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
+                                                                web_server=rs.web_server, file_name=file_name)
+                                                            remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                                ps_script_path, report_file_path, url_visited)
+
+                                                            server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
+                                                                                      remote_password, remote_platform)
+                                                            result = server_obj.run("")
+                                                            if result["exec_tag"] == 0:
+                                                                write_tag = True
+                                                            else:
+                                                                errors.append(result['log'])
 
                                         # 远程文件下载成功
                                         if write_tag:
@@ -1085,32 +1209,89 @@ def report_app_index(request, funid):
                                     if app.strip() == '':
                                         errors.append('关联应用不能为空。')
                                     else:
-                                        write_tag = True
+                                        write_tag = False
                                         # 新增 或者 修改(且有my_file存在) 时写入文件
                                         if id == 0 or id != 0 and my_file:
-                                            with open(myfilepath, 'wb+') as f:
-                                                for chunk in my_file.chunks():
-                                                    f.write(chunk)
-                                            # 只要有文件写入，就发送请求
-                                            # 远程执行命令，令远程windows发送请求下载文件
+                                            # 判断请求服务器下载文件条件是否满足
+                                            # ps_script_path/report_file_path/web_server/report_server/username/password
+                                            rs = ReportServer.objects.first()
+                                            if not rs:
+                                                errors.append('报表服务器参数未配置，报表上传失败。')
+                                            elif not rs.report_server:
+                                                errors.append('报表服务器地址未配置，报表上传失败。')
+                                            elif not rs.username:
+                                                errors.append('报表服务器用户名未配置，报表上传失败。')
+                                            elif not rs.password:
+                                                errors.append('报表服务器密码未配置，报表上传失败。')
+                                            elif not rs.report_file_path:
+                                                errors.append('报表存放路径未配置，报表上传失败。')
+                                            elif not rs.web_server:
+                                                errors.append('Web服务器地址未配置，报表上传失败。')
+                                            elif not rs.ps_script_path:
+                                                errors.append('PowerShell脚本存放路径未配置，报表上传失败。')
+                                            else:
+                                                with open(myfilepath, 'wb+') as f:
+                                                    for chunk in my_file.chunks():
+                                                        f.write(chunk)
+                                                # 只要有文件写入，就发送请求
+                                                # 远程执行命令，令远程windows发送请求下载文件
+                                                pre_ps_path = os.path.join(rs.ps_script_path, 'report_ps')
+                                                ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
+                                                report_file_path = os.path.join(rs.report_file_path, file_name)
+                                                remote_ip = rs.report_server
+                                                remote_user = rs.username
+                                                remote_password = rs.password
+                                                remote_platform = "Windows"
+                                                # report_file_path = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
+                                                #     file_name)
 
-                                            local_script_dir = "C:\\Users\\Administrator\\Desktop\\test.ps1"
-                                            remote_file_dir = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
-                                                file_name)
-                                            # remote_file_dir = "C:\\Users\\Administrator\\Desktop\\{0}".format(file_name)
-                                            url_visited = "http://192.168.100.224:8000/download_file?file_name={0}".format(
-                                                file_name)
-                                            remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                local_script_dir, remote_file_dir, url_visited)
-                                            remote_ip = "192.168.100.151"
-                                            remote_user = "Administrator"
-                                            remote_password = "tesunet@2017"
-                                            remote_platform = "Windows"
-                                            server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
-                                                                      remote_password, remote_platform)
-                                            result = server_obj.run("")
-                                            if result["exec_tag"] != 0:
-                                                write_tag = False
+                                                # 判断ps脚本是否存在
+                                                # 若不存在，创建路径，写入文件
+                                                ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(pre_ps_path=pre_ps_path)
+                                                ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
+                                                                         remote_password, remote_platform)
+                                                ps_result = ps_script.run("")
+
+                                                if ps_result['exec_tag'] == 1:
+                                                    errors.append(ps_result['log'])
+                                                else:
+                                                    # 写入脚本文件
+                                                    ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
+                                                                'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
+                                                                'echo try{ >> %s &' % ps_script_path + \
+                                                                'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
+                                                                'echo }catch{ >> %s &' % ps_script_path + \
+                                                                'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
+                                                                'echo } >> %s &' % ps_script_path
+                                                    ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
+                                                                             remote_password, remote_platform)
+                                                    ps_upload_result = ps_upload.run("")
+
+                                                    if ps_upload_result['exec_tag'] == 1:
+                                                        errors.append(ps_upload_result['log'])
+                                                    else:
+                                                        # 判断报表路径是否存在
+                                                        # 若不存在，提示不存在，报表上传失败
+                                                        report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(report_file_path=rs.report_file_path)
+                                                        rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
+                                                                                 remote_password, remote_platform)
+                                                        rc_result = rc.run("")
+
+                                                        if rc_result['exec_tag'] == 1:
+                                                            errors.append(rc_result['log'])
+                                                        else:
+                                                            url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
+                                                                web_server=rs.web_server, file_name=file_name)
+                                                            remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                                ps_script_path, report_file_path, url_visited)
+
+                                                            server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
+                                                                                      remote_password, remote_platform)
+                                                            result = server_obj.run("")
+                                                            if result["exec_tag"] == 0:
+                                                                write_tag = True
+                                                            else:
+                                                                errors.append(result['log'])
 
                                         # 远程文件下载成功
                                         if write_tag:
@@ -3423,7 +3604,8 @@ def reporting_index(request, cycletype, funid):
         except:
             return HttpResponseRedirect("/index")
         else:
-            now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1)
+            now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+                days=-1)
             date = now.strftime("%Y-%m-%d")
             if cycletype == '10':
                 now = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
@@ -3509,25 +3691,28 @@ def reporting_index(request, cycletype, funid):
             calculatereset = ""
             curapp = App.objects.filter(id=app)
 
-            if work is not None and work.core=='是':
-                search_target = Target.objects.exclude(state='9').filter(cycletype=cycletype).filter((Q(app__in=curapp)&~Q(adminapp_id=app))|(Q(adminapp_id=app)&~Q(work__core='是')))
+            if work is not None and work.core == '是':
+                search_target = Target.objects.exclude(state='9').filter(cycletype=cycletype).filter(
+                    (Q(app__in=curapp) & ~Q(adminapp_id=app)) | (Q(adminapp_id=app) & ~Q(work__core='是')))
             else:
                 search_target = None
-            meter_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,work=work,
+            meter_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, work=work,
                                                                     operationtype='1')
-            entry_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,work=work,
+            entry_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, work=work,
                                                                     operationtype='15')
-            extract_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,work=work,
+            extract_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, work=work,
                                                                       operationtype='16')
-            calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app,work=work,
+            calculate_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, work=work,
                                                                         operationtype='17')
 
-            meter_data = getmodels("Meterdata", str(now.year)).objects.exclude(state="9").filter(target__adminapp_id=app,
-                                                                                                 target__cycletype=cycletype,
-                                                                                                 datadate=now)
-            entry_data = getmodels("Entrydata", str(now.year)).objects.exclude(state="9").filter(target__adminapp_id=app,
-                                                                                                 target__cycletype=cycletype,
-                                                                                                 datadate=now)
+            meter_data = getmodels("Meterdata", str(now.year)).objects.exclude(state="9").filter(
+                target__adminapp_id=app,
+                target__cycletype=cycletype,
+                datadate=now)
+            entry_data = getmodels("Entrydata", str(now.year)).objects.exclude(state="9").filter(
+                target__adminapp_id=app,
+                target__cycletype=cycletype,
+                datadate=now)
             extract_data = getmodels("Extractdata", str(now.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
                 target__cycletype=cycletype, datadate=now)
@@ -3572,7 +3757,7 @@ def reporting_index(request, cycletype, funid):
             else:
                 meternew = "display: none;"
 
-            if search_target is  not None and len(search_target) > 0:
+            if search_target is not None and len(search_target) > 0:
                 searchtagclass = "class=active"
                 searchtagtabclass = "active in"
             elif len(meter_target) > 0:
@@ -3767,7 +3952,8 @@ def reporting_data(request):
                     newtable_finalvalue = ""
                     finalvalue = ""
 
-                    all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=data.id,datadate=reporting_date)
+                    all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=data.id,
+                                                                                       datadate=reporting_date)
                     if len(all_changedata) > 0:
                         meterchangedata_id = all_changedata[0].id
                         oldtable_zerodata = all_changedata[0].oldtable_zerodata
@@ -3892,8 +4078,9 @@ def reporting_search_data(request):
         except_works = Work.objects.exclude(state='9').filter(app_id=app, core='是')
 
         curapp = App.objects.get(id=app)
-        all_target = Target.objects.exclude(state="9").exclude(work__in=except_works).\
-            filter(cycletype=cycletype).filter(Q(app=curapp)|Q(adminapp=curapp)).order_by("adminapp", "operationtype", "sort")
+        all_target = Target.objects.exclude(state="9").exclude(work__in=except_works). \
+            filter(cycletype=cycletype).filter(Q(app=curapp) | Q(adminapp=curapp)).order_by("adminapp", "operationtype",
+                                                                                            "sort")
 
         if searchapp != "":
             try:
@@ -4162,7 +4349,8 @@ def getcalculatedata(target, date, guid):
 
                         tableyear = str(date.year)
                         queryset = getmodels("Entrydata", tableyear).objects
-                        if cond == "LYS" or cond == "LYE" or ((cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
+                        if cond == "LYS" or cond == "LYE" or (
+                                (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
                                 (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
                                 (cond == "LMS" or cond == "LME") and int(date.month) < 2):
                             tableyear = str(int(date.year) - 1)
@@ -4421,7 +4609,8 @@ def reporting_formulacalculate(request):
                                 memberconstant = memberconstant[0]
                                 value = memberconstant.value
 
-                            constant_chinese = '<' + constant_name + ':' + constant_col + '>(' + str(remove_decimal(value)) + ')'
+                            constant_chinese = '<' + constant_name + ':' + constant_col + '>(' + str(
+                                remove_decimal(value)) + ')'
                             formula_chinese = formula_chinese.replace(target_english, constant_chinese)
 
                         else:
@@ -4507,7 +4696,8 @@ def reporting_formulacalculate(request):
                                     if month == 10:
                                         newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
                                     else:
-                                        newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
+                                        newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(
+                                            days=-1)
                                     condtions = {'datadate': newdate}
                                 if cond == "LSS":
                                     month = (date.month - 1) - (date.month - 1) % 3 + 1
@@ -4530,7 +4720,8 @@ def reporting_formulacalculate(request):
                                     if month == 7:
                                         newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
                                     else:
-                                        newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
+                                        newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(
+                                            days=-1)
                                     condtions = {'datadate': newdate}
                                 if cond == "LHS":
                                     month = (date.month - 1) - (date.month - 1) % 6 + 1
@@ -4588,18 +4779,21 @@ def reporting_formulacalculate(request):
                                     if col == 'm':
                                         if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                             value = str(
-                                                round(query_res.aggregate(Avg('cumulativemonth'))['cumulativemonth__avg'],
-                                                      query_res[0].target.digit))
+                                                round(
+                                                    query_res.aggregate(Avg('cumulativemonth'))['cumulativemonth__avg'],
+                                                    query_res[0].target.digit))
                                         else:
                                             value = str(round(query_res[0].cumulativemonth, query_res[0].target.digit))
                                     if col == 's':
                                         if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                             value = str(
                                                 round(
-                                                    query_res.aggregate(Avg('cumulativequarter'))['cumulativequarter__avg'],
+                                                    query_res.aggregate(Avg('cumulativequarter'))[
+                                                        'cumulativequarter__avg'],
                                                     query_res[0].target.digit))
                                         else:
-                                            value = str(round(query_res[0].cumulativequarter, query_res[0].target.digit))
+                                            value = str(
+                                                round(query_res[0].cumulativequarter, query_res[0].target.digit))
                                     if col == 'h':
                                         if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                             value = str(
@@ -4607,7 +4801,8 @@ def reporting_formulacalculate(request):
                                                           'cumulativehalfyear__avg'],
                                                       query_res[0].target.digit))
                                         else:
-                                            value = str(round(query_res[0].cumulativehalfyear, query_res[0].target.digit))
+                                            value = str(
+                                                round(query_res[0].cumulativehalfyear, query_res[0].target.digit))
                                     if col == 'y':
                                         if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                             value = str(
@@ -4650,7 +4845,7 @@ def reporting_recalculate(request):
 
         guid = uuid.uuid1()
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
-                                                              operationtype=operationtype,work=work)
+                                                              operationtype=operationtype, work=work)
         for target in all_target:
             if operationtype == "17":
                 target = Target.objects.get(id=target.id)
@@ -4680,15 +4875,13 @@ def reporting_reextract(request):
         except:
             return HttpResponse(0)
 
-
-
         guid = uuid.uuid1()
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
-                                                              operationtype=operationtype,work=work)
+                                                              operationtype=operationtype, work=work)
         for target in all_target:
             if operationtype == "16":
                 extractdata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target_id=target.id).filter(datadate=reporting_date)
+                    target_id=target.id).filter(datadate=reporting_date)
                 if len(extractdata) > 0:
                     extractdata = extractdata[0]
                     tablename = ""
@@ -4704,14 +4897,14 @@ def reporting_reextract(request):
                         rows = cursor.fetchall()
                         if len(rows) > 0:
                             try:
-                                if target.is_repeat=='2':
-                                    rownum=0
-                                    rowvalue=0
+                                if target.is_repeat == '2':
+                                    rownum = 0
+                                    rowvalue = 0
                                     for row in rows:
                                         if row[0] is not None:
-                                            rowvalue+=row[0]
-                                            rownum+=1
-                                    extractdata.curvalue = rowvalue/rownum
+                                            rowvalue += row[0]
+                                            rownum += 1
+                                    extractdata.curvalue = rowvalue / rownum
                                 else:
                                     extractdata.curvalue = rows[0][0]
                                 extractdata.curvalue = decimal.Decimal(
@@ -4753,7 +4946,7 @@ def reporting_new(request):
         # 生成本次计算guid
         guid = uuid.uuid1()
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
-                                                              operationtype=operationtype,work=work).order_by("sort")
+                                                              operationtype=operationtype, work=work).order_by("sort")
         for target in all_target:
             # 电表走字
             if operationtype == "1":
@@ -4832,17 +5025,18 @@ def reporting_new(request):
                     rows = cursor.fetchall()
                     if len(rows) > 0:
                         try:
-                            if target.is_repeat=='2':
-                                rownum=0
-                                rowvalue=0
+                            if target.is_repeat == '2':
+                                rownum = 0
+                                rowvalue = 0
                                 for row in rows:
                                     if row[0] is not None:
-                                        rowvalue+=row[0]
-                                        rownum+=1
-                                extractdata.curvalue = rowvalue/rownum
+                                        rowvalue += row[0]
+                                        rownum += 1
+                                extractdata.curvalue = rowvalue / rownum
                             else:
                                 extractdata.curvalue = rows[0][0]
-                            extractdata.curvalue = decimal.Decimal(float(extractdata.curvalue) * float(target.magnification))
+                            extractdata.curvalue = decimal.Decimal(
+                                float(extractdata.curvalue) * float(target.magnification))
                             extractdata.curvalue = round(extractdata.curvalue, target.digit)
                         except:
                             pass
@@ -4886,24 +5080,24 @@ def reporting_del(request):
         if operationtype == "1":
             all_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app, target__cycletype=cycletype,
-                    target__work=work,
+                target__work=work,
                 datadate=reporting_date)
         if operationtype == "15":
             all_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app, target__cycletype=cycletype,
-                    target__work=work,
+                target__work=work,
                 datadate=reporting_date)
         if operationtype == "16":
             all_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
                 target__cycletype=cycletype,
-                    target__work=work,
+                target__work=work,
                 datadate=reporting_date)
         if operationtype == "17":
             all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
                 target__cycletype=cycletype,
-                    target__work=work,
+                target__work=work,
                 datadate=reporting_date)
         for data in all_data:
             data.state = "9"
@@ -6307,7 +6501,8 @@ def function(request, funid):
             return render(request, 'function.html',
                           {'username': request.user.userinfo.fullname, 'errors': errors, "id": id,
                            "pid": pid, "pname": pname, "name": name, "url": url, "icon": icon, "title": title,
-                           "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata, "works_select_list": works_select_list,
+                           "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata,
+                           "works_select_list": works_select_list,
                            "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata,
                            "works_select_list": works_select_list,
                            "app_select_list": pre_app_select_list, "app_hidden_div": app_hidden_div,
