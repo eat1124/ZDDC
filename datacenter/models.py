@@ -399,3 +399,16 @@ class Work(models.Model):
     sort = models.IntegerField('排序', default=0)
     core = models.CharField('是否核心业务', blank=True, default='否', max_length=20)
     state = models.CharField('状态', blank=True, default='', max_length=20)
+
+
+class ReportServer(models.Model):
+    """
+    报表服务器
+    """
+    ps_script_path = models.CharField("POWERSHELL脚本存放位置", blank=True, default='', max_length=256)
+    report_file_path = models.CharField("报表服务器存放文件路径", blank=True, default='', max_length=256)
+    web_server = models.CharField("Web服务器地址:127.0.0.1:8000", blank=True, default='', max_length=256)
+    report_server = models.CharField("报表服务器地址", blank=True, default='', max_length=256)
+    username = models.CharField("报表服务器用户名", blank=True, default='', max_length=256)
+    password = models.CharField("报表服务器密码", blank=True, default='', max_length=256)
+

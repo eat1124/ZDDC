@@ -104,7 +104,7 @@ urlpatterns = [
     # 应用常数维护
     url(r'^constant_app/(?P<funid>\d+)/$', constant_app_index),
 
-    #报表模板管理
+    # 报表模板管理
     url(r'^report/$', report_index, {'funid': '14'}),
     url(r'^report_data/$', report_data),
     url(r'^report_del/$', report_del),
@@ -211,5 +211,9 @@ urlpatterns = [
     url(r'^get_all_users/$', get_all_users),
 
     # 数据服务
-    url(r'^datacenter/$', DataCenter.as_view())
+    url(r'^datacenter/$', DataCenter.as_view()),
+
+    # 报表服务器
+    url(r'^report_server/$', report_server, {'funid': '39'}),
+    url(r'^report_server_save/$', report_server_save),
 ]
