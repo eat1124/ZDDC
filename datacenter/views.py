@@ -948,72 +948,76 @@ def report_index(request, funid):
                                             elif not rs.ps_script_path:
                                                 errors.append('PowerShell脚本存放路径未配置，报表上传失败。')
                                             else:
-                                                with open(myfilepath, 'wb+') as f:
-                                                    for chunk in my_file.chunks():
-                                                        f.write(chunk)
-                                                # 只要有文件写入，就发送请求
-                                                # 远程执行命令，令远程windows发送请求下载文件
-                                                pre_ps_path = os.path.join(rs.ps_script_path, 'report_ps')
-                                                ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
-                                                report_file_path = os.path.join(rs.report_file_path, file_name)
-                                                remote_ip = rs.report_server
-                                                remote_user = rs.username
-                                                remote_password = rs.password
-                                                remote_platform = "Windows"
-                                                # report_file_path = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
-                                                #     file_name)
-                                                # 报表服务器
-                                                # remote_ip = "192.168.100.151"
-                                                # remote_user = "Administrator"
-                                                # remote_password = "tesunet@2017"
-                                                # remote_platform = "Windows"
-                                                # 判断ps脚本是否存在
-                                                # 若不存在，创建路径，写入文件
-                                                ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(pre_ps_path=pre_ps_path)
-                                                ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
-                                                                         remote_password, remote_platform)
-                                                ps_result = ps_script.run("")
-
-                                                if ps_result['exec_tag'] == 1:
-                                                    errors.append(ps_result['log'])
+                                                try:
+                                                    with open(myfilepath, 'wb+') as f:
+                                                        for chunk in my_file.chunks():
+                                                            f.write(chunk)
+                                                except:
+                                                    errors.append('文件上传失败。')
                                                 else:
-                                                    # 写入脚本文件
-                                                    ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
-                                                                'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
-                                                                'echo try{ >> %s &' % ps_script_path + \
-                                                                'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
-                                                                'echo }catch{ >> %s &' % ps_script_path + \
-                                                                'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
-                                                                'echo } >> %s &' % ps_script_path
-                                                    ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
+                                                    # 只要有文件写入，就发送请求
+                                                    # 远程执行命令，令远程windows发送请求下载文件
+                                                    pre_ps_path = os.path.join(rs.ps_script_path, 'report_ps')
+                                                    ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
+                                                    report_file_path = os.path.join(rs.report_file_path, file_name)
+                                                    remote_ip = rs.report_server
+                                                    remote_user = rs.username
+                                                    remote_password = rs.password
+                                                    remote_platform = "Windows"
+                                                    # report_file_path = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
+                                                    #     file_name)
+                                                    # 报表服务器
+                                                    # remote_ip = "192.168.100.151"
+                                                    # remote_user = "Administrator"
+                                                    # remote_password = "tesunet@2017"
+                                                    # remote_platform = "Windows"
+                                                    # 判断ps脚本是否存在
+                                                    # 若不存在，创建路径，写入文件
+                                                    ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(pre_ps_path=pre_ps_path)
+                                                    ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
                                                                              remote_password, remote_platform)
-                                                    ps_upload_result = ps_upload.run("")
+                                                    ps_result = ps_script.run("")
 
-                                                    if ps_upload_result['exec_tag'] == 1:
-                                                        errors.append(ps_upload_result['log'])
+                                                    if ps_result['exec_tag'] == 1:
+                                                        errors.append(ps_result['log'])
                                                     else:
-                                                        # 判断报表路径是否存在
-                                                        # 若不存在，提示不存在，报表上传失败
-                                                        report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(report_file_path=rs.report_file_path)
-                                                        rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
+                                                        # 写入脚本文件
+                                                        ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
+                                                                    'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
+                                                                    'echo try{ >> %s &' % ps_script_path + \
+                                                                    'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
+                                                                    'echo }catch{ >> %s &' % ps_script_path + \
+                                                                    'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
+                                                                    'echo } >> %s &' % ps_script_path
+                                                        ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
                                                                                  remote_password, remote_platform)
-                                                        rc_result = rc.run("")
+                                                        ps_upload_result = ps_upload.run("")
 
-                                                        if rc_result['exec_tag'] == 1:
-                                                            errors.append(rc_result['log'])
+                                                        if ps_upload_result['exec_tag'] == 1:
+                                                            errors.append(ps_upload_result['log'])
                                                         else:
-                                                            url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
-                                                                web_server=rs.web_server, file_name=file_name)
-                                                            remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                ps_script_path, report_file_path, url_visited)
+                                                            # 判断报表路径是否存在
+                                                            # 若不存在，提示不存在，报表上传失败
+                                                            report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(report_file_path=rs.report_file_path)
+                                                            rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
+                                                                                     remote_password, remote_platform)
+                                                            rc_result = rc.run("")
 
-                                                            server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
-                                                                                      remote_password, remote_platform)
-                                                            result = server_obj.run("")
-                                                            if result["exec_tag"] == 0:
-                                                                write_tag = True
+                                                            if rc_result['exec_tag'] == 1:
+                                                                errors.append(rc_result['log'])
                                                             else:
-                                                                errors.append(result['log'])
+                                                                url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
+                                                                    web_server=rs.web_server, file_name=file_name)
+                                                                remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                                    ps_script_path, report_file_path, url_visited)
+
+                                                                server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
+                                                                                          remote_password, remote_platform)
+                                                                result = server_obj.run("")
+                                                                if result["exec_tag"] == 0:
+                                                                    write_tag = True
+                                                                else:
+                                                                    errors.append(result['log'])
 
                                         # 远程文件下载成功
                                         if write_tag:
@@ -1115,7 +1119,7 @@ def report_index(request, funid):
                                                     except Exception as e:
                                                         errors.append("修改失败。")
                                         else:
-                                            errors.append('远程文件下载失败。')
+                                            errors.append('本次报表上传任务失败。')
         return render(request, 'report.html',
                       {'username': request.user.userinfo.fullname,
                        "report_type_list": report_type_list,
@@ -1234,69 +1238,73 @@ def report_app_index(request, funid):
                                             elif not rs.ps_script_path:
                                                 errors.append('PowerShell脚本存放路径未配置，报表上传失败。')
                                             else:
-                                                with open(myfilepath, 'wb+') as f:
-                                                    for chunk in my_file.chunks():
-                                                        f.write(chunk)
-                                                # 只要有文件写入，就发送请求
-                                                # 远程执行命令，令远程windows发送请求下载文件
-                                                pre_ps_path = os.path.join(rs.ps_script_path, 'report_ps')
-                                                ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
-                                                report_file_path = os.path.join(rs.report_file_path, file_name)
-                                                remote_ip = rs.report_server
-                                                remote_user = rs.username
-                                                remote_password = rs.password
-                                                remote_platform = "Windows"
-                                                # report_file_path = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
-                                                #     file_name)
-
-                                                # 判断ps脚本是否存在
-                                                # 若不存在，创建路径，写入文件
-                                                ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(pre_ps_path=pre_ps_path)
-                                                ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
-                                                                         remote_password, remote_platform)
-                                                ps_result = ps_script.run("")
-
-                                                if ps_result['exec_tag'] == 1:
-                                                    errors.append(ps_result['log'])
+                                                try:
+                                                    with open(myfilepath, 'wb+') as f:
+                                                        for chunk in my_file.chunks():
+                                                            f.write(chunk)
+                                                except Exception as e:
+                                                    print(e)
+                                                    errors.append('文件上传失败。')
                                                 else:
-                                                    # 写入脚本文件
-                                                    ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
-                                                                'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
-                                                                'echo try{ >> %s &' % ps_script_path + \
-                                                                'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
-                                                                'echo }catch{ >> %s &' % ps_script_path + \
-                                                                'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
-                                                                'echo } >> %s &' % ps_script_path
-                                                    ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
+                                                    # 只要有文件写入，就发送请求
+                                                    # 远程执行命令，令远程windows发送请求下载文件
+                                                    pre_ps_path = os.path.join(rs.ps_script_path, 'report_ps')
+                                                    ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
+                                                    report_file_path = os.path.join(rs.report_file_path, file_name)
+                                                    remote_ip = rs.report_server
+                                                    remote_user = rs.username
+                                                    remote_password = rs.password
+                                                    remote_platform = "Windows"
+                                                    # report_file_path = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
+                                                    #     file_name)
+
+                                                    # 判断ps脚本是否存在
+                                                    # 若不存在，创建路径，写入文件
+                                                    ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(pre_ps_path=pre_ps_path)
+                                                    ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
                                                                              remote_password, remote_platform)
-                                                    ps_upload_result = ps_upload.run("")
+                                                    ps_result = ps_script.run("")
 
-                                                    if ps_upload_result['exec_tag'] == 1:
-                                                        errors.append(ps_upload_result['log'])
+                                                    if ps_result['exec_tag'] == 1:
+                                                        errors.append(ps_result['log'])
                                                     else:
-                                                        # 判断报表路径是否存在
-                                                        # 若不存在，提示不存在，报表上传失败
-                                                        report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(report_file_path=rs.report_file_path)
-                                                        rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
+                                                        # 写入脚本文件
+                                                        ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
+                                                                    'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
+                                                                    'echo try{ >> %s &' % ps_script_path + \
+                                                                    'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
+                                                                    'echo }catch{ >> %s &' % ps_script_path + \
+                                                                    'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
+                                                                    'echo } >> %s &' % ps_script_path
+                                                        ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
                                                                                  remote_password, remote_platform)
-                                                        rc_result = rc.run("")
+                                                        ps_upload_result = ps_upload.run("")
 
-                                                        if rc_result['exec_tag'] == 1:
-                                                            errors.append(rc_result['log'])
+                                                        if ps_upload_result['exec_tag'] == 1:
+                                                            errors.append(ps_upload_result['log'])
                                                         else:
-                                                            url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
-                                                                web_server=rs.web_server, file_name=file_name)
-                                                            remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                ps_script_path, report_file_path, url_visited)
+                                                            # 判断报表路径是否存在
+                                                            # 若不存在，提示不存在，报表上传失败
+                                                            report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(report_file_path=rs.report_file_path)
+                                                            rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
+                                                                                     remote_password, remote_platform)
+                                                            rc_result = rc.run("")
 
-                                                            server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
-                                                                                      remote_password, remote_platform)
-                                                            result = server_obj.run("")
-                                                            if result["exec_tag"] == 0:
-                                                                write_tag = True
+                                                            if rc_result['exec_tag'] == 1:
+                                                                errors.append(rc_result['log'])
                                                             else:
-                                                                errors.append(result['log'])
+                                                                url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
+                                                                    web_server=rs.web_server, file_name=file_name)
+                                                                remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                                    ps_script_path, report_file_path, url_visited)
 
+                                                                server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
+                                                                                          remote_password, remote_platform)
+                                                                result = server_obj.run("")
+                                                                if result["exec_tag"] == 0:
+                                                                    write_tag = True
+                                                                else:
+                                                                    errors.append(result['log'])
                                         # 远程文件下载成功
                                         if write_tag:
                                             # 新增报表模板
@@ -1397,7 +1405,7 @@ def report_app_index(request, funid):
                                                     except Exception as e:
                                                         errors.append("修改失败。")
                                         else:
-                                            errors.append('远程文件下载失败。')
+                                            errors.append('本次上传报表任务失败。')
         return render(request, 'report_app.html',
                       {'username': request.user.userinfo.fullname,
                        "report_type_list": report_type_list,
