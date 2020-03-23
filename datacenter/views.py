@@ -962,7 +962,11 @@ def report_index(request, funid):
                                                 remote_platform = "Windows"
                                                 # report_file_path = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
                                                 #     file_name)
-
+                                                # 报表服务器
+                                                # remote_ip = "192.168.100.151"
+                                                # remote_user = "Administrator"
+                                                # remote_password = "tesunet@2017"
+                                                # remote_platform = "Windows"
                                                 # 判断ps脚本是否存在
                                                 # 若不存在，创建路径，写入文件
                                                 ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(pre_ps_path=pre_ps_path)
