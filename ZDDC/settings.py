@@ -98,31 +98,30 @@ WSGI_APPLICATION = 'ZDDC.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'datacenter_1',
-        'USER': 'root',
-        'PASSWORD': 'password',
-        # 'HOST': '192.168.1.66',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-    }
-}
-#
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'sql_server.pyodbc',
-#         'NAME': 'mkl',
-#         'USER': 'miaokela',
-#         'PASSWORD': 'Passw0rD',
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'datacenter_1',
+#         'USER': 'root',
+#         'PASSWORD': 'password',
+#         # 'HOST': '192.168.1.66',
 #         'HOST': '127.0.0.1',
-#         'PORT': '1433',
-#         'OPTIONS': {
-#             'driver': 'SQL Server Native Client 11.0',  # 這邊要去查詢作業系統本身支援的版本 Win10是 11
-#         },
-#     },
+#         'PORT': '3306',
+#     }
 # }
+DATABASES = {
+    'default': {
+        'ENGINE': 'sql_server.pyodbc',
+        'NAME': 'datacenter',
+        'USER': 'sa',
+        'PASSWORD': 'tesunet@2020',
+        'HOST': '10.150.99.185\SQLEXPRESS',
+        'PORT': '1433',
+        'OPTIONS': {
+            'driver': 'SQL Server Native Client 11.0',  # Windows管理工具>>ODBC源数据>>点击添加即可查看驱动
+        },
+    },
+}
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 

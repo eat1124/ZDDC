@@ -4904,7 +4904,7 @@ def reporting_reextract(request):
                     if tablename != "":
                         cursor = connection.cursor()
                         strsql = "select  curvalue from " + tablename + " where target_id = " + str(
-                            target.id) + " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'"
+                            target.id) + " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'  order by id desc"
                         cursor.execute(strsql)
                         rows = cursor.fetchall()
                         if len(rows) > 0:
@@ -4982,7 +4982,7 @@ def reporting_new(request):
                 if tablename != "":
                     cursor = connection.cursor()
                     strsql = "select  curvalue from " + tablename + " where  target_id = " + str(
-                        target.id) + " and  datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'"
+                        target.id) + " and  datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'  order by id desc"
                     cursor.execute(strsql)
                     rows = cursor.fetchall()
                     if len(rows) > 0:
@@ -5032,7 +5032,7 @@ def reporting_new(request):
                 if tablename != "":
                     cursor = connection.cursor()
                     strsql = "select  curvalue from " + tablename + " where target_id = " + str(
-                        target.id) + " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'"
+                        target.id) + " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "' order by id desc"
                     cursor.execute(strsql)
                     rows = cursor.fetchall()
                     if len(rows) > 0:
