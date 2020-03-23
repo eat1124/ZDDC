@@ -3703,6 +3703,7 @@ def reporting_index(request, cycletype, funid):
             calculatereset = ""
             curapp = App.objects.filter(id=app)
 
+            # 只有该功能对应的业务为核心业务，才显示数据查询标签
             if work is not None and work.core == '是':
                 search_target = Target.objects.exclude(state='9').filter(cycletype=cycletype).filter(
                     (Q(app__in=curapp) & ~Q(adminapp_id=app)) | (Q(adminapp_id=app) & ~Q(work__core='是')))
@@ -3734,19 +3735,25 @@ def reporting_index(request, cycletype, funid):
             search_app = []
             check_search_app = []
 
-            # 只有该功能对应的业务为核心业务，才显示数据查询标签
-            core = work.core if work else ""
-
             if search_target is None or len(search_target) <= 0:
                 searchtag = "display: none;"
             else:
                 for target in search_target:
                     if target.adminapp is not None:
-                        works = target.adminapp.work_set.exclude(state='9').exclude(id=work.id).values('id', 'name')
+                        works = target.adminapp.work_set.exclude(state='9', id=work.id)
+
+                        works_list = [
+                            {"id": work.id, "name": work.name} for work in works if work.target_set.exclude(state='9').
+                                filter(cycletype=cycletype).
+                                filter((Q(app__in=curapp) & ~Q(adminapp_id=app)) | (Q(adminapp_id=app) & ~Q(work__core='是'))).
+                                exists()
+                        ]
+
+                        # 数据查询的业务下拉框过滤掉没指标的项
                         cursearchapp = {
                             "id": target.adminapp.id,
                             "name": target.adminapp.name,
-                            'works': works,
+                            'works': works_list,
                         }
                         check_cursearchapp = {
                             "id": target.adminapp.id,
