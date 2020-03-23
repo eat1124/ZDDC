@@ -115,7 +115,8 @@ DATABASES = {
         'NAME': 'datacenter',
         'USER': 'sa',
         'PASSWORD': 'tesunet@2020',
-        'HOST': '10.150.99.185\SQLEXPRESS',
+        #'HOST': '10.150.99.185\SQLEXPRESS',
+        'HOST': '127.0.0.1\SQLEXPRESS',
         'PORT': '1433',
         'OPTIONS': {
             'driver': 'SQL Server Native Client 11.0',  # Windows管理工具>>ODBC源数据>>点击添加即可查看驱动

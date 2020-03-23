@@ -208,38 +208,38 @@ $(document).ready(function () {
                 "targets": -5,
                 "mRender": function (data, type, full) {
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input style='margin-top:-5px'  id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input style='margin-top:-5px;width:134px;height:24px;' id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
-                        return "<input style='margin-top:-5px'  class='table1_curvaluedate' style = 'width:153px;height:26px;' id='table1_curvaluedate_" + full.id + "' name='table1_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        return "<input class='table1_curvaluedate' style='margin-top:-5px;width:134px;height:24px;' id='table1_curvaluedate_" + full.id + "' name='table1_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                     }
                     if (full.target_datatype == 'text') {
-                        return "<input style='margin-top:-5px'   id='table1_curvaluetext_" + full.id + "' name='table1_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        return "<input style='margin-top:-5px;width:134px;height:24px;'  id='table1_curvaluetext_" + full.id + "' name='table1_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
                     }
                 }
             },
             {
                 "targets": -4,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table1_cumulativemonth_" + full.id + "' name='table1_cumulativemonth'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table1_cumulativemonth_" + full.id + "' name='table1_cumulativemonth'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -3,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table1_cumulativequarter_" + full.id + "' name='table1_cumulativequarter'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table1_cumulativequarter_" + full.id + "' name='table1_cumulativequarter'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -2,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table1_cumulativehalfyear_" + full.id + "' name='table1_cumulativehalfyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table1_cumulativehalfyear_" + full.id + "' name='table1_cumulativehalfyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -1,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table1_cumulativeyear_" + full.id + "' name='table1_cumulativeyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table1_cumulativeyear_" + full.id + "' name='table1_cumulativeyear'  type='text' value='" + data + "'></input>"
                 }
             },
         ],
@@ -315,38 +315,38 @@ $(document).ready(function () {
                 "targets": -5,
                 "mRender": function (data, type, full) {
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input style='margin-top:-5px'  id='table2_curvalue_" + full.id + "' name='table2_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input style='margin-top:-5px;width:134px;height:24px;' id='table2_curvalue_" + full.id + "' name='table2_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
-                        return "<input style='margin-top:-5px'  class='table2_curvaluedate'style = 'width:153px;height:26px;' id='table2_curvaluedate_" + full.id + "' name='table2_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        return "<input class='table2_curvaluedate'style='margin-top:-5px;width:134px;height:24px;' id='table2_curvaluedate_" + full.id + "' name='table2_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                     }
                     if (full.target_datatype == 'text') {
-                        return "<input style='margin-top:-5px'   id='table2_curvaluetext_" + full.id + "' name='table2_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        return "<input  style='margin-top:-5px;width:134px;height:24px;' id='table2_curvaluetext_" + full.id + "' name='table2_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
                     }
                 }
             },
             {
                 "targets": -4,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table2_cumulativemonth_" + full.id + "' name='table2_cumulativemonth'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table2_cumulativemonth_" + full.id + "' name='table2_cumulativemonth'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -3,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table2_cumulativequarter_" + full.id + "' name='table2_cumulativequarter'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table2_cumulativequarter_" + full.id + "' name='table2_cumulativequarter'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -2,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table2_cumulativehalfyear_" + full.id + "' name='table2_cumulativehalfyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table2_cumulativehalfyear_" + full.id + "' name='table2_cumulativehalfyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -1,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table2_cumulativeyear_" + full.id + "' name='table2_cumulativeyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table2_cumulativeyear_" + full.id + "' name='table2_cumulativeyear'  type='text' value='" + data + "'></input>"
                 }
             },
 
@@ -434,38 +434,38 @@ $(document).ready(function () {
                 "targets": -6,
                 "mRender": function (data, type, full) {
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input style='margin-top:-5px'  id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input style='margin-top:-5px;width:134px;height:24px;' id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
-                        return "<input style='margin-top:-5px'  class='table3_curvaluedate' style = 'width:153px;height:26px;' id='table3_curvaluedate_" + full.id + "' name='table3_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        return "<input class='table3_curvaluedate' style='margin-top:-5px;width:134px;height:24px;' id='table3_curvaluedate_" + full.id + "' name='table3_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                     }
                     if (full.target_datatype == 'text') {
-                        return "<input style='margin-top:-5px'   id='table3_curvaluetext_" + full.id + "' name='table3_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        return "<input style='margin-top:-5px;width:134px;height:24px;'  id='table3_curvaluetext_" + full.id + "' name='table3_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
                     }
                 }
             },
             {
                 "targets": -5,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table3_cumulativemonth_" + full.id + "' name='table3_cumulativemonth'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table3_cumulativemonth_" + full.id + "' name='table3_cumulativemonth'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -4,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table3_cumulativequarter_" + full.id + "' name='table3_cumulativequarter'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table3_cumulativequarter_" + full.id + "' name='table3_cumulativequarter'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -3,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table3_cumulativehalfyear_" + full.id + "' name='table3_cumulativehalfyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table3_cumulativehalfyear_" + full.id + "' name='table3_cumulativehalfyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -2,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled id='table3_cumulativeyear_" + full.id + "' name='table3_cumulativeyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table3_cumulativeyear_" + full.id + "' name='table3_cumulativeyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
@@ -642,7 +642,7 @@ $(document).ready(function () {
                     if (full.meterchangedata_id) {
                         disabled = "disabled"
                     }
-                    return "<input style='margin-top:-5px;'  " + disabled + "   style = 'width:90px;height:26px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
+                    return "<input " + disabled + "   style='margin-top:-5px;width:100px;height:24px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
                 }
             },
             {
@@ -652,19 +652,19 @@ $(document).ready(function () {
                     if (full.meterchangedata_id) {
                         disabled = "disabled"
                     }
-                    return "<input style='margin-top:-5px'  " + disabled + "  style = 'width:90px;height:26px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
+                    return "<input " + disabled + "  style='margin-top:-5px;width:100px;height:24px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -8,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled style = 'width:90px;height:26px;' id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -7,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled style = 'width:90px;height:26px;' id='table5_magnification_" + full.id + "' name='table5_magnification'  type='text' value='" + full.target_magnification + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_magnification_" + full.id + "' name='table5_magnification'  type='text' value='" + full.target_magnification + "'></input>"
                 }
             },
             {
@@ -675,38 +675,38 @@ $(document).ready(function () {
                         disabled = "disabled"
                     }
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input style='margin-top:-5px'  " + disabled + "   style = 'width:90px;height:26px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input " + disabled + "   style='margin-top:-5px;width:100px;height:24px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
-                        return "<input style='margin-top:-5px'  " + disabled + "   class='table5_curvaluedate' style = 'width:90px;height:26px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        return "<input " + disabled + "   class='table5_curvaluedate' style='margin-top:-5px;width:100px;height:24px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                     }
                     if (full.target_datatype == 'text') {
-                        return "<input style='margin-top:-5px'  " + disabled + "   style = 'width:90px;height:26px;' id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        return "<input " + disabled + "   style='margin-top:-5px;width:100px;height:24px;' id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
                     }
                 }
             },
             {
                 "targets": -5,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled style = 'width:90px;height:26px;' id='table5_cumulativemonth_" + full.id + "' name='table5_cumulativemonth'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_cumulativemonth_" + full.id + "' name='table5_cumulativemonth'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -4,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled style = 'width:90px;height:26px;' id='table5_cumulativequarter_" + full.id + "' name='table5_cumulativequarter'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_cumulativequarter_" + full.id + "' name='table5_cumulativequarter'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -3,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled style = 'width:90px;height:26px;' id='table5_cumulativehalfyear_" + full.id + "' name='table5_cumulativehalfyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_cumulativehalfyear_" + full.id + "' name='table5_cumulativehalfyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -2,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px'  disabled  style = 'width:90px;height:26px;'id='table5_cumulativeyear_" + full.id + "' name='table5_cumulativeyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled  style='margin-top:-5px;width:100px;height:24px;'id='table5_cumulativeyear_" + full.id + "' name='table5_cumulativeyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
