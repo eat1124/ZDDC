@@ -214,6 +214,6 @@ urlpatterns = [
     url(r'^datacenter/$', DataCenter.as_view()),
 
     # 报表服务器
-    url(r'^report_server/$', report_server, {'funid': '39'}),
+    url(r'^report_server/$', report_server, {'funid': '60'}),
     url(r'^report_server_save/$', report_server_save),
 ]
