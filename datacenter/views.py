@@ -142,6 +142,23 @@ def remove_decimal(num):
     return num.to_integral() if num == num.to_integral() else num.normalize()
 
 
+def Digit(digit):
+    """
+    四舍五入quantize参数
+    """
+    if digit == 1:
+        digit = '0.0'
+    elif digit == 2:
+        digit = '0.00'
+    elif digit == 3:
+        digit = '0.000'
+    elif digit == 4:
+        digit = '0.0000'
+    else:
+        digit = '0.00000'
+    return digit
+
+
 class DataCenter(View):
     """
     数据服务
@@ -4538,7 +4555,6 @@ def getcalculatedata(target, date, guid):
         curvalue = eval(formula)
     except:
         pass
-
     calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(
         target_id=target.id).filter(datadate=date)
     if len(calculatedata) > 0:
@@ -4548,8 +4564,8 @@ def getcalculatedata(target, date, guid):
     calculatedata.target = target
     calculatedata.datadate = date
     calculatedata.curvalue = curvalue
-    calculatedata.curvalue = decimal.Decimal(float(calculatedata.curvalue) * float(target.magnification))
-    calculatedata.curvalue = round(calculatedata.curvalue, target.digit)
+    calculatedata.curvalue = decimal.Decimal(str(float(calculatedata.curvalue))) * decimal.Decimal(str(float(target.magnification)))
+    calculatedata.curvalue = decimal.Decimal(str(calculatedata.curvalue)).quantize(decimal.Decimal(Digit(target.digit)), rounding=decimal.ROUND_HALF_UP)
     if target.cumulative == "是":
         cumulative = getcumulative(target, date, decimal.Decimal(str(calculatedata.curvalue)))
         calculatedata.cumulativemonth = cumulative["cumulativemonth"]

@@ -19,7 +19,8 @@ function getTxt1CursorPosition(id) {
 $(document).ready(function () {
     $('#sample_1').dataTable({
         "bAutoWidth": true,
-        "bSort": false,
+        "bSort": true,
+        "iDisplayLength":25,
         "bProcessing": true,
         "ajax": "../../target_data/?search_adminapp=" + $('#adminapp').val(),
         "columns": [
@@ -417,7 +418,7 @@ $(document).ready(function () {
 
     $('#sample_2').dataTable({
         "bAutoWidth": true,
-        "bSort": false,
+        "bSort": true,
         "bProcessing": true,
         "ajax": "../../target_data/?search_adminapp=null",
         "columns": [
@@ -542,7 +543,7 @@ $(document).ready(function () {
         }
         $('#sample_3').dataTable({
         "bAutoWidth": true,
-        "bSort": false,
+        "bSort": true,
         "bProcessing": true,
         "ajax": "../../target_data/",
         "columns": [
@@ -775,7 +776,7 @@ $(document).ready(function () {
 
     $('#sample_4').dataTable({
         "bAutoWidth": true,
-        "bSort": false,
+        "bSort": true,
         "bProcessing": true,
         "ajax": "../../constant_data/",
         "columns": [
