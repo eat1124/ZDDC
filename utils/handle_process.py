@@ -9,6 +9,14 @@ import copy
 import re
 import logging
 import calendar
+import pymysql.cursors
+import cx_Oracle
+import pymssql
+# 引入C#脚本
+import clr
+
+clr.AddReference('PIApp')
+from PIApp import *
 
 # 使用ORM
 import sys
@@ -121,8 +129,6 @@ class SeveralDBQuery(object):
 
         try:
             if self.db_type == "MYSQL":
-                import pymysql.cursors
-
                 self.connection = pymysql.connect(host=credit['host'],
                                                   user=credit['user'],
                                                   password=credit['passwd'],
@@ -130,8 +136,6 @@ class SeveralDBQuery(object):
                                                   charset='utf8mb4',
                                                   cursorclass=pymysql.cursors.DictCursor)
             if self.db_type == 'ORACLE':
-                import cx_Oracle
-
                 self.connection = cx_Oracle.connect('{user}/{passwd}@{host}/{db}'.format(
                     user=credit['user'],
                     passwd=credit['passwd'],
@@ -139,8 +143,6 @@ class SeveralDBQuery(object):
                     db=credit['db']
                 ))
             if self.db_type == 'SQL SERVER':
-                import pymssql
-
                 self.connection = pymssql.connect(
                     host=credit['host'],
                     user=credit['user'],
@@ -264,7 +266,7 @@ class Extract(object):
             now_hour = now_time.hour
             now_weekday = str(now_time.weekday())
             now_day = str(now_time.day)
-
+            # self._get_data(now_time)
             if now_hour == hour and now_minute == minute:
                 # 每日/每周/每月
                 if schedule_type == 1:
@@ -341,7 +343,7 @@ class Extract(object):
                                 pass
                         elif storage_type_name == '列':
                             col_ordered_data = copy_exception_data.filter(target__storage=storage,
-                                                                             target__storagetag=ed.target.storagetag)
+                                                                          target__storagetag=ed.target.storagetag)
 
                             target_list = []
                             for cod in col_ordered_data:
@@ -355,12 +357,85 @@ class Extract(object):
                             else:
                                 # 剔除
                                 copy_exception_data = copy_exception_data.exclude(target__storage=storage,
-                                                                                   target__storagetag=ed.target.storagetag)
+                                                                                  target__storagetag=ed.target.storagetag)
                                 for cod in col_ordered_data:
                                     cod.state = '9'
                                     cod.save()
                         else:
                             logger.info('Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
+
+    @staticmethod
+    def get_data_from_pi(source_content, source_connection):
+        """
+        从PI中取数据
+            type: avg, max, min, delta, history, real
+            # 解析PI的数据源内容
+            # tmp = {
+            #     'tag': '',
+            #     'type': '',
+            #     'start_time': '',
+            #     'end_time': ''
+            # }
+        :return:
+        """
+        result_list = []
+        try:
+            source_content = eval(source_content)
+        except Exception as e:
+            logger.info('Extract >> get_row_data() >> PI数据源内容填写有误：%s' % e)
+        else:
+            if type(source_content) == dict:
+                tag, operate, start_time, end_time = '', '', None, None
+                if 'tag' in source_content.keys():
+                    tag = source_content['tag']
+                if 'start_time' in source_content.keys():
+                    start_time = source_content['start_time']
+                if 'end_time' in source_content.keys():
+                    end_time = source_content['end_time']
+                if 'type' in source_content.keys():
+                    operate = source_content['type'].upper()
+
+                curvalue = None
+                status = 1
+                try:
+                    conn = source_connection['host']
+
+                    if operate == 'DATATABLE':
+                        curvalue = ManagePI.ReadDatetableFromPI(conn, tag, start_time, end_time, 100)
+                    else:
+                        if operate == 'REAL':
+                            curvalue = json.loads(ManagePI.ReadRealValueFromPI(conn, tag))
+                        elif operate == 'HISTORY':
+                            curvalue = json.loads(ManagePI.ReadHisValueFromPI(conn, tag, start_time))
+                        elif operate == 'AVG':
+                            curvalue = json.loads(ManagePI.ReadAvgValueFromPI(conn, tag, start_time, end_time))
+                        elif operate == 'MAX':
+                            curvalue = json.loads(ManagePI.ReadMaxValueFromPI(conn, tag, start_time, end_time))
+                        elif operate == 'MIN':
+                            curvalue = json.loads(ManagePI.ReadMinValueFromPI(conn, tag, start_time, end_time))
+                        elif operate == 'DELTA':
+                            curvalue = json.loads(ManagePI.ReadCzValueFromPI(conn, tag, start_time, end_time))
+                        else:
+                            curvalue = None
+                except Exception as e:
+                    status = 0
+                    curvalue = e
+
+                # 构造result_list
+                if status:
+                    if type(curvalue) == dict:
+                        result_list = [{'key': curvalue['value']}]
+                    elif type(curvalue) == list:
+                        result_list = [{'key': d['value']} for d in curvalue]
+                    else:
+                        pass
+                else:
+                    logger.info('Extract >> get_row_data() >> PI数据获取失败：%s' % curvalue)
+
+            else:
+                logger.info('Extract >> get_row_data() >> PI数据源内容填写非JSON格式')
+
+            return result_list
 
     def get_row_data(self, target, time):
         # storagefields有4个特例，
@@ -404,12 +479,8 @@ class Extract(object):
             except Exception as e:
                 logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
             else:
-                try:
-                    db_query = SeveralDBQuery(source_type_name, source_connection)
-                    result_list = db_query.fetch_all(source_content)
-                    db_query.close()
-                except:
-                    pass
+                if source_type_name == 'PI':
+                    result_list = Extract.get_data_from_pi(source_content, source_connection)
 
         if not result_list:
             return False
@@ -501,9 +572,12 @@ class Extract(object):
                     except Exception as e:
                         logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
 
-                    db_query = SeveralDBQuery(source_type_name, source_connection)
-                    result_list = db_query.fetch_all(source_content)
-                    db_query.close()
+                    if source_type_name == 'PI':
+                        result_list = Extract.get_data_from_pi(source_content, source_connection)
+                    else:
+                        db_query = SeveralDBQuery(source_type_name, source_connection)
+                        result_list = db_query.fetch_all(source_content)
+                        db_query.close()
 
                 # 存表
                 storagefields = target.storagefields
@@ -786,9 +860,9 @@ def run_process(process_id, processcon, targets):
 # # targets = Target.objects.filter(Q(id=8)|Q(id=9))
 # # extract.get_col_data(targets, time)
 
-# run_process(12, None, None)
-if len(sys.argv) > 1:
-    run_process(sys.argv[1], None, None)
-    logger.info('进程启动。')
-else:
-    logger.info('脚本未传参。')
+run_process(11, None, None)
+# if len(sys.argv) > 1:
+#     run_process(sys.argv[1], None, None)
+#     logger.info('进程启动。')
+# else:
+#     logger.info('脚本未传参。')
