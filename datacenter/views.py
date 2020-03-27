@@ -990,7 +990,8 @@ def report_index(request, funid):
                                                     # remote_platform = "Windows"
                                                     # 判断ps脚本是否存在
                                                     # 若不存在，创建路径，写入文件
-                                                    ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(pre_ps_path=pre_ps_path)
+                                                    ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(
+                                                        pre_ps_path=pre_ps_path)
                                                     ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
                                                                              remote_password, remote_platform)
                                                     ps_result = ps_script.run("")
@@ -1000,12 +1001,12 @@ def report_index(request, funid):
                                                     else:
                                                         # 写入脚本文件
                                                         ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
-                                                                    'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
-                                                                    'echo try{ >> %s &' % ps_script_path + \
-                                                                    'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
-                                                                    'echo }catch{ >> %s &' % ps_script_path + \
-                                                                    'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
-                                                                    'echo } >> %s &' % ps_script_path
+                                                                        'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
+                                                                        'echo try{ >> %s &' % ps_script_path + \
+                                                                        'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
+                                                                        'echo }catch{ >> %s &' % ps_script_path + \
+                                                                        'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
+                                                                        'echo } >> %s &' % ps_script_path
                                                         ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
                                                                                  remote_password, remote_platform)
                                                         ps_upload_result = ps_upload.run("")
@@ -1015,9 +1016,10 @@ def report_index(request, funid):
                                                         else:
                                                             # 判断报表路径是否存在
                                                             # 若不存在，提示不存在，报表上传失败
-                                                            report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(report_file_path=rs.report_file_path)
+                                                            report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
+                                                                report_file_path=rs.report_file_path)
                                                             rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
-                                                                                     remote_password, remote_platform)
+                                                                              remote_password, remote_platform)
                                                             rc_result = rc.run("")
 
                                                             if rc_result['exec_tag'] == 1:
@@ -1028,8 +1030,10 @@ def report_index(request, funid):
                                                                 remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                                     ps_script_path, report_file_path, url_visited)
 
-                                                                server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
-                                                                                          remote_password, remote_platform)
+                                                                server_obj = ServerByPara(remote_cmd, remote_ip,
+                                                                                          remote_user,
+                                                                                          remote_password,
+                                                                                          remote_platform)
                                                                 result = server_obj.run("")
                                                                 if result["exec_tag"] == 0:
                                                                     write_tag = True
@@ -1277,7 +1281,8 @@ def report_app_index(request, funid):
 
                                                     # 判断ps脚本是否存在
                                                     # 若不存在，创建路径，写入文件
-                                                    ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(pre_ps_path=pre_ps_path)
+                                                    ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(
+                                                        pre_ps_path=pre_ps_path)
                                                     ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
                                                                              remote_password, remote_platform)
                                                     ps_result = ps_script.run("")
@@ -1287,12 +1292,12 @@ def report_app_index(request, funid):
                                                     else:
                                                         # 写入脚本文件
                                                         ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
-                                                                    'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
-                                                                    'echo try{ >> %s &' % ps_script_path + \
-                                                                    'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
-                                                                    'echo }catch{ >> %s &' % ps_script_path + \
-                                                                    'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
-                                                                    'echo } >> %s &' % ps_script_path
+                                                                        'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
+                                                                        'echo try{ >> %s &' % ps_script_path + \
+                                                                        'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
+                                                                        'echo }catch{ >> %s &' % ps_script_path + \
+                                                                        'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
+                                                                        'echo } >> %s &' % ps_script_path
                                                         ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
                                                                                  remote_password, remote_platform)
                                                         ps_upload_result = ps_upload.run("")
@@ -1302,9 +1307,10 @@ def report_app_index(request, funid):
                                                         else:
                                                             # 判断报表路径是否存在
                                                             # 若不存在，提示不存在，报表上传失败
-                                                            report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(report_file_path=rs.report_file_path)
+                                                            report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
+                                                                report_file_path=rs.report_file_path)
                                                             rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
-                                                                                     remote_password, remote_platform)
+                                                                              remote_password, remote_platform)
                                                             rc_result = rc.run("")
 
                                                             if rc_result['exec_tag'] == 1:
@@ -1315,8 +1321,10 @@ def report_app_index(request, funid):
                                                                 remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                                     ps_script_path, report_file_path, url_visited)
 
-                                                                server_obj = ServerByPara(remote_cmd, remote_ip, remote_user,
-                                                                                          remote_password, remote_platform)
+                                                                server_obj = ServerByPara(remote_cmd, remote_ip,
+                                                                                          remote_user,
+                                                                                          remote_password,
+                                                                                          remote_platform)
                                                                 result = server_obj.run("")
                                                                 if result["exec_tag"] == 0:
                                                                     write_tag = True
@@ -3762,7 +3770,8 @@ def reporting_index(request, cycletype, funid):
                         works_list = [
                             {"id": work.id, "name": work.name} for work in works if work.target_set.exclude(state='9').
                                 filter(cycletype=cycletype).
-                                filter((Q(app__in=curapp) & ~Q(adminapp_id=app)) | (Q(adminapp_id=app) & ~Q(work__core='是'))).
+                                filter(
+                                (Q(app__in=curapp) & ~Q(adminapp_id=app)) | (Q(adminapp_id=app) & ~Q(work__core='是'))).
                                 exists()
                         ]
 
@@ -4564,8 +4573,10 @@ def getcalculatedata(target, date, guid):
     calculatedata.target = target
     calculatedata.datadate = date
     calculatedata.curvalue = curvalue
-    calculatedata.curvalue = decimal.Decimal(str(float(calculatedata.curvalue))) * decimal.Decimal(str(float(target.magnification)))
-    calculatedata.curvalue = decimal.Decimal(str(calculatedata.curvalue)).quantize(decimal.Decimal(Digit(target.digit)), rounding=decimal.ROUND_HALF_UP)
+    calculatedata.curvalue = decimal.Decimal(str(float(calculatedata.curvalue))) * decimal.Decimal(
+        str(float(target.magnification)))
+    calculatedata.curvalue = decimal.Decimal(str(calculatedata.curvalue)).quantize(decimal.Decimal(Digit(target.digit)),
+                                                                                   rounding=decimal.ROUND_HALF_UP)
     if target.cumulative == "是":
         cumulative = getcumulative(target, date, decimal.Decimal(str(calculatedata.curvalue)))
         calculatedata.cumulativemonth = cumulative["cumulativemonth"]
@@ -4927,7 +4938,8 @@ def reporting_reextract(request):
                     if tablename != "":
                         cursor = connection.cursor()
                         strsql = "select  curvalue from " + tablename + " where target_id = " + str(
-                            target.id) + " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'  order by id desc"
+                            target.id) + " and datadate='" + reporting_date.strftime(
+                            "%Y-%m-%d %H:%M:%S") + "'  order by id desc"
                         cursor.execute(strsql)
                         rows = cursor.fetchall()
                         if len(rows) > 0:
@@ -5005,7 +5017,8 @@ def reporting_new(request):
                 if tablename != "":
                     cursor = connection.cursor()
                     strsql = "select  curvalue from " + tablename + " where  target_id = " + str(
-                        target.id) + " and  datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "'  order by id desc"
+                        target.id) + " and  datadate='" + reporting_date.strftime(
+                        "%Y-%m-%d %H:%M:%S") + "'  order by id desc"
                     cursor.execute(strsql)
                     rows = cursor.fetchall()
                     if len(rows) > 0:
@@ -5055,7 +5068,8 @@ def reporting_new(request):
                 if tablename != "":
                     cursor = connection.cursor()
                     strsql = "select  curvalue from " + tablename + " where target_id = " + str(
-                        target.id) + " and datadate='" + reporting_date.strftime("%Y-%m-%d %H:%M:%S") + "' order by id desc"
+                        target.id) + " and datadate='" + reporting_date.strftime(
+                        "%Y-%m-%d %H:%M:%S") + "' order by id desc"
                     cursor.execute(strsql)
                     rows = cursor.fetchall()
                     if len(rows) > 0:
@@ -6911,4 +6925,3 @@ def groupsavefuntree(request):
                 except:
                     pass
         return HttpResponse("保存成功。")
-
