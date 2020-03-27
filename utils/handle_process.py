@@ -8,6 +8,7 @@ import json
 import copy
 import re
 import logging
+
 import calendar
 import pymysql.cursors
 import cx_Oracle
@@ -17,7 +18,6 @@ import clr
 
 clr.AddReference('PIApp')
 from PIApp import *
-
 # 使用ORM
 import sys
 from django.core.wsgi import get_wsgi_application
@@ -38,7 +38,7 @@ dict_list = DictList.objects.exclude(state='9').values('id', 'name')
 # 本地数据库信息
 pro_db_engine = 'MySQL'
 if 'sql_server' in settings.DATABASES['default']['ENGINE']:
-    pro_db_engine = 'SQL Server'
+    pro_db_engine = 'SQLServer'
 
 db_info = {
     'host': settings.DATABASES['default']['HOST'],
@@ -142,7 +142,7 @@ class SeveralDBQuery(object):
                     host=credit['host'],
                     db=credit['db']
                 ))
-            if self.db_type == 'SQL SERVER':
+            if self.db_type == 'SQLSERVER':
                 self.connection = pymssql.connect(
                     host=credit['host'],
                     user=credit['user'],
@@ -173,6 +173,15 @@ class SeveralDBQuery(object):
                 result = cursor.fetchall()
         except:
             pass
+
+        # 根据不同数据库构造相同类型数据
+        if self.db_type == "MYSQL":
+            result_list = []
+            for rt in result:
+                rt_tuple = list(rt.items())[0] if list(rt.items()) else None
+                if rt_tuple:
+                    result_list.append(rt.items())
+            result = result_list
         return result
 
     def update(self, update_sql):
@@ -481,6 +490,10 @@ class Extract(object):
             else:
                 if source_type_name == 'PI':
                     result_list = Extract.get_data_from_pi(source_content, source_connection)
+                else:
+                    db_query = SeveralDBQuery(source_type_name, source_connection)
+                    result_list = db_query.fetch_all(source_content)
+                    db_query.close()
 
         if not result_list:
             return False
@@ -490,10 +503,8 @@ class Extract(object):
             for result in result_list:
                 storage = {}
 
-                ri = 0
-                for rk, rv in result.items():
-                    storage[storagefields_list[ri]] = rv
-                    ri += 1
+                for num, rt in enumerate(result):
+                    storage[storagefields_list[num]] = rt
 
                 storage["savedate"] = time
                 storage['target_id'] = target.id
@@ -521,11 +532,13 @@ class Extract(object):
                 # 行存
                 row_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(
                     tablename=tablename, fields=fields, values=values)
-
-                try:
-                    db_update.update(row_save_sql)
-                except:
-                    return False
+                logger.info('行：%s' % row_save_sql)
+                # try:
+                #     db_update.update(row_save_sql)
+                #     # ...
+                #     # 时间插入字符串无效，需要修改
+                # except:
+                #     return False
             db_update.close()
             return True
 
@@ -584,11 +597,9 @@ class Extract(object):
                 storagefields_list = storagefields.split(',')
                 if result_list:
                     result = result_list[0]
-                    i = 0
-                    for k, v in result.items():
-                        # 字段为target.storagefields
-                        storage[storagefields_list[i]] = v
-                        i += 1
+
+                    for num, rt in enumerate(result):
+                        storage[storagefields_list[num]] = rt
 
             fields = ''
             values = ''
@@ -612,15 +623,15 @@ class Extract(object):
                 col_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
                                                                                                fields=fields,
                                                                                                values=values)
-
-                try:
-                    db_update = SeveralDBQuery(pro_db_engine, db_info)
-                    # db_update.update(col_save_sql)
-                    db_update.close()
-                except:
-                    return False
-                else:
-                    return True
+                logger.info('列存：%s' % col_save_sql)
+                # try:
+                #     db_update = SeveralDBQuery(pro_db_engine, db_info)
+                #     # db_update.update(col_save_sql)
+                #     db_update.close()
+                # except:
+                #     return False
+                # else:
+                #     return True
             else:
                 return False
         else:
@@ -765,6 +776,7 @@ class Extract(object):
 def run_process(process_id, processcon, targets):
     # 取数 *****************************************************
     pid = os.getpid()
+    logger.info('此次进程pid: %d ' % pid)
     if process_id:
         # for target in targets:
         #     curvalue = getextractdata(target)
@@ -785,7 +797,7 @@ def run_process(process_id, processcon, targets):
         # 实际
         try:
             update_pm = ProcessMonitor.objects.get(id=process_id)
-        except ProcessMonitor.DoesNotExist as e:
+        except Exception as e:
             logger.info('run_process() >> %s' % e)
         else:
             update_pm.create_time = datetime.datetime.now()
@@ -860,7 +872,7 @@ def run_process(process_id, processcon, targets):
 # # targets = Target.objects.filter(Q(id=8)|Q(id=9))
 # # extract.get_col_data(targets, time)
 
-# run_process(11, None, None)
+# run_process(10, None, None)
 if len(sys.argv) > 1:
     run_process(sys.argv[1], None, None)
     logger.info('进程启动。')
