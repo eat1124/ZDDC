@@ -532,13 +532,14 @@ class Extract(object):
 
                 tablename = target.storage.tablename
                 # 行存
-                row_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(
-                    tablename=tablename, fields=fields, values=values)
+                row_save_sql = r"""INSERT INTO {tablename}({fields}) VALUES({values})""".format(
+                    tablename=tablename, fields=fields, values=values).replace('"', "'")
 
                 # SQL Server update操作的sql不同
                 if source_type_name.replace(' ', '').upper() == "SQLSERVER":
-                    row_save_sql = """INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
-                        tablename=tablename, fields=fields, values=values, db=settings.DATABASES['default']['NAME'])
+                    row_save_sql = r"""INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
+                        tablename=tablename, fields=fields, values=values,
+                        db=settings.DATABASES['default']['NAME']).replace('"', "'")
 
                 logger.info('行：%s' % row_save_sql)
                 try:
@@ -629,14 +630,16 @@ class Extract(object):
 
                 # 列存，将storage存成一条记录,本地数据库
                 tablename = target_list[0].storage.tablename
-                col_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
+                col_save_sql = r"""INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
                                                                                                fields=fields,
-                                                                                               values=values)
+                                                                                               values=values).replace(
+                    '"', "'")
 
                 # SQL Server update操作的sql不同
                 if source_type_name.replace(' ', '').upper() == "SQLSERVER":
-                    row_save_sql = """INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
-                        tablename=tablename, fields=fields, values=values, db=settings.DATABASES['default']['NAME'])
+                    row_save_sql = r"""INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
+                        tablename=tablename, fields=fields, values=values,
+                        db=settings.DATABASES['default']['NAME']).replace('"', "'")
 
                 logger.info('列存：%s' % col_save_sql)
                 try:
