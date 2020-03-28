@@ -124,7 +124,7 @@ def getextractdata(target):
 class SeveralDBQuery(object):
     def __init__(self, db_type, credit):
         # [{"host":"192.168.1.66","user":"root","passwd":"password","db":"datacenter"}]
-        self.db_type = db_type.upper()
+        self.db_type = db_type.replace(' ', '').upper()
         self.connection = None
 
         try:
@@ -161,8 +161,8 @@ class SeveralDBQuery(object):
             with self.connection.cursor() as cursor:
                 cursor.execute(fetch_sql)
                 result = cursor.fetchone()
-        except:
-            pass
+        except Exception as e:
+            logger.info("数据查询失败：%s" % e)
         return result
 
     def fetch_all(self, fetch_sql):
@@ -171,16 +171,19 @@ class SeveralDBQuery(object):
             with self.connection.cursor() as cursor:
                 cursor.execute(fetch_sql)
                 result = cursor.fetchall()
-        except:
-            pass
+        except Exception as e:
+            logger.info("数据查询失败：%s" % e)
 
         # 根据不同数据库构造相同类型数据
         if self.db_type == "MYSQL":
             result_list = []
             for rt in result:
-                rt_tuple = list(rt.items())[0] if list(rt.items()) else None
-                if rt_tuple:
-                    result_list.append(rt.items())
+                tmp_list = []
+                for rk in rt.keys():
+                    tmp_list.append(rt[rk])
+
+                if tmp_list:
+                    result_list.append(tuple(tmp_list))
             result = result_list
         return result
 
@@ -189,8 +192,8 @@ class SeveralDBQuery(object):
             with self.connection.cursor() as cursor:
                 cursor.execute(update_sql)
                 self.connection.commit()
-        except:
-            pass
+        except Exception as e:
+            logger.info("数据插入失败：%s" % e)
 
     def close(self):
         if self.connection:
@@ -433,9 +436,9 @@ class Extract(object):
                 # 构造result_list
                 if status:
                     if type(curvalue) == dict:
-                        result_list = [{'key': curvalue['value']}]
+                        result_list = [(curvalue['value'])]
                     elif type(curvalue) == list:
-                        result_list = [{'key': d['value']} for d in curvalue]
+                        pass
                     else:
                         pass
                 else:
@@ -476,6 +479,7 @@ class Extract(object):
         result_list = []
 
         source = target.source
+        source_type_name = ''
         if source:
             source_type = source.sourcetype  # Oracle/SQL Server
             source_type_name = get_dict_name(source_type)
@@ -498,8 +502,6 @@ class Extract(object):
         if not result_list:
             return False
         else:
-            db_update = SeveralDBQuery(pro_db_engine, db_info)
-
             for result in result_list:
                 storage = {}
 
@@ -532,14 +534,20 @@ class Extract(object):
                 # 行存
                 row_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(
                     tablename=tablename, fields=fields, values=values)
+
+                # SQL Server update操作的sql不同
+                if source_type_name.replace(' ', '').upper() == "SQLSERVER":
+                    row_save_sql = """INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
+                        tablename=tablename, fields=fields, values=values, db=settings.DATABASES['default']['NAME'])
+
                 logger.info('行：%s' % row_save_sql)
-                # try:
-                #     db_update.update(row_save_sql)
-                #     # ...
-                #     # 时间插入字符串无效，需要修改
-                # except:
-                #     return False
-            db_update.close()
+                try:
+                    db_update = SeveralDBQuery(pro_db_engine, db_info)
+                    # db_update.update(row_save_sql)
+                    db_update.close()
+                except Exception as e:
+                    logger.info('数据更新失败： %s' % e)
+                    return False
             return True
 
     def get_col_data(self, target_list, time):
@@ -550,6 +558,7 @@ class Extract(object):
         date_com = re.compile('<#.*?#>')
 
         if target_list:
+            source_type_name = ''
             # datadate
             if 'DATADATE' in target_list[0].storagefields:
                 pre_datadate_format_list = date_com.findall(target_list[0].storagefields)
@@ -623,15 +632,22 @@ class Extract(object):
                 col_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
                                                                                                fields=fields,
                                                                                                values=values)
+
+                # SQL Server update操作的sql不同
+                if source_type_name.replace(' ', '').upper() == "SQLSERVER":
+                    row_save_sql = """INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
+                        tablename=tablename, fields=fields, values=values, db=settings.DATABASES['default']['NAME'])
+
                 logger.info('列存：%s' % col_save_sql)
-                # try:
-                #     db_update = SeveralDBQuery(pro_db_engine, db_info)
-                #     # db_update.update(col_save_sql)
-                #     db_update.close()
-                # except:
-                #     return False
-                # else:
-                #     return True
+                try:
+                    db_update = SeveralDBQuery(pro_db_engine, db_info)
+                    # db_update.update(col_save_sql)
+                    db_update.close()
+                except Exception as e:
+                    logger.info('数据更新失败： %s' % e)
+                    return False
+                else:
+                    return True
             else:
                 return False
         else:
@@ -865,6 +881,17 @@ def run_process(process_id, processcon, targets):
         logger.info('run_process() >> %s' % '传入参数有误。')
 
 
+if len(sys.argv) > 1:
+    run_process(sys.argv[1], None, None)
+    logger.info('进程启动。')
+else:
+    logger.info('脚本未传参。')
+
+# db_query = SeveralDBQuery('SQLSERVER', {"host":"127.0.0.1","user":"miaokela","passwd":"Passw0rD","db":"mkl"})
+# result_list = db_query.update("INSERT INTO dt.dbo.tmp_table(datadate,formula,target_id) VALUES('2020-02-16 00:00:00.000000','<#1_FDL:d:D>+<FDL:d:D>',36); ")
+# # result_list = db_query.fetch_all("SELECT TOP 1000 [id],[target_id],[datadate],[curvalue],[formula],[state] FROM [dt].[dbo].[tmp_table]")
+# db_query.close()
+
 # extract = Extract(1, 2, 2)
 # target = Target.objects.get(id=9)
 # time = datetime.datetime.now()
@@ -872,9 +899,4 @@ def run_process(process_id, processcon, targets):
 # # targets = Target.objects.filter(Q(id=8)|Q(id=9))
 # # extract.get_col_data(targets, time)
 
-# run_process(10, None, None)
-if len(sys.argv) > 1:
-    run_process(sys.argv[1], None, None)
-    logger.info('进程启动。')
-else:
-    logger.info('脚本未传参。')
+# run_process(9, None, None)
