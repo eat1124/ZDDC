@@ -8,8 +8,16 @@ import json
 import copy
 import re
 import logging
-import calendar
 
+import calendar
+import pymysql.cursors
+import cx_Oracle
+import pymssql
+# 引入C#脚本
+import clr
+
+clr.AddReference('PIApp')
+from PIApp import *
 # 使用ORM
 import sys
 from django.core.wsgi import get_wsgi_application
@@ -30,7 +38,7 @@ dict_list = DictList.objects.exclude(state='9').values('id', 'name')
 # 本地数据库信息
 pro_db_engine = 'MySQL'
 if 'sql_server' in settings.DATABASES['default']['ENGINE']:
-    pro_db_engine = 'SQL Server'
+    pro_db_engine = 'SQLServer'
 
 db_info = {
     'host': settings.DATABASES['default']['HOST'],
@@ -116,13 +124,11 @@ def getextractdata(target):
 class SeveralDBQuery(object):
     def __init__(self, db_type, credit):
         # [{"host":"192.168.1.66","user":"root","passwd":"password","db":"datacenter"}]
-        self.db_type = db_type.upper()
+        self.db_type = db_type.replace(' ', '').upper()
         self.connection = None
 
         try:
             if self.db_type == "MYSQL":
-                import pymysql.cursors
-
                 self.connection = pymysql.connect(host=credit['host'],
                                                   user=credit['user'],
                                                   password=credit['passwd'],
@@ -130,17 +136,13 @@ class SeveralDBQuery(object):
                                                   charset='utf8mb4',
                                                   cursorclass=pymysql.cursors.DictCursor)
             if self.db_type == 'ORACLE':
-                import cx_Oracle
-
                 self.connection = cx_Oracle.connect('{user}/{passwd}@{host}/{db}'.format(
                     user=credit['user'],
                     passwd=credit['passwd'],
                     host=credit['host'],
                     db=credit['db']
                 ))
-            if self.db_type == 'SQL SERVER':
-                import pymssql
-
+            if self.db_type == 'SQLSERVER':
                 self.connection = pymssql.connect(
                     host=credit['host'],
                     user=credit['user'],
@@ -159,8 +161,8 @@ class SeveralDBQuery(object):
             with self.connection.cursor() as cursor:
                 cursor.execute(fetch_sql)
                 result = cursor.fetchone()
-        except:
-            pass
+        except Exception as e:
+            logger.info("数据查询失败：%s" % e)
         return result
 
     def fetch_all(self, fetch_sql):
@@ -169,8 +171,20 @@ class SeveralDBQuery(object):
             with self.connection.cursor() as cursor:
                 cursor.execute(fetch_sql)
                 result = cursor.fetchall()
-        except:
-            pass
+        except Exception as e:
+            logger.info("数据查询失败：%s" % e)
+
+        # 根据不同数据库构造相同类型数据
+        if self.db_type == "MYSQL":
+            result_list = []
+            for rt in result:
+                tmp_list = []
+                for rk in rt.keys():
+                    tmp_list.append(rt[rk])
+
+                if tmp_list:
+                    result_list.append(tuple(tmp_list))
+            result = result_list
         return result
 
     def update(self, update_sql):
@@ -178,8 +192,8 @@ class SeveralDBQuery(object):
             with self.connection.cursor() as cursor:
                 cursor.execute(update_sql)
                 self.connection.commit()
-        except:
-            pass
+        except Exception as e:
+            logger.info("数据插入失败：%s" % e)
 
     def close(self):
         if self.connection:
@@ -264,7 +278,7 @@ class Extract(object):
             now_hour = now_time.hour
             now_weekday = str(now_time.weekday())
             now_day = str(now_time.day)
-
+            # self._get_data(now_time)
             if now_hour == hour and now_minute == minute:
                 # 每日/每周/每月
                 if schedule_type == 1:
@@ -341,7 +355,7 @@ class Extract(object):
                                 pass
                         elif storage_type_name == '列':
                             col_ordered_data = copy_exception_data.filter(target__storage=storage,
-                                                                             target__storagetag=ed.target.storagetag)
+                                                                          target__storagetag=ed.target.storagetag)
 
                             target_list = []
                             for cod in col_ordered_data:
@@ -355,12 +369,85 @@ class Extract(object):
                             else:
                                 # 剔除
                                 copy_exception_data = copy_exception_data.exclude(target__storage=storage,
-                                                                                   target__storagetag=ed.target.storagetag)
+                                                                                  target__storagetag=ed.target.storagetag)
                                 for cod in col_ordered_data:
                                     cod.state = '9'
                                     cod.save()
                         else:
                             logger.info('Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
+
+    @staticmethod
+    def get_data_from_pi(source_content, source_connection):
+        """
+        从PI中取数据
+            type: avg, max, min, delta, history, real
+            # 解析PI的数据源内容
+            # tmp = {
+            #     'tag': '',
+            #     'type': '',
+            #     'start_time': '',
+            #     'end_time': ''
+            # }
+        :return:
+        """
+        result_list = []
+        try:
+            source_content = eval(source_content)
+        except Exception as e:
+            logger.info('Extract >> get_row_data() >> PI数据源内容填写有误：%s' % e)
+        else:
+            if type(source_content) == dict:
+                tag, operate, start_time, end_time = '', '', None, None
+                if 'tag' in source_content.keys():
+                    tag = source_content['tag']
+                if 'start_time' in source_content.keys():
+                    start_time = source_content['start_time']
+                if 'end_time' in source_content.keys():
+                    end_time = source_content['end_time']
+                if 'type' in source_content.keys():
+                    operate = source_content['type'].upper()
+
+                curvalue = None
+                status = 1
+                try:
+                    conn = source_connection['host']
+
+                    if operate == 'DATATABLE':
+                        curvalue = ManagePI.ReadDatetableFromPI(conn, tag, start_time, end_time, 100)
+                    else:
+                        if operate == 'REAL':
+                            curvalue = json.loads(ManagePI.ReadRealValueFromPI(conn, tag))
+                        elif operate == 'HISTORY':
+                            curvalue = json.loads(ManagePI.ReadHisValueFromPI(conn, tag, start_time))
+                        elif operate == 'AVG':
+                            curvalue = json.loads(ManagePI.ReadAvgValueFromPI(conn, tag, start_time, end_time))
+                        elif operate == 'MAX':
+                            curvalue = json.loads(ManagePI.ReadMaxValueFromPI(conn, tag, start_time, end_time))
+                        elif operate == 'MIN':
+                            curvalue = json.loads(ManagePI.ReadMinValueFromPI(conn, tag, start_time, end_time))
+                        elif operate == 'DELTA':
+                            curvalue = json.loads(ManagePI.ReadCzValueFromPI(conn, tag, start_time, end_time))
+                        else:
+                            curvalue = None
+                except Exception as e:
+                    status = 0
+                    curvalue = e
+
+                # 构造result_list
+                if status:
+                    if type(curvalue) == dict:
+                        result_list = [(curvalue['value'])]
+                    elif type(curvalue) == list:
+                        pass
+                    else:
+                        pass
+                else:
+                    logger.info('Extract >> get_row_data() >> PI数据获取失败：%s' % curvalue)
+
+            else:
+                logger.info('Extract >> get_row_data() >> PI数据源内容填写非JSON格式')
+
+            return result_list
 
     def get_row_data(self, target, time):
         # storagefields有4个特例，
@@ -392,6 +479,7 @@ class Extract(object):
         result_list = []
 
         source = target.source
+        source_type_name = ''
         if source:
             source_type = source.sourcetype  # Oracle/SQL Server
             source_type_name = get_dict_name(source_type)
@@ -404,25 +492,21 @@ class Extract(object):
             except Exception as e:
                 logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
             else:
-                try:
+                if source_type_name == 'PI':
+                    result_list = Extract.get_data_from_pi(source_content, source_connection)
+                else:
                     db_query = SeveralDBQuery(source_type_name, source_connection)
                     result_list = db_query.fetch_all(source_content)
                     db_query.close()
-                except:
-                    pass
 
         if not result_list:
             return False
         else:
-            db_update = SeveralDBQuery(pro_db_engine, db_info)
-
             for result in result_list:
                 storage = {}
 
-                ri = 0
-                for rk, rv in result.items():
-                    storage[storagefields_list[ri]] = rv
-                    ri += 1
+                for num, rt in enumerate(result):
+                    storage[storagefields_list[num]] = rt
 
                 storage["savedate"] = time
                 storage['target_id'] = target.id
@@ -448,14 +532,23 @@ class Extract(object):
 
                 tablename = target.storage.tablename
                 # 行存
-                row_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(
-                    tablename=tablename, fields=fields, values=values)
+                row_save_sql = r"""INSERT INTO {tablename}({fields}) VALUES({values})""".format(
+                    tablename=tablename, fields=fields, values=values).replace('"', "'")
 
+                # SQL Server update操作的sql不同
+                if source_type_name.replace(' ', '').upper() == "SQLSERVER":
+                    row_save_sql = r"""INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
+                        tablename=tablename, fields=fields, values=values,
+                        db=settings.DATABASES['default']['NAME']).replace('"', "'")
+
+                logger.info('行：%s' % row_save_sql)
                 try:
-                    db_update.update(row_save_sql)
-                except:
+                    db_update = SeveralDBQuery(pro_db_engine, db_info)
+                    # db_update.update(row_save_sql)
+                    db_update.close()
+                except Exception as e:
+                    logger.info('数据更新失败： %s' % e)
                     return False
-            db_update.close()
             return True
 
     def get_col_data(self, target_list, time):
@@ -466,6 +559,7 @@ class Extract(object):
         date_com = re.compile('<#.*?#>')
 
         if target_list:
+            source_type_name = ''
             # datadate
             if 'DATADATE' in target_list[0].storagefields:
                 pre_datadate_format_list = date_com.findall(target_list[0].storagefields)
@@ -501,20 +595,21 @@ class Extract(object):
                     except Exception as e:
                         logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
 
-                    db_query = SeveralDBQuery(source_type_name, source_connection)
-                    result_list = db_query.fetch_all(source_content)
-                    db_query.close()
+                    if source_type_name == 'PI':
+                        result_list = Extract.get_data_from_pi(source_content, source_connection)
+                    else:
+                        db_query = SeveralDBQuery(source_type_name, source_connection)
+                        result_list = db_query.fetch_all(source_content)
+                        db_query.close()
 
                 # 存表
                 storagefields = target.storagefields
                 storagefields_list = storagefields.split(',')
                 if result_list:
                     result = result_list[0]
-                    i = 0
-                    for k, v in result.items():
-                        # 字段为target.storagefields
-                        storage[storagefields_list[i]] = v
-                        i += 1
+
+                    for num, rt in enumerate(result):
+                        storage[storagefields_list[num]] = rt
 
             fields = ''
             values = ''
@@ -535,15 +630,24 @@ class Extract(object):
 
                 # 列存，将storage存成一条记录,本地数据库
                 tablename = target_list[0].storage.tablename
-                col_save_sql = """INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
+                col_save_sql = r"""INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
                                                                                                fields=fields,
-                                                                                               values=values)
+                                                                                               values=values).replace(
+                    '"', "'")
 
+                # SQL Server update操作的sql不同
+                if source_type_name.replace(' ', '').upper() == "SQLSERVER":
+                    row_save_sql = r"""INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
+                        tablename=tablename, fields=fields, values=values,
+                        db=settings.DATABASES['default']['NAME']).replace('"', "'")
+
+                logger.info('列存：%s' % col_save_sql)
                 try:
                     db_update = SeveralDBQuery(pro_db_engine, db_info)
                     # db_update.update(col_save_sql)
                     db_update.close()
-                except:
+                except Exception as e:
+                    logger.info('数据更新失败： %s' % e)
                     return False
                 else:
                     return True
@@ -691,6 +795,7 @@ class Extract(object):
 def run_process(process_id, processcon, targets):
     # 取数 *****************************************************
     pid = os.getpid()
+    logger.info('此次进程pid: %d ' % pid)
     if process_id:
         # for target in targets:
         #     curvalue = getextractdata(target)
@@ -711,7 +816,7 @@ def run_process(process_id, processcon, targets):
         # 实际
         try:
             update_pm = ProcessMonitor.objects.get(id=process_id)
-        except ProcessMonitor.DoesNotExist as e:
+        except Exception as e:
             logger.info('run_process() >> %s' % e)
         else:
             update_pm.create_time = datetime.datetime.now()
@@ -779,6 +884,17 @@ def run_process(process_id, processcon, targets):
         logger.info('run_process() >> %s' % '传入参数有误。')
 
 
+if len(sys.argv) > 1:
+    run_process(sys.argv[1], None, None)
+    logger.info('进程启动。')
+else:
+    logger.info('脚本未传参。')
+
+# db_query = SeveralDBQuery('SQLSERVER', {"host":"127.0.0.1","user":"miaokela","passwd":"Passw0rD","db":"mkl"})
+# result_list = db_query.update("INSERT INTO dt.dbo.tmp_table(datadate,formula,target_id) VALUES('2020-02-16 00:00:00.000000','<#1_FDL:d:D>+<FDL:d:D>',36); ")
+# # result_list = db_query.fetch_all("SELECT TOP 1000 [id],[target_id],[datadate],[curvalue],[formula],[state] FROM [dt].[dbo].[tmp_table]")
+# db_query.close()
+
 # extract = Extract(1, 2, 2)
 # target = Target.objects.get(id=9)
 # time = datetime.datetime.now()
@@ -786,9 +902,4 @@ def run_process(process_id, processcon, targets):
 # # targets = Target.objects.filter(Q(id=8)|Q(id=9))
 # # extract.get_col_data(targets, time)
 
-# run_process(12, None, None)
-if len(sys.argv) > 1:
-    run_process(sys.argv[1], None, None)
-    logger.info('进程启动。')
-else:
-    logger.info('脚本未传参。')
+# run_process(9, None, None)
