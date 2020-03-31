@@ -8,7 +8,7 @@ import json
 import copy
 import re
 import logging
-
+from collections import OrderedDict
 import calendar
 import pymysql.cursors
 import cx_Oracle
@@ -62,65 +62,6 @@ def get_dict_name(key):
     return name
 
 
-def getcumulative(target, date, value):
-    """
-    数据累计
-    """
-    cumulativemonth = value
-    cumulativequarter = value
-    cumulativehalfyear = value
-    cumulativeyear = value
-    lastg_date = datetime.datetime.strptime('2000-01-01', "%Y-%m-%d")
-    if target.cycletype == "10":
-        lastg_date = date + datetime.timedelta(days=-1)
-    if target.cycletype == "11":
-        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(day=1)
-    if target.cycletype == "12":
-        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(day=1)
-    if target.cycletype == "13":
-        lastg_date = (date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(day=1)
-    if target.cycletype == "14":
-        lastg_date = (date.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)).replace(month=1, day=1)
-
-    # all_data = []
-    # if target.operationtype == "15":
-    #     all_data = Entrydata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
-    # if target.operationtype == "16":
-    #     all_data = Extractdata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
-    # if target.operationtype == "17":
-    #     all_data = Calculatedata.objects.exclude(state="9").filter(target=target, datadate=lastg_date)
-    # if len(all_data) > 0:
-    #     cumulativemonth = all_data[0].cumulativemonth + value
-    #     cumulativequarter = all_data[0].cumulativequarter + value
-    #     cumulativehalfyear = all_data[0].cumulativehalfyear + value
-    #     cumulativeyear = all_data[0].cumulativeyear + value
-    return {"cumulativemonth": cumulativemonth, "cumulativequarter": cumulativequarter,
-            "cumulativehalfyear": cumulativehalfyear, "cumulativeyear": cumulativeyear}
-
-
-def getextractdata(target):
-    """
-    数据提取
-    """
-    curvalue = []
-
-    con = target.source.connection
-    con = json.loads(con)
-    db = pymysql.connect(con[0]["host"], con[0]["user"], con[0]["passwd"], con[0]["db"])
-    cursor = db.cursor()
-    strsql = "select " + target.sourcefields + " from " + target.sourcetable + " where " + target.sourceconditions
-    cursor.execute(strsql)
-    data = cursor.fetchall()
-    if len(data) > 0:
-        curvalue = data[0][0]
-
-    return curvalue
-
-
 class SeveralDBQuery(object):
     def __init__(self, db_type, credit):
         # [{"host":"192.168.1.66","user":"root","passwd":"password","db":"datacenter"}]
@@ -166,25 +107,34 @@ class SeveralDBQuery(object):
         return result
 
     def fetch_all(self, fetch_sql):
+        logger.info('查询SQL：%s' % fetch_sql)
         result = []
         try:
-            with self.connection.cursor() as cursor:
-                cursor.execute(fetch_sql)
-                result = cursor.fetchall()
+            if self.db_type == 'ORACLE':
+                curs = self.connection.cursor()
+                curs.execute(fetch_sql)
+                result = curs.fetchall()
+                curs.close()
+            else:
+                with self.connection.cursor() as cursor:
+                    cursor.execute(fetch_sql)
+                    if self.db_type == "MYSQL":
+                        fixed_key = []
+                        for cd in cursor.description:
+                            fixed_key.append(cd[0])
+
+                        for i in range(cursor.rowcount):
+                            single_ret = cursor.fetchone()
+                            tmp_result = []
+                            for key in fixed_key:
+                                tmp_result.append(single_ret[key])
+                            result.append(tmp_result)
+
+                    else:
+                        result = cursor.fetchall()
         except Exception as e:
             logger.info("数据查询失败：%s" % e)
 
-        # 根据不同数据库构造相同类型数据
-        if self.db_type == "MYSQL":
-            result_list = []
-            for rt in result:
-                tmp_list = []
-                for rk in rt.keys():
-                    tmp_list.append(rt[rk])
-
-                if tmp_list:
-                    result_list.append(tuple(tmp_list))
-            result = result_list
         return result
 
     def update(self, update_sql):
@@ -258,7 +208,6 @@ class Extract(object):
         while True:
             time_now = datetime.datetime.now()
 
-            # 暂时注销
             self.get_data(time_now)
             time.sleep(60)
 
@@ -278,7 +227,10 @@ class Extract(object):
             now_hour = now_time.hour
             now_weekday = str(now_time.weekday())
             now_day = str(now_time.day)
+
+            # 测试5秒取
             # self._get_data(now_time)
+            # time.sleep(5)
             if now_hour == hour and now_minute == minute:
                 # 每日/每周/每月
                 if schedule_type == 1:
@@ -322,59 +274,6 @@ class Extract(object):
                             self.record_exception_data(cot)
                 else:
                     logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
-
-    def supplement_exception_data(self):
-        process_monitor = ProcessMonitor.objects.exclude(state='9')
-
-        for pm in process_monitor:
-            app_id = pm.app_admin_id
-            source_id = pm.source_id
-            circle_id = pm.cycle_id
-
-            if all([app_id, source_id, circle_id]):
-                # 进程 > 异常补取 > 行：target直接补取；列：集合所有target_list
-                exception_data = ExceptionData.objects.exclude(state='9').filter(app_id=app_id, source_id=source_id,
-                                                                                 cycle_id=circle_id)
-                copy_exception_data = copy.deepcopy(exception_data)
-
-                for ed in exception_data:
-                    storage = ed.target.storage
-                    if storage:
-                        storage_type_name = get_dict_name(storage.storagetype)
-
-                        if storage_type_name == '行':
-                            if ed.supplement_times < 10:
-                                if not self.get_row_data(ed.target, ed.extract_error_time):
-                                    ed.supplement_times += 1
-                                    ed.last_supplement_time = datetime.datetime.now()
-                                    ed.save()
-                                else:
-                                    ed.state = '9'
-                                    ed.save()
-                            else:
-                                pass
-                        elif storage_type_name == '列':
-                            col_ordered_data = copy_exception_data.filter(target__storage=storage,
-                                                                          target__storagetag=ed.target.storagetag)
-
-                            target_list = []
-                            for cod in col_ordered_data:
-                                target_list.append(cod.target)
-
-                            if not self.get_col_data(target_list, ed.extract_error_time):
-                                for cod in col_ordered_data:
-                                    cod.supplement_times += 1
-                                    cod.last_supplement_time = datetime.datetime.now()
-                                    cod.save()
-                            else:
-                                # 剔除
-                                copy_exception_data = copy_exception_data.exclude(target__storage=storage,
-                                                                                  target__storagetag=ed.target.storagetag)
-                                for cod in col_ordered_data:
-                                    cod.state = '9'
-                                    cod.save()
-                        else:
-                            logger.info('Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
 
     @staticmethod
     def get_data_from_pi(source_content, source_connection):
@@ -436,7 +335,7 @@ class Extract(object):
                 # 构造result_list
                 if status:
                     if type(curvalue) == dict:
-                        result_list = [(curvalue['value'])]
+                        result_list = [[curvalue['value']]]
                     elif type(curvalue) == list:
                         pass
                     else:
@@ -503,7 +402,7 @@ class Extract(object):
             return False
         else:
             for result in result_list:
-                storage = {}
+                storage = OrderedDict()
 
                 for num, rt in enumerate(result):
                     storage[storagefields_list[num]] = rt
@@ -519,13 +418,14 @@ class Extract(object):
 
                 for k, v in storage.items():
                     # 值不为空时，写入键值对
-                    if v and v != 0:
-                        fields += k.strip() + ','
-                    if type(v) == int:
-                        values += str(v) + ','
+                    fields += k.strip() + ','
+
+                    if type(v) == str:
+                        values += '"%s"' % v.strip() + ','
+                    elif type(v) == datetime.datetime:
+                        values += '"%s"' % str(v) + ','
                     else:
-                        if v:
-                            values += '"%s"' % str(v).strip() + ','
+                        values += str(v) + ','
 
                 fields = fields[:-1] if fields.endswith(',') else fields
                 values = values[:-1] if values.endswith(',') else values
@@ -536,7 +436,7 @@ class Extract(object):
                     tablename=tablename, fields=fields, values=values).replace('"', "'")
 
                 # SQL Server update操作的sql不同
-                if source_type_name.replace(' ', '').upper() == "SQLSERVER":
+                if 'sql_server' in settings.DATABASES['default']['ENGINE']:
                     row_save_sql = r"""INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
                         tablename=tablename, fields=fields, values=values,
                         db=settings.DATABASES['default']['NAME']).replace('"', "'")
@@ -552,7 +452,7 @@ class Extract(object):
             return True
 
     def get_col_data(self, target_list, time):
-        storage = {}
+        storage = OrderedDict()
         storage["savedate"] = time
         # 格式化时间<datadate:MS>  storage['datadate'] 
 
@@ -617,13 +517,14 @@ class Extract(object):
             if storage:
                 for k, v in storage.items():
                     # 值不为空时，写入键值对
-                    if v and v != 0:
-                        fields += k.strip() + ','
-                    if type(v) == int:
-                        values += str(v) + ','
+                    fields += k.strip() + ','
+
+                    if type(v) == str:
+                        values += '"%s"' % v.strip() + ','
+                    elif type(v) == datetime.datetime:
+                        values += '"%s"' % str(v) + ','
                     else:
-                        if v:
-                            values += '"%s"' % str(v).strip() + ','
+                        values += str(v) + ','
 
                 fields = fields[:-1] if fields.endswith(',') else fields
                 values = values[:-1] if values.endswith(',') else values
@@ -631,13 +532,13 @@ class Extract(object):
                 # 列存，将storage存成一条记录,本地数据库
                 tablename = target_list[0].storage.tablename
                 col_save_sql = r"""INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
-                                                                                               fields=fields,
-                                                                                               values=values).replace(
+                                                                                                fields=fields,
+                                                                                                values=values).replace(
                     '"', "'")
 
                 # SQL Server update操作的sql不同
-                if source_type_name.replace(' ', '').upper() == "SQLSERVER":
-                    row_save_sql = r"""INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
+                if 'sql_server' in settings.DATABASES['default']['ENGINE']:
+                    col_save_sql = r"""INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
                         tablename=tablename, fields=fields, values=values,
                         db=settings.DATABASES['default']['NAME']).replace('"', "'")
 
@@ -776,18 +677,70 @@ class Extract(object):
         try:
             exception_data = ExceptionData()
             exception_data.target = target
-            exception_data.app_id = target.app_id
+            exception_data.app_id = target.adminapp_id
             exception_data.cycle_id = target.cycle_id
             exception_data.source_id = target.source_id
             exception_data.extract_error_time = datetime.datetime.now()
             exception_data.save()
-        except:
-            pass
+        except Exception as e:
+            logger.info('记录异常数据失败：%s' % e)
+
+    def supplement_exception_data(self):
+        process_monitor = ProcessMonitor.objects.exclude(state='9')
+
+        for pm in process_monitor:
+            app_id = pm.app_admin_id
+            source_id = pm.source_id
+            circle_id = pm.cycle_id
+
+            if all([app_id, source_id, circle_id]):
+                # 进程 > 异常补取 > 行：target直接补取；列：集合所有target_list
+                exception_data = ExceptionData.objects.exclude(state='9').filter(app_id=app_id, source_id=source_id,
+                                                                                 cycle_id=circle_id)
+                copy_exception_data = copy.deepcopy(exception_data)
+
+                for ed in exception_data:
+                    storage = ed.target.storage
+                    if storage:
+                        storage_type_name = get_dict_name(storage.storagetype)
+
+                        if storage_type_name == '行':
+                            if ed.supplement_times < 10:
+                                if not self.get_row_data(ed.target, ed.extract_error_time):
+                                    ed.supplement_times += 1
+                                    ed.last_supplement_time = datetime.datetime.now()
+                                    ed.save()
+                                else:
+                                    ed.state = '9'
+                                    ed.save()
+                            else:
+                                pass
+                        elif storage_type_name == '列':
+                            col_ordered_data = copy_exception_data.filter(target__storage=storage,
+                                                                          target__storagetag=ed.target.storagetag)
+
+                            target_list = []
+                            for cod in col_ordered_data:
+                                target_list.append(cod.target)
+
+                            if not self.get_col_data(target_list, ed.extract_error_time):
+                                for cod in col_ordered_data:
+                                    cod.supplement_times += 1
+                                    cod.last_supplement_time = datetime.datetime.now()
+                                    cod.save()
+                            else:
+                                # 剔除
+                                copy_exception_data = copy_exception_data.exclude(target__storage=storage,
+                                                                                  target__storagetag=ed.target.storagetag)
+                                for cod in col_ordered_data:
+                                    cod.state = '9'
+                                    cod.save()
+                        else:
+                            logger.info('Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
 
     def run(self):
         # 补取()
         # 启动定时器，每分钟执行一次
-        # 暂时注销
         self.supplement()
         self.set_timer()
 
@@ -797,20 +750,6 @@ def run_process(process_id, processcon, targets):
     pid = os.getpid()
     logger.info('此次进程pid: %d ' % pid)
     if process_id:
-        # for target in targets:
-        #     curvalue = getextractdata(target)
-        #     if not curvalue:
-        #         extractdata = Extractdata()
-        #         extractdata.target = target
-        #         extractdata.datadate = reporting_date
-        #         extractdata.curvalue = getextractdata(target, reporting_date)
-        #         if target.cumulative == "是":
-        #             cumulative = getcumulative(target, reporting_date, extractdata.curvalue)
-        #             extractdata.cumulativemonth = cumulative["cumulativemonth"]
-        #             extractdata.cumulativequarter = cumulative["cumulativequarter"]
-        #             extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
-        #             extractdata.cumulativeyear = cumulative["cumulativeyear"]
-        #         extractdata.save()
         process_id = int(process_id)
 
         # 实际
@@ -902,4 +841,7 @@ else:
 # # targets = Target.objects.filter(Q(id=8)|Q(id=9))
 # # extract.get_col_data(targets, time)
 
-# run_process(9, None, None)
+# run_process(12, None, None)  # mysql测试成功1
+# run_process(11, None, None)  # pi 测试成功1
+# run_process(10, None, None)  # sqlserver 测试成功1
+# run_process(13, None, None) # oracle 测试成功1

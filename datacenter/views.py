@@ -246,7 +246,7 @@ def get_process_monitor_tree(request):
             source_id = int(source_id)
         except ValueError as e:
             print(e)
-        targets = Target.objects.filter(operationtype=16).exclude(state=9).values('source_id', 'adminapp_id',
+        targets = Target.objects.filter(operationtype__in=[16, 1]).exclude(state=9).values('source_id', 'adminapp_id',
                                                                                   'cycle_id')
 
         def does_it_exist(source, adminapp=None, cycle=None):
