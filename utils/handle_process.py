@@ -444,7 +444,7 @@ class Extract(object):
                 logger.info('行：%s' % row_save_sql)
                 try:
                     db_update = SeveralDBQuery(pro_db_engine, db_info)
-                    # db_update.update(row_save_sql)
+                    db_update.update(row_save_sql)
                     db_update.close()
                 except Exception as e:
                     logger.info('数据更新失败： %s' % e)
@@ -545,7 +545,7 @@ class Extract(object):
                 logger.info('列存：%s' % col_save_sql)
                 try:
                     db_update = SeveralDBQuery(pro_db_engine, db_info)
-                    # db_update.update(col_save_sql)
+                    db_update.update(col_save_sql)
                     db_update.close()
                 except Exception as e:
                     logger.info('数据更新失败： %s' % e)
@@ -791,23 +791,30 @@ def run_process(process_id, processcon, targets):
                             valid_time = get_dict_name(storage.validtime)
                             table_name = storage.tablename
 
+                            aft_time = None
                             if valid_time == '一年':
                                 aft_time = now_time + datetime.timedelta(days=-365)
-                                clean_sql = r"""DELETE FROM {table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
-                                    table_name=table_name, savedate=aft_time)
-
-                                db_update = SeveralDBQuery(pro_db_engine, db_info)
-                                # db_update.update(clean_sql)
                             elif valid_time == '一个月':
                                 aft_time = now_time + datetime.timedelta(days=-30)
+                            else:
+                                # # 永久：测试用，如果为永久暂时保留2天内的数据
+                                # aft_time = now_time + datetime.timedelta(days=-2)
+                                pass
+
+                            if aft_time:
                                 clean_sql = r"""DELETE FROM {table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
                                     table_name=table_name, savedate=aft_time)
 
+                                if 'sql_server' in settings.DATABASES['default']['ENGINE']:
+                                    clean_sql = r"""DELETE FROM {db}.dbo.{table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
+                                        table_name=table_name, savedate=aft_time,
+                                        db=settings.DATABASES['default']['NAME'])
+
                                 db_update = SeveralDBQuery(pro_db_engine, db_info)
+                                logger.info('时间 [{savedate:%Y-%m-%d %H:%M:%S}] 前数据清理成功。'.format(savedate=aft_time))
                                 # db_update.update(clean_sql)
-                            else:
-                                # 永久
-                                pass
+                                db_update.close()
+
                         time.sleep(60 * 60 * 24)  # 定时1日
                 elif process_type == '3':
                     # 数据服务
@@ -841,7 +848,10 @@ else:
 # # targets = Target.objects.filter(Q(id=8)|Q(id=9))
 # # extract.get_col_data(targets, time)
 
-# run_process(12, None, None)  # mysql测试成功1
-# run_process(11, None, None)  # pi 测试成功1
-# run_process(10, None, None)  # sqlserver 测试成功1
-# run_process(13, None, None) # oracle 测试成功1
+# run_process(12, None, None)  # mysql测试成功1 测试成功2     42, 43
+# run_process(11, None, None)  # pi 测试成功1 测试成功2   66, 67
+# run_process(10, None, None)  # sqlserver 测试成功1 测试成功2  38,39,40,41
+# run_process(13, None, None) # oracle 测试成功1 44, 45
+
+# 数据清理
+# run_process(14, None, None)
