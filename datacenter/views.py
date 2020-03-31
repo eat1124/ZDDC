@@ -3737,16 +3737,20 @@ def reporting_index(request, cycletype, funid):
             meter_data = getmodels("Meterdata", str(now.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
                 target__cycletype=cycletype,
+                target__work=work,
                 datadate=now)
             entry_data = getmodels("Entrydata", str(now.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
                 target__cycletype=cycletype,
+                target__work=work,
                 datadate=now)
             extract_data = getmodels("Extractdata", str(now.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
+                target__work=work,
                 target__cycletype=cycletype, datadate=now)
             calculate_data = getmodels("Calculatedata", str(now.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
+                target__work=work,
                 target__cycletype=cycletype, datadate=now)
             search_app = []
             check_search_app = []
@@ -3779,7 +3783,6 @@ def reporting_index(request, cycletype, funid):
                         if check_cursearchapp not in check_search_app:
                             search_app.append(cursearchapp)
                             check_search_app.append(check_cursearchapp)
-
             if len(meter_target) <= 0 and len(meter_data) <= 0:
                 metertag = "display: none;"
             if len(entry_target) <= 0 and len(entry_data) <= 0:
@@ -4346,7 +4349,7 @@ def getcalculatedata(target, date, guid):
     for constant in all_constant:
         constant_code.append(constant.code)
 
-    curvalue = 0
+    curvalue = -9999
     formula = ""
     if target.formula is not None:
         formula = target.formula.replace(" ", "")
@@ -5049,7 +5052,7 @@ def reporting_new(request):
                 extractdata = getmodels("Extractdata", str(reporting_date.year))()
                 extractdata.target = target
                 extractdata.datadate = reporting_date
-                extractdata.curvalue = 0
+                extractdata.curvalue = -9999
 
                 tablename = ""
                 try:

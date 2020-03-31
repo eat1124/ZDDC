@@ -274,7 +274,12 @@ $(document).ready(function () {
                 $("#save1").hide();
                 $("#del1").hide();
             }
-        }
+        },
+        "createdRow": function (row, data, index) {
+            if((data.target_upperlimit && data.curvalue > data.target_upperlimit)||(data.target_lowerlimit &&data.curvalue < data.target_lowerlimit )){
+                $('td', row).css("color", "#FF0000");
+            }
+        },
     });
     // 行按钮
     $('#sample_1 tbody').on('change', 'input[name="table1_curvalue"]', function () {
@@ -285,6 +290,11 @@ $(document).ready(function () {
             $('#table1_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))));
             $('#table1_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))));
             $('#table1_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))))
+        }
+        if((data.target_upperlimit && Number($('#table1_curvalue_' + data.id).val()) > data.target_upperlimit)||(data.target_lowerlimit &&Number($('#table1_curvalue_' + data.id).val()) < data.target_lowerlimit )){
+            $('td', $(this).parents('tr')).css("color", "#FF0000");
+        }else {
+            $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
 
@@ -384,7 +394,7 @@ $(document).ready(function () {
             }
         },
         "createdRow": function (row, data, index) {
-            if (data.curvalue == 0) {
+            if((data.target_upperlimit && data.curvalue > data.target_upperlimit)||(data.target_lowerlimit &&data.curvalue < data.target_lowerlimit )||data.curvalue==-9999){
                 $('td', row).css("color", "#FF0000");
             }
         },
@@ -399,9 +409,9 @@ $(document).ready(function () {
             $('#table2_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))));
             $('#table2_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))))
         }
-        if (Number($('#table2_curvalue_' + data.id).val()) == 0) {
+        if((data.target_upperlimit && Number($('#table2_curvalue_' + data.id).val()) > data.target_upperlimit)||(data.target_lowerlimit &&Number($('#table2_curvalue_' + data.id).val()) < data.target_lowerlimit )){
             $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else {
+        }else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
@@ -506,7 +516,13 @@ $(document).ready(function () {
                 $("#del3").hide();
                 $("#reset3").hide();
             }
-        }
+        },
+        "createdRow": function (row, data, index) {
+            if((data.target_upperlimit && data.curvalue > data.target_upperlimit)||(data.target_lowerlimit &&data.curvalue < data.target_lowerlimit )||data.curvalue==-9999){
+                $('td', row).css("color", "#FF0000");
+            }
+        },
+
     });
     // 行按钮
     $('#sample_3 tbody').on('change', 'input[name="table3_curvalue"]', function () {
@@ -517,6 +533,11 @@ $(document).ready(function () {
             $('#table3_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))));
             $('#table3_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))));
             $('#table3_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))))
+        }
+        if((data.target_upperlimit && Number($('#table3_curvalue_' + data.id).val()) > data.target_upperlimit)||(data.target_lowerlimit &&Number($('#table3_curvalue_' + data.id).val()) < data.target_lowerlimit )){
+            $('td', $(this).parents('tr')).css("color", "#FF0000");
+        }else {
+            $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
     $('#sample_3 tbody').on('click', 'button#edit', function () {
@@ -581,6 +602,9 @@ $(document).ready(function () {
         ],
         "createdRow": function (row, data, index) {
             if (data.curvalue == "") {
+                $('td', row).css("color", "#FF0000");
+            }
+           else if((data.target_upperlimit && data.curvalue > data.target_upperlimit)||(data.target_lowerlimit &&data.curvalue < data.target_lowerlimit )){
                 $('td', row).css("color", "#FF0000");
             }
         },
@@ -768,7 +792,9 @@ $(document).ready(function () {
         }
         if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else {
+        } else if((data.target_upperlimit && Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit)||(data.target_lowerlimit &&dNumber($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit )){
+            $('td', $(this).parents('tr')).css("color", "#FF0000");
+        }else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
@@ -785,7 +811,9 @@ $(document).ready(function () {
         }
         if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else {
+        } else if((data.target_upperlimit && (Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit))||(data.target_lowerlimit &&Number($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit )){
+            $('td', $(this).parents('tr')).css("color", "#FF0000");
+        }else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
