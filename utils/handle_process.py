@@ -217,16 +217,29 @@ class Extract(object):
         circle_rule = self.pm.cycle
         if circle_rule:
             schedule_type = circle_rule.schedule_type
-            minute = circle_rule.minute
-            hour = circle_rule.hour
-            day_of_week = circle_rule.day_of_week
-            day_of_month = circle_rule.day_of_month
+            minute, hour, day_of_week, day_of_month = None, None, None, None
+            try:
+                minute = int(circle_rule.minute)
+            except:
+                pass
+            try:
+                hour = int(circle_rule.hour)
+            except:
+                pass
+            try:
+                day_of_week = int(circle_rule.day_of_week)
+            except:
+                pass
+            try:
+                day_of_month = int(circle_rule.day_of_month)
+            except:
+                pass
 
             # 当前时间
             now_minute = now_time.minute
             now_hour = now_time.hour
-            now_weekday = str(now_time.weekday())
-            now_day = str(now_time.day)
+            now_weekday = now_time.weekday()
+            now_day = now_time.day
 
             # 测试5秒取
             # self._get_data(now_time)
@@ -855,3 +868,6 @@ else:
 
 # 数据清理
 # run_process(14, None, None)
+
+# 数据补取
+# run_process(15, None, None)
