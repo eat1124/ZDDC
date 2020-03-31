@@ -566,6 +566,7 @@ $(document).ready(function () {
                 if (full.cumulative == null || full.cumulative == '') {
                     return ""
                 }
+                return "";
             },
         }, {
             "targets": -2,
@@ -695,6 +696,7 @@ $(document).ready(function () {
                         return "<select style='width:100px'><option value='YE'>年末</option><option value='LYE'>去年末</option></select>"
 
                     }
+                    return "";
 
             }
         },
