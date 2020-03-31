@@ -2626,7 +2626,7 @@ def target_data(request):
         datatype = request.GET.get('datatype', '')
         works = request.GET.get('works', '')
 
-        all_target = Target.objects.exclude(state="9").order_by("sort")
+        all_target = Target.objects.exclude(state="9").order_by("sort").select_related("adminapp").select_related("storage")
         if search_adminapp != "":
             if search_adminapp == 'null':
                 all_target = all_target.filter(adminapp=None)
@@ -2662,40 +2662,32 @@ def target_data(request):
 
         for target in all_target:
             operationtype = target.operationtype
-            try:
-                operationtype_dict_list = DictList.objects.filter(id=int(target.operationtype))
-                if operationtype_dict_list.exists():
-                    operationtype_dict_list = operationtype_dict_list[0]
-                    operationtype = operationtype_dict_list.name
-            except:
-                pass
+            if operationtype:
+                for dict in all_dict_list:
+                    if operationtype == str(dict['id']):
+                        operationtype = dict['name']
+                        break
 
             cycletype = target.cycletype
-            try:
-                cycletype_dict_list = DictList.objects.filter(id=int(target.cycletype))
-                if cycletype_dict_list.exists():
-                    cycletype_dict_list = cycletype_dict_list[0]
-                    cycletype = cycletype_dict_list.name
-            except:
-                pass
+            if cycletype:
+                for dict in all_dict_list:
+                    if cycletype == str(dict['id']):
+                        cycletype = dict['name']
+                        break
 
             businesstype = target.businesstype
-            try:
-                businesstype_dict_list = DictList.objects.filter(id=int(target.businesstype))
-                if businesstype_dict_list.exists():
-                    businesstype_dict_list = businesstype_dict_list[0]
-                    businesstype = businesstype_dict_list.name
-            except:
-                pass
+            if businesstype:
+                for dict in all_dict_list:
+                    if businesstype == str(dict['id']):
+                        businesstype = dict['name']
+                        break
 
             unit = target.unit
-            try:
-                unit_dict_list = DictList.objects.filter(id=int(target.unit))
-                if unit_dict_list.exists():
-                    unit_dict_list = unit_dict_list[0]
-                    unit = unit_dict_list.name
-            except:
-                pass
+            if unit:
+                for dict in all_dict_list:
+                    if unit == str(dict['id']):
+                        unit = dict['name']
+                        break
 
             # 查询应用
             applist = []
@@ -2725,7 +2717,6 @@ def target_data(request):
             works = []
             if admin_app:
                 works = admin_app.work_set.exclude(state='9').values('id', 'name')
-
             result.append({
                 "operationtype_name": operationtype,
                 "cycletype_name": cycletype,
@@ -3746,16 +3737,20 @@ def reporting_index(request, cycletype, funid):
             meter_data = getmodels("Meterdata", str(now.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
                 target__cycletype=cycletype,
+                target__work=work,
                 datadate=now)
             entry_data = getmodels("Entrydata", str(now.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
                 target__cycletype=cycletype,
+                target__work=work,
                 datadate=now)
             extract_data = getmodels("Extractdata", str(now.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
+                target__work=work,
                 target__cycletype=cycletype, datadate=now)
             calculate_data = getmodels("Calculatedata", str(now.year)).objects.exclude(state="9").filter(
                 target__adminapp_id=app,
+                target__work=work,
                 target__cycletype=cycletype, datadate=now)
             search_app = []
             check_search_app = []
@@ -3788,7 +3783,6 @@ def reporting_index(request, cycletype, funid):
                         if check_cursearchapp not in check_search_app:
                             search_app.append(cursearchapp)
                             check_search_app.append(check_cursearchapp)
-
             if len(meter_target) <= 0 and len(meter_data) <= 0:
                 metertag = "display: none;"
             if len(entry_target) <= 0 and len(entry_data) <= 0:
@@ -4355,7 +4349,7 @@ def getcalculatedata(target, date, guid):
     for constant in all_constant:
         constant_code.append(constant.code)
 
-    curvalue = 0
+    curvalue = -9999
     formula = ""
     if target.formula is not None:
         formula = target.formula.replace(" ", "")
@@ -5058,7 +5052,7 @@ def reporting_new(request):
                 extractdata = getmodels("Extractdata", str(reporting_date.year))()
                 extractdata.target = target
                 extractdata.datadate = reporting_date
-                extractdata.curvalue = 0
+                extractdata.curvalue = -9999
 
                 tablename = ""
                 try:

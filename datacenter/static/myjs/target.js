@@ -473,21 +473,6 @@ $(document).ready(function () {
     });
 
     $('#cycletype').change(function () {
-        if ($('#cycletype').val() == '10') {
-            $('#cycletype').val('10')
-        }
-        if ($('#cycletype').val() == '11') {
-            $('#cycletype').val('11')
-        }
-        if ($('#cycletype').val() == '12') {
-            $('#cycletype').val('12')
-        }
-        if ($('#cycletype').val() == '13') {
-            $('#cycletype').val('13')
-        }
-        if ($('#cycletype').val() == '14') {
-            $('#cycletype').val('14')
-        }
         loadcycleData()
     });
 
