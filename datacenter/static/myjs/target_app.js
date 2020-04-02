@@ -247,11 +247,6 @@ $(document).ready(function () {
         $("#formula").bind('input propertychange', function () {
             analysisFunction();
         });
-
-        var table = $('#sample_3').DataTable();
-        table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
-
-
     });
 
     $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit,#works').change(function () {
@@ -347,10 +342,6 @@ $(document).ready(function () {
         $("#formula").bind('input propertychange', function () {
             analysisFunction();
         });
-
-        var table = $('#sample_3').DataTable();
-        table.ajax.url("../../target_data?&datatype=" + $('#datatype').val()).load();
-
     });
 
     $('#save').click(function () {
@@ -516,9 +507,9 @@ $(document).ready(function () {
         $("#search_cycletype3").val("");
         $("#search_businesstype3").val("");
         $("#search_unit3").val("");
-
+        
+        loadcycleData();
         $('#myModal').modal('show')
-
     });
 
     var completed = false;
@@ -530,7 +521,7 @@ $(document).ready(function () {
         "bAutoWidth": true,
         "bSort": true,
         "bProcessing": true,
-        "ajax": "../../target_data/",
+        "ajax": "../../target_data/?&datatype=" + $('#datatype').val(),
         "columns": [
             {"data": "id"},
             {"data": "name"},
@@ -727,7 +718,7 @@ $(document).ready(function () {
         }
     });
     }
-    loadcycleData();
+
 
     $('#search_adminapp,#search_app,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3,#datatype').change(function () {
         var table = $('#sample_3').DataTable();
