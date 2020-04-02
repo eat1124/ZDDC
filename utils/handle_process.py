@@ -793,6 +793,7 @@ def run_process(process_id, processcon, targets):
                         extract = Extract(app_id, source_id, circle_id)
                         extract.supplement_exception_data()
 
+                        logger.info('异常数据补取结束。')
                         time.sleep(60 * 60 * 24)  # 定时1日
                 elif process_type == '2':
                     while True:

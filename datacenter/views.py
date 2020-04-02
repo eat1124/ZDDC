@@ -247,7 +247,7 @@ def get_process_monitor_tree(request):
         except ValueError as e:
             print(e)
         targets = Target.objects.filter(operationtype__in=[16, 1]).exclude(state=9).values('source_id', 'adminapp_id',
-                                                                                  'cycle_id')
+                                                                                           'cycle_id')
 
         def does_it_exist(source, adminapp=None, cycle=None):
             if source and not any([adminapp, cycle]):
@@ -2626,7 +2626,8 @@ def target_data(request):
         datatype = request.GET.get('datatype', '')
         works = request.GET.get('works', '')
 
-        all_target = Target.objects.exclude(state="9").order_by("sort").select_related("adminapp").select_related("storage")
+        all_target = Target.objects.exclude(state="9").order_by("sort").select_related("adminapp").select_related(
+            "storage")
         if search_adminapp != "":
             if search_adminapp == 'null':
                 all_target = all_target.filter(adminapp=None)
@@ -5433,10 +5434,14 @@ def report_submit_data(request):
         curadminapp = App.objects.get(id=int(search_app))
         all_report = all_report.filter(app=curadminapp)
 
-        for report in all_report:
+        # 报表服务器地址
+        rs = ReportServer.objects.first()
+        report_server = rs.report_server if rs else ''
 
+        for report in all_report:
             # 报表类型
             report_type = report.report_type
+            report_time = ''
             try:
                 report_type_dict_list = DictList.objects.filter(id=int(report.report_type))
                 if report_type_dict_list.exists():
@@ -5526,6 +5531,7 @@ def report_submit_data(request):
                 "write_time": write_time,
                 "state": state,
                 "report_time": report_time,
+                "report_server": report_server
             })
         return JsonResponse({"data": result})
 
