@@ -2626,8 +2626,7 @@ def target_data(request):
         datatype = request.GET.get('datatype', '')
         works = request.GET.get('works', '')
 
-        all_target = Target.objects.exclude(state="9").order_by("sort").select_related("adminapp").select_related(
-            "storage")
+        all_target = Target.objects.exclude(state="9").order_by("sort").select_related("adminapp", "storage", "work")
         if search_adminapp != "":
             if search_adminapp == 'null':
                 all_target = all_target.filter(adminapp=None)
