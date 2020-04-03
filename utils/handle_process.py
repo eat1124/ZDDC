@@ -347,6 +347,7 @@ class Extract(object):
 
                 # 构造result_list
                 if status:
+                    logger.info("PI数据提取结束：%s" % str(source_content))
                     if type(curvalue) == dict:
                         result_list = [[curvalue['value']]]
                     elif type(curvalue) == list:
@@ -789,45 +790,52 @@ def run_process(process_id, processcon, targets):
                 if process_type == '1':
                     # 数据补取
                     while True:
-                        # 补取
-                        extract = Extract(app_id, source_id, circle_id)
-                        extract.supplement_exception_data()
+                        try:
+                            # 补取
+                            extract = Extract(app_id, source_id, circle_id)
+                            extract.supplement_exception_data()
 
-                        logger.info('异常数据补取结束。')
+                            logger.info('异常数据补取结束。')
+                        except Exception as e:
+                            logger.info('数据补取失败：%s' % e)
+
                         time.sleep(60 * 60 * 24)  # 定时1日
                 elif process_type == '2':
                     while True:
-                        # 数据清理：根据存储配置中的数据保留周期，定时去删除表中的过期数据
-                        now_time = datetime.datetime.now()
-                        # 遍历所有storage
-                        storages = Storage.objects.exclude(state='9')
-                        for storage in storages:
-                            valid_time = get_dict_name(storage.validtime)
-                            table_name = storage.tablename
+                        try:
+                            # 数据清理：根据存储配置中的数据保留周期，定时去删除表中的过期数据
+                            now_time = datetime.datetime.now()
+                            # 遍历所有storage
+                            storages = Storage.objects.exclude(state='9')
+                            for storage in storages:
+                                valid_time = get_dict_name(storage.validtime)
+                                table_name = storage.tablename
 
-                            aft_time = None
-                            if valid_time == '一年':
-                                aft_time = now_time + datetime.timedelta(days=-365)
-                            elif valid_time == '一个月':
-                                aft_time = now_time + datetime.timedelta(days=-30)
-                            else:
-                                # # 永久：测试用，如果为永久暂时保留2天内的数据
-                                # aft_time = now_time + datetime.timedelta(days=-2)
-                                pass
+                                aft_time = None
+                                if valid_time == '一年':
+                                    aft_time = now_time + datetime.timedelta(days=-365)
+                                elif valid_time == '一个月':
+                                    aft_time = now_time + datetime.timedelta(days=-30)
+                                else:
+                                    # # 永久：测试用，如果为永久暂时保留2天内的数据
+                                    # aft_time = now_time + datetime.timedelta(days=-2)
+                                    pass
 
-                            if aft_time:
-                                clean_sql = r"""DELETE FROM {table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
-                                    table_name=table_name, savedate=aft_time)
+                                if aft_time:
+                                    clean_sql = r"""DELETE FROM {table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
+                                        table_name=table_name, savedate=aft_time)
 
-                                if 'sql_server' in settings.DATABASES['default']['ENGINE']:
-                                    clean_sql = r"""DELETE FROM {db}.dbo.{table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
-                                        table_name=table_name, savedate=aft_time,
-                                        db=settings.DATABASES['default']['NAME'])
+                                    if 'sql_server' in settings.DATABASES['default']['ENGINE']:
+                                        clean_sql = r"""DELETE FROM {db}.dbo.{table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
+                                            table_name=table_name, savedate=aft_time,
+                                            db=settings.DATABASES['default']['NAME'])
 
-                                db_update = SeveralDBQuery(pro_db_engine, db_info)
-                                logger.info('时间 [{savedate:%Y-%m-%d %H:%M:%S}] 前数据清理成功。'.format(savedate=aft_time))
-                                # db_update.update(clean_sql)
-                                db_update.close()
+                                    db_update = SeveralDBQuery(pro_db_engine, db_info)
+                                    logger.info('时间 [{savedate:%Y-%m-%d %H:%M:%S}] 前数据清理成功。'.format(savedate=aft_time))
+                                    # db_update.update(clean_sql)
+                                    db_update.close()
+                        except Exception as e:
+                            logger.info('数据清理失败：%s' % e)
 
                         time.sleep(60 * 60 * 24)  # 定时1日
                 elif process_type == '3':
