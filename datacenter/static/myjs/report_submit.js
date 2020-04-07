@@ -146,7 +146,7 @@ $(document).ready(function() {
         "columnDefs": [{
             "targets": -4,
             "mRender": function(data, type, full) {
-                return "<a href='http://" + full.report_server + ":8075/webroot/decision/view/report?viewlet=" + full.file_name + "&curdate=" + $('#reporting_date').val() + "' target='_blank'>" + full.name + "</a>"
+                return "<a href='http://" + full.report_server + "/webroot/decision/view/report?viewlet=" + full.file_name + "&curdate=" + $('#reporting_date').val() + "' target='_blank'>" + full.name + "</a>"
             }
         }, {
             "targets": -2,
@@ -246,7 +246,7 @@ $(document).ready(function() {
                 '</div>')
         }
 
-        $("#look").attr("href", "http://" + data.report_server +  ":8075/webroot/decision/view/report?viewlet=" + data.file_name + "&curdate=" + $('#reporting_date').val())
+        $("#look").attr("href", "http://" + data.report_server +  "/webroot/decision/view/report?viewlet=" + data.file_name + "&curdate=" + $('#reporting_date').val())
     });
     $('#sample_1 tbody').on('click', 'button#delrow', function() {
         if (confirm("确定要删除该条发布数据？")) {

@@ -25,6 +25,7 @@ import psutil
 import base64
 import win32api
 import calendar
+import socket
 
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
@@ -88,8 +89,6 @@ def report_server_save(request):
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
         report_file_path = request.POST.get('report_file_path', '')
-        web_server = request.POST.get('web_server', '')
-        ps_script_path = request.POST.get('ps_script_path', '')
 
         status = 0
         data = ''
@@ -106,8 +105,6 @@ def report_server_save(request):
                 rs.username = username
                 rs.password = password
                 rs.report_file_path = report_file_path
-                rs.web_server = web_server
-                rs.ps_script_path = ps_script_path
                 rs.save()
                 status = 1
                 data = '保存成功。'
@@ -122,8 +119,6 @@ def report_server_save(request):
                     rs.username = username
                     rs.password = password
                     rs.report_file_path = report_file_path
-                    rs.web_server = web_server
-                    rs.ps_script_path = ps_script_path
                     rs.save()
                     status = 1
                     data = '保存成功。'
@@ -960,10 +955,6 @@ def report_index(request, funid):
                                                 errors.append('报表服务器密码未配置，报表上传失败。')
                                             elif not rs.report_file_path:
                                                 errors.append('报表存放路径未配置，报表上传失败。')
-                                            elif not rs.web_server:
-                                                errors.append('Web服务器地址未配置，报表上传失败。')
-                                            elif not rs.ps_script_path:
-                                                errors.append('PowerShell脚本存放路径未配置，报表上传失败。')
                                             else:
                                                 try:
                                                     with open(myfilepath, 'wb+') as f:
@@ -974,20 +965,14 @@ def report_index(request, funid):
                                                 else:
                                                     # 只要有文件写入，就发送请求
                                                     # 远程执行命令，令远程windows发送请求下载文件
-                                                    pre_ps_path = os.path.join(rs.ps_script_path, 'report_ps')
+                                                    pre_ps_path = os.path.join(rs.report_file_path, 'report_ps')
                                                     ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
                                                     report_file_path = os.path.join(rs.report_file_path, file_name)
-                                                    remote_ip = rs.report_server
+                                                    remote_ip = rs.report_server.split(':')[0]
                                                     remote_user = rs.username
                                                     remote_password = rs.password
                                                     remote_platform = "Windows"
-                                                    # report_file_path = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
-                                                    #     file_name)
-                                                    # 报表服务器
-                                                    # remote_ip = "192.168.100.151"
-                                                    # remote_user = "Administrator"
-                                                    # remote_password = "tesunet@2017"
-                                                    # remote_platform = "Windows"
+
                                                     # 判断ps脚本是否存在
                                                     # 若不存在，创建路径，写入文件
                                                     ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(
@@ -1025,20 +1010,26 @@ def report_index(request, funid):
                                                             if rc_result['exec_tag'] == 1:
                                                                 errors.append(rc_result['log'])
                                                             else:
-                                                                url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
-                                                                    web_server=rs.web_server, file_name=file_name)
-                                                                remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                    ps_script_path, report_file_path, url_visited)
-
-                                                                server_obj = ServerByPara(remote_cmd, remote_ip,
-                                                                                          remote_user,
-                                                                                          remote_password,
-                                                                                          remote_platform)
-                                                                result = server_obj.run("")
-                                                                if result["exec_tag"] == 0:
-                                                                    write_tag = True
+                                                                # 获取本地IP
+                                                                try:
+                                                                    web_server = socket.gethostbyname(socket.gethostname())
+                                                                except Exception as e:
+                                                                    errors.append("获取服务器IP失败：%s" % e)
                                                                 else:
-                                                                    errors.append(result['log'])
+                                                                    url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
+                                                                        web_server=web_server, file_name=file_name)
+                                                                    remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                                        ps_script_path, report_file_path, url_visited)
+
+                                                                    server_obj = ServerByPara(remote_cmd, remote_ip,
+                                                                                              remote_user,
+                                                                                              remote_password,
+                                                                                              remote_platform)
+                                                                    result = server_obj.run("")
+                                                                    if result["exec_tag"] == 0:
+                                                                        write_tag = True
+                                                                    else:
+                                                                        errors.append(result['log'])
 
                                         # 远程文件下载成功
                                         if write_tag:
@@ -1254,10 +1245,6 @@ def report_app_index(request, funid):
                                                 errors.append('报表服务器密码未配置，报表上传失败。')
                                             elif not rs.report_file_path:
                                                 errors.append('报表存放路径未配置，报表上传失败。')
-                                            elif not rs.web_server:
-                                                errors.append('Web服务器地址未配置，报表上传失败。')
-                                            elif not rs.ps_script_path:
-                                                errors.append('PowerShell脚本存放路径未配置，报表上传失败。')
                                             else:
                                                 try:
                                                     with open(myfilepath, 'wb+') as f:
@@ -1269,15 +1256,13 @@ def report_app_index(request, funid):
                                                 else:
                                                     # 只要有文件写入，就发送请求
                                                     # 远程执行命令，令远程windows发送请求下载文件
-                                                    pre_ps_path = os.path.join(rs.ps_script_path, 'report_ps')
+                                                    pre_ps_path = os.path.join(rs.report_file_path, 'report_ps')
                                                     ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
                                                     report_file_path = os.path.join(rs.report_file_path, file_name)
-                                                    remote_ip = rs.report_server
+                                                    remote_ip = rs.report_server.split(':')[0]
                                                     remote_user = rs.username
                                                     remote_password = rs.password
                                                     remote_platform = "Windows"
-                                                    # report_file_path = r"E:\FineReport_10.0\webapps\webroot\WEB-INF\reportlets\{0}".format(
-                                                    #     file_name)
 
                                                     # 判断ps脚本是否存在
                                                     # 若不存在，创建路径，写入文件
@@ -1316,20 +1301,26 @@ def report_app_index(request, funid):
                                                             if rc_result['exec_tag'] == 1:
                                                                 errors.append(rc_result['log'])
                                                             else:
-                                                                url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
-                                                                    web_server=rs.web_server, file_name=file_name)
-                                                                remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                    ps_script_path, report_file_path, url_visited)
-
-                                                                server_obj = ServerByPara(remote_cmd, remote_ip,
-                                                                                          remote_user,
-                                                                                          remote_password,
-                                                                                          remote_platform)
-                                                                result = server_obj.run("")
-                                                                if result["exec_tag"] == 0:
-                                                                    write_tag = True
+                                                                # 获取本地IP
+                                                                try:
+                                                                    web_server = socket.gethostbyname(socket.gethostname())
+                                                                except Exception as e:
+                                                                    errors.append("获取服务器IP失败：%s" % e)
                                                                 else:
-                                                                    errors.append(result['log'])
+                                                                    url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
+                                                                        web_server=web_server, file_name=file_name)
+                                                                    remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                                        ps_script_path, report_file_path, url_visited)
+
+                                                                    server_obj = ServerByPara(remote_cmd, remote_ip,
+                                                                                              remote_user,
+                                                                                              remote_password,
+                                                                                              remote_platform)
+                                                                    result = server_obj.run("")
+                                                                    if result["exec_tag"] == 0:
+                                                                        write_tag = True
+                                                                    else:
+                                                                        errors.append(result['log'])
                                         # 远程文件下载成功
                                         if write_tag:
                                             # 新增报表模板
