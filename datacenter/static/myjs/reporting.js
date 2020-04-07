@@ -872,7 +872,7 @@ $(document).ready(function () {
             $("#newtable_twentyfourdata").val($('#table5_twentyfourdata_' + data.id).val());
             $('#newtable_value').val(math.number(math.subtract(math.bignumber(Number($("#newtable_twentyfourdata").val())), math.bignumber(Number($("#newtable_zerodata").val())))));
             $("#newtable_magnification").val($('#table5_magnification_' + data.id).val());
-            $('#newtable_finalvalue').val(math.number(math.multiply(math.bignumber(Number($("#newtable_value").val())), math.bignumber(Number($("#newtable_magnification").val())))));
+            $('#newtable_finalvalue').val($('#table5_curvalue_' + data.id).val());
             $("#finalvalue").val(math.number(math.add(math.bignumber(Number($("#oldtable_finalvalue").val())), math.bignumber(Number($("#newtable_finalvalue").val())))));
         }
     });
