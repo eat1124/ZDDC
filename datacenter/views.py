@@ -2807,6 +2807,7 @@ def target_save(request):
         storage = request.POST.get("storage", "")
         storagetag = request.POST.get("storagetag", "")
         storagefields = request.POST.get("storagefields", "")
+
         is_repeat = request.POST.get("is_repeat", "")
         savetype = request.POST.get("savetype", "")
 
@@ -2935,7 +2936,7 @@ def target_save(request):
                                                         pass
                                                     if operationtype == '17':
                                                         target_save.formula = formula
-                                                    if operationtype in ['1', '16']:
+                                                    if operationtype in ['1', '16'] and savetype != 'app':
                                                         try:
                                                             cycle_id = int(cycle)
                                                             my_cycle = all_cycle.get(id=cycle_id)
@@ -3064,7 +3065,7 @@ def target_save(request):
                                                             pass
                                                         if operationtype == '17':
                                                             target_save.formula = formula
-                                                        if operationtype in ['1', '16']:
+                                                        if operationtype in ['1', '16'] and savetype != 'app':
                                                             try:
                                                                 cycle_id = int(cycle)
                                                                 my_cycle = all_cycle.get(id=cycle_id)
