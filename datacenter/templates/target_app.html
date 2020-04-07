@@ -334,108 +334,109 @@
                                     </div>
                                 </div>
                             </div>
-                            <div id="extract">
-                                <hr style="height:1px;border:none;border-top:1px solid #87cefa;"/>
-                                <div class="form-group ">
-                                    <label class="col-md-2 control-label">周期</label>
-                                    <div class="col-md-4">
-                                        <select class="form-control" id="cycle" name="cycle">
-                                            {% for cycle in cycle_list %}
-                                                <option value="{{ cycle.cycle_id }}">{{ cycle.cycle_name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <label class="col-md-2 control-label">数据源</label>
-                                    <div class="col-md-4">
-                                        <select class="form-control" id="source" name="source">
-                                            {% for source in source_list %}
-                                                <option value="{{ source.source_id }}">{{ source.source_name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-md-2 control-label">数据源内容</label>
-                                    <div class="col-md-10">
-                                        <textarea class="form-control" placeholder="" rows="4" id="source_content"
-                                                  name="source_content"></textarea>
-                                        <div class="form-control-focus"></div>
 
-                                    </div>
-                                </div>
-                                <!--
-                                    <div class="form-group">
-                                        <label class="col-md-2 control-label">数据源表</label>
-                                        <div class="col-md-4">
-                                            <input id="sourcetable" type="text" name="sourcetable" class="form-control "
-                                                   placeholder="" >
-                                            <div class="form-control-focus"></div>
-
-                                        </div>
-                                        <label class="col-md-2 control-label">数据源sis点</label>
-                                        <div class="col-md-4">
-                                            <input id="sourcesis" type="text" name="sourcesis" class="form-control "
-                                                   placeholder="">
-                                            <div class="form-control-focus"></div>
-
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="col-md-2 control-label">数据源字段</label>
-                                        <div class="col-md-4">
-                                            <textarea class="form-control" placeholder="" rows="4" id="sourcefields" name="sourcefields"></textarea>
-                                                        <div class="form-control-focus"> </div>
-
-                                        </div>
-                                        <label class="col-md-2 control-label">数据源条件</label>
-                                        <div class="col-md-4">
-                                            <textarea class="form-control" placeholder="" rows="4" id="sourceconditions" name="sourceconditions"></textarea>
-                                                        <div class="form-control-focus"> </div>
-
-                                        </div>
-                                    </div>
-                                    -->
-                                <div class="form-group ">
-                                    <label class="col-md-2 control-label">存储位置</label>
-                                    <div class="col-md-4">
-                                        <select class="form-control" id="storage" name="storage">
-                                            {% for storage in storage_list %}
-                                                <option value="{{ storage.storage_id }}">{{ storage.storage_name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                        {% for storage in storage_list %}
-                                            <input value="{{ storage.storage_type }}"
-                                                   id="storage_{{ storage.storage_id }}" hidden>
-                                        {% endfor %}
-                                    </div>
-                                    <label class="col-md-2 control-label">多条数据时取</label>
-                                    <div class="col-md-4">
-                                        <select class="form-control" id="is_repeat" name="is_repeat">
-                                            <option value="1" selected>最新</option>
-                                            <option value="2">平均值</option>
-                                        </select>
-                                        <div class="form-control-focus"></div>
-                                    </div>
-                                </div>
-                                <div class="form-group" hidden>
-                                    <label class="col-md-2 control-label">存储标识</label>
-                                    <div class="col-md-4">
-                                        <input id="storagetag" type="text" name="storagetag" class="form-control "
-                                               placeholder="">
-                                        <div class="form-control-focus"></div>
-
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-md-2 control-label">存储字段</label>
-                                    <div class="col-md-10">
-                                        <textarea class="form-control" placeholder="" rows="4" id="storagefields"
-                                                  name="storagefields"></textarea>
-                                        <div class="form-control-focus"></div>
-
-                                    </div>
-                                </div>
-                            </div>
+{#                            <div id="extract">#}
+{#                                <hr style="height:1px;border:none;border-top:1px solid #87cefa;"/>#}
+{#                                <div class="form-group ">#}
+{#                                    <label class="col-md-2 control-label">周期</label>#}
+{#                                    <div class="col-md-4">#}
+{#                                        <select class="form-control" id="cycle" name="cycle">#}
+{#                                            {% for cycle in cycle_list %}#}
+{#                                                <option value="{{ cycle.cycle_id }}">{{ cycle.cycle_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                    <label class="col-md-2 control-label">数据源</label>#}
+{#                                    <div class="col-md-4">#}
+{#                                        <select class="form-control" id="source" name="source">#}
+{#                                            {% for source in source_list %}#}
+{#                                                <option value="{{ source.source_id }}">{{ source.source_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                                <div class="form-group">#}
+{#                                    <label class="col-md-2 control-label">数据源内容</label>#}
+{#                                    <div class="col-md-10">#}
+{#                                        <textarea class="form-control" placeholder="" rows="4" id="source_content"#}
+{#                                                  name="source_content"></textarea>#}
+{#                                        <div class="form-control-focus"></div>#}
+{##}
+{#                                    </div>#}
+{#                                </div>#}
+{#                                <!--#}
+{#                                    <div class="form-group">#}
+{#                                        <label class="col-md-2 control-label">数据源表</label>#}
+{#                                        <div class="col-md-4">#}
+{#                                            <input id="sourcetable" type="text" name="sourcetable" class="form-control "#}
+{#                                                   placeholder="" >#}
+{#                                            <div class="form-control-focus"></div>#}
+{##}
+{#                                        </div>#}
+{#                                        <label class="col-md-2 control-label">数据源sis点</label>#}
+{#                                        <div class="col-md-4">#}
+{#                                            <input id="sourcesis" type="text" name="sourcesis" class="form-control "#}
+{#                                                   placeholder="">#}
+{#                                            <div class="form-control-focus"></div>#}
+{##}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                    <div class="form-group">#}
+{#                                        <label class="col-md-2 control-label">数据源字段</label>#}
+{#                                        <div class="col-md-4">#}
+{#                                            <textarea class="form-control" placeholder="" rows="4" id="sourcefields" name="sourcefields"></textarea>#}
+{#                                                        <div class="form-control-focus"> </div>#}
+{##}
+{#                                        </div>#}
+{#                                        <label class="col-md-2 control-label">数据源条件</label>#}
+{#                                        <div class="col-md-4">#}
+{#                                            <textarea class="form-control" placeholder="" rows="4" id="sourceconditions" name="sourceconditions"></textarea>#}
+{#                                                        <div class="form-control-focus"> </div>#}
+{##}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                    -->#}
+{#                                <div class="form-group ">#}
+{#                                    <label class="col-md-2 control-label">存储位置</label>#}
+{#                                    <div class="col-md-4">#}
+{#                                        <select class="form-control" id="storage" name="storage">#}
+{#                                            {% for storage in storage_list %}#}
+{#                                                <option value="{{ storage.storage_id }}">{{ storage.storage_name }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{#                                        {% for storage in storage_list %}#}
+{#                                            <input value="{{ storage.storage_type }}"#}
+{#                                                   id="storage_{{ storage.storage_id }}" hidden>#}
+{#                                        {% endfor %}#}
+{#                                    </div>#}
+{#                                    <label class="col-md-2 control-label">多条数据时取</label>#}
+{#                                    <div class="col-md-4">#}
+{#                                        <select class="form-control" id="is_repeat" name="is_repeat">#}
+{#                                            <option value="1" selected>最新</option>#}
+{#                                            <option value="2">平均值</option>#}
+{#                                        </select>#}
+{#                                        <div class="form-control-focus"></div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                                <div class="form-group" hidden>#}
+{#                                    <label class="col-md-2 control-label">存储标识</label>#}
+{#                                    <div class="col-md-4">#}
+{#                                        <input id="storagetag" type="text" name="storagetag" class="form-control "#}
+{#                                               placeholder="">#}
+{#                                        <div class="form-control-focus"></div>#}
+{##}
+{#                                    </div>#}
+{#                                </div>#}
+{#                                <div class="form-group">#}
+{#                                    <label class="col-md-2 control-label">存储字段</label>#}
+{#                                    <div class="col-md-10">#}
+{#                                        <textarea class="form-control" placeholder="" rows="4" id="storagefields"#}
+{#                                                  name="storagefields"></textarea>#}
+{#                                        <div class="form-control-focus"></div>#}
+{##}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
                         </div>
 
                         <div class="form-actions ">
