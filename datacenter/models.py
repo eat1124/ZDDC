@@ -412,3 +412,17 @@ class ReportServer(models.Model):
     username = models.CharField("报表服务器用户名", blank=True, default='', max_length=256)
     password = models.CharField("报表服务器密码", blank=True, default='', max_length=256)
 
+
+class ReportingLog(models.Model):
+    """
+    填报日志表
+    """
+    adminapp = models.ForeignKey(App, null=True, related_name='reportlog_adminapp_set')
+    work = models.ForeignKey('Work', null=True, verbose_name='业务')
+    cycle = models.ForeignKey(Cycle, null=True, verbose_name='周期')
+    datadate = models.DateTimeField("时间", blank=True, null=True)
+    user = models.OneToOneField(User, blank=True, null=True)
+    type = models.CharField("类型", blank=True, null=True, max_length=20)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+
+
