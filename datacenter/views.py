@@ -4043,6 +4043,7 @@ def reporting_data(request):
                         "cumulativequarter": cumulativequarter,
                         "cumulativehalfyear": cumulativehalfyear,
                         "cumulativeyear": cumulativeyear,
+                        "releasestate": data.releasestate,
                         "target_id": data.target.id,
                         "target_name": data.target.name,
                         "target_unity": data.target.unity,
@@ -4144,6 +4145,7 @@ def reporting_data(request):
                         "cumulativequarter": cumulativequarter,
                         "cumulativehalfyear": cumulativehalfyear,
                         "cumulativeyear": cumulativeyear,
+                        "releasestate": data.releasestate,
                         "target_id": data.target.id,
                         "target_name": data.target.name,
                         "target_unity": data.target.unity,
@@ -4221,7 +4223,7 @@ def reporting_search_data(request):
         for target in all_target:
             curtargetdata = {"target": target, "zerodata": "", "twentyfourdata": "", "metervalue": "", "curvalue": "",
                              "curvaluedate": "", "curvaluetext": "", "cumulativemonth": "", "cumulativequarter": "",
-                             "cumulativehalfyear": "", "cumulativeyear": ""}
+                             "cumulativehalfyear": "", "cumulativeyear": "", "releasestate": ""}
             if target.operationtype == "15":
                 targetvalue = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target=target, datadate=reporting_date)
@@ -4232,7 +4234,8 @@ def reporting_search_data(request):
                                      "cumulativemonth": targetvalue[0].cumulativemonth,
                                      "cumulativequarter": targetvalue[0].cumulativequarter,
                                      "cumulativehalfyear": targetvalue[0].cumulativehalfyear,
-                                     "cumulativeyear": targetvalue[0].cumulativeyear}
+                                     "cumulativeyear": targetvalue[0].cumulativeyear,
+                                     "releasestate": targetvalue[0].releasestate}
             elif target.operationtype == "16":
                 targetvalue = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target=target, datadate=reporting_date)
@@ -4243,7 +4246,8 @@ def reporting_search_data(request):
                                      "cumulativemonth": targetvalue[0].cumulativemonth,
                                      "cumulativequarter": targetvalue[0].cumulativequarter,
                                      "cumulativehalfyear": targetvalue[0].cumulativehalfyear,
-                                     "cumulativeyear": targetvalue[0].cumulativeyear}
+                                     "cumulativeyear": targetvalue[0].cumulativeyear,
+                                     "releasestate": targetvalue[0].releasestate}
             elif target.operationtype == "17":
                 targetvalue = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target=target, datadate=reporting_date)
@@ -4254,7 +4258,8 @@ def reporting_search_data(request):
                                      "cumulativemonth": targetvalue[0].cumulativemonth,
                                      "cumulativequarter": targetvalue[0].cumulativequarter,
                                      "cumulativehalfyear": targetvalue[0].cumulativehalfyear,
-                                     "cumulativeyear": targetvalue[0].cumulativeyear}
+                                     "cumulativeyear": targetvalue[0].cumulativeyear,
+                                     "releasestate": targetvalue[0].releasestate}
             elif target.operationtype == "1":
                 targetvalue = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target=target, datadate=reporting_date)
@@ -4267,7 +4272,8 @@ def reporting_search_data(request):
                                      "cumulativemonth": targetvalue[0].cumulativemonth,
                                      "cumulativequarter": targetvalue[0].cumulativequarter,
                                      "cumulativehalfyear": targetvalue[0].cumulativehalfyear,
-                                     "cumulativeyear": targetvalue[0].cumulativeyear}
+                                     "cumulativeyear": targetvalue[0].cumulativeyear,
+                                     "releasestate": targetvalue[0].releasestate}
             all_data.append(curtargetdata)
         for data in all_data:
             businesstypename = data["target"].businesstype
@@ -4345,6 +4351,7 @@ def reporting_search_data(request):
                 "zerodata": data["zerodata"],
                 "twentyfourdata": data["twentyfourdata"],
                 "metervalue": data["metervalue"],
+                "releasestate": data["releasestate"]
             })
         return JsonResponse({"data": result})
 
@@ -5227,7 +5234,83 @@ def reporting_del(request):
                 datadate=reporting_date)
         for data in all_data:
             data.state = "9"
+            data.releasestate = "0"
             data.save()
+
+        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date)
+        if len(all_reportinglog) > 0:
+            all_reportinglog = all_reportinglog[0]
+        else:
+            all_reportinglog = ReportingLog()
+
+        all_reportinglog.datadate = reporting_date
+        all_reportinglog.cycletype = cycletype
+        all_reportinglog.adminapp_id = app
+        all_reportinglog.type = '0'
+        all_reportinglog.save()
+
+        return HttpResponse(1)
+
+
+def reporting_release(request):
+    if request.user.is_authenticated():
+        app = request.POST.get('app', '')
+        cycletype = request.POST.get('cycletype', '')
+        reporting_date = request.POST.get('reporting_date', '')
+        operationtype = request.POST.get('operationtype', '')
+        funid = request.POST.get('funid', '')
+        work = None
+        try:
+            funid = int(funid)
+            fun = Fun.objects.get(id=funid)
+            work = fun.work
+        except:
+            pass
+        try:
+            app = int(app)
+            reporting_date = getreporting_date(reporting_date, cycletype)
+        except:
+            return HttpResponse(0)
+
+        all_data = []
+        if operationtype == "1":
+            all_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                target__adminapp_id=app, target__cycletype=cycletype,
+                target__work=work,
+                datadate=reporting_date)
+        if operationtype == "15":
+            all_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                target__adminapp_id=app, target__cycletype=cycletype,
+                target__work=work,
+                datadate=reporting_date)
+        if operationtype == "16":
+            all_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                target__adminapp_id=app,
+                target__cycletype=cycletype,
+                target__work=work,
+                datadate=reporting_date)
+        if operationtype == "17":
+            all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                target__adminapp_id=app,
+                target__cycletype=cycletype,
+                target__work=work,
+                datadate=reporting_date)
+        for data in all_data:
+            data.releasestate = "1"
+            data.save()
+
+        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date)
+
+        if len(all_reportinglog) > 0:
+            all_reportinglog = all_reportinglog[0]
+        else:
+            all_reportinglog = ReportingLog()
+
+        all_reportinglog.datadate = reporting_date
+        all_reportinglog.cycletype = cycletype
+        all_reportinglog.adminapp_id = app
+        all_reportinglog.type = '1'
+        all_reportinglog.save()
 
         return HttpResponse(1)
 

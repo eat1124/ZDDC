@@ -390,11 +390,15 @@ $(document).ready(function () {
     // 补取
     $('#start_time').datetimepicker({
         autoclose: true,
-        format: 'yyyy-mm-dd hh:ii',
+        format: 'yyyy-mm-dd hh:ii:ss',
+        minView: 0,
+        minuteStep: 1
     });
     $('#end_time').datetimepicker({
         autoclose: true,
-        format: 'yyyy-mm-dd hh:ii',
+        format: 'yyyy-mm-dd hh:ii:ss',
+        minView: 0,
+        minuteStep: 1
     });
     $('#supplement').click(function () {
         var selectArray = [];

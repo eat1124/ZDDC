@@ -114,6 +114,7 @@ urlpatterns = [
     url(r'^reporting_data/$', reporting_data),
     url(r'^reporting_search_data/$', reporting_search_data),
     url(r'^reporting_del/$', reporting_del),
+    url(r'^reporting_release/$', reporting_release),
     url(r'^reporting_save/$', reporting_save),
     url(r'^reporting_new/$', reporting_new),
     url(r'^reporting_recalculate/$', reporting_recalculate),
