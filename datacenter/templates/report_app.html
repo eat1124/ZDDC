@@ -43,8 +43,7 @@
                 <h4 class="modal-title">报表管理</h4>
             </div>
             <div class="panel-body">
-                <form class="bs-example form-horizontal activate-form" method="post" action="#"
-                      enctype="multipart/form-data">{% csrf_token %}
+                <form class="bs-example form-horizontal activate-form" method="post" enctype="multipart/form-data">{% csrf_token %}
                     <input hidden id="id" type="text" name="id" value={{id}}>
                     <input hidden id="app" type="text" name="app" value={{adminapp}}>
 
