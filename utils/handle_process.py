@@ -378,7 +378,7 @@ class Extract(object):
         pre_format_list = date_com.findall(source_content)
 
         if pre_format_list:
-            format_date = self.format_date(time, pre_format_list[0])
+            format_date = Extract.format_date(time, pre_format_list[0])
 
             # 格式化后的SQL
             source_content = source_content.replace(pre_format_list[0], format_date)
@@ -386,7 +386,7 @@ class Extract(object):
         # datadate
         pre_datadate_format_list = date_com.findall(storagefields)
 
-        format_datadate = self.format_date(time, pre_datadate_format_list[0],
+        format_datadate = Extract.format_date(time, pre_datadate_format_list[0],
                                            return_type='timestamp') if pre_datadate_format_list else None
 
         result_list = []
@@ -455,7 +455,7 @@ class Extract(object):
                         tablename=tablename, fields=fields, values=values,
                         db=settings.DATABASES['default']['NAME']).replace('"', "'")
 
-                logger.info('行：%s' % row_save_sql)
+                logger.info('行存：%s' % row_save_sql)
                 try:
                     db_update = SeveralDBQuery(pro_db_engine, db_info)
                     db_update.update(row_save_sql)
@@ -477,7 +477,7 @@ class Extract(object):
             # datadate
             if 'DATADATE' in target_list[0].storagefields:
                 pre_datadate_format_list = date_com.findall(target_list[0].storagefields)
-                format_datadate = self.format_date(time, pre_datadate_format_list[0],
+                format_datadate = Extract.format_date(time, pre_datadate_format_list[0],
                                                    return_type='timestamp') if pre_datadate_format_list else None
                 storage['datadate'] = format_datadate
 
@@ -488,7 +488,7 @@ class Extract(object):
                 # 匹配出<#DATE:m:L#>
                 pre_format_list = date_com.findall(source_content)
 
-                format_date = self.format_date(time, pre_format_list[0] if pre_format_list else '')
+                format_date = Extract.format_date(time, pre_format_list[0] if pre_format_list else '')
 
                 # 格式化后的SQL
                 source_content = source_content.replace(pre_format_list[0],
@@ -571,7 +571,8 @@ class Extract(object):
         else:
             return False
 
-    def format_date(self, date, pre_format, return_type='str'):
+    @staticmethod
+    def format_date(date, pre_format, return_type='str'):
         # {
         # "D": "当前", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
         # "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
@@ -852,11 +853,12 @@ def run_process(process_id, processcon, targets):
         logger.info('run_process() >> %s' % '传入参数有误。')
 
 
-if len(sys.argv) > 1:
-    run_process(sys.argv[1], None, None)
-    logger.info('进程启动。')
-else:
-    logger.info('脚本未传参。')
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        run_process(sys.argv[1], None, None)
+        logger.info('进程启动。')
+    else:
+        logger.info('脚本未传参。')
 
 # db_query = SeveralDBQuery('SQLSERVER', {"host":"127.0.0.1","user":"miaokela","passwd":"Passw0rD","db":"mkl"})
 # result_list = db_query.update("INSERT INTO dt.dbo.tmp_table(datadate,formula,target_id) VALUES('2020-02-16 00:00:00.000000','<#1_FDL:d:D>+<FDL:d:D>',36); ")

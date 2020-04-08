@@ -225,7 +225,7 @@ $(document).ready(function() {
             '\n' +
             '    </div>\n' +
             '    <label class="col-md-2 control-label"><span\n' +
-            '            style="color:red; "></span>更新日期</label>\n' +
+            '            style="color:red; "></span>制表日期</label>\n' +
             '    <div class="col-md-4">\n' +
             '        <input id="write_time" type="text" name="write_time" class="form-control "\n' +
             '               placeholder="" value="' + data.write_time + '" readonly>\n' +

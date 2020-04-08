@@ -360,11 +360,13 @@ $(document).ready(function () {
                         selectedtarget: selectArray,
                     },
                 success: function (data) {
-                    var myres = data["res"];
-                    if (myres == "测试成功。") {
-                        test_table.ajax.reload();
-                    }
-                    alert(myres);
+                    // 测试结束弹出模态框，展示数据或者错误信息
+
+                    // var myres = data["res"];
+                    // if (myres == "测试成功。") {
+                    //     test_table.ajax.reload();
+                    // }
+                    // alert(myres);
                 },
                 error: function (e) {
                     alert("页面出现错误，请于管理员联系。");

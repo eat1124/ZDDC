@@ -820,13 +820,78 @@ def get_log_info(request):
         return HttpResponseRedirect("/login")
 
 
+
 def target_test(request):
     if request.user.is_authenticated():
+        from utils.handle_process import get_dict_name, Extract, SeveralDBQuery
         selectedtarget = request.POST.getlist('selectedtarget[]')
+        result = {
+            "status": 1,
+            "data": [],
+        }
 
-        result = {}
-        # ...
+        now_time = datetime.datetime.now()
 
+        targets = Target.objects.filter(id__in=selectedtarget)
+        tmp_list = []
+        for target in targets:
+            source = target.source
+            source_content = target.source_content
+
+            if source:
+                source_type = source.sourcetype  # Oracle/SQL Server
+                source_type_name = get_dict_name(source_type)
+
+                # 匹配出<#DATE:m:L#>
+                date_com = re.compile('<#.*?#>')
+                pre_format_list = date_com.findall(source_content)
+
+                if pre_format_list:
+                    format_date = Extract.format_date(now_time, pre_format_list[0])
+
+                    # 格式化后的SQL
+                    source_content = source_content.replace(pre_format_list[0], format_date)
+
+                try:
+                    source_connection = eval(source.connection)
+                    if type(source_connection) == list:
+                        source_connection = source_connection[0]
+                except Exception as e:
+                    print('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
+                else:
+                    if source_type_name == 'PI':
+                        result_list = Extract.get_data_from_pi(source_content, source_connection)
+                    else:
+                        db_query = SeveralDBQuery(source_type_name, source_connection)
+                        result_list = db_query.fetch_all(source_content)
+                        db_query.close()
+            else:
+                print('该指标未配置数据源。')
+
+            tmp_list.append({
+                "target_id": "",
+                "target_code": "",
+                "target_name": "",
+                "data": [...],
+                "status": "SUCCESS"
+            })
+
+        """
+        [{
+            "target_id": "",
+            "target_code": "",
+            "target_name": "",
+            "data": [...],
+            "status": "SUCCESS"
+        }, {
+            "target_id": "",
+            "target_code": "",
+            "target_name": "",
+            "data": "",
+            "status": "ERROR"
+        }]
+                
+        """
         return JsonResponse(result)
     else:
         return HttpResponseRedirect("/login")
@@ -1012,7 +1077,8 @@ def report_index(request, funid):
                                                             else:
                                                                 # 获取本地IP
                                                                 try:
-                                                                    web_server = socket.gethostbyname(socket.gethostname())
+                                                                    web_server = socket.gethostbyname(
+                                                                        socket.gethostname())
                                                                 except Exception as e:
                                                                     errors.append("获取服务器IP失败：%s" % e)
                                                                 else:
@@ -1031,6 +1097,8 @@ def report_index(request, funid):
                                                                     else:
                                                                         errors.append(result['log'])
 
+                                        if id != 0 and not my_file:
+                                            write_tag = True
                                         # 远程文件下载成功
                                         if write_tag:
                                             # 新增报表模板
@@ -1303,7 +1371,8 @@ def report_app_index(request, funid):
                                                             else:
                                                                 # 获取本地IP
                                                                 try:
-                                                                    web_server = socket.gethostbyname(socket.gethostname())
+                                                                    web_server = socket.gethostbyname(
+                                                                        socket.gethostname())
                                                                 except Exception as e:
                                                                     errors.append("获取服务器IP失败：%s" % e)
                                                                 else:
@@ -1321,6 +1390,10 @@ def report_app_index(request, funid):
                                                                         write_tag = True
                                                                     else:
                                                                         errors.append(result['log'])
+
+                                        if id != 0 and not my_file:
+                                            write_tag = True
+
                                         # 远程文件下载成功
                                         if write_tag:
                                             # 新增报表模板
@@ -5502,7 +5575,7 @@ def report_submit_data(request):
                 report_info_list = c_report_info_list
             else:
                 state = "未创建"
-                person = str(request.user)
+                person = str(request.user.userinfo.fullname) if request.user.userinfo else ''
                 write_time = datetime.datetime.now().strftime('%Y-%m-%d')
                 report_time = ""
 
