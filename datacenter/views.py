@@ -5312,7 +5312,8 @@ def reporting_save(request):
             if savedata.target.datatype == 'numbervalue':
                 try:
                     savedata.curvalue = float(curdata["curvalue"])
-                    savedata.curvalue = round(savedata.curvalue, savedata.target.digit)
+                    savedata.curvalue = decimal.Decimal(str(savedata.curvalue)).quantize(decimal.Decimal(Digit(savedata.target.digit)),
+                                                                                   rounding=decimal.ROUND_HALF_UP)
                 except:
                     pass
             if savedata.target.datatype == 'date':
