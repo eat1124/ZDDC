@@ -6105,7 +6105,7 @@ def function(request, funid):
                         # 保存成功后，重新构造 works_select_list
                         try:
                             select_app = App.objects.get(id=app)
-                        except App.DoesNotExist as e:
+                        except Exception as e:
                             pass
                         else:
                             works_list = select_app.work_set.exclude(state='9')
@@ -6185,8 +6185,6 @@ def function(request, funid):
             return render(request, 'function.html',
                           {'username': request.user.userinfo.fullname, 'errors': errors, "id": id,
                            "pid": pid, "pname": pname, "name": name, "url": url, "icon": icon, "title": title,
-                           "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata,
-                           "works_select_list": works_select_list,
                            "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata,
                            "works_select_list": works_select_list,
                            "app_select_list": pre_app_select_list, "app_hidden_div": app_hidden_div,
