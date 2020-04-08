@@ -216,7 +216,7 @@ def get_meterdata_model(prefix):
         cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
         cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
         state = models.CharField("状态", blank=True, null=True, max_length=20)
-        releasestate = models.IntegerField('发布状态', blank=True, default=0, max_length=10)
+        releasestate = models.CharField('发布状态', blank=True, default=0, max_length=10)
 
         @staticmethod
         def is_exists():
@@ -248,7 +248,7 @@ def get_entrydata_model(prefix):
         cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
         cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
         state = models.CharField("状态", blank=True, null=True, max_length=20)
-        releasestate = models.IntegerField('发布状态', blank=True, default=0, max_length=10)
+        releasestate = models.CharField('发布状态', blank=True, default=0, max_length=10)
 
         @staticmethod
         def is_exists():
@@ -280,7 +280,7 @@ def get_extractdata_model(prefix):
         cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
         cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
         state = models.CharField("状态", blank=True, null=True, max_length=20)
-        releasestate = models.IntegerField('发布状态', blank=True, default=0, max_length=10)
+        releasestate = models.CharField('发布状态', blank=True, default=0, max_length=10)
 
         @staticmethod
         def is_exists():
@@ -313,7 +313,7 @@ def get_calculatedata_model(prefix):
         cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
         formula = models.TextField("公式", blank=True, null=True)
         state = models.CharField("状态", blank=True, null=True, max_length=20)
-        releasestate = models.IntegerField('发布状态', blank=True, default=0, max_length=10)
+        releasestate = models.CharField('发布状态', blank=True, default=0, max_length=10)
 
         @staticmethod
         def is_exists():
