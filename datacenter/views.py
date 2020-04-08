@@ -2660,7 +2660,8 @@ def target_index(request, funid):
             storage_list.append({
                 "storage_name": i.name,
                 "storage_id": i.id,
-                'storage_type': storage_type_display
+                'storage_type': storage_type_display,
+                'tablename': i.tablename
             })
         return render(request, 'target.html',
                       {'username': request.user.userinfo.fullname,
@@ -3283,6 +3284,7 @@ def target_app_index(request, funid):
                 "storage_name": i.name,
                 "storage_id": i.id,
                 "storage_type": storage_type_display,
+                'tablename': i.tablename
             })
 
         # 所有业务
