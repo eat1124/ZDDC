@@ -1,26 +1,57 @@
 # coding:utf-8
+import time
+import datetime
+import sys
+import os
 import json
+import random
 import uuid
+import xml.dom.minidom
+from xml.dom.minidom import parse, parseString
+import xlrd
+import xlwt
+import pymssql
+from lxml import etree
 import re
+import pdfkit
+import sys
+import requests
+from operator import itemgetter
+import subprocess
+import multiprocessing
 import decimal
+import pymysql
+import psutil
 import base64
 import win32api
 import calendar
 import socket
 
+from django.utils.timezone import utc
+from django.utils.timezone import localtime
 from django.shortcuts import render
 from django.contrib import auth
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, FileResponse
-from django.db.models import Max, Avg
+from django.template import RequestContext
+from django.http import HttpResponseRedirect, Http404, HttpResponse, JsonResponse, FileResponse
+from django.http import StreamingHttpResponse
+from django.db.models import Q
+from django.db.models import Count
+from django.db.models import Sum, Max, Avg
+from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import cache_page
 from django.utils.encoding import escape_uri_path
 from django.core.mail import send_mail
+from django.forms.models import model_to_dict
+from django.template.response import TemplateResponse
 from django.views.generic import View
 
 from datacenter.tasks import *
+from .models import *
 from .remote import ServerByPara
 from ZDDC import settings
 from .funcs import *
+from .ftp_file_handler import *
 from utils.handle_process import get_dict_name, SeveralDBQuery, Extract
 
 funlist = []
