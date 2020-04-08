@@ -340,7 +340,6 @@ $(document).ready(function () {
         $('#storage_fields').val(data.storage_fields);
     });
 
-
     // 测试
     $('#test').click(function () {
         var test_table = $('#sample_2').DataTable();
@@ -361,12 +360,26 @@ $(document).ready(function () {
                     },
                 success: function (data) {
                     // 测试结束弹出模态框，展示数据或者错误信息
+                    var status = data.status;
+                    var result_list = JSON.parse(data.data);
 
-                    // var myres = data["res"];
-                    // if (myres == "测试成功。") {
-                    //     test_table.ajax.reload();
-                    // }
-                    // alert(myres);
+                    if (status == 1){
+                        $('#static2').modal('show');
+                        $('#test_data').empty();
+                        var target_result = '';
+                        for (var i=0; i< result_list.length; i++){
+                            target_result += '<ul><span style="font-weight:bold; margin-left: -20px;">指标名称：</span>' + result_list[i].target_name +
+                                '<li>指标ID：' + result_list[i].target_id + '</li>' +
+                                '<li>指标CODE：' + result_list[i].target_code + '</li>' +
+                                '<li>查询状态：' + result_list[i].status + '</li>' +
+                                '<li>响应数据：' + result_list[i].data + '</li>' +
+                                '</ul>'
+                        }
+                        $('#test_data').append(target_result);
+                    } else {
+                        alert('测试失败。')
+                    }
+
                 },
                 error: function (e) {
                     alert("页面出现错误，请于管理员联系。");

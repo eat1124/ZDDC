@@ -1,57 +1,27 @@
 # coding:utf-8
-import time
-import datetime
-import sys
-import os
 import json
-import random
 import uuid
-import xml.dom.minidom
-from xml.dom.minidom import parse, parseString
-import xlrd
-import xlwt
-import pymssql
-from lxml import etree
 import re
-import pdfkit
-import sys
-import requests
-from operator import itemgetter
-import subprocess
-import multiprocessing
 import decimal
-import pymysql
-import psutil
 import base64
 import win32api
 import calendar
 import socket
 
-from django.utils.timezone import utc
-from django.utils.timezone import localtime
 from django.shortcuts import render
 from django.contrib import auth
-from django.template import RequestContext
-from django.http import HttpResponseRedirect, Http404, HttpResponse, JsonResponse, FileResponse
-from django.http import StreamingHttpResponse
-from django.db.models import Q
-from django.db.models import Count
-from django.db.models import Sum, Max, Avg
-from django.db import connection
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, FileResponse
+from django.db.models import Max, Avg
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.cache import cache_page
 from django.utils.encoding import escape_uri_path
 from django.core.mail import send_mail
-from django.forms.models import model_to_dict
-from django.template.response import TemplateResponse
 from django.views.generic import View
 
 from datacenter.tasks import *
-from .models import *
 from .remote import ServerByPara
 from ZDDC import settings
 from .funcs import *
-from .ftp_file_handler import *
+from utils.handle_process import get_dict_name, SeveralDBQuery, Extract
 
 funlist = []
 
@@ -820,61 +790,78 @@ def get_log_info(request):
         return HttpResponseRedirect("/login")
 
 
-
 def target_test(request):
     if request.user.is_authenticated():
-        from utils.handle_process import get_dict_name, Extract, SeveralDBQuery
         selectedtarget = request.POST.getlist('selectedtarget[]')
         result = {
             "status": 1,
             "data": [],
         }
 
-        now_time = datetime.datetime.now()
+        class DecimalEncoder(json.JSONEncoder):
+            """
+            解决Decimal无法序列化问题
+            """
+            def default(self, obj):
+                if isinstance(obj, decimal.Decimal):
+                    return float(obj)
+                return super(DecimalEncoder, self).default(obj)
 
-        targets = Target.objects.filter(id__in=selectedtarget)
-        tmp_list = []
-        for target in targets:
-            source = target.source
-            source_content = target.source_content
+        try:
+            now_time = datetime.datetime.now()
 
-            if source:
-                source_type = source.sourcetype  # Oracle/SQL Server
-                source_type_name = get_dict_name(source_type)
+            targets = Target.objects.filter(id__in=selectedtarget)
+            tmp_list = []
+            for target in targets:
+                status = 'SUCCESS'
+                result_list = []
+                source = target.source
+                source_content = target.source_content
 
-                # 匹配出<#DATE:m:L#>
-                date_com = re.compile('<#.*?#>')
-                pre_format_list = date_com.findall(source_content)
+                if source:
+                    source_type = source.sourcetype  # Oracle/SQL Server
+                    source_type_name = get_dict_name(source_type)
 
-                if pre_format_list:
-                    format_date = Extract.format_date(now_time, pre_format_list[0])
+                    # 匹配出<#DATE:m:L#>
+                    date_com = re.compile('<#.*?#>')
+                    pre_format_list = date_com.findall(source_content)
 
-                    # 格式化后的SQL
-                    source_content = source_content.replace(pre_format_list[0], format_date)
+                    if pre_format_list:
+                        format_date = Extract.format_date(now_time, pre_format_list[0])
 
-                try:
-                    source_connection = eval(source.connection)
-                    if type(source_connection) == list:
-                        source_connection = source_connection[0]
-                except Exception as e:
-                    print('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
-                else:
-                    if source_type_name == 'PI':
-                        result_list = Extract.get_data_from_pi(source_content, source_connection)
+                        # 格式化后的SQL
+                        source_content = source_content.replace(pre_format_list[0], format_date)
+
+                    try:
+                        source_connection = eval(source.connection)
+                        if type(source_connection) == list:
+                            source_connection = source_connection[0]
+                    except Exception as e:
+                        print('数据源配置认证信息错误：%s' % e)
+                        status = 'ERROR'
                     else:
-                        db_query = SeveralDBQuery(source_type_name, source_connection)
-                        result_list = db_query.fetch_all(source_content)
-                        db_query.close()
-            else:
-                print('该指标未配置数据源。')
+                        if source_type_name == 'PI':
+                            result_list = Extract.get_data_from_pi(source_content, source_connection)
+                        else:
+                            db_query = SeveralDBQuery(source_type_name, source_connection)
+                            result_list = db_query.fetch_all(source_content)
+                            db_query.close()
+                else:
+                    print('该指标未配置数据源。')
+                    status = 'ERROR'
 
-            tmp_list.append({
-                "target_id": "",
-                "target_code": "",
-                "target_name": "",
-                "data": [...],
-                "status": "SUCCESS"
-            })
+                tmp_list.append({
+                    "target_id": target.id,
+                    "target_code": target.code,
+                    "target_name": target.name,
+                    "data": result_list,
+                    "status": status
+                })
+        except Exception as e:
+            print(e)
+            result['status'] = 0
+        else:
+            result['data'] = json.dumps(tmp_list, cls=DecimalEncoder)
 
         """
         [{
@@ -2660,8 +2647,7 @@ def target_index(request, funid):
             storage_list.append({
                 "storage_name": i.name,
                 "storage_id": i.id,
-                'storage_type': storage_type_display,
-                'tablename': i.tablename
+                'storage_type': storage_type_display
             })
         return render(request, 'target.html',
                       {'username': request.user.userinfo.fullname,
@@ -3284,7 +3270,6 @@ def target_app_index(request, funid):
                 "storage_name": i.name,
                 "storage_id": i.id,
                 "storage_type": storage_type_display,
-                'tablename': i.tablename
             })
 
         # 所有业务
@@ -5314,8 +5299,9 @@ def reporting_save(request):
             if savedata.target.datatype == 'numbervalue':
                 try:
                     savedata.curvalue = float(curdata["curvalue"])
-                    savedata.curvalue = decimal.Decimal(str(savedata.curvalue)).quantize(decimal.Decimal(Digit(savedata.target.digit)),
-                                                                                   rounding=decimal.ROUND_HALF_UP)
+                    savedata.curvalue = decimal.Decimal(str(savedata.curvalue)).quantize(
+                        decimal.Decimal(Digit(savedata.target.digit)),
+                        rounding=decimal.ROUND_HALF_UP)
                 except:
                     pass
             if savedata.target.datatype == 'date':

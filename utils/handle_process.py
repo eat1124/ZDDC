@@ -13,11 +13,6 @@ import calendar
 import pymysql.cursors
 import cx_Oracle
 import pymssql
-# 引入C#脚本
-import clr
-
-clr.AddReference('PIApp')
-from PIApp import *
 # 使用ORM
 import sys
 from django.core.wsgi import get_wsgi_application
@@ -28,8 +23,17 @@ sys.path.extend([r'%s' % BASE_DIR, ])
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ZDDC.settings")
 application = get_wsgi_application()
 from datacenter.models import *
-from django.db.models import Q
 from django.conf import settings
+
+# 引入C#脚本
+import sys
+sys.path.insert(0, os.path.join(os.path.join(BASE_DIR, 'utils'), 'dlls'))
+
+import clr
+
+clr.AddReference('PIApp')
+from PIApp import *
+
 
 logger = logging.getLogger('process')
 
@@ -144,6 +148,9 @@ class SeveralDBQuery(object):
                 self.connection.commit()
         except Exception as e:
             logger.info("数据插入失败：%s" % e)
+            return False
+        else:
+            return True
 
     def close(self):
         if self.connection:
@@ -456,13 +463,11 @@ class Extract(object):
                         db=settings.DATABASES['default']['NAME']).replace('"', "'")
 
                 logger.info('行存：%s' % row_save_sql)
-                try:
-                    db_update = SeveralDBQuery(pro_db_engine, db_info)
-                    db_update.update(row_save_sql)
-                    db_update.close()
-                except Exception as e:
-                    logger.info('数据更新失败： %s' % e)
-                    return False
+                db_update = SeveralDBQuery(pro_db_engine, db_info)
+                ret = db_update.update(row_save_sql)
+                db_update.close()
+
+                return ret
             return True
 
     def get_col_data(self, target_list, time):
@@ -557,15 +562,11 @@ class Extract(object):
                         db=settings.DATABASES['default']['NAME']).replace('"', "'")
 
                 logger.info('列存：%s' % col_save_sql)
-                try:
-                    db_update = SeveralDBQuery(pro_db_engine, db_info)
-                    db_update.update(col_save_sql)
-                    db_update.close()
-                except Exception as e:
-                    logger.info('数据更新失败： %s' % e)
-                    return False
-                else:
-                    return True
+                db_update = SeveralDBQuery(pro_db_engine, db_info)
+                ret = db_update.update(col_save_sql)
+                db_update.close()
+
+                return ret
             else:
                 return False
         else:
@@ -833,8 +834,11 @@ def run_process(process_id, processcon, targets):
 
                                     db_update = SeveralDBQuery(pro_db_engine, db_info)
                                     logger.info('时间 [{savedate:%Y-%m-%d %H:%M:%S}] 前数据清理成功。'.format(savedate=aft_time))
-                                    # db_update.update(clean_sql)
+                                    ret = db_update.update(clean_sql)
                                     db_update.close()
+
+                                    if not ret:
+                                        logger.info('数据清理失败：SQL执行出错。')
                         except Exception as e:
                             logger.info('数据清理失败：%s' % e)
 
