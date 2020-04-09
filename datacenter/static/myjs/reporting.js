@@ -274,25 +274,23 @@ $(document).ready(function () {
                 $("#save1").hide();
                 $("#del1").hide();
                 $("#release1").hide();
-                $("#gorelease5").hide();
-                $("#unrelease5").hide();
+                $("#gorelease1").hide();
+                $("#unrelease1").hide();
             }
         },
         "createdRow": function (row, data, index) {
             if((data.target_upperlimit && data.curvalue > data.target_upperlimit)||(data.target_lowerlimit &&data.curvalue < data.target_lowerlimit )){
                 $('td', row).css("color", "#FF0000");
             }
-
+            console.log(data.releasestate)
             if (data.releasestate == '0'){
                     $("#release1").show();
                     $("#gorelease1").hide();
-                    $("#unrelease1").css("color", "#FF0000");
                     $("#unrelease1").show();
                 }
-            else {
+            if (data.releasestate == '1'){
                     $("#release1").hide();
                     $("#unrelease1").hide();
-                    $("#gorelease1").css("color", "#00FF00");
                     $("#gorelease1").show();
                 }
 
@@ -421,13 +419,11 @@ $(document).ready(function () {
             if (data.releasestate == '0'){
                     $("#release2").show();
                     $("#gorelease2").hide();
-                    $("#unrelease2").css("color", "#FF0000");
                     $("#unrelease2").show();
                 }
-            else {
+            if (data.releasestate == '1'){
                     $("#release2").hide();
                     $("#unrelease2").hide();
-                    $("#gorelease2").css("color", "#00FF00");
                     $("#gorelease2").show();
                 }
 
@@ -564,13 +560,11 @@ $(document).ready(function () {
             if (data.releasestate == '0'){
                     $("#release3").show();
                     $("#gorelease3").hide();
-                    $("#unrelease3").css("color", "#FF0000");
                     $("#unrelease3").show();
                 }
-            else {
+            if (data.releasestate == '1'){
                     $("#release3").hide();
                     $("#unrelease3").hide();
-                    $("#gorelease3").css("color", "#00FF00");
                     $("#gorelease3").show();
                 }
 
@@ -829,20 +823,18 @@ $(document).ready(function () {
         "createdRow": function (row, data, index) {
             if (data.zerodata == data.twentyfourdata) {
                 $('td', row).css("color", "#FF0000");
+            }
 
-                if (data.releasestate == '0'){
-                    $("#release5").show();
-                    $("#gorelease5").hide();
-                    $("#unrelease5").css("color", "#FF0000");
-                    $("#unrelease5").show();
+            if (data.releasestate == '0'){
+                $("#release5").show();
+                $("#gorelease5").hide();
+                $("#unrelease5").show();
 
-                }
-                else {
-                    $("#release5").hide();
-                    $("#unrelease5").hide();
-                    $("#gorelease5").css("color", "#00FF00");
-                    $("#gorelease5").show();
-                }
+            }
+            if (data.releasestate == '1'){
+                $("#release5").hide();
+                $("#unrelease5").hide();
+                $("#gorelease5").show();
             }
         },
 
@@ -1176,10 +1168,12 @@ $(document).ready(function () {
                     },
                 success: function (data) {
                     if (data == 1) {
-                        table.ajax.reload();
                         $("#new1").show();
                         $("#save1").hide();
                         $("#del1").hide();
+                        $("#unrelease1").hide();
+                        $("#gorelease1").hide();
+                        table.ajax.reload();
                         alert("删除成功！");
                     } else
                         alert("删除失败，请于管理员联系。");
@@ -1192,9 +1186,9 @@ $(document).ready(function () {
         }
     });
     $('#save1').click(function () {
-        $("Element").blur()
+        $("Element").blur();
         var table = $('#sample_1').DataTable().data();
-        var savedata = []
+        var savedata = [];
         $.each(table, function (i, item) {
             savedata.push({
                 "id": item.id,
@@ -1220,11 +1214,10 @@ $(document).ready(function () {
                     funid:$('#funid').val(),
                 },
             success: function (data) {
-                var myres = data["res"];
-                if (myres == "保存成功。") {
+                if (data == 1) {
                     table.ajax.reload();
                 }
-                alert(myres);
+                alert("保存成功。");
             },
             error: function (e) {
                 alert("页面出现错误，请于管理员联系。");
@@ -1232,34 +1225,49 @@ $(document).ready(function () {
         });
     });
     $('#release1').click(function (){
-            var table = $('#sample_1').DataTable();
-            $.ajax({
-                type: "POST",
-                url: "../../../reporting_release/",
-                data:
-                    {
-                        app: $('#app').val(),
-                        cycletype: $('#cycletype').val(),
-                        reporting_date: $('#reporting_date').val(),
-                        operationtype: 15,
-                        funid:$('#funid').val(),
-
-                    },
-                success: function (data) {
-                    if (data == 1) {
-                        table.ajax.reload();
-                        $("#new1").hide();
-                        $("#save1").show();
-                        $("#del1").show();
-                        $("#reset1").show();
-                        alert("发布成功！");
-                    } else
-                        alert("发布失败，请于管理员联系。");
+        $("Element").blur();
+        var table = $('#sample_1').DataTable().data();
+        var savedata = [];
+        $.each(table, function (i, item) {
+            savedata.push({
+                "id": item.id,
+                "curvalue": $('#table1_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table1_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table1_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table1_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table1_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table1_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table1_cumulativeyear_' + item.id).val()
+            })
+        });
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_release/",
+            data:
+                {
+                    app: $('#app').val(),
+                    operationtype: 15,
+                    cycletype: $('#cycletype').val(),
+                    savedata: JSON.stringify(savedata),
+                    reporting_date: $('#reporting_date').val(),
+                    funid:$('#funid').val(),
                 },
-                error: function (e) {
+            success: function (data) {
+                if (data == 1) {
+                    table.ajax.reload();
+                    $("#new1").hide();
+                    $("#save1").show();
+                    $("#del1").show();
+                    $("#reset1").show();
+                    alert("发布成功。");
+                } else
                     alert("发布失败，请于管理员联系。");
-                }
-            });
+            },
+            error: function (e) {
+                alert("发布失败，请于管理员联系。");
+            }
+        });
     });
 
 
@@ -1316,6 +1324,8 @@ $(document).ready(function () {
                         $("#save2").hide();
                         $("#del2").hide();
                         $("#reset2").hide();
+                        $("#unrelease2").hide();
+                        $("#gorelease2").hide();
                         alert("删除成功！");
                     } else
                         alert("删除失败，请于管理员联系。");
@@ -1328,9 +1338,9 @@ $(document).ready(function () {
         }
     });
     $('#save2').click(function () {
-        $("Element").blur()
+        $("Element").blur();
         var table = $('#sample_2').DataTable().data();
-        var savedata = []
+        var savedata = [];
         $.each(table, function (i, item) {
             savedata.push({
                 "id": item.id,
@@ -1356,11 +1366,10 @@ $(document).ready(function () {
                     funid:$('#funid').val(),
                 },
             success: function (data) {
-                var myres = data["res"];
-                if (myres == "保存成功。") {
+                if (data == 1) {
                     table.ajax.reload();
                 }
-                alert(myres);
+                alert("保存成功。");
             },
             error: function (e) {
                 alert("页面出现错误，请于管理员联系。");
@@ -1394,19 +1403,34 @@ $(document).ready(function () {
         });
     });
     $('#release2').click(function (){
-            var table = $('#sample_2').DataTable();
-            $.ajax({
-                type: "POST",
-                url: "../../../reporting_release/",
-                data:
-                    {
-                        app: $('#app').val(),
-                        cycletype: $('#cycletype').val(),
-                        reporting_date: $('#reporting_date').val(),
-                        operationtype: 16,
-                        funid:$('#funid').val(),
-
-                    },
+        $("Element").blur();
+        var table = $('#sample_2').DataTable().data();
+        var savedata = [];
+        $.each(table, function (i, item) {
+            savedata.push({
+                "id": item.id,
+                "curvalue": $('#table2_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table2_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table2_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table2_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table2_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table2_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table2_cumulativeyear_' + item.id).val()
+            })
+        });
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_release/",
+            data:
+                {
+                    app: $('#app').val(),
+                    operationtype: 16,
+                    cycletype: $('#cycletype').val(),
+                    savedata: JSON.stringify(savedata),
+                    reporting_date: $('#reporting_date').val(),
+                    funid:$('#funid').val(),
+                },
                 success: function (data) {
                     if (data == 1) {
                         table.ajax.reload();
@@ -1414,7 +1438,7 @@ $(document).ready(function () {
                         $("#save2").show();
                         $("#del2").show();
                         $("#reset2").show();
-                        alert("发布成功！");
+                        alert("发布成功。");
                     } else
                         alert("发布失败，请于管理员联系。");
                 },
@@ -1478,6 +1502,8 @@ $(document).ready(function () {
                         $("#save3").hide();
                         $("#del3").hide();
                         $("#reset3").hide();
+                        $("#unrelease3").hide();
+                        $("#gorelease3").hide();
                         alert("删除成功！");
                     } else
                         alert("删除失败，请于管理员联系。");
@@ -1490,9 +1516,9 @@ $(document).ready(function () {
         }
     });
     $('#save3').click(function () {
-        $("Element").blur()
+        $("Element").blur();
         var table = $('#sample_3').DataTable().data();
-        var savedata = []
+        var savedata = [];
         $.each(table, function (i, item) {
             savedata.push({
                 "id": item.id,
@@ -1518,11 +1544,10 @@ $(document).ready(function () {
                     funid:$('#funid').val(),
                 },
             success: function (data) {
-                var myres = data["res"];
-                if (myres == "保存成功。") {
+                if (data == 1) {
                     table.ajax.reload();
                 }
-                alert(myres);
+                alert("保存成功。");
             },
             error: function (e) {
                 alert("页面出现错误，请于管理员联系。");
@@ -1556,19 +1581,34 @@ $(document).ready(function () {
         });
     });
     $('#release3').click(function (){
-            var table = $('#sample_3').DataTable();
-            $.ajax({
-                type: "POST",
-                url: "../../../reporting_release/",
-                data:
-                    {
-                        app: $('#app').val(),
-                        cycletype: $('#cycletype').val(),
-                        reporting_date: $('#reporting_date').val(),
-                        operationtype: 17,
-                        funid:$('#funid').val(),
-
-                    },
+        $("Element").blur();
+        var table = $('#sample_3').DataTable().data();
+        var savedata = []
+        $.each(table, function (i, item) {
+            savedata.push({
+                "id": item.id,
+                "curvalue": $('#table3_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table3_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table3_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table3_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table3_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table3_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table3_cumulativeyear_' + item.id).val()
+            })
+        });
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_release/",
+            data:
+                {
+                    app: $('#app').val(),
+                    operationtype: 17,
+                    cycletype: $('#cycletype').val(),
+                    savedata: JSON.stringify(savedata),
+                    reporting_date: $('#reporting_date').val(),
+                    funid:$('#funid').val(),
+                },
                 success: function (data) {
                     if (data == 1) {
                         table.ajax.reload();
@@ -1576,7 +1616,7 @@ $(document).ready(function () {
                         $("#save3").show();
                         $("#del3").show();
                         $("#reset3").show();
-                        alert("发布成功！");
+                        alert("发布成功。");
                     } else
                         alert("发布失败，请于管理员联系。");
                 },
@@ -1638,6 +1678,8 @@ $(document).ready(function () {
                         $("#new5").show();
                         $("#save5").hide();
                         $("#del5").hide();
+                        $("#unrelease5").hide();
+                        $("#gorelease5").hide();
                         alert("删除成功！");
                     } else
                         alert("删除失败，请于管理员联系。");
@@ -1650,7 +1692,7 @@ $(document).ready(function () {
         }
     });
     $('#save5').click(function () {
-        $("Element").blur()
+        $("Element").blur();
         var table = $('#sample_5').DataTable().data();
         var savedata = [];
         $.each(table, function (i, item) {
@@ -1694,11 +1736,10 @@ $(document).ready(function () {
                     funid:$('#funid').val(),
                 },
             success: function (data) {
-                var myres = data["res"];
-                if (myres == "保存成功。") {
+                if (data == 1) {
                     table.ajax.reload();
                 }
-                alert(myres);
+                alert("保存成功。");
             },
             error: function (e) {
                 alert("页面出现错误，请于管理员联系。");
@@ -1706,18 +1747,49 @@ $(document).ready(function () {
         });
     });
     $('#release5').click(function (){
-        var table = $('#sample_5').DataTable();
+        $("Element").blur();
+        var table = $('#sample_5').DataTable().data();
+        var savedata = [];
+        $.each(table, function (i, item) {
+            savedata.push({
+                "id": item.id,
+                "oldtable_zerodata": item.oldtable_zerodata,
+                "oldtable_twentyfourdata": item.oldtable_twentyfourdata,
+                "oldtable_value": item.oldtable_value,
+                "oldtable_magnification": item.oldtable_magnification,
+                "oldtable_finalvalue": item.oldtable_finalvalue,
+                "newtable_zerodata": item.newtable_zerodata,
+                "newtable_twentyfourdata": item.newtable_twentyfourdata,
+                "newtable_value": item.newtable_value,
+                "newtable_magnification": item.newtable_magnification,
+                "newtable_finalvalue": item.newtable_finalvalue,
+                "finalvalue": item.finalvalue,
+                "reporting_date": $("#reporting_date").val(),
+                "magnification": $('#table5_magnification_' + item.id).val(),
+                "zerodata": $('#table5_zerodata_' + item.id).val(),
+                "twentyfourdata": $('#table5_twentyfourdata_' + item.id).val(),
+                "metervalue": $('#table5_metervalue_' + item.id).val(),
+                "curvalue": $('#table5_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table5_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table5_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table5_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table5_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table5_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table5_cumulativeyear_' + item.id).val()
+            })
+        });
         $.ajax({
             type: "POST",
+            dataType: 'json',
             url: "../../../reporting_release/",
             data:
                 {
                     app: $('#app').val(),
-                    cycletype: $('#cycletype').val(),
-                    reporting_date: $('#reporting_date').val(),
                     operationtype: 1,
+                    cycletype: $('#cycletype').val(),
+                    savedata: JSON.stringify(savedata),
+                    reporting_date: $('#reporting_date').val(),
                     funid:$('#funid').val(),
-
                 },
             success: function (data) {
                 if (data == 1) {
@@ -1725,7 +1797,7 @@ $(document).ready(function () {
                     $("#new5").hide();
                     $("#save5").show();
                     $("#del5").show();
-                    alert("发布成功！");
+                    alert("发布成功。");
 
                 } else
                     alert("发布失败，请于管理员联系。");

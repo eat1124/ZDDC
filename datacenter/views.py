@@ -4201,6 +4201,7 @@ def reporting_search_data(request):
         reporting_date = request.GET.get('reporting_date', '')
         searchapp = request.GET.get('searchapp', '')
         works = request.GET.get('works', '')
+        print(works)
 
         try:
             app = int(app)
@@ -5209,10 +5210,12 @@ def reporting_del(request):
         operationtype = request.POST.get('operationtype', '')
         funid = request.POST.get('funid', '')
         work = None
+        work_id = ""
         try:
             funid = int(funid)
             fun = Fun.objects.get(id=funid)
             work = fun.work
+            work_id = int(work)
         except:
             pass
         try:
@@ -5249,15 +5252,25 @@ def reporting_del(request):
             data.releasestate = "0"
             data.save()
 
-        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date)
+        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app)
         if len(all_reportinglog) > 0:
             all_reportinglog = all_reportinglog[0]
         else:
             all_reportinglog = ReportingLog()
 
+        username = UserInfo.objects.get(fullname=request.user.userinfo.fullname)
+        user = username.user.id
+        user_id = ""
+        try:
+            user_id = int(user)
+        except:
+            pass
+
         all_reportinglog.datadate = reporting_date
         all_reportinglog.cycletype = cycletype
         all_reportinglog.adminapp_id = app
+        all_reportinglog.work_id = work_id
+        all_reportinglog.user_id = user_id
         all_reportinglog.type = '0'
         all_reportinglog.save()
 
@@ -5266,16 +5279,21 @@ def reporting_del(request):
 
 def reporting_release(request):
     if request.user.is_authenticated():
+        result = {}
         app = request.POST.get('app', '')
+        savedata = request.POST.get('savedata')
+        operationtype = request.POST.get('operationtype')
         cycletype = request.POST.get('cycletype', '')
+        savedata = json.loads(savedata)
         reporting_date = request.POST.get('reporting_date', '')
-        operationtype = request.POST.get('operationtype', '')
         funid = request.POST.get('funid', '')
         work = None
+        work_id = ""
         try:
             funid = int(funid)
             fun = Fun.objects.get(id=funid)
             work = fun.work
+            work_id = int(work.id)
         except:
             pass
         try:
@@ -5283,48 +5301,166 @@ def reporting_release(request):
             reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
+        for curdata in savedata:
+            if operationtype == "1":
+                savedata = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").get(
+                    id=int(curdata["id"]))
+                if curdata["finalvalue"]:
+                    try:
+                        newmagnification = float(curdata["magnification"])
+                        if savedata.target.magnification != newmagnification:
+                            savedata.target.magnification = newmagnification
+                            savedata.target.save()
+                    except:
+                        pass
+                    meterchangedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=savedata.id)
+                    if len(meterchangedata) > 0:
+                        meterchangedata = meterchangedata[0]
+                    else:
+                        meterchangedata = Meterchangedata()
 
-        all_data = []
-        if operationtype == "1":
-            all_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app, target__cycletype=cycletype,
-                target__work=work,
-                datadate=reporting_date)
-        if operationtype == "15":
-            all_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app, target__cycletype=cycletype,
-                target__work=work,
-                datadate=reporting_date)
-        if operationtype == "16":
-            all_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app,
-                target__cycletype=cycletype,
-                target__work=work,
-                datadate=reporting_date)
-        if operationtype == "17":
-            all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app,
-                target__cycletype=cycletype,
-                target__work=work,
-                datadate=reporting_date)
-        for data in all_data:
-            data.releasestate = "1"
-            data.save()
+                    reporting_date = datetime.datetime.strptime(curdata["reporting_date"], "%Y-%m-%d")
+                    try:
+                        meterchangedata.datadate = reporting_date
+                    except:
+                        pass
+                    try:
+                        meterchangedata.meterdata = savedata.id
+                    except:
+                        pass
+                    try:
+                        meterchangedata.oldtable_zerodata = float(curdata["oldtable_zerodata"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.oldtable_twentyfourdata = float(curdata["oldtable_twentyfourdata"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.oldtable_value = float(curdata["oldtable_value"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.oldtable_magnification = float(curdata["oldtable_magnification"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.oldtable_finalvalue = float(curdata["oldtable_finalvalue"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.newtable_zerodata = float(curdata["newtable_zerodata"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.newtable_twentyfourdata = float(curdata["newtable_twentyfourdata"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.newtable_value = float(curdata["newtable_value"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.newtable_magnification = float(curdata["newtable_magnification"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.newtable_finalvalue = float(curdata["newtable_finalvalue"])
+                    except:
+                        pass
+                    try:
+                        meterchangedata.finalvalue = float(curdata["finalvalue"])
+                    except:
+                        pass
+                    meterchangedata.save()
 
-        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date)
+            if operationtype == "15":
+                savedata = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").get(
+                    id=int(curdata["id"]))
+            if operationtype == "16":
+                savedata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").get(
+                    id=int(curdata["id"]))
+            if operationtype == "17":
+                savedata = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").get(
+                    id=int(curdata["id"]))
 
+            if savedata.target.datatype == 'numbervalue':
+                try:
+                    savedata.curvalue = float(curdata["curvalue"])
+                    savedata.curvalue = decimal.Decimal(str(savedata.curvalue)).quantize(
+                        decimal.Decimal(Digit(savedata.target.digit)),
+                        rounding=decimal.ROUND_HALF_UP)
+                except:
+                    pass
+            if savedata.target.datatype == 'date':
+                try:
+                    savedata.curvaluedate = datetime.datetime.strptime(curdata["curvaluedate"], "%Y-%m-%d %H:%M:%S")
+                except:
+                    pass
+            if savedata.target.datatype == 'text':
+                try:
+                    savedata.curvaluetext = curdata["curvaluetext"]
+                except:
+                    pass
+            try:
+                savedata.zerodata = curdata["zerodata"]
+            except:
+                pass
+            try:
+                savedata.twentyfourdata = curdata["twentyfourdata"]
+            except:
+                pass
+            try:
+                savedata.metervalue = curdata["metervalue"]
+            except:
+                pass
+            try:
+                savedata.cumulativemonth = float(curdata["cumulativemonth"])
+                savedata.cumulativemonth = round(savedata.cumulativemonth, savedata.target.digit)
+            except:
+                pass
+            try:
+                savedata.cumulativequarter = float(curdata["cumulativequarter"])
+                savedata.cumulativequarter = round(savedata.cumulativequarter, savedata.target.digit)
+            except:
+                pass
+            try:
+                savedata.cumulativehalfyear = float(curdata["cumulativehalfyear"])
+                savedata.cumulativehalfyear = round(savedata.cumulativehalfyear, savedata.target.digit)
+            except:
+                pass
+            try:
+                savedata.cumulativeyear = float(curdata["cumulativeyear"])
+                savedata.cumulativeyear = round(savedata.cumulativeyear, savedata.target.digit)
+            except:
+                pass
+
+            savedata.releasestate = '1'
+            savedata.save()
+
+        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app)
         if len(all_reportinglog) > 0:
             all_reportinglog = all_reportinglog[0]
         else:
             all_reportinglog = ReportingLog()
 
+        username = UserInfo.objects.get(fullname=request.user.userinfo.fullname)
+        user = username.user.id
+        user_id = ""
+        try:
+            user_id = int(user)
+        except:
+            pass
+
         all_reportinglog.datadate = reporting_date
         all_reportinglog.cycletype = cycletype
         all_reportinglog.adminapp_id = app
-        all_reportinglog.type = '1'
+        all_reportinglog.work_id = work_id
+        all_reportinglog.user_id = user_id
+        all_reportinglog.type = '0'
         all_reportinglog.save()
 
-        return HttpResponse(1)
+    return HttpResponse(1)
 
 
 def reporting_save(request):
@@ -5472,11 +5608,10 @@ def reporting_save(request):
                 savedata.cumulativeyear = round(savedata.cumulativeyear, savedata.target.digit)
             except:
                 pass
+
             savedata.save()
 
-        result["res"] = "保存成功。"
-
-    return JsonResponse(result)
+    return HttpResponse(1)
 
 
 def report_submit_index(request, funid):
