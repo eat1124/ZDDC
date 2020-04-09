@@ -279,7 +279,7 @@ def get_process_monitor_tree(request):
                     # 数据源类型
                     source_type = ""
                     try:
-                        source_type = DictList.objects.get(id=s.id).name
+                        source_type = DictList.objects.get(id=s.sourcetype).name
                     except DictList.DoesNotExist as e:
                         print(e)
 
@@ -822,8 +822,13 @@ def get_log_info(request):
 
 
 def target_test(request):
+    """
+    选择数据源测试取数
+    :param request:
+    :return:
+    """
     if request.user.is_authenticated():
-        selectedtarget = request.POST.getlist('selectedtarget[]')
+        selectedtarget = request.POST.getlist('selectedtarget[]', [])
         result = {
             "status": 1,
             "data": [],
@@ -916,8 +921,15 @@ def target_test(request):
 
 
 def supplement_process(request):
+    """
+    选择数据源指定区间补取数据
+    :param request:
+    :return:
+    """
     if request.user.is_authenticated():
-        selectedtarget = request.POST.getlist('selectedtarget[]')
+        selectedtarget = request.POST.getlist('selectedtarget[]', [])
+        start_time = request.POST.getlist('start_time')
+        end_time = request.POST.getlist('end_time')
 
         result = {}
         # ...
