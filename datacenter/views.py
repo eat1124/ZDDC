@@ -849,50 +849,26 @@ def target_test(request):
             targets = Target.objects.filter(id__in=selectedtarget)
             tmp_list = []
             for target in targets:
-                status = 'SUCCESS'
-                result_list = []
-                source = target.source
-                source_content = target.source_content
+                ret = Extract.getDataFromSource(target, now_time)
+                result_list = ret['result']
+                error = ret['error']
 
-                if source:
-                    source_type = source.sourcetype  # Oracle/SQL Server
-                    source_type_name = get_dict_name(source_type)
-
-                    # 匹配出<#DATE:m:L#>
-                    date_com = re.compile('<#.*?#>')
-                    pre_format_list = date_com.findall(source_content)
-
-                    if pre_format_list:
-                        format_date = Extract.format_date(now_time, pre_format_list[0])
-
-                        # 格式化后的SQL
-                        source_content = source_content.replace(pre_format_list[0], format_date)
-
-                    try:
-                        source_connection = eval(source.connection)
-                        if type(source_connection) == list:
-                            source_connection = source_connection[0]
-                    except Exception as e:
-                        print('数据源配置认证信息错误：%s' % e)
-                        status = 'ERROR'
-                    else:
-                        if source_type_name == 'PI':
-                            result_list = Extract.get_data_from_pi(source_content, source_connection)
-                        else:
-                            db_query = SeveralDBQuery(source_type_name, source_connection)
-                            result_list = db_query.fetch_all(source_content)
-                            db_query.close()
+                if error:
+                    tmp_list.append({
+                        "target_id": target.id,
+                        "target_code": target.code,
+                        "target_name": target.name,
+                        "data": error,
+                        "status": 'ERROR'
+                    })
                 else:
-                    print('该指标未配置数据源。')
-                    status = 'ERROR'
-
-                tmp_list.append({
-                    "target_id": target.id,
-                    "target_code": target.code,
-                    "target_name": target.name,
-                    "data": result_list,
-                    "status": status
-                })
+                    tmp_list.append({
+                        "target_id": target.id,
+                        "target_code": target.code,
+                        "target_name": target.name,
+                        "data": result_list,
+                        "status": 'SUCCESS'
+                    })
         except Exception as e:
             print(e)
             result['status'] = 0
@@ -915,6 +891,7 @@ def target_test(request):
         }]
                 
         """
+        print(result)
         return JsonResponse(result)
     else:
         return HttpResponseRedirect("/login")
