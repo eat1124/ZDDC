@@ -5186,13 +5186,14 @@ def reporting_del(request):
         reporting_date = request.POST.get('reporting_date', '')
         operationtype = request.POST.get('operationtype', '')
         funid = request.POST.get('funid', '')
+        print(funid, '9999')
         work = None
         work_id = ""
         try:
             funid = int(funid)
             fun = Fun.objects.get(id=funid)
             work = fun.work
-            work_id = int(work)
+            work_id = int(work.id)
         except:
             pass
         try:
@@ -5242,7 +5243,7 @@ def reporting_del(request):
             user_id = int(user)
         except:
             pass
-
+        print(work_id)
         all_reportinglog.datadate = reporting_date
         all_reportinglog.cycletype = cycletype
         all_reportinglog.adminapp_id = app
@@ -5434,7 +5435,7 @@ def reporting_release(request):
         all_reportinglog.adminapp_id = app
         all_reportinglog.work_id = work_id
         all_reportinglog.user_id = user_id
-        all_reportinglog.type = '0'
+        all_reportinglog.type = '1'
         all_reportinglog.save()
 
     return HttpResponse(1)
