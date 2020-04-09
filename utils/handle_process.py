@@ -71,6 +71,8 @@ class SeveralDBQuery(object):
         # [{"host":"192.168.1.66","user":"root","passwd":"password","db":"datacenter"}]
         self.db_type = db_type.replace(' ', '').upper()
         self.connection = None
+        self.result = []
+        self.error = ""
 
         try:
             if self.db_type == "MYSQL":
@@ -95,29 +97,18 @@ class SeveralDBQuery(object):
                     database=credit['db']
                 )
         except Exception as e:
-            logger.info('SeveralDBQuery >> __init__() >> 数据库连接失败: %s。' % e)
+            self.error = 'SeveralDBQuery >> __init__() >> 数据库连接失败: 。' + e
         else:
             if not self.connection:
-                logger.info('SeveralDBQuery >> __init__() >> 数据库未连接。')
-
-    def fetch_one(self, fetch_sql):
-        result = None
-        try:
-            with self.connection.cursor() as cursor:
-                cursor.execute(fetch_sql)
-                result = cursor.fetchone()
-        except Exception as e:
-            logger.info("数据查询失败：%s" % e)
-        return result
+                self.error = 'SeveralDBQuery >> __init__() >> 数据库未连接。'
 
     def fetch_all(self, fetch_sql):
-        logger.info('查询SQL：%s' % fetch_sql)
-        result = []
+        self.result = []
         try:
             if self.db_type == 'ORACLE':
                 curs = self.connection.cursor()
                 curs.execute(fetch_sql)
-                result = curs.fetchall()
+                self.result = curs.fetchall()
                 curs.close()
             else:
                 with self.connection.cursor() as cursor:
@@ -132,14 +123,12 @@ class SeveralDBQuery(object):
                             tmp_result = []
                             for key in fixed_key:
                                 tmp_result.append(single_ret[key])
-                            result.append(tmp_result)
+                            self.result.append(tmp_result)
 
                     else:
-                        result = cursor.fetchall()
+                        self.result = cursor.fetchall()
         except Exception as e:
-            logger.info("数据查询失败：%s" % e)
-
-        return result
+            self.error = fetch_sql + " 数据查询失败：" + e
 
     def update(self, update_sql):
         try:
@@ -147,7 +136,7 @@ class SeveralDBQuery(object):
                 cursor.execute(update_sql)
                 self.connection.commit()
         except Exception as e:
-            logger.info("数据插入失败：%s" % e)
+            self.error = "数据插入失败：" + e
             return False
         else:
             return True
@@ -155,6 +144,79 @@ class SeveralDBQuery(object):
     def close(self):
         if self.connection:
             self.connection.close()
+
+class PIQuery(object):
+    def __init__(self, connection):
+        self.connection = connection
+
+    def get_data_from_pi(source_content,time):
+        """
+        从PI中取数据
+            type: avg, max, min, delta, real
+            # 解析PI的数据源内容
+            # tmp = 'DCS11.LAC20AP001XB83A.AV^real^<#D#>^<#D#>'
+        :return:
+        """
+        result_list = []
+        error=""
+        source_content = source_content.split('^')
+
+        tag, operate, start_time, end_time = source_content[0], 'real', '<#D#>', '<#D#>'
+        if len(source_content) > 1:
+            operate = source_content[1]
+        if len(source_content) > 2:
+            start_time = source_content[2]
+        if len(source_content) > 3:
+            end_time = source_content[3]
+        start_time = Extract.format_date(time, start_time,
+                                           return_type='timestamp').strftime("%Y-%m-%d %H:%M:%S")
+        end_time = Extract.format_date(time, end_time,
+                                         return_type='timestamp').strftime("%Y-%m-%d %H:%M:%S")
+
+        curvalue = None
+        status = 1
+        try:
+            conn = self.connection['host']
+
+            if operate == 'DATATABLE':
+                curvalue = ManagePI.ReadDatetableFromPI(conn, tag, start_time, end_time, 100)
+            else:
+                #if operate == 'REAL':
+                #    curvalue = json.loads(ManagePI.ReadRealValueFromPI(conn, tag))
+                if operate == 'REAL':
+                    curvalue = json.loads(ManagePI.ReadHisValueFromPI(conn, tag, start_time))
+                elif operate == 'AVG':
+                    curvalue = json.loads(ManagePI.ReadAvgValueFromPI(conn, tag, start_time, end_time))
+                elif operate == 'MAX':
+                    curvalue = json.loads(ManagePI.ReadMaxValueFromPI(conn, tag, start_time, end_time))
+                elif operate == 'MIN':
+                    curvalue = json.loads(ManagePI.ReadMinValueFromPI(conn, tag, start_time, end_time))
+                elif operate == 'DELTA':
+                    curvalue = json.loads(ManagePI.ReadCzValueFromPI(conn, tag, start_time, end_time))
+                else:
+                    curvalue = None
+        except Exception as e:
+            status = 0
+            curvalue = e
+
+        # 构造result_list
+        if status:
+            if type(curvalue) == dict:
+                if curvalue['success']:
+                    if curvalue['success']=="0":
+                        error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
+                    else:
+                        result_list = [[curvalue['value']]]
+                else:
+                    error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
+            elif type(curvalue) == list:
+                error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
+            else:
+                error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
+        else:
+            error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
+
+        return {"result": result_list, "error": error}
 
 
 class Extract(object):
@@ -285,123 +347,23 @@ class Extract(object):
                     col_ordered_targets = copy_ordered_targets.filter(storage=storage,
                                                                       storagetag=o_target.storagetag)
 
-                    if self.get_col_data(col_ordered_targets, now_time):
-                        # 剔除
-                        copy_ordered_targets = copy_ordered_targets.exclude(storage=storage,
-                                                                            storagetag=o_target.storagetag)
-                    else:
+                    if not self.get_col_data(col_ordered_targets, now_time):
                         for cot in col_ordered_targets:
                             self.record_exception_data(cot)
+
+                    # 剔除
+                    copy_ordered_targets = copy_ordered_targets.exclude(storage=storage,
+                                                                        storagetag=o_target.storagetag)
                 else:
                     logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
 
-    @staticmethod
-    def get_data_from_pi(source_content, source_connection):
-        """
-        从PI中取数据
-            type: avg, max, min, delta, history, real
-            # 解析PI的数据源内容
-            # tmp = {
-            #     'tag': '',
-            #     'type': '',
-            #     'start_time': '',
-            #     'end_time': ''
-            # }
-        :return:
-        """
-        result_list = []
-        try:
-            source_content = eval(source_content)
-        except Exception as e:
-            logger.info('Extract >> get_row_data() >> PI数据源内容填写有误：%s' % e)
-        else:
-            if type(source_content) == dict:
-                tag, operate, start_time, end_time = '', '', None, None
-                if 'tag' in source_content.keys():
-                    tag = source_content['tag']
-                if 'start_time' in source_content.keys():
-                    start_time = source_content['start_time']
-                if 'end_time' in source_content.keys():
-                    end_time = source_content['end_time']
-                if 'type' in source_content.keys():
-                    operate = source_content['type'].upper()
-
-                curvalue = None
-                status = 1
-                try:
-                    conn = source_connection['host']
-
-                    if operate == 'DATATABLE':
-                        curvalue = ManagePI.ReadDatetableFromPI(conn, tag, start_time, end_time, 100)
-                    else:
-                        if operate == 'REAL':
-                            curvalue = json.loads(ManagePI.ReadRealValueFromPI(conn, tag))
-                        elif operate == 'HISTORY':
-                            curvalue = json.loads(ManagePI.ReadHisValueFromPI(conn, tag, start_time))
-                        elif operate == 'AVG':
-                            curvalue = json.loads(ManagePI.ReadAvgValueFromPI(conn, tag, start_time, end_time))
-                        elif operate == 'MAX':
-                            curvalue = json.loads(ManagePI.ReadMaxValueFromPI(conn, tag, start_time, end_time))
-                        elif operate == 'MIN':
-                            curvalue = json.loads(ManagePI.ReadMinValueFromPI(conn, tag, start_time, end_time))
-                        elif operate == 'DELTA':
-                            curvalue = json.loads(ManagePI.ReadCzValueFromPI(conn, tag, start_time, end_time))
-                        else:
-                            curvalue = None
-                except Exception as e:
-                    status = 0
-                    curvalue = e
-
-                # 构造result_list
-                if status:
-                    logger.info("PI数据提取结束：%s" % str(source_content))
-                    if type(curvalue) == dict:
-                        result_list = [[curvalue['value']]]
-                    elif type(curvalue) == list:
-                        pass
-                    else:
-                        pass
-                else:
-                    logger.info('Extract >> get_row_data() >> PI数据获取失败：%s' % curvalue)
-
-            else:
-                logger.info('Extract >> get_row_data() >> PI数据源内容填写非JSON格式')
-
-            return result_list
-
-    def get_row_data(self, target, time):
-        # storagefields有4个特例，
-        # 1.id，id字段不需要配置，storage表必有id字段并自增长
-        # 2.target_id,target_id字段不需要配置,代码中强制保存index.id到storage的target_id字段
-        # 3.savedate,savedate字段不需要配置,代码中强制保存time到storage的savedate字段
-        # 4.datadate，配置时需放在普通字段之后，datadate格式如<#DATADATE:m:S#>，参考source_content中的时间格式，将time格式化后再转成日期格式保存
-        # 获取行数据
-        source_content = target.source_content
-        storagefields = target.storagefields
-        storagefields_list = storagefields.split(',')
-
-        # 匹配出<#DATE:m:L#>
-        date_com = re.compile('<#.*?#>')
-        pre_format_list = date_com.findall(source_content)
-
-        if pre_format_list:
-            format_date = Extract.format_date(time, pre_format_list[0])
-
-            # 格式化后的SQL
-            source_content = source_content.replace(pre_format_list[0], format_date)
-
-        # datadate
-        pre_datadate_format_list = date_com.findall(storagefields)
-
-        format_datadate = Extract.format_date(time, pre_datadate_format_list[0],
-                                           return_type='timestamp') if pre_datadate_format_list else None
-
-        result_list = []
-
+    def getDataFromSource(self, target, time):
         source = target.source
         source_type_name = ''
+        result_list = []
+        error=""
         if source:
-            source_type = source.sourcetype  # Oracle/SQL Server
+            source_type = source.sourcetype
             source_type_name = get_dict_name(source_type)
 
             source_connection = ''
@@ -410,17 +372,46 @@ class Extract(object):
                 if type(source_connection) == list:
                     source_connection = source_connection[0]
             except Exception as e:
-                logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
+                error = 'Extract >> getDataFromSource() >> 数据源配置认证信息错误：' + e
+                return {"result":result_list,"error":error}
             else:
+                source_content = target.source_content
                 if source_type_name == 'PI':
-                    result_list = Extract.get_data_from_pi(source_content, source_connection)
+                    pi_query = PIQuery(source_connection)
+                    result = pi_query.get_data_from_pi(source_content, time)
+                    result_list = result["result"]
+                    error = result["error"]
                 else:
+                    # 匹配出<#D#>
+                    date_com = re.compile('<#.*?#>')
+                    pre_format_list = date_com.findall(source_content)
+                    if pre_format_list:
+                        format_date = Extract.format_date(time, pre_format_list[0])
+                        # 格式化后的SQL
+                        source_content = source_content.replace(pre_format_list[0], format_date)
+
                     db_query = SeveralDBQuery(source_type_name, source_connection)
-                    result_list = db_query.fetch_all(source_content)
+                    db_query.fetch_all(source_content)
+                    result_list = db_query.result
+                    error = db_query.error
                     db_query.close()
+        else:
+            error = 'Extract >> getDataFromSource() >> 数据源不存在：' + e
+        return {"result": result_list, "error": error}
+
+    def save_row_data(self, target, time, result_list):
+        # storagefields有4个特例，
+        # 1.id，id字段不需要配置，storage表必有id字段并自增长
+        # 2.target_id,target_id字段不需要配置,代码中强制保存index.id到storage的target_id字段
+        # 3.savedate,savedate字段不需要配置,代码中强制保存time到storage的savedate字段
+        # 4.datadate，配置时需放在普通字段之后，datadate格式如<#DATADATE:m:S#>，参考source_content中的时间格式，将time格式化后再转成日期格式保存
+        result = True
+        error=""
+        storagefields = target.storagefields
+        storagefields_list = storagefields.split(',')
 
         if not result_list:
-            return False
+            result = False
         else:
             for result in result_list:
                 storage = OrderedDict()
@@ -430,8 +421,11 @@ class Extract(object):
 
                 storage["savedate"] = time
                 storage['target_id'] = target.id
-                if 'DATADATE' in storagefields:
-                    # storage['datadate']
+                date_com = re.compile('<#.*?#>')
+                pre_datadate_format_list = date_com.findall(storagefields)
+                if pre_datadate_format_list:
+                    format_datadate = Extract.format_date(time, pre_datadate_format_list[0],
+                                                          return_type='timestamp') if pre_datadate_format_list else None
                     storage['datadate'] = format_datadate
 
                 fields = ''
@@ -462,135 +456,169 @@ class Extract(object):
                         tablename=tablename, fields=fields, values=values,
                         db=settings.DATABASES['default']['NAME']).replace('"', "'")
 
-                logger.info('行存：%s' % row_save_sql)
                 db_update = SeveralDBQuery(pro_db_engine, db_info)
                 ret = db_update.update(row_save_sql)
                 db_update.close()
+                result = ret
+                if not result:
+                    error = db_update.error
+        return {"result": result, "error": error}
 
-                return ret
-            return True
+
+    def get_row_data(self, target, time):
+
+        source = target.source
+        #从数据库取数
+        result = getDataFromSource(target, time)
+        result_list = result["result"]
+        result_error = result["error"]
+        if result_error:
+            logger.info(result_error)
+        if result_list:
+            # 保存数据
+            save_result = save_row_data(target, time, result_list)
+            saveresult = save_result["result"]
+            saveerror = save_result["error"]
+            if saveerror:
+                logger.info(saveerror)
+            if saveresult:
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    def save_col_data(self, target,time, storage):
+        result = True
+        error=""
+
+        storage["savedate"] = time
+        date_com = re.compile('<#.*?#>')
+        storagefields = target.storagefields
+        pre_datadate_format_list = date_com.findall(storagefields)
+        if pre_datadate_format_list:
+            format_datadate = Extract.format_date(time, pre_datadate_format_list[0],
+                                                  return_type='timestamp') if pre_datadate_format_list else None
+            storage['datadate'] = format_datadate
+
+        fields = ''
+        values = ''
+
+        for k, v in storage.items():
+            # 值不为空时，写入键值对
+            fields += k.strip() + ','
+
+            if type(v) == str:
+                values += '"%s"' % v.strip() + ','
+            elif type(v) == datetime.datetime:
+                values += '"%s"' % str(v) + ','
+            else:
+                values += str(v) + ','
+
+        fields = fields[:-1] if fields.endswith(',') else fields
+        values = values[:-1] if values.endswith(',') else values
+
+        # 列存，将storage存成一条记录,本地数据库
+        tablename = target.storage.tablename
+        col_save_sql = r"""INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
+                                                                                        fields=fields,
+                                                                                        values=values).replace(
+            '"', "'")
+
+        # SQL Server update操作的sql不同
+        if 'sql_server' in settings.DATABASES['default']['ENGINE']:
+            col_save_sql = r"""INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
+                tablename=tablename, fields=fields, values=values,
+                db=settings.DATABASES['default']['NAME']).replace('"', "'")
+
+        logger.info('列存：%s' % col_save_sql)
+        db_update = SeveralDBQuery(pro_db_engine, db_info)
+        ret = db_update.update(col_save_sql)
+        db_update.close()
+        result = ret
+        if not result:
+            error = db_update.error
+        return {"result": result, "error": error}
 
     def get_col_data(self, target_list, time):
-        storage = OrderedDict()
-        storage["savedate"] = time
-        # 格式化时间<datadate:MS>  storage['datadate'] 
-
-        date_com = re.compile('<#.*?#>')
 
         if target_list:
-            source_type_name = ''
-            # datadate
-            if 'DATADATE' in target_list[0].storagefields:
-                pre_datadate_format_list = date_com.findall(target_list[0].storagefields)
-                format_datadate = Extract.format_date(time, pre_datadate_format_list[0],
-                                                   return_type='timestamp') if pre_datadate_format_list else None
-                storage['datadate'] = format_datadate
+            storage = OrderedDict()
 
-            # 获取列数据
             for target in target_list:
-                source_content = target.source_content
-
-                # 匹配出<#DATE:m:L#>
-                pre_format_list = date_com.findall(source_content)
-
-                format_date = Extract.format_date(time, pre_format_list[0] if pre_format_list else '')
-
-                # 格式化后的SQL
-                source_content = source_content.replace(pre_format_list[0],
-                                                        format_date) if pre_format_list else source_content
-
-                result_list = []
-
-                source = target.source
-                if source:
-                    source_type = source.sourcetype  # Oracle/SQL Server
-                    source_type_name = get_dict_name(source_type)
-
-                    source_connection = ''
-                    try:
-                        source_connection = eval(source.connection)
-                        if type(source_connection) == list:
-                            source_connection = source_connection[0]
-                    except Exception as e:
-                        logger.info('Extract >> get_row_data() >> 数据源配置认证信息错误：%s' % e)
-
-                    if source_type_name == 'PI':
-                        result_list = Extract.get_data_from_pi(source_content, source_connection)
-                    else:
-                        db_query = SeveralDBQuery(source_type_name, source_connection)
-                        result_list = db_query.fetch_all(source_content)
-                        db_query.close()
+                result = getDataFromSource(target, time)
+                result_list = result["result"]
+                result_error = result["error"]
+                if result_error:
+                    logger.info(result_error)
 
                 # 存表
                 storagefields = target.storagefields
                 storagefields_list = storagefields.split(',')
                 if result_list:
                     result = result_list[0]
-
                     for num, rt in enumerate(result):
                         storage[storagefields_list[num]] = rt
-
-            fields = ''
-            values = ''
-
             if storage:
-                for k, v in storage.items():
-                    # 值不为空时，写入键值对
-                    fields += k.strip() + ','
-
-                    if type(v) == str:
-                        values += '"%s"' % v.strip() + ','
-                    elif type(v) == datetime.datetime:
-                        values += '"%s"' % str(v) + ','
-                    else:
-                        values += str(v) + ','
-
-                fields = fields[:-1] if fields.endswith(',') else fields
-                values = values[:-1] if values.endswith(',') else values
-
-                # 列存，将storage存成一条记录,本地数据库
-                tablename = target_list[0].storage.tablename
-                col_save_sql = r"""INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
-                                                                                                fields=fields,
-                                                                                                values=values).replace(
-                    '"', "'")
-
-                # SQL Server update操作的sql不同
-                if 'sql_server' in settings.DATABASES['default']['ENGINE']:
-                    col_save_sql = r"""INSERT INTO {db}.dbo.{tablename}({fields}) VALUES({values})""".format(
-                        tablename=tablename, fields=fields, values=values,
-                        db=settings.DATABASES['default']['NAME']).replace('"', "'")
-
-                logger.info('列存：%s' % col_save_sql)
-                db_update = SeveralDBQuery(pro_db_engine, db_info)
-                ret = db_update.update(col_save_sql)
-                db_update.close()
-
-                return ret
+                # 保存数据
+                save_result = save_col_data(target_list[0], time, storage)
+                saveresult = save_result["result"]
+                saveerror = save_result["error"]
+                if saveerror:
+                    logger.info(saveerror)
+                if saveresult:
+                    return True
+                else:
+                    return False
             else:
                 return False
         else:
             return False
 
-    @staticmethod
     def format_date(date, pre_format, return_type='str'):
-        # {
-        # "D": "当前", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
-        # "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
-        # "YE": "年末", "LYS": "去年初", "LYE": "去年末"
-        # }
+        # D代表取数时刻， < br >
+        # DS代表当天0点， < br >
+        # DE代表当天24点， < br >
+        # L代表昨天同时刻， < br >
+        # LDS代表昨天0点， < br >
+        # LDE代表昨天24点， < br >
+        # MS代表月初， < br >
+        # ME代表月末， < br >
+        # LMS代表上月初， < br >
+        # LME代表上月末， < br >
+        # SS代表季初， < br >
+        # SE代表季末， < br >
+        # LSS代表上季初， < br >
+        # LSE代表上季末， < br >
+        # HS代表半年初， < br >
+        # HE代表半年末， < br >
+        # LHS代表上个半年初， < br >
+        # LHE代表上个半年末， < br >
+        # YS代表年初， < br >
+        # YE代表年末， < br >
+        # LYS代表去年年初， < br >
+        # LYE代表去年末 < br >
 
         # 匹配出时间点/格式
-        com = re.compile('.*?:([a-z A-Z]+):([a-z A-Z]+).*?')
 
-        format_params = com.findall(pre_format)
-
-        time_format, cond = format_params[0] if format_params else ['', '']
+        cond=pre_format.strip().replace('<#','').replace('#>','')
 
         # 时间点
-        newdate = date  # if cond == "D":
+        newdate = date
+        if cond == "D":
+            newdate = date
+        if cond == "DS":
+            newdate = datetime.datetime.strptime('{:%Y-%m-%d}'.format(newdate), '%Y-%m-%d')
+        if cond == "DE":
+            newdate = datetime.datetime.strptime('{:%Y-%m-%d}'.format(newdate), '%Y-%m-%d') + datetime.timedelta(days=1)
         if cond == "L":
             newdate = date + datetime.timedelta(days=-1)
+        if cond == "LDS":
+            newdate = datetime.datetime.strptime('{:%Y-%m-%d}'.format(newdate), '%Y-%m-%d') + datetime.timedelta(days=-1)
+        if cond == "LDE":
+            newdate = datetime.datetime.strptime('{:%Y-%m-%d}'.format(newdate), '%Y-%m-%d')
+
+        date = datetime.datetime.strptime('{:%Y-%m-%d}'.format(newdate), '%Y-%m-%d')
         if cond == "MS":
             newdate = date.replace(day=1)
         if cond == "ME":
@@ -654,33 +682,11 @@ class Extract(object):
             newdate = newdate + datetime.timedelta(days=-1)
 
         date_init = '' if return_type == 'str' else None
-        # 格式
+
         if return_type == 'str':
-            if time_format == 's':
-                date_init = '{:%Y-%m-%d %H:%M:%S}'.format(newdate)
-            if time_format == 'mi':
-                date_init = '{:%Y-%m-%d %H:%M}'.format(newdate)
-            if time_format == 'h':
-                date_init = '{:%Y-%m-%d %H}'.format(newdate)
-            if time_format == 'd':
-                date_init = '{:%Y-%m-%d}'.format(newdate)
-            if time_format == 'm':
-                date_init = '{:%Y-%m}'.format(newdate)
-            if time_format == 'y':
-                date_init = '{:%Y}'.format(newdate)
+            date_init = '{:%Y-%m-%d}'.format(newdate)
         if return_type == 'timestamp':
-            if time_format == 's':
-                date_init = datetime.datetime.strptime('{:%Y-%m-%d %H:%M:%S}'.format(newdate), '%Y-%m-%d %H:%M:%S')
-            if time_format == 'mi':
-                date_init = datetime.datetime.strptime('{:%Y-%m-%d %H:%M}'.format(newdate), '%Y-%m-%d %H:%M')
-            if time_format == 'h':
-                date_init = datetime.datetime.strptime('{:%Y-%m-%d %H}'.format(newdate), '%Y-%m-%d %H')
-            if time_format == 'd':
-                date_init = datetime.datetime.strptime('{:%Y-%m-%d}'.format(newdate), '%Y-%m-%d')
-            if time_format == 'm':
-                date_init = datetime.datetime.strptime('{:%Y-%m}'.format(newdate), '%Y-%m')
-            if time_format == 'y':
-                date_init = datetime.datetime.strptime('{:%Y}'.format(newdate), '%Y')
+            date_init = newdate
 
         return date_init
 
@@ -745,12 +751,12 @@ class Extract(object):
                                     cod.last_supplement_time = datetime.datetime.now()
                                     cod.save()
                             else:
-                                # 剔除
-                                copy_exception_data = copy_exception_data.exclude(target__storage=storage,
-                                                                                  target__storagetag=ed.target.storagetag)
                                 for cod in col_ordered_data:
                                     cod.state = '9'
                                     cod.save()
+                            # 剔除
+                            copy_exception_data = copy_exception_data.exclude(target__storage=storage,
+                                                                              target__storagetag=ed.target.storagetag)
                         else:
                             logger.info('Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
 
@@ -864,25 +870,3 @@ if __name__ == '__main__':
     else:
         logger.info('脚本未传参。')
 
-# db_query = SeveralDBQuery('SQLSERVER', {"host":"127.0.0.1","user":"miaokela","passwd":"Passw0rD","db":"mkl"})
-# result_list = db_query.update("INSERT INTO dt.dbo.tmp_table(datadate,formula,target_id) VALUES('2020-02-16 00:00:00.000000','<#1_FDL:d:D>+<FDL:d:D>',36); ")
-# # result_list = db_query.fetch_all("SELECT TOP 1000 [id],[target_id],[datadate],[curvalue],[formula],[state] FROM [dt].[dbo].[tmp_table]")
-# db_query.close()
-
-# extract = Extract(1, 2, 2)
-# target = Target.objects.get(id=9)
-# time = datetime.datetime.now()
-# extract.get_row_data(target, time)
-# # targets = Target.objects.filter(Q(id=8)|Q(id=9))
-# # extract.get_col_data(targets, time)
-
-# run_process(12, None, None)  # mysql测试成功1 测试成功2     42, 43
-# run_process(11, None, None)  # pi 测试成功1 测试成功2   66, 67
-# run_process(10, None, None)  # sqlserver 测试成功1 测试成功2  38,39,40,41
-# run_process(13, None, None) # oracle 测试成功1 44, 45
-
-# 数据清理
-# run_process(14, None, None)
-
-# 数据补取
-# run_process(15, None, None)
