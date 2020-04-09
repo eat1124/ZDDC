@@ -342,7 +342,6 @@ $(document).ready(function () {
 
     // 测试
     $('#test').click(function () {
-        var test_table = $('#sample_2').DataTable();
         var selectArray = [];
         $("input[name=selecttarget]:checked").each(function () {
             selectArray.push($(this).val());
@@ -415,8 +414,6 @@ $(document).ready(function () {
         }
     });
     $('#do_supplement').click(function () {
-        var supplement_process_table = $('#sample_2').DataTable();
-
         $.ajax({
             type: "POST",
             dataType: 'json',
@@ -427,11 +424,7 @@ $(document).ready(function () {
                 end_time: $('#end_time').val(),
             },
             success: function (data) {
-                var myres = data["res"];
-                if (myres == "补取成功。") {
-                    supplement_process_table.ajax.reload();
-                }
-                alert(myres);
+                //..
             },
             error: function (e) {
                 alert("页面出现错误，请于管理员联系。");
