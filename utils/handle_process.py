@@ -27,13 +27,13 @@ from django.conf import settings
 
 # 引入C#脚本
 import sys
+
 sys.path.insert(0, os.path.join(os.path.join(BASE_DIR, 'utils'), 'dlls'))
 
 import clr
 
 clr.AddReference('PIApp')
 from PIApp import *
-
 
 logger = logging.getLogger('process')
 
@@ -145,11 +145,12 @@ class SeveralDBQuery(object):
         if self.connection:
             self.connection.close()
 
+
 class PIQuery(object):
     def __init__(self, connection):
         self.connection = connection
 
-    def get_data_from_pi(source_content,time):
+    def get_data_from_pi(source_content, time):
         """
         从PI中取数据
             type: avg, max, min, delta, real
@@ -158,7 +159,7 @@ class PIQuery(object):
         :return:
         """
         result_list = []
-        error=""
+        error = ""
         source_content = source_content.split('^')
 
         tag, operate, start_time, end_time = source_content[0], 'real', '<#D#>', '<#D#>'
@@ -169,9 +170,9 @@ class PIQuery(object):
         if len(source_content) > 3:
             end_time = source_content[3]
         start_time = Extract.format_date(time, start_time,
-                                           return_type='timestamp').strftime("%Y-%m-%d %H:%M:%S")
-        end_time = Extract.format_date(time, end_time,
                                          return_type='timestamp').strftime("%Y-%m-%d %H:%M:%S")
+        end_time = Extract.format_date(time, end_time,
+                                       return_type='timestamp').strftime("%Y-%m-%d %H:%M:%S")
 
         curvalue = None
         status = 1
@@ -181,7 +182,7 @@ class PIQuery(object):
             if operate == 'DATATABLE':
                 curvalue = ManagePI.ReadDatetableFromPI(conn, tag, start_time, end_time, 100)
             else:
-                #if operate == 'REAL':
+                # if operate == 'REAL':
                 #    curvalue = json.loads(ManagePI.ReadRealValueFromPI(conn, tag))
                 if operate == 'REAL':
                     curvalue = json.loads(ManagePI.ReadHisValueFromPI(conn, tag, start_time))
@@ -203,7 +204,7 @@ class PIQuery(object):
         if status:
             if type(curvalue) == dict:
                 if curvalue['success']:
-                    if curvalue['success']=="0":
+                    if curvalue['success'] == "0":
                         error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
                     else:
                         result_list = [[curvalue['value']]]
@@ -357,11 +358,12 @@ class Extract(object):
                 else:
                     logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
 
-    def getDataFromSource(self, target, time):
+    @staticmethod
+    def getDataFromSource(target, time):
         source = target.source
         source_type_name = ''
         result_list = []
-        error=""
+        error = ""
         if source:
             source_type = source.sourcetype
             source_type_name = get_dict_name(source_type)
@@ -373,7 +375,7 @@ class Extract(object):
                     source_connection = source_connection[0]
             except Exception as e:
                 error = 'Extract >> getDataFromSource() >> 数据源配置认证信息错误：' + e
-                return {"result":result_list,"error":error}
+                return {"result": result_list, "error": error}
             else:
                 source_content = target.source_content
                 if source_type_name == 'PI':
@@ -396,7 +398,7 @@ class Extract(object):
                     error = db_query.error
                     db_query.close()
         else:
-            error = 'Extract >> getDataFromSource() >> 数据源不存在：' + e
+            error = 'Extract >> getDataFromSource() >> 数据源不存在。'
         return {"result": result_list, "error": error}
 
     def save_row_data(self, target, time, result_list):
@@ -406,7 +408,7 @@ class Extract(object):
         # 3.savedate,savedate字段不需要配置,代码中强制保存time到storage的savedate字段
         # 4.datadate，配置时需放在普通字段之后，datadate格式如<#DATADATE:m:S#>，参考source_content中的时间格式，将time格式化后再转成日期格式保存
         result = True
-        error=""
+        error = ""
         storagefields = target.storagefields
         storagefields_list = storagefields.split(',')
 
@@ -464,19 +466,18 @@ class Extract(object):
                     error = db_update.error
         return {"result": result, "error": error}
 
-
     def get_row_data(self, target, time):
 
         source = target.source
-        #从数据库取数
-        result = getDataFromSource(target, time)
+        # 从数据库取数
+        result = Extract.getDataFromSource(target, time)
         result_list = result["result"]
         result_error = result["error"]
         if result_error:
             logger.info(result_error)
         if result_list:
             # 保存数据
-            save_result = save_row_data(target, time, result_list)
+            save_result = self.save_row_data(target, time, result_list)
             saveresult = save_result["result"]
             saveerror = save_result["error"]
             if saveerror:
@@ -488,9 +489,9 @@ class Extract(object):
         else:
             return False
 
-    def save_col_data(self, target,time, storage):
+    def save_col_data(self, target, time, storage):
         result = True
-        error=""
+        error = ""
 
         storage["savedate"] = time
         date_com = re.compile('<#.*?#>')
@@ -546,7 +547,7 @@ class Extract(object):
             storage = OrderedDict()
 
             for target in target_list:
-                result = getDataFromSource(target, time)
+                result = Extract.getDataFromSource(target, time)
                 result_list = result["result"]
                 result_error = result["error"]
                 if result_error:
@@ -561,7 +562,7 @@ class Extract(object):
                         storage[storagefields_list[num]] = rt
             if storage:
                 # 保存数据
-                save_result = save_col_data(target_list[0], time, storage)
+                save_result = self.save_col_data(target_list[0], time, storage)
                 saveresult = save_result["result"]
                 saveerror = save_result["error"]
                 if saveerror:
@@ -601,7 +602,7 @@ class Extract(object):
 
         # 匹配出时间点/格式
 
-        cond=pre_format.strip().replace('<#','').replace('#>','')
+        cond = pre_format.strip().replace('<#', '').replace('#>', '')
 
         # 时间点
         newdate = date
@@ -614,7 +615,8 @@ class Extract(object):
         if cond == "L":
             newdate = date + datetime.timedelta(days=-1)
         if cond == "LDS":
-            newdate = datetime.datetime.strptime('{:%Y-%m-%d}'.format(newdate), '%Y-%m-%d') + datetime.timedelta(days=-1)
+            newdate = datetime.datetime.strptime('{:%Y-%m-%d}'.format(newdate), '%Y-%m-%d') + datetime.timedelta(
+                days=-1)
         if cond == "LDE":
             newdate = datetime.datetime.strptime('{:%Y-%m-%d}'.format(newdate), '%Y-%m-%d')
 
@@ -869,4 +871,3 @@ if __name__ == '__main__':
         logger.info('进程启动。')
     else:
         logger.info('脚本未传参。')
-
