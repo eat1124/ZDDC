@@ -282,7 +282,7 @@ $(document).ready(function () {
             if((data.target_upperlimit && data.curvalue > data.target_upperlimit)||(data.target_lowerlimit &&data.curvalue < data.target_lowerlimit )){
                 $('td', row).css("color", "#FF0000");
             }
-            console.log(data.releasestate)
+
             if (data.releasestate == '0'){
                     $("#release1").show();
                     $("#gorelease1").hide();

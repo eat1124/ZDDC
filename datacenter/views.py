@@ -4178,7 +4178,6 @@ def reporting_search_data(request):
         reporting_date = request.GET.get('reporting_date', '')
         searchapp = request.GET.get('searchapp', '')
         works = request.GET.get('works', '')
-        print(works)
 
         try:
             app = int(app)
@@ -5186,14 +5185,13 @@ def reporting_del(request):
         reporting_date = request.POST.get('reporting_date', '')
         operationtype = request.POST.get('operationtype', '')
         funid = request.POST.get('funid', '')
-        print(funid, '9999')
         work = None
         work_id = ""
         try:
             funid = int(funid)
             fun = Fun.objects.get(id=funid)
             work = fun.work
-            work_id = int(work.id)
+            work_id = fun.work_id
         except:
             pass
         try:
@@ -5243,7 +5241,7 @@ def reporting_del(request):
             user_id = int(user)
         except:
             pass
-        print(work_id)
+
         all_reportinglog.datadate = reporting_date
         all_reportinglog.cycletype = cycletype
         all_reportinglog.adminapp_id = app
@@ -5271,7 +5269,7 @@ def reporting_release(request):
             funid = int(funid)
             fun = Fun.objects.get(id=funid)
             work = fun.work
-            work_id = int(work.id)
+            work_id = fun.work_id
         except:
             pass
         try:
