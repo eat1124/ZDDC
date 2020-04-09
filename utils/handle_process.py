@@ -150,7 +150,7 @@ class PIQuery(object):
     def __init__(self, connection):
         self.connection = connection
 
-    def get_data_from_pi(source_content, time):
+    def get_data_from_pi(self, source_content, time):
         """
         从PI中取数据
             type: avg, max, min, delta, real
@@ -164,7 +164,7 @@ class PIQuery(object):
 
         tag, operate, start_time, end_time = source_content[0], 'real', '<#D#>', '<#D#>'
         if len(source_content) > 1:
-            operate = source_content[1]
+            operate = source_content[1].upper()
         if len(source_content) > 2:
             start_time = source_content[2]
         if len(source_content) > 3:
