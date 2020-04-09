@@ -216,6 +216,7 @@ def get_meterdata_model(prefix):
         cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
         cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
         state = models.CharField("状态", blank=True, null=True, max_length=20)
+        releasestate = models.CharField('发布状态', blank=True, default=0, max_length=10)
 
         @staticmethod
         def is_exists():
@@ -247,6 +248,7 @@ def get_entrydata_model(prefix):
         cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
         cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
         state = models.CharField("状态", blank=True, null=True, max_length=20)
+        releasestate = models.CharField('发布状态', blank=True, default=0, max_length=10)
 
         @staticmethod
         def is_exists():
@@ -278,6 +280,7 @@ def get_extractdata_model(prefix):
         cumulativehalfyear = models.DecimalField("半年累计值", null=True, max_digits=20, decimal_places=5)
         cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
         state = models.CharField("状态", blank=True, null=True, max_length=20)
+        releasestate = models.CharField('发布状态', blank=True, default=0, max_length=10)
 
         @staticmethod
         def is_exists():
@@ -310,6 +313,7 @@ def get_calculatedata_model(prefix):
         cumulativeyear = models.DecimalField("年累计值", null=True, max_digits=20, decimal_places=5)
         formula = models.TextField("公式", blank=True, null=True)
         state = models.CharField("状态", blank=True, null=True, max_length=20)
+        releasestate = models.CharField('发布状态', blank=True, default=0, max_length=10)
 
         @staticmethod
         def is_exists():
@@ -419,7 +423,7 @@ class ReportingLog(models.Model):
     """
     adminapp = models.ForeignKey(App, null=True, related_name='reportlog_adminapp_set')
     work = models.ForeignKey('Work', null=True, verbose_name='业务')
-    cycle = models.ForeignKey(Cycle, null=True, verbose_name='周期')
+    cycletype = models.CharField("周期类型", blank=True, max_length=20)
     datadate = models.DateTimeField("时间", blank=True, null=True)
     user = models.OneToOneField(User, blank=True, null=True)
     type = models.CharField("类型", blank=True, null=True, max_length=20)
