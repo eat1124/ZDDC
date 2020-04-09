@@ -435,6 +435,7 @@ class SupplementProcess(models.Model):
     补取进程表
     """
     primary_process = models.ForeignKey(ProcessMonitor, null=True, verbose_name='主进程表')
+    p_id = models.CharField("进程ID", blank=True, max_length=50, default="")
     setup_time = models.DateTimeField('启动时间：点击补取的当前时间', null=True)
     update_time = models.DateTimeField('更新时间：一分钟写一次，系统时间', null=True)
     p_state = models.CharField('进程状态：1/0', max_length=10, null=True, blank=True)
