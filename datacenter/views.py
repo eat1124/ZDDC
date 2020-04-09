@@ -5228,12 +5228,6 @@ def reporting_del(request):
             data.releasestate = "0"
             data.save()
 
-        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app)
-        if len(all_reportinglog) > 0:
-            all_reportinglog = all_reportinglog[0]
-        else:
-            all_reportinglog = ReportingLog()
-
         username = UserInfo.objects.get(fullname=request.user.userinfo.fullname)
         user = username.user.id
         user_id = ""
@@ -5242,12 +5236,18 @@ def reporting_del(request):
         except:
             pass
 
+        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app, user_id=user_id)
+        if len(all_reportinglog) > 0:
+            all_reportinglog = all_reportinglog[0]
+        else:
+            all_reportinglog = ReportingLog()
+
         all_reportinglog.datadate = reporting_date
         all_reportinglog.cycletype = cycletype
         all_reportinglog.adminapp_id = app
         all_reportinglog.work_id = work_id
         all_reportinglog.user_id = user_id
-        all_reportinglog.type = '0'
+        all_reportinglog.type = 'del'
         all_reportinglog.save()
 
         return HttpResponse(1)
@@ -5414,12 +5414,6 @@ def reporting_release(request):
             savedata.releasestate = '1'
             savedata.save()
 
-        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app)
-        if len(all_reportinglog) > 0:
-            all_reportinglog = all_reportinglog[0]
-        else:
-            all_reportinglog = ReportingLog()
-
         username = UserInfo.objects.get(fullname=request.user.userinfo.fullname)
         user = username.user.id
         user_id = ""
@@ -5428,12 +5422,18 @@ def reporting_release(request):
         except:
             pass
 
+        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app, user_id=user_id)
+        if len(all_reportinglog) > 0:
+            all_reportinglog = all_reportinglog[0]
+        else:
+            all_reportinglog = ReportingLog()
+
         all_reportinglog.datadate = reporting_date
         all_reportinglog.cycletype = cycletype
         all_reportinglog.adminapp_id = app
         all_reportinglog.work_id = work_id
         all_reportinglog.user_id = user_id
-        all_reportinglog.type = '1'
+        all_reportinglog.type = 'release'
         all_reportinglog.save()
 
     return HttpResponse(1)
