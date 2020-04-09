@@ -279,13 +279,13 @@ class Extract(object):
 
                 if storage_type_name == '行':
                     # 未取到数据(save:指标，周期，数据源，应用)
-                    if not self.get_row_data(o_target, now_time):
+                    if not Extract.get_row_data(o_target, now_time):
                         self.record_exception_data(o_target)
                 elif storage_type_name == '列':
                     col_ordered_targets = copy_ordered_targets.filter(storage=storage,
                                                                       storagetag=o_target.storagetag)
 
-                    if self.get_col_data(col_ordered_targets, now_time):
+                    if Extract.get_col_data(col_ordered_targets, now_time):
                         # 剔除
                         copy_ordered_targets = copy_ordered_targets.exclude(storage=storage,
                                                                             storagetag=o_target.storagetag)
@@ -369,7 +369,8 @@ class Extract(object):
 
             return result_list
 
-    def get_row_data(self, target, time):
+    @staticmethod
+    def get_row_data(target, time):
         # storagefields有4个特例，
         # 1.id，id字段不需要配置，storage表必有id字段并自增长
         # 2.target_id,target_id字段不需要配置,代码中强制保存index.id到storage的target_id字段
@@ -470,7 +471,8 @@ class Extract(object):
                 return ret
             return True
 
-    def get_col_data(self, target_list, time):
+    @staticmethod
+    def get_col_data(target_list, time):
         storage = OrderedDict()
         storage["savedate"] = time
         # 格式化时间<datadate:MS>  storage['datadate'] 
@@ -701,7 +703,8 @@ class Extract(object):
         except Exception as e:
             logger.info('记录异常数据失败：%s' % e)
 
-    def supplement_exception_data(self):
+    @staticmethod
+    def supplement_exception_data():
         process_monitor = ProcessMonitor.objects.exclude(state='9')
 
         for pm in process_monitor:
@@ -722,7 +725,7 @@ class Extract(object):
 
                         if storage_type_name == '行':
                             if ed.supplement_times < 10:
-                                if not self.get_row_data(ed.target, ed.extract_error_time):
+                                if not Extract.get_row_data(ed.target, ed.extract_error_time):
                                     ed.supplement_times += 1
                                     ed.last_supplement_time = datetime.datetime.now()
                                     ed.save()
@@ -739,7 +742,7 @@ class Extract(object):
                             for cod in col_ordered_data:
                                 target_list.append(cod.target)
 
-                            if not self.get_col_data(target_list, ed.extract_error_time):
+                            if not Extract.get_col_data(target_list, ed.extract_error_time):
                                 for cod in col_ordered_data:
                                     cod.supplement_times += 1
                                     cod.last_supplement_time = datetime.datetime.now()
@@ -753,6 +756,50 @@ class Extract(object):
                                     cod.save()
                         else:
                             logger.info('Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
+
+    @staticmethod
+    def supplement_several_data(target_list):
+        copy_target_list = copy.deepcopy(target_list)
+
+        for ed in target_list:
+            storage = ed.target.storage
+            if storage:
+                storage_type_name = get_dict_name(storage.storagetype)
+
+                if storage_type_name == '行':
+                    if ed.supplement_times < 10:
+                        if not Extract.get_row_data(ed.target, ed.extract_error_time):
+                            ed.supplement_times += 1
+                            ed.last_supplement_time = datetime.datetime.now()
+                            ed.save()
+                        else:
+                            ed.state = '9'
+                            ed.save()
+                    else:
+                        pass
+                elif storage_type_name == '列':
+                    col_ordered_data = copy_target_list.filter(target__storage=storage,
+                                                                  target__storagetag=ed.target.storagetag)
+
+                    target_list = []
+                    for cod in col_ordered_data:
+                        target_list.append(cod.target)
+
+                    if not Extract.get_col_data(target_list, ed.extract_error_time):
+                        for cod in col_ordered_data:
+                            cod.supplement_times += 1
+                            cod.last_supplement_time = datetime.datetime.now()
+                            cod.save()
+                    else:
+                        # 剔除
+                        copy_target_list = copy_target_list.exclude(target__storage=storage,
+                                                                          target__storagetag=ed.target.storagetag)
+                        for cod in col_ordered_data:
+                            cod.state = '9'
+                            cod.save()
+                else:
+                    logger.info('Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
+
 
     def run(self):
         # 补取()
@@ -794,8 +841,7 @@ def run_process(process_id, processcon, targets):
                     while True:
                         try:
                             # 补取
-                            extract = Extract(app_id, source_id, circle_id)
-                            extract.supplement_exception_data()
+                            Extract.supplement_exception_data()
 
                             logger.info('异常数据补取结束。')
                         except Exception as e:
