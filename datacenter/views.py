@@ -52,7 +52,7 @@ from .remote import ServerByPara
 from ZDDC import settings
 from .funcs import *
 from .ftp_file_handler import *
-from utils.handle_process import get_dict_name, SeveralDBQuery, Extract
+from utils.handle_process import Extract
 
 funlist = []
 
@@ -319,12 +319,14 @@ def get_process_monitor_tree(request):
                             for c in cycle:
                                 if does_it_exist(s.id, a.id, c.id):
                                     create_time, last_time, status = '', '', ''
+                                    cp_id = ''
                                     # 获取进程状态
                                     cps = ProcessMonitor.objects.filter(source_id=s.id).filter(
                                         app_admin_id=a.id).filter(
                                         cycle_id=c.id).exclude(state='9')
                                     if cps.exists():
                                         cp = cps[0]
+                                        cp_id = cp.id
                                         create_time = '{:%Y-%m-%d %H:%M:%S}'.format(
                                             cp.create_time) if cp.create_time else ""
                                         last_time = '{:%Y-%m-%d %H:%M:%S}'.format(cp.last_time) if cp.last_time else ""
@@ -352,6 +354,9 @@ def get_process_monitor_tree(request):
                                         'c_id': c.id,
                                         'c_name': c.name,
                                         'type': 'circle',
+
+                                        # 主进程id
+                                        'cp_id': cp_id,
 
                                         # 进程状态
                                         'create_time': create_time,
@@ -571,7 +576,6 @@ def handle_process(current_process, handle_type=None):
                 current_process.id)
 
             win32api.ShellExecute(0, 'open', 'python', r'-i {process_path}'.format(process_path=process_path), '', 0)
-            # os.popen(r"{0}".format(process_path))
             res = "程序启动成功。"
             tag = 1
         except Exception as e:
@@ -736,6 +740,7 @@ def pm_target_data(request):
 
         result = []
 
+        supplement_status = '0'  # 1启动成功 0完成 2失败
         try:
             app_id = int(app_id)
             source_id = int(source_id)
@@ -756,7 +761,23 @@ def pm_target_data(request):
                     'storage_fields': target.storagefields[:-1] if target.storagefields.endswith(
                         ',') else target.storagefields
                 })
-        return JsonResponse({"data": result})
+
+            # 补取进程的状态 1/0/2
+            try:
+                primary_process = ProcessMonitor.objects.exclude(state='9').get(app_admin_id=app_id,
+                                                                                source_id=source_id,
+                                                                                cycle_id=circle_id)
+            except ProcessMonitor.DoesNotExist as e:
+                print(e)
+            else:
+                supplement_process = SupplementProcess.objects.exclude(state='9').filter(
+                    primary_process=primary_process).last()
+                supplement_status = supplement_process.p_state if supplement_process else '0'
+
+        return JsonResponse({
+            "data": result,
+            'supplement_status': supplement_status
+        })
     else:
         return HttpResponseRedirect("/login")
 
@@ -838,6 +859,7 @@ def target_test(request):
             """
             解决Decimal无法序列化问题
             """
+
             def default(self, obj):
                 if isinstance(obj, decimal.Decimal):
                     return float(obj)
@@ -904,13 +926,171 @@ def supplement_process(request):
     :return:
     """
     if request.user.is_authenticated():
-        selectedtarget = request.POST.getlist('selectedtarget[]', [])
-        start_time = request.POST.getlist('start_time')
-        end_time = request.POST.getlist('end_time')
+        result = {
+            'status': 1,
+            'data': '成功启动补取。'
+        }
 
-        result = {}
-        # ...
+        selectedtarget = request.POST.get('selectedtarget', '[]')
+        start_time = request.POST.get('start_time', '')
+        end_time = request.POST.get('end_time', '')
+        cp_id = request.POST.get('cp_id', '')
 
+        try:
+            selectedtarget = eval(selectedtarget)
+        except:
+            pass
+
+        try:
+            cp_id = int(cp_id)
+        except:
+            result['status'] = 0
+            result['data'] = '启动补取失败。'
+        else:
+            if not start_time:
+                result['status'] = 0
+                result['data'] = '开始时间未填写。'
+            elif not end_time:
+                result['status'] = 0
+                result['data'] = '结束时间未填写。'
+            else:
+                # 先存入数据库
+                try:
+                    start_time = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+                except Exception as e:
+                    print(e)
+                    start_time = None
+                try:
+                    end_time = datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+                except Exception as e:
+                    print(e)
+                    end_time = None
+
+                supplement_process = SupplementProcess()
+                supplement_process.start_time = start_time
+                supplement_process.end_time = end_time
+                supplement_process.p_state = '1'
+                supplement_process.primary_process_id = cp_id
+                supplement_process.setup_time = datetime.datetime.now()
+                supplement_process.save()
+
+                tmp_selectedtarget = ''
+
+                if type(selectedtarget) == list:
+                    for st in selectedtarget:
+                        tmp_selectedtarget += str(st) + '^'
+                else:
+                    tmp_selectedtarget = str(selectedtarget)
+
+                process_path = BASE_DIR + os.sep + "utils" + os.sep + "handle_process.py" + " {0} {1}".format(
+                    cp_id, tmp_selectedtarget if not tmp_selectedtarget.endswith('^') else tmp_selectedtarget[:-1]
+                )
+
+                try:
+                    win32api.ShellExecute(0, 'open', 'python', r'-i {process_path}'.format(process_path=process_path),
+                                          '', 0)
+                except:
+                    result['status'] = 0
+                    result['data'] = '启动补取失败。'
+
+        return JsonResponse(result)
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def get_supplement_process_info(request):
+    """
+    获取补取进程信息
+    :param request:
+    :return:
+    """
+    if request.user.is_authenticated():
+        cp_id = request.POST.get('cp_id', '')
+        result = {
+            'status': 1,
+            'data': ''
+        }
+        try:
+            cp_id = int(cp_id)
+        except:
+            result['status'] = 0
+            result['data'] = '获取补取进程信息失败。'
+        else:
+            sp = SupplementProcess.objects.exclude(state='9').filter(primary_process_id=cp_id).last()
+            if sp:
+                p_id = sp.p_id
+                setup_time = sp.setup_time
+                update_time = sp.update_time
+                p_state = sp.p_state
+                start_time = sp.start_time
+                end_time = sp.end_time
+                progress_time = sp.progress_time
+                result['data'] = {
+                    'p_id': p_id,
+                    'setup_time': '{:%Y-%m-%d %H:%M:%S}'.format(setup_time) if setup_time else '',
+                    'update_time': '{:%Y-%m-%d %H:%M:%S}'.format(update_time) if update_time else '',
+                    'p_state': p_state,
+                    'start_time': '{:%Y-%m-%d %H:%M:%S}'.format(start_time) if start_time else '',
+                    'end_time': '{:%Y-%m-%d %H:%M:%S}'.format(end_time) if end_time else '',
+                    'progress_time': '{:%Y-%m-%d %H:%M:%S}'.format(progress_time) if progress_time else '',
+                }
+            else:
+                result['status'] = 0
+                result['data'] = '补取进程不存在。'
+
+        return JsonResponse(result)
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def get_process_monitor_info(request):
+    """
+    获取取数进程信息
+    :param request:
+    :return:
+    """
+    if request.user.is_authenticated():
+        cp_id = request.POST.get('cp_id', '')
+        result = {
+            'status': 1,
+            'data': ''
+        }
+        try:
+            cp_id = int(cp_id)
+        except:
+            result['status'] = 0
+            result['data'] = '获取补取进程信息失败。'
+        else:
+            try:
+                pm = ProcessMonitor.objects.get(id=cp_id)
+            except ProcessMonitor.DoesNotExist as e:
+                result['status'] = 0
+                result['data'] = '取数进程不存在。'
+            else:
+                source_name = pm.source.name if pm.source else ''
+                source_code = pm.source.code if pm.source else ''
+                # 数据源类型
+                source_type = ""
+                try:
+                    source_type = DictList.objects.get(id=pm.source.sourcetype).name
+                except Exception as e:
+                    print(e)
+                app_name = pm.app_admin.name if pm.app_admin else ''
+                circle_name = pm.cycle.name if pm.cycle else ''
+                status = pm.status
+                create_time = '{:%Y-%m-%d %H:%M:%S}'.format(pm.create_time) if pm.create_time else ''
+                last_time = '{:%Y-%m-%d %H:%M:%S}'.format(pm.last_time) if pm.last_time else ''
+
+                result['data'] = {
+                    'source_name': source_name,
+                    'source_code': source_code,
+                    'source_type': source_type,
+                    'app_name': app_name,
+                    'circle_name': circle_name,
+                    'create_time': create_time,
+                    'last_time': last_time,
+                    'status': status,
+                }
         return JsonResponse(result)
     else:
         return HttpResponseRedirect("/login")
