@@ -976,7 +976,7 @@ def supplement_process(request):
 
                 tmp_selectedtarget = ''
 
-                if type(selectedtarget) == list:
+                if type(selectedtarget) == tuple:
                     for st in selectedtarget:
                         tmp_selectedtarget += str(st) + '^'
                 else:
