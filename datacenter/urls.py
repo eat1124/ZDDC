@@ -28,6 +28,8 @@ urlpatterns = [
     url(r'^get_log_info/$', get_log_info),
     url(r'^target_test/$', target_test),
     url(r'^supplement_process/$', supplement_process),
+    url(r'^get_supplement_process_info/$', get_supplement_process_info),
+    url(r'^get_process_monitor_info/$', get_process_monitor_info),
 
     # 系统维护
     url(r'^organization/$', organization, {'funid': '5'}),

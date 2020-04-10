@@ -13,6 +13,8 @@ import calendar
 import pymysql.cursors
 import cx_Oracle
 import pymssql
+import psutil
+
 # 使用ORM
 import sys
 from django.core.wsgi import get_wsgi_application
@@ -67,6 +69,13 @@ def get_dict_name(key):
 
 
 class SeveralDBQuery(object):
+    """
+    SQL Server
+    Oracle
+    MySQL
+    数据库取数
+    """
+
     def __init__(self, db_type, credit):
         # [{"host":"192.168.1.66","user":"root","passwd":"password","db":"datacenter"}]
         self.db_type = db_type.replace(' ', '').upper()
@@ -147,6 +156,10 @@ class SeveralDBQuery(object):
 
 
 class PIQuery(object):
+    """
+    PI数据库取数
+    """
+
     def __init__(self, connection):
         self.connection = connection
 
@@ -231,13 +244,13 @@ class Extract(object):
         self.circle_id = circle_id
         self.pm = None
         try:
-            self.pm = ProcessMonitor.objects.get(app_admin_id=self.app_id, source_id=self.source_id,
+            self.pm = ProcessMonitor.objects.exclude(state='9').get(app_admin_id=self.app_id, source_id=self.source_id,
                                                  cycle_id=self.circle_id)
         except ProcessMonitor.DoesNotExist as e:
-            logger.info('Extract >> __init__() >> %s' % e)
+            take_notes(self.source_id, self.app_id, self.circle_id, 'Extract >> __init__() >> %s' % e)
         else:
             if not self.pm:
-                logger.info('Extract >> supplement() >> 该进程不存在，取数进程启动失败。')
+                take_notes(self.source_id, self.app_id, self.circle_id, 'Extract >> supplement() >> 该进程不存在，取数进程启动失败。')
 
     def supplement(self):
         # 补取
@@ -254,7 +267,7 @@ class Extract(object):
                 if start_time > end_time:
                     break
         else:
-            logger.info('Extract >> supplement() >> 首次取数，不进行补取。')
+            take_notes(self.source_id, self.app_id, self.circle_id, 'Extract >> supplement() >> 首次取数，不进行补取。')
 
         # 补取过程也消耗时间，再次判断进行补取:先把秒数抹掉再比较
         aft_last_time = self.pm.last_time
@@ -263,12 +276,12 @@ class Extract(object):
             aft_last_time = datetime.datetime.strptime('{:%Y-%m-%d %H:%M}'.format(aft_last_time), '%Y-%m-%d %H:%M')
             now_time = datetime.datetime.strptime('{:%Y-%m-%d %H:%M}'.format(datetime.datetime.now()), '%Y-%m-%d %H:%M')
         except Exception as e:
-            logger.info('Extract >> supplement() >> %s' % e)
+            take_notes(self.source_id, self.app_id, self.circle_id, 'Extract >> supplement() >> %s' % e)
         else:
             try:
                 delta_time = (now_time - aft_last_time).total_seconds()
             except Exception as e:
-                logger.info('Extract >> supplement() >> %s' % e)
+                take_notes(self.source_id, self.app_id, self.circle_id, 'Extract >> supplement() >> %s' % e)
             else:
                 if delta_time > 60:
                     self.supplement()
@@ -311,9 +324,6 @@ class Extract(object):
             now_weekday = now_time.weekday()
             now_day = now_time.day
 
-            # 测试5秒取
-            # self._get_data(now_time)
-            # time.sleep(5)
             if now_hour == hour and now_minute == minute:
                 # 每日/每周/每月
                 if schedule_type == 1:
@@ -329,10 +339,13 @@ class Extract(object):
         self.pm.last_time = now_time
         self.pm.save()
 
-    def _get_data(self, now_time):
+    def _get_data(self, now_time, targets=None):
         ordered_targets = Target.objects.filter(adminapp_id=self.app_id, source_id=self.source_id,
                                                 cycle_id=self.circle_id).exclude(state='9').order_by('storage_id',
                                                                                                      'storagetag')
+
+        if targets:
+            ordered_targets = ordered_targets.filter(id__in=targets)
         copy_ordered_targets = copy.deepcopy(ordered_targets)
         for o_target in ordered_targets:
             storage = o_target.storage
@@ -356,7 +369,8 @@ class Extract(object):
                     copy_ordered_targets = copy_ordered_targets.exclude(storage=storage,
                                                                         storagetag=o_target.storagetag)
                 else:
-                    logger.info('Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
+                    take_notes(self.source_id, self.app_id, self.circle_id,
+                               'Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
 
     @staticmethod
     def getDataFromSource(target, time):
@@ -474,14 +488,15 @@ class Extract(object):
         result_list = result["result"]
         result_error = result["error"]
         if result_error:
-            logger.info(result_error)
+            take_notes(self.source_id, self.app_id, self.circle_id, result_error)
+
         if result_list:
             # 保存数据
             save_result = self.save_row_data(target, time, result_list)
             saveresult = save_result["result"]
             saveerror = save_result["error"]
             if saveerror:
-                logger.info(saveerror)
+                take_notes(self.source_id, self.app_id, self.circle_id, saveerror)
             if saveresult:
                 return True
             else:
@@ -532,7 +547,8 @@ class Extract(object):
                 tablename=tablename, fields=fields, values=values,
                 db=settings.DATABASES['default']['NAME']).replace('"', "'")
 
-        logger.info('列存：%s' % col_save_sql)
+        take_notes(self.source_id, self.app_id, self.circle_id, '列存：%s' % col_save_sql)
+
         db_update = SeveralDBQuery(pro_db_engine, db_info)
         ret = db_update.update(col_save_sql)
         db_update.close()
@@ -551,7 +567,7 @@ class Extract(object):
                 result_list = result["result"]
                 result_error = result["error"]
                 if result_error:
-                    logger.info(result_error)
+                    take_notes(self.source_id, self.app_id, self.circle_id, result_error)
 
                 # 存表
                 storagefields = target.storagefields
@@ -566,7 +582,7 @@ class Extract(object):
                 saveresult = save_result["result"]
                 saveerror = save_result["error"]
                 if saveerror:
-                    logger.info(saveerror)
+                    take_notes(self.source_id, self.app_id, self.circle_id, saveerror)
                 if saveresult:
                     return True
                 else:
@@ -707,7 +723,7 @@ class Extract(object):
             exception_data.extract_error_time = datetime.datetime.now()
             exception_data.save()
         except Exception as e:
-            logger.info('记录异常数据失败：%s' % e)
+            take_notes(self.source_id, self.app_id, self.circle_id, '记录异常数据失败：%s' % e)
 
     def supplement_exception_data(self):
         process_monitor = ProcessMonitor.objects.exclude(state='9')
@@ -760,7 +776,8 @@ class Extract(object):
                             copy_exception_data = copy_exception_data.exclude(target__storage=storage,
                                                                               target__storagetag=ed.target.storagetag)
                         else:
-                            logger.info('Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
+                            take_notes(self.source_id, self.app_id, self.circle_id,
+                                       'Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
 
     def run(self):
         # 补取()
@@ -769,7 +786,29 @@ class Extract(object):
         self.set_timer()
 
 
-def run_process(process_id, processcon, targets):
+def take_notes(source_id, app_id, circle_id, content):
+    """
+    记录日志
+    :param info:
+    :return:
+    """
+    try:
+        source_id = int(source_id)
+        app_id = int(app_id)
+        circle_id = int(circle_id)
+    except:
+        pass
+    else:
+        log_info = LogInfo()
+        log_info.source_id = source_id
+        log_info.app_id = app_id
+        log_info.cycle_id = circle_id
+        log_info.content = content
+        log_info.create_time = datetime.datetime.now()
+        log_info.save()
+
+
+def run_process(process_id, targets=None):
     # 取数 *****************************************************
     pid = os.getpid()
     logger.info('此次进程pid: %d ' % pid)
@@ -782,92 +821,180 @@ def run_process(process_id, processcon, targets):
         except Exception as e:
             logger.info('run_process() >> %s' % e)
         else:
-            update_pm.create_time = datetime.datetime.now()
-            update_pm.p_id = pid
-            update_pm.save()
+            if targets:
+                targets = [i for i in targets.split('^') if i]
+                app_id = update_pm.app_admin_id
+                source_id = update_pm.source_id
+                circle_id = update_pm.cycle_id
+                # 取数进程
+                extract = Extract(app_id, source_id, circle_id)
+                # 选择区间补取
+                sp = SupplementProcess.objects.exclude(state='9').filter(primary_process_id=process_id).last()
+                if sp:
+                    sp.p_id = pid
+                    sp.save()
+                    start_time = sp.start_time
+                    end_time = sp.end_time
+                    # start_time加上一分钟，低于end_time继续循环补取，超过则停止
+                    tmp_time = datetime.datetime.now()
+                    t = 0
+                    while True:
+                        t += 1
+                        # 一分钟更新一次
+                        if (datetime.datetime.now() - tmp_time).total_seconds() > 60 or t == 1:
+                            sp.update_time = datetime.datetime.now()
+                            sp.progress_time = start_time
+                            sp.save()
+                            tmp_time = datetime.datetime.now()
 
-            app_id = update_pm.app_admin_id
-            source_id = update_pm.source_id
-            circle_id = update_pm.cycle_id
+                        start_time = start_time + datetime.timedelta(minutes=1)
+                        # 判断周期, 取数
+                        # 判断当前时间是否符合周期规则
+                        circle_rule = update_pm.cycle
+                        if circle_rule:
+                            schedule_type = circle_rule.schedule_type
+                            minute, hour, day_of_week, day_of_month = None, None, None, None
+                            try:
+                                minute = int(circle_rule.minute)
+                            except:
+                                pass
+                            try:
+                                hour = int(circle_rule.hour)
+                            except:
+                                pass
+                            try:
+                                day_of_week = int(circle_rule.day_of_week)
+                            except:
+                                pass
+                            try:
+                                day_of_month = int(circle_rule.day_of_month)
+                            except:
+                                pass
 
-            # 根据数据源类型来判断进程
-            try:
-                source = Source.objects.get(id=source_id)
-            except Source.DoesNotExist as e:
-                pass
+                            # 当前时间
+                            now_minute = start_time.minute
+                            now_hour = start_time.hour
+                            now_weekday = start_time.weekday()
+                            now_day = start_time.day
+
+                            if now_hour == hour and now_minute == minute:
+                                # 每日/每周/每月
+                                if schedule_type == 1:
+                                    extract._get_data(start_time, targets)
+                                if schedule_type == 2:
+                                    # 判断一周第几天
+                                    if now_weekday == day_of_week:
+                                        extract._get_data(start_time, targets)
+                                if schedule_type == 3:
+                                    # 判断一月第几天
+                                    if now_day == day_of_month:
+                                        extract._get_data(start_time, targets)
+
+                        if start_time > end_time:
+                            time.sleep(10)
+                            # 补取结束，修改状态(1 启动成功 0 补取完成 2 补取失败)
+                            sp.p_state = "0"
+                            sp.save()
+
+                            break
+
+                if psutil.pid_exists(pid):
+                    psutil.Process(pid).terminate()
+
             else:
-                process_type = source.type
-                if process_type == '1':
-                    # 数据补取
-                    while True:
-                        try:
-                            # 补取
-                            extract = Extract(app_id, source_id, circle_id)
-                            extract.supplement_exception_data()
+                # 取数
+                update_pm.create_time = datetime.datetime.now()
+                update_pm.p_id = pid
+                update_pm.save()
 
-                            logger.info('异常数据补取结束。')
-                        except Exception as e:
-                            logger.info('数据补取失败：%s' % e)
+                app_id = update_pm.app_admin_id
+                source_id = update_pm.source_id
+                circle_id = update_pm.cycle_id
 
-                        time.sleep(60 * 60 * 24)  # 定时1日
-                elif process_type == '2':
-                    while True:
-                        try:
-                            # 数据清理：根据存储配置中的数据保留周期，定时去删除表中的过期数据
-                            now_time = datetime.datetime.now()
-                            # 遍历所有storage
-                            storages = Storage.objects.exclude(state='9')
-                            for storage in storages:
-                                valid_time = get_dict_name(storage.validtime)
-                                table_name = storage.tablename
-
-                                aft_time = None
-                                if valid_time == '一年':
-                                    aft_time = now_time + datetime.timedelta(days=-365)
-                                elif valid_time == '一个月':
-                                    aft_time = now_time + datetime.timedelta(days=-30)
-                                else:
-                                    # # 永久：测试用，如果为永久暂时保留2天内的数据
-                                    # aft_time = now_time + datetime.timedelta(days=-2)
-                                    pass
-
-                                if aft_time:
-                                    clean_sql = r"""DELETE FROM {table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
-                                        table_name=table_name, savedate=aft_time)
-
-                                    if 'sql_server' in settings.DATABASES['default']['ENGINE']:
-                                        clean_sql = r"""DELETE FROM {db}.dbo.{table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
-                                            table_name=table_name, savedate=aft_time,
-                                            db=settings.DATABASES['default']['NAME'])
-
-                                    db_update = SeveralDBQuery(pro_db_engine, db_info)
-                                    logger.info('时间 [{savedate:%Y-%m-%d %H:%M:%S}] 前数据清理成功。'.format(savedate=aft_time))
-                                    ret = db_update.update(clean_sql)
-                                    db_update.close()
-
-                                    if not ret:
-                                        logger.info('数据清理失败：SQL执行出错。')
-                        except Exception as e:
-                            logger.info('数据清理失败：%s' % e)
-
-                        time.sleep(60 * 60 * 24)  # 定时1日
-                elif process_type == '3':
-                    # 数据服务
-                    pass
-                elif process_type == '4':
-                    # 短信服务
+                # 根据数据源类型来判断进程
+                try:
+                    source = Source.objects.get(id=source_id)
+                except Source.DoesNotExist as e:
                     pass
                 else:
-                    # 取数进程
-                    extract = Extract(app_id, source_id, circle_id)
-                    extract.run()
+                    process_type = source.type
+                    if process_type == '1':
+                        # 数据补取
+                        while True:
+                            try:
+                                # 补取
+                                extract = Extract(app_id, source_id, circle_id)
+                                extract.supplement_exception_data()
+
+                                logger.info('异常数据补取结束。')
+                            except Exception as e:
+                                logger.info('数据补取失败：%s' % e)
+
+                            time.sleep(60 * 60 * 24)  # 定时1日
+                    elif process_type == '2':
+                        while True:
+                            try:
+                                # 数据清理：根据存储配置中的数据保留周期，定时去删除表中的过期数据
+                                now_time = datetime.datetime.now()
+                                # 遍历所有storage
+                                storages = Storage.objects.exclude(state='9')
+                                for storage in storages:
+                                    valid_time = get_dict_name(storage.validtime)
+                                    table_name = storage.tablename
+
+                                    aft_time = None
+                                    if valid_time == '一年':
+                                        aft_time = now_time + datetime.timedelta(days=-365)
+                                    elif valid_time == '一个月':
+                                        aft_time = now_time + datetime.timedelta(days=-30)
+                                    else:
+                                        # # 永久：测试用，如果为永久暂时保留2天内的数据
+                                        # aft_time = now_time + datetime.timedelta(days=-2)
+                                        pass
+
+                                    if aft_time:
+                                        clean_sql = r"""DELETE FROM {table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
+                                            table_name=table_name, savedate=aft_time)
+
+                                        if 'sql_server' in settings.DATABASES['default']['ENGINE']:
+                                            clean_sql = r"""DELETE FROM {db}.dbo.{table_name} WHERE savedate < '{savedate:%Y-%m-%d %H:%M:%S}'""".format(
+                                                table_name=table_name, savedate=aft_time,
+                                                db=settings.DATABASES['default']['NAME'])
+
+                                        db_update = SeveralDBQuery(pro_db_engine, db_info)
+                                        logger.info(
+                                            '时间 [{savedate:%Y-%m-%d %H:%M:%S}] 前数据清理成功。'.format(savedate=aft_time))
+                                        ret = db_update.update(clean_sql)
+                                        db_update.close()
+
+                                        if not ret:
+                                            logger.info('数据清理失败：SQL执行出错。')
+                            except Exception as e:
+                                logger.info('数据清理失败：%s' % e)
+
+                            time.sleep(60 * 60 * 24)  # 定时1日
+                    elif process_type == '3':
+                        # 数据服务
+                        pass
+                    elif process_type == '4':
+                        # 短信服务
+                        pass
+                    else:
+                        # 取数进程
+                        extract = Extract(app_id, source_id, circle_id)
+                        extract.run()
     else:
         logger.info('run_process() >> %s' % '传入参数有误。')
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        run_process(sys.argv[1], None, None)
+    if len(sys.argv) == 2:
         logger.info('进程启动。')
+
+        run_process(sys.argv[1])
+    elif len(sys.argv) == 3:
+        logger.info('进程启动。')
+
+        run_process(sys.argv[1], sys.argv[2])
     else:
         logger.info('脚本未传参。')
