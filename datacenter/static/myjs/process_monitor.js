@@ -51,6 +51,11 @@ $(document).ready(function () {
                     "plugins": ["types", "role"]
                 })
                     .bind('select_node.jstree', function (event, data) {
+                        // 写入进程ID
+                        $('#cp_id').val(data.node.data.cp_id);
+                        cp_id = data.node.data.cp_id;
+                        tabCheck5();
+
                         $('#node_id').val(data.node.id);
 
                         if (data.node.data.type == 'root') {
@@ -189,141 +194,237 @@ $(document).ready(function () {
     var sample_2_completed = false;
     var sample_3_completed = false;
     var sample_4_completed = false;
+    var cp_id = '';
+
+    function tabCheck1() {
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: '../get_process_monitor_info/',
+            data: {
+                cp_id: cp_id,
+            },
+            success: function (data) {
+                var status = data.status;
+                var pm_data = data.data;
+                if (status == 1) {
+                    $('#source_name').val(pm_data.source_name);
+                    $('#source_code').val(pm_data.source_code);
+                    $('#source_type').val(pm_data.source_type);
+                    $('#app_name').val(pm_data.app_name);
+                    $('#circle_name').val(pm_data.circle_name);
+                    $('#create_time').val(pm_data.create_time);
+                    $('#last_time').val(pm_data.last_time);
+                    $('#status').val(pm_data.status);
+                } else {
+                    alert(pm_data);
+                }
+            },
+            error: function () {
+                alert('页面出现错误，请于管理员联系。')
+            }
+        });
+    }
+
+    function tabCheck2() {
+        if (sample_2_completed) {
+            var table_2 = $('#sample_2').DataTable();
+            table_2.ajax.url("../../pm_target_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val()).load();
+        } else {
+            // 指标信息
+            $('#sample_2').dataTable({
+                "bAutoWidth": true,
+                "bSort": false,
+                "bProcessing": true,
+                "ajax": "../../pm_target_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val(),
+                "columns": [
+                    {"data": "id"},
+                    {"data": "id"},
+                    {"data": "target_code"},
+                    {"data": "target_name"},
+                    {"data": null},
+                ],
+
+                "columnDefs": [{
+                    "targets": 0,
+                    "mRender": function (data, type, full) {
+                        return "<input name='selecttarget' type='checkbox' class='checkboxes' value='" + data + "'/>"
+                    }
+                }, {
+                    "targets": -1,
+                    "data": null,
+                    "defaultContent": "<button  id='view' title='查看详情'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-eye'></i></button>"
+                }],
+                "oLanguage": {
+                    "sLengthMenu": "每页显示 _MENU_ 条记录",
+                    "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                    "sInfoEmpty": "没有数据",
+                    "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                    "sSearch": "搜索",
+                    "oPaginate": {
+                        "sFirst": "首页",
+                        "sPrevious": "前一页",
+                        "sNext": "后一页",
+                        "sLast": "尾页"
+                    },
+                    "sZeroRecords": "没有检索到数据",
+                },
+                "initComplete": function (settings, json) {
+                    sample_2_completed = true;
+                    var supplement_status = json.supplement_status;
+                    if (supplement_status == 1) {
+                        $('#supplement').hide();
+                    } else {
+                        $('#supplement').show();
+                    }
+                }
+            });
+
+        }
+    }
+
+    function tabCheck3() {
+        if (sample_3_completed) {
+            var table_3 = $('#sample_3').DataTable();
+            table_3.ajax.url("../../get_exception_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val()).load();
+        } else {
+            // 指标信息
+            $('#sample_3').dataTable({
+                "bAutoWidth": true,
+                "bSort": false,
+                "bProcessing": true,
+                "ajax": "../../get_exception_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val(),
+                "columns": [
+                    {"data": "id"},
+                    {"data": "target_name"},
+                    {"data": "extract_error_time"},
+                    {"data": "supplement_times"},
+                    {"data": "last_supplement_time"},
+                ],
+
+                "columnDefs": [],
+                "oLanguage": {
+                    "sLengthMenu": "每页显示 _MENU_ 条记录",
+                    "sZeroRecords": "抱歉， 没有找到",
+                    "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                    "sInfoEmpty": "没有数据",
+                    "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                    "sSearch": "搜索",
+                    "oPaginate": {
+                        "sFirst": "首页",
+                        "sPrevious": "前一页",
+                        "sNext": "后一页",
+                        "sLast": "尾页"
+                    },
+                },
+                "initComplete": function (settings, json) {
+                    sample_3_completed = true;
+                }
+            });
+        }
+    }
+
+    function tabCheck4() {
+        if (sample_4_completed) {
+            var table = $('#sample_4').DataTable();
+            table.ajax.url("../../get_log_info/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val()).load();
+        } else {
+            // 指标信息
+            $('#sample_4').dataTable({
+                "bAutoWidth": true,
+                "bSort": false,
+                "bProcessing": true,
+                "ajax": "../../get_log_info/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val(),
+                "columns": [
+                    {"data": "id"},
+                    {"data": "create_time"},
+                    {"data": "content"},
+                ],
+
+                "columnDefs": [],
+                "oLanguage": {
+                    "sLengthMenu": "每页显示 _MENU_ 条记录",
+                    "sZeroRecords": "抱歉， 没有找到",
+                    "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                    "sInfoEmpty": "没有数据",
+                    "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                    "sSearch": "搜索",
+                    "oPaginate": {
+                        "sFirst": "首页",
+                        "sPrevious": "前一页",
+                        "sNext": "后一页",
+                        "sLast": "尾页"
+                    },
+                },
+                "initComplete": function (settings, json) {
+                    sample_4_completed = true;
+                }
+            });
+        }
+    }
+
+    function tabCheck5() {
+        // 根据主进程ID获取补取进程状态
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: '../get_supplement_process_info/',
+            data: {
+                cp_id: cp_id,
+            },
+            success: function (data) {
+                var status = data.status;
+
+                var sp_data = data.data;
+                if (status == 1) {
+                    $('#p_id').val(sp_data.p_id);
+                    var p_state = sp_data.p_state;
+                    if (p_state == 1) {
+                        $('#tabcheck5').parent().show();
+
+                        var p_state_str = '运行中';
+                        $('#p_state').val(p_state_str);
+                        $('#setup_time').val(sp_data.setup_time);
+                        $('#update_time').val(sp_data.update_time);
+                        $('#supplement_start_time').val(sp_data.start_time);
+                        $('#supplement_end_time').val(sp_data.end_time);
+                        $('#progress_time').val(sp_data.progress_time);
+                    } else {
+                        $('#tabcheck5').parent().hide();
+                        $('#supplement').show();
+                    }
+                } else {
+                    $('#tabcheck5').parent().hide();
+                    $('#supplement').show();
+                }
+
+                if ($('#tabcheck5').parent().css('display') == 'none') {
+                    $('#navtabs a:first').tab('show');
+                }
+            },
+            error: function () {
+                alert('页面出现错误，请于管理员联系。')
+            }
+        });
+    }
+
     $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+        cp_id = $('#cp_id').val();
         var target_id = e.target.id;
         if (target_id == 'tabcheck2') {
-            if (sample_2_completed) {
-                var table_2 = $('#sample_2').DataTable();
-                table_2.ajax.url("../../pm_target_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val()).load();
-            } else {
-                // 指标信息
-                $('#sample_2').dataTable({
-                    "bAutoWidth": true,
-                    "bSort": false,
-                    "bProcessing": true,
-                    "ajax": "../../pm_target_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val(),
-                    "columns": [
-                        {"data": "id"},
-                        {"data": "id"},
-                        {"data": "target_code"},
-                        {"data": "target_name"},
-                        // {"data": "source_content"},
-                        // {"data": "storage_table_name"},
-                        // {"data": "storage_fields"},
-                        {"data": null},
-                    ],
-
-                    "columnDefs": [{
-                        "targets": 0,
-                        "mRender": function (data, type, full) {
-                            return "<input name='selecttarget' type='checkbox' class='checkboxes' value='" + data + "'/>"
-                        }
-                    }, {
-                        "targets": -1,
-                        "data": null,
-                        "defaultContent": "<button  id='view' title='查看详情'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-eye'></i></button>"
-                    }],
-                    "oLanguage": {
-                        "sLengthMenu": "每页显示 _MENU_ 条记录",
-                        "sZeroRecords": "抱歉， 没有找到",
-                        "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
-                        "sInfoEmpty": "没有数据",
-                        "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
-                        "sSearch": "搜索",
-                        "oPaginate": {
-                            "sFirst": "首页",
-                            "sPrevious": "前一页",
-                            "sNext": "后一页",
-                            "sLast": "尾页"
-                        },
-                        "sZeroRecords": "没有检索到数据",
-                    },
-                    "initComplete": function (settings, json) {
-                        sample_2_completed = true;
-                    }
-                });
-
-            }
+            tabCheck2();
         }
         if (target_id == 'tabcheck3') {
-            if (sample_3_completed) {
-                var table_3 = $('#sample_3').DataTable();
-                table_3.ajax.url("../../get_exception_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val()).load();
-            } else {
-                // 指标信息
-                $('#sample_3').dataTable({
-                    "bAutoWidth": true,
-                    "bSort": false,
-                    "bProcessing": true,
-                    "ajax": "../../get_exception_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val(),
-                    "columns": [
-                        {"data": "id"},
-                        {"data": "target_name"},
-                        {"data": "extract_error_time"},
-                        {"data": "supplement_times"},
-                        {"data": "last_supplement_time"},
-                    ],
-
-                    "columnDefs": [],
-                    "oLanguage": {
-                        "sLengthMenu": "每页显示 _MENU_ 条记录",
-                        "sZeroRecords": "抱歉， 没有找到",
-                        "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
-                        "sInfoEmpty": "没有数据",
-                        "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
-                        "sSearch": "搜索",
-                        "oPaginate": {
-                            "sFirst": "首页",
-                            "sPrevious": "前一页",
-                            "sNext": "后一页",
-                            "sLast": "尾页"
-                        },
-                        "sZeroRecords": "没有检索到数据",
-                    },
-                    "initComplete": function (settings, json) {
-                        sample_3_completed = true;
-                    }
-                });
-            }
+            tabCheck3();
         }
         if (target_id == 'tabcheck4') {
-            if (sample_4_completed) {
-                var table = $('#sample_4').DataTable();
-                table.ajax.url("../../get_log_info/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val()).load();
-            } else {
-                // 指标信息
-                $('#sample_4').dataTable({
-                    "bAutoWidth": true,
-                    "bSort": false,
-                    "bProcessing": true,
-                    "ajax": "../../get_log_info/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val(),
-                    "columns": [
-                        {"data": "id"},
-                        {"data": "create_time"},
-                        {"data": "content"},
-                    ],
-
-                    "columnDefs": [],
-                    "oLanguage": {
-                        "sLengthMenu": "每页显示 _MENU_ 条记录",
-                        "sZeroRecords": "抱歉， 没有找到",
-                        "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
-                        "sInfoEmpty": "没有数据",
-                        "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
-                        "sSearch": "搜索",
-                        "oPaginate": {
-                            "sFirst": "首页",
-                            "sPrevious": "前一页",
-                            "sNext": "后一页",
-                            "sLast": "尾页"
-                        },
-                        "sZeroRecords": "没有检索到数据",
-                    },
-                    "initComplete": function (settings, json) {
-                        sample_4_completed = true;
-                    }
-                });
-            }
+            tabCheck4();
+        }
+        if (target_id == 'tabcheck5') {
+            tabCheck5();
+        }
+        if (target_id == 'tabcheck1') {
+            tabCheck1();
         }
     });
 
@@ -362,11 +463,11 @@ $(document).ready(function () {
                     var status = data.status;
                     var result_list = JSON.parse(data.data);
 
-                    if (status == 1){
+                    if (status == 1) {
                         $('#static2').modal('show');
                         $('#test_data').empty();
                         var target_result = '';
-                        for (var i=0; i< result_list.length; i++){
+                        for (var i = 0; i < result_list.length; i++) {
                             target_result += '<ul><span style="font-weight:bold; margin-left: -20px;">指标名称：</span>' + result_list[i].target_name +
                                 '<li>指标ID：' + result_list[i].target_id + '</li>' +
                                 '<li>指标CODE：' + result_list[i].target_code + '</li>' +
@@ -422,13 +523,46 @@ $(document).ready(function () {
                 selectedtarget: $('#selectArray').val(),
                 start_time: $('#start_time').val(),
                 end_time: $('#end_time').val(),
+                cp_id: $('#cp_id').val()
             },
             success: function (data) {
-                //..
+                var status = data.status;
+                if (status == 1) {
+                    $('#supplement').hide();
+                    $('#static1').modal('hide');
+                    $('#tabcheck5').parent().show();
+                }
+                alert(data.data);
             },
             error: function (e) {
                 alert("页面出现错误，请于管理员联系。");
             }
         });
-    })
+    });
+    $('#refresh').click(function () {
+        // 判断当前激活的TAB来刷新局部
+        var tab_id = '';
+        $('.tab-pane').each(function () {
+            // 如果tab5隐藏了，直接跳转tab1
+            if ($(this).attr('class').indexOf('active in') != -1) {
+                // 获取激活的tab刷新数据
+                tab_id = $(this).prop('id');
+                if (tab_id == 'tab_1_1') {
+                    tabCheck1();
+                } else if (tab_id == 'tab_1_2') {
+                    tabCheck2();
+
+                } else if (tab_id == 'tab_1_3') {
+                    tabCheck3();
+
+                } else if (tab_id == 'tab_1_4') {
+                    tabCheck4();
+
+                } else {
+                    tabCheck5();
+                }
+                return;
+            }
+        });
+    });
 });
