@@ -892,15 +892,28 @@ def run_process(process_id, targets=None):
                                         extract._get_data(start_time, targets)
 
                         if start_time > end_time:
-                            time.sleep(10)
+                            time.sleep(5)
                             # 补取结束，修改状态(1 启动成功 0 补取完成 2 补取失败)
                             sp.p_state = "0"
                             sp.save()
 
                             break
 
-                if psutil.pid_exists(pid):
-                    psutil.Process(pid).terminate()
+                def check_py_exists(pid):
+                    process = None
+                    try:
+                        pid = int(pid)
+                        if psutil.pid_exists(pid):
+                            process = psutil.Process(pid=pid)
+                            if 'python.exe' not in process.name():
+                                process = None
+                    except:
+                        pass
+
+                    return process
+                sp = check_py_exists(pid)
+                if sp:
+                    sp.terminate()
 
             else:
                 # 取数
