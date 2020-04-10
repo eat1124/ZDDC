@@ -4653,6 +4653,7 @@ def getcalculatedata(target, date, guid):
                                 else:
                                     value = query_res[0].cumulativeyear
 
+
                 formula = formula.replace("<" + th + ">", str(value))
 
     try:
