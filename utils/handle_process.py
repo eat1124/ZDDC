@@ -472,6 +472,7 @@ class Extract(object):
                         tablename=tablename, fields=fields, values=values,
                         db=settings.DATABASES['default']['NAME']).replace('"', "'")
 
+                take_notes(self.source_id, self.app_id, self.circle_id, '行存：%s' % row_save_sql)
                 db_update = SeveralDBQuery(pro_db_engine, db_info)
                 ret = db_update.update(row_save_sql)
                 db_update.close()
