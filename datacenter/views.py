@@ -36,7 +36,7 @@ from django.http import HttpResponseRedirect, Http404, HttpResponse, JsonRespons
 from django.http import StreamingHttpResponse
 from django.db.models import Q
 from django.db.models import Count
-from django.db.models import Sum, Max, Avg
+from django.db.models import Sum, Max, Avg, Min
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import cache_page
@@ -4576,24 +4576,24 @@ def getcalculatedata(target, date, guid):
                             condtions = {'datadate': newdate}
 
                         new_date = ""
-                        if cond == "MAVG":
+                        if cond == "MAVG" or cond == "MMAX" or cond == "MMIN":
                             ms_newdate = date.replace(day=1)
                             me_newdate = date
                             new_date = (ms_newdate, me_newdate)
 
-                        if cond == "SAVG":
+                        if cond == "SAVG" or cond == "SMAX" or cond == "SMIN":
                             month = (date.month - 1) - (date.month - 1) % 3 + 1
                             ss_newdate = datetime.datetime(date.year, month, 1)
                             se_newdate = date
                             new_date = (ss_newdate, se_newdate)
 
-                        if cond == "HAVG":
+                        if cond == "HAVG" or cond == "HMAX" or cond == "HMIN":
                             month = (date.month - 1) - (date.month - 1) % 6 + 1
                             hs_newdate = datetime.datetime(date.year, month, 1)
                             he_newdate = date
                             new_date = (hs_newdate, he_newdate)
 
-                        if cond == "YAVG":
+                        if cond == "YAVG" or cond == "YMAX" or cond == "YMIN":
                             ys_newdate = date.replace(month=1, day=1)
                             ye_newdate = date
                             new_date = (ys_newdate, ye_newdate)
@@ -4610,26 +4610,46 @@ def getcalculatedata(target, date, guid):
                             if col == 'd':
                                 if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                     value = query_res.aggregate(Avg('curvalue'))["curvalue__avg"]
+                                elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                    value = query_res.aggregate(Max('curvalue'))["curvalue__max"]
+                                elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                    value = query_res.aggregate(Min('curvalue'))["curvalue__min"]
                                 else:
                                     value = query_res[0].curvalue
                             if col == 'm':
                                 if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                     value = query_res.aggregate(Avg('cumulativemonth'))["cumulativemonth__avg"]
+                                elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                    value = query_res.aggregate(Max('cumulativemonth'))["cumulativemonth__max"]
+                                elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                    value = query_res.aggregate(Min('cumulativemonth'))["cumulativemonth__min"]
                                 else:
                                     value = query_res[0].cumulativemonth
                             if col == 's':
                                 if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                     value = query_res.aggregate(Avg('cumulativequarter'))["cumulativequarter__avg"]
+                                elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                    value = query_res.aggregate(Max('cumulativequarter'))["cumulativequarter__max"]
+                                elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                    value = query_res.aggregate(Min('cumulativequarter'))["cumulativequarter__min"]
                                 else:
                                     value = query_res[0].cumulativequarter
                             if col == 'h':
                                 if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                     value = query_res.aggregate(Avg('cumulativehalfyear'))["cumulativehalfyear__avg"]
+                                elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                    value = query_res.aggregate(Max('cumulativehalfyear'))["cumulativehalfyear__max"]
+                                elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                    value = query_res.aggregate(Min('cumulativehalfyear'))["cumulativehalfyear__min"]
                                 else:
                                     value = query_res[0].cumulativehalfyear
                             if col == 'y':
                                 if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                     value = query_res.aggregate(Avg('cumulativeyear'))["cumulativeyear__avg"]
+                                elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                    value = query_res.aggregate(Max('cumulativeyear'))["cumulativeyear__max"]
+                                elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                    value = query_res.aggregate(Min('cumulativeyear'))["cumulativeyear__min"]
                                 else:
                                     value = query_res[0].cumulativeyear
 
@@ -4859,24 +4879,24 @@ def reporting_formulacalculate(request):
                                     condtions = {'datadate': newdate}
 
                                 new_date = ""
-                                if cond == "MAVG":
+                                if cond == "MAVG" or cond == "MMAX" or cond == "MMIN":
                                     ms_newdate = date.replace(day=1)
                                     me_newdate = date
                                     new_date = (ms_newdate, me_newdate)
 
-                                if cond == "SAVG":
+                                if cond == "SAVG" or cond == "SMAX" or cond == "SMIN":
                                     month = (date.month - 1) - (date.month - 1) % 3 + 1
                                     ss_newdate = datetime.datetime(date.year, month, 1)
                                     se_newdate = date
                                     new_date = (ss_newdate, se_newdate)
 
-                                if cond == "HAVG":
+                                if cond == "HAVG" or cond == "HMAX" or cond == "HMIN":
                                     month = (date.month - 1) - (date.month - 1) % 6 + 1
                                     hs_newdate = datetime.datetime(date.year, month, 1)
                                     he_newdate = date
                                     new_date = (hs_newdate, he_newdate)
 
-                                if cond == "YAVG":
+                                if cond == "YAVG" or cond == "YMAX" or cond == "YMIN":
                                     ys_newdate = date.replace(month=1, day=1)
                                     ye_newdate = date
                                     new_date = (ys_newdate, ye_newdate)
@@ -4895,6 +4915,12 @@ def reporting_formulacalculate(request):
                                         if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                             value = str(round(query_res.aggregate(Avg('curvalue'))["curvalue__avg"],
                                                               query_res[0].target.digit))
+                                        elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                            value = str(round(query_res.aggregate(Max('curvalue'))["curvalue__max"],
+                                                              query_res[0].target.digit))
+                                        elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                            value = str(round(query_res.aggregate(Min('curvalue'))["curvalue__min"],
+                                                              query_res[0].target.digit))
                                         else:
                                             value = str(round(query_res[0].curvalue, query_res[0].target.digit))
                                             if operationtype == "17":
@@ -4905,6 +4931,12 @@ def reporting_formulacalculate(request):
                                                 round(
                                                     query_res.aggregate(Avg('cumulativemonth'))['cumulativemonth__avg'],
                                                     query_res[0].target.digit))
+                                        elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                            value = str(round(query_res.aggregate(Max('cumulativemonth'))["cumulativemonth__max"],
+                                                              query_res[0].target.digit))
+                                        elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                            value = str(round(query_res.aggregate(Min('cumulativemonth'))["cumulativemonth__min"],
+                                                              query_res[0].target.digit))
                                         else:
                                             value = str(round(query_res[0].cumulativemonth, query_res[0].target.digit))
                                     if col == 's':
@@ -4914,6 +4946,12 @@ def reporting_formulacalculate(request):
                                                     query_res.aggregate(Avg('cumulativequarter'))[
                                                         'cumulativequarter__avg'],
                                                     query_res[0].target.digit))
+                                        elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                            value = str(round(query_res.aggregate(Max('cumulativequarter'))["cumulativequarter__max"],
+                                                              query_res[0].target.digit))
+                                        elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                            value = str(round(query_res.aggregate(Min('cumulativequarter'))["cumulativequarter__min"],
+                                                              query_res[0].target.digit))
                                         else:
                                             value = str(
                                                 round(query_res[0].cumulativequarter, query_res[0].target.digit))
@@ -4923,6 +4961,12 @@ def reporting_formulacalculate(request):
                                                 round(query_res.aggregate(Avg('cumulativehalfyear'))[
                                                           'cumulativehalfyear__avg'],
                                                       query_res[0].target.digit))
+                                        elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                            value = str(round(query_res.aggregate(Max('cumulativehalfyear'))["cumulativehalfyear__max"],
+                                                              query_res[0].target.digit))
+                                        elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                            value = str(round(query_res.aggregate(Min('cumulativehalfyear'))["cumulativehalfyear__min"],
+                                                              query_res[0].target.digit))
                                         else:
                                             value = str(
                                                 round(query_res[0].cumulativehalfyear, query_res[0].target.digit))
@@ -4931,6 +4975,12 @@ def reporting_formulacalculate(request):
                                             value = str(
                                                 round(query_res.aggregate(Avg('cumulativeyear'))['cumulativeyear__avg'],
                                                       query_res[0].target.digit))
+                                        elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                            value = str(round(query_res.aggregate(Max('cumulativeyear'))["cumulativeyear__max"],
+                                                              query_res[0].target.digit))
+                                        elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                            value = str(round(query_res.aggregate(Min('cumulativeyear'))["cumulativeyear__min"],
+                                                              query_res[0].target.digit))
                                         else:
                                             value = str(round(query_res[0].cumulativeyear, query_res[0].target.digit))
 
