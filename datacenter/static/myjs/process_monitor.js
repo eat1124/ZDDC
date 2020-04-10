@@ -512,6 +512,8 @@ $(document).ready(function () {
 
             // 弹出模态框
             $('#static1').modal({backdrop: "static"});
+            $('#start_time').val('');
+            $('#end_time').val('');
         }
     });
     $('#do_supplement').click(function () {
