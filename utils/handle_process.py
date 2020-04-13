@@ -106,7 +106,7 @@ class SeveralDBQuery(object):
                     database=credit['db']
                 )
         except Exception as e:
-            self.error = 'SeveralDBQuery >> __init__() >> 数据库连接失败: 。' + e
+            self.error = 'SeveralDBQuery >> __init__() >> 数据库连接失败:%s 。' % e
         else:
             if not self.connection:
                 self.error = 'SeveralDBQuery >> __init__() >> 数据库未连接。'
@@ -137,7 +137,7 @@ class SeveralDBQuery(object):
                     else:
                         self.result = cursor.fetchall()
         except Exception as e:
-            self.error = fetch_sql + " 数据查询失败：" + e
+            self.error = fetch_sql + " 数据查询失败：%s" % e
 
     def update(self, update_sql):
         try:
@@ -145,7 +145,7 @@ class SeveralDBQuery(object):
                 cursor.execute(update_sql)
                 self.connection.commit()
         except Exception as e:
-            self.error = "数据插入失败：" + e
+            self.error = "数据插入失败：%s" % e
             return False
         else:
             return True
@@ -388,7 +388,7 @@ class Extract(object):
                 if type(source_connection) == list:
                     source_connection = source_connection[0]
             except Exception as e:
-                error = 'Extract >> getDataFromSource() >> 数据源配置认证信息错误：' + e
+                error = 'Extract >> getDataFromSource() >> 数据源配置认证信息错误：%s' % e
                 return {"result": result_list, "error": error}
             else:
                 source_content = target.source_content
@@ -472,7 +472,7 @@ class Extract(object):
                         tablename=tablename, fields=fields, values=values,
                         db=settings.DATABASES['default']['NAME']).replace('"', "'")
 
-                take_notes(self.source_id, self.app_id, self.circle_id, '行存：%s' % row_save_sql)
+                logger.info('行存：%s' % row_save_sql)
                 db_update = SeveralDBQuery(pro_db_engine, db_info)
                 ret = db_update.update(row_save_sql)
                 db_update.close()
@@ -548,7 +548,7 @@ class Extract(object):
                 tablename=tablename, fields=fields, values=values,
                 db=settings.DATABASES['default']['NAME']).replace('"', "'")
 
-        take_notes(self.source_id, self.app_id, self.circle_id, '列存：%s' % col_save_sql)
+        logger.info('列存：%s' % col_save_sql)
 
         db_update = SeveralDBQuery(pro_db_engine, db_info)
         ret = db_update.update(col_save_sql)

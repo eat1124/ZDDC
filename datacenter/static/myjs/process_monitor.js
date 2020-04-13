@@ -54,7 +54,6 @@ $(document).ready(function () {
                         // 写入进程ID
                         $('#cp_id').val(data.node.data.cp_id);
                         cp_id = data.node.data.cp_id;
-                        tabCheck5();
 
                         $('#node_id').val(data.node.id);
 
@@ -100,6 +99,8 @@ $(document).ready(function () {
 
                             // tab
                             $('#navtabs').show();
+                            
+                            tabCheck5();
                         } else {
                             $('#navtabs').hide();
                         }
