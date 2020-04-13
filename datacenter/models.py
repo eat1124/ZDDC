@@ -137,6 +137,11 @@ class Target(models.Model):
     work = models.ForeignKey('Work', null=True, verbose_name='业务')
     unity = models.CharField("单位", blank=True, null=True, max_length=20)
     is_repeat = models.CharField("数据重复时", blank=True, null=True, max_length=20)
+    data_from_choices = (
+        ("lc", '本地系统'),
+        ("et", '外部系统'),
+    )
+    data_from = models.CharField("数据来源", null=True, max_length=20, choices=data_from_choices, default="lc")
 
 
 class Constant(models.Model):
