@@ -965,6 +965,12 @@ def supplement_process(request):
                 except Exception as e:
                     print(e)
                     end_time = None
+                if all([start_time, end_time]):
+                    if start_time > end_time:
+                        return JsonResponse({
+                            'status': 0,
+                            'data': '开始时间不得迟于结束时间。'
+                        })
 
                 supplement_process = SupplementProcess()
                 supplement_process.start_time = start_time

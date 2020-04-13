@@ -382,7 +382,7 @@ $(document).ready(function () {
                     var p_state = sp_data.p_state;
                     if (p_state == 1) {
                         $('#tabcheck5').parent().show();
-
+                        $('#tab_1_5').show();
                         var p_state_str = '运行中';
                         $('#p_state').val(p_state_str);
                         $('#setup_time').val(sp_data.setup_time);
@@ -391,16 +391,16 @@ $(document).ready(function () {
                         $('#supplement_end_time').val(sp_data.end_time);
                         $('#progress_time').val(sp_data.progress_time);
                     } else {
+                        $('#navtabs a:first').tab('show');
                         $('#tabcheck5').parent().hide();
+                        $('#tab_1_5').hide();
                         $('#supplement').show();
                     }
                 } else {
-                    $('#tabcheck5').parent().hide();
-                    $('#supplement').show();
-                }
-
-                if ($('#tabcheck5').parent().css('display') == 'none') {
                     $('#navtabs a:first').tab('show');
+                    $('#tabcheck5').parent().hide();
+                    $('#tab_1_5').hide();
+                    $('#supplement').show();
                 }
             },
             error: function () {
