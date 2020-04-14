@@ -1,91 +1,115 @@
 {% extends "base1.html" %}
 {% block content %}
-<div style="height:10px"></div>
-<div class="portlet-body">
-    <div class="row">
-        <div id="tree_2" class="col-md-4 tree-demo"></div>
-        <div class="col-md-8">
-            <div id="formdiv" class="portlet light bordered" {{hiddendiv}}>
-                {% if errors %}
-                {% for error in errors %}
-                <div ID="error" class="alert alert-danger ">{{ error }}</div>
-                <span> {% endfor %}</span>
-                {% endif %}
-                <div class="portlet-title" id="error_tag">
-                    <div class="caption font-green-sharp">
-                        <label id="title" class="caption-subject bold uppercase">{{title}}</label>
+    <div style="height:10px"></div>
+    <div class="portlet-body">
+        <div class="row">
+            <div id="tree_2" class="col-md-4 tree-demo"></div>
+            <div class="col-md-8">
+                <div id="formdiv" class="portlet light bordered" {{ hiddendiv }}>
+                    {% if errors %}
+                        {% for error in errors %}
+                            <div ID="error" class="alert alert-danger ">{{ error }}</div>
+                            <span> {% endfor %}</span>
+                    {% endif %}
+                    <div class="portlet-title" id="error_tag">
+                        <div class="caption font-green-sharp">
+                            <label id="title" class="caption-subject bold uppercase">{{ title }}</label>
+                        </div>
                     </div>
-                </div>
-                <div class="portlet-body form">
-                    <form class="bs-example form-horizontal activate-form" id="formactivate" method="post">{% csrf_token %}
-                        <div class="form-body">
-                            <div class="form-group ">
-                                <label class="col-md-2 control-label"><span style="color:red; ">*</span>数据源代码</label>
-                                <div class="col-md-10">
-                                    <input hidden id="id" type="text" name="id" value="{{id}}">
-                                    <input hidden id="pid" type="text" name="pid" value="{{pid}}">
-                                    <input id="code" autocomplete="off" type="text" name="code" class="form-control" placeholder="" value={{code}}>
-                                    <div class="form-control-focus"></div>
+                    <div class="portlet-body form">
+                        <form class="bs-example form-horizontal activate-form" id="formactivate"
+                              method="post">{% csrf_token %}
+                            <div class="form-body">
+                                <div class="form-group ">
+                                    <label class="col-md-2 control-label"><span
+                                            style="color:red; ">*</span>数据源代码</label>
+                                    <div class="col-md-10">
+                                        <input hidden id="id" type="text" name="id" value="{{ id }}">
+                                        <input hidden id="pid" type="text" name="pid" value="{{ pid }}">
+                                        <input id="code" autocomplete="off" type="text" name="code" class="form-control"
+                                               placeholder="" value={{ code }}>
+                                        <div class="form-control-focus"></div>
+                                    </div>
+                                </div>
+                                <div class="form-group ">
+                                    <label class="col-md-2 control-label" id="d_name"><span style="color:red; ">*</span>数据源名称</label>
+                                    <div class="col-md-10">
+                                        <input id="name" autocomplete="off" type="text" name="name" class="form-control"
+                                               value="{{ name }}" placeholder="">
+                                        <div class="form-control-focus"></div>
+                                    </div>
+                                </div>
+                                <div class="form-group ">
+                                    <label class="col-md-2 control-label"><span style="color:red; ">*</span>连接串 <a
+                                            style="color: #000000" data-toggle="collapse" data-parent="#accordion"
+                                            href="#collapse1"><i class="fa fa-question-circle"
+                                                                 title='点击查看字符串格式'></i></a></label>
+                                    <div class="col-md-10">
+                                        <input id="connection" autocomplete="off" type="text" name="connection"
+                                               class="form-control" value="{{ connection }}" placeholder="">
+                                        <div class="form-control-focus"></div>
+                                    </div>
+                                    <div id="collapse1" class="col-md-offset-2 col-md-10 panel-collapse collapse">
+                                        <div class="panel-body">
+                                            <b>连接串格式：</b><br>
+                                            &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp MySQL/Oracle/SQL Server：[{"host":"远程地址","user":"用户名","passwd":"密码","db":"数据库"}]<br>
+                                            &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp PI：[{"host":"远程地址"}]<br>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group ">
+                                    <label class="col-md-2 control-label"><span
+                                            style="color:red; ">*</span>数据源类型</label>
+                                    <div class="col-md-10">
+                                        <select class="form-control" id="sourcetype" name="sourcetype">
+                                            {% for source in source_type_list %}
+                                                <option value="{{ source.source_type_id }}" {{ source.source_if_selected }}>{{ source.source_type }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="form-group ">
-                                <label class="col-md-2 control-label" id="d_name"><span style="color:red; ">*</span>数据源名称</label>
-                                <div class="col-md-10">
-                                    <input id="name" autocomplete="off" type="text" name="name" class="form-control" value="{{name}}" placeholder="">
-                                    <div class="form-control-focus"></div>
-                                </div>
+                            <div class="form-actions noborder" style="margin-top:-30px;text-align:center">
+                                <button type="submit" id="save" name="save" class="btn blue">保存</button>
                             </div>
-                            <div class="form-group ">
-                                <label class="col-md-2 control-label"><span style="color:red; ">*</span>连接串 <i class="fa fa-question-circle" title='数据形式：[{"host":"127.0.0.1","user":"user_name","passwd":"password","db":"db_name"}]'></i></label>
-                                <div class="col-md-10">
-                                    <input id="connection" autocomplete="off" type="text" name="connection" class="form-control" value="{{connection}}" placeholder="">
-                                    <div class="form-control-focus"></div>
-                                </div>
-                            </div>
-                            <div class="form-group ">
-                                <label class="col-md-2 control-label"><span style="color:red; ">*</span>数据源类型</label>
-                                <div class="col-md-10">
-                                    <select class="form-control" id="sourcetype" name="sourcetype">
-                                        {% for source in source_type_list %}
-                                        <option value="{{source.source_type_id}}" {{ source.source_if_selected}}>{{source.source_type}}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-actions noborder" style="margin-top:-30px;text-align:center">
-                            <button type="submit" id="save" name="save" class="btn blue">保存</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-</div>
-</div>
+    </div>
+    </div>
 {% endblock %}
 {% block script %}
-<script>
-    var sourceTreeData = {{treedata | safe}};
-</script>
-<link href="/static/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css" />
-<link href="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet" type="text/css" />
-<link href="/static/assets/global/plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" type="text/css" />
-<link href="/static/assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
-<link href="/static/assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <script>
+        var sourceTreeData = {{treedata | safe}};
+    </script>
+    <link href="/static/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet"
+          type="text/css"/>
+    <link href="/static/assets/global/plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet"
+          type="text/css"/>
+    <link href="/static/assets/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/assets/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css"/>
 
-<script src="/static/assets/global/plugins/datatables/datatables.min.js" type="text/javascript"></script>
-<script src="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js" type="text/javascript"></script>
-<script src="/static/assets/global/plugins/bootstrap-select/js/bootstrap-select.min.js" type="text/javascript"></script>
-<script src="/static/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
-<script src="/static/assets/pages/scripts/components-select2.min.js" type="text/javascript"></script>
-<script src="/static/assets/global/plugins/jquery-multi-select/js/jquery.multi-select.js" type="text/javascript"></script>
-<!--add -->
-<link href="/static/assets/global/plugins/jstree/dist/themes/default/style.min.css" rel="stylesheet" type="text/css" />
-<script src="/static/assets/global/scripts/app.min.js" type="text/javascript"></script>
-<script src="/static/assets/global/plugins/jstree/dist/jstree.min.js" type="text/javascript"></script>
-<script src="/static/assets/global/plugins/jquery-multi-select/js/jquery.quicksearch.js" type="text/javascript"></script>
-<script src="/static/assets/global/plugins/bootstrap-contextmenu/bootstrap-contextmenu.js" type="text/javascript"></script>
-<script src="/static/new/js/slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="/static/assets/global/plugins/datatables/datatables.min.js" type="text/javascript"></script>
+    <script src="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js"
+            type="text/javascript"></script>
+    <script src="/static/assets/global/plugins/bootstrap-select/js/bootstrap-select.min.js"
+            type="text/javascript"></script>
+    <script src="/static/assets/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+    <script src="/static/assets/pages/scripts/components-select2.min.js" type="text/javascript"></script>
+    <script src="/static/assets/global/plugins/jquery-multi-select/js/jquery.multi-select.js"
+            type="text/javascript"></script>
+    <!--add -->
+    <link href="/static/assets/global/plugins/jstree/dist/themes/default/style.min.css" rel="stylesheet"
+          type="text/css"/>
+    <script src="/static/assets/global/scripts/app.min.js" type="text/javascript"></script>
+    <script src="/static/assets/global/plugins/jstree/dist/jstree.min.js" type="text/javascript"></script>
+    <script src="/static/assets/global/plugins/jquery-multi-select/js/jquery.quicksearch.js"
+            type="text/javascript"></script>
+    <script src="/static/assets/global/plugins/bootstrap-contextmenu/bootstrap-contextmenu.js"
+            type="text/javascript"></script>
+    <script src="/static/new/js/slimscroll/jquery.slimscroll.min.js"></script>
 {% endblock %}
