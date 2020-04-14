@@ -4657,24 +4657,6 @@ def getcalculatedata(target, date, guid,all_constant,all_target,tableList):
     """
     数据计算
     """
-    curvalue = -9999
-    formula = ""
-    if target.formula is not None:
-        formula = target.formula
-    members = formula.split('>')
-    for member in members:
-        if member.replace(" ", "") != "":
-            col = "d";
-            cond = "D";
-            if (member.find('<') >= 0):
-                membertarget = member[member.find('<') + 1:].replace(" ", "")
-                th = membertarget
-                if membertarget.find(':') > 0:
-                    col = membertarget[membertarget.find(':') + 1:]
-                    membertarget = membertarget[0:membertarget.find(':')]
-                    if col.find(':') > 0:
-                        cond = col[col.find(':') + 1:]
-                        col = col[0:col.find(':')]
 
     if target.data_from == 'et':
         # 外部系统，直接取数
