@@ -326,8 +326,83 @@
                                            placeholder="">
                                     <div class="form-control-focus"></div>
                                 </div>
+                                <label class="col-md-2 control-label"><span style="color: red">*</span>数据来源</label>
+                                <div class="col-md-4">
+                                    <select id="data_from" name="data_from" class="form-control">
+                                        <option value="lc">本地系统</option>
+                                        <option value="et">外部系统</option>
+                                    </select>
+                                    <div class="form-control-focus"></div>
+                                </div>
                             </div>
+                            <div id="data_from_config">
+                                <hr style="height:1px;border:none;border-top:1px solid #87cefa;"/>
+                                <div class="form-group ">
+                                    <label class="col-md-2 control-label">数据源</label>
+                                    <div class="col-md-4">
+                                        <select class="form-control" id="calculate_source" name="calculate_source">
+                                            {% for source in source_list %}
+                                                <option value="{{ source.source_id }}">{{ source.source_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <a style="color: #000000" data-toggle="collapse" data-parent="#accordion"
+                                       href="#collapse1">
+                                        <label class="col-md-2 control-label">计算内容<br>(点击查看帮助)</label>
+                                    </a>
 
+
+                                    <div class="col-md-10">
+                                        <textarea class="form-control" placeholder="" rows="4" id="calculate_content"
+                                                  name="calculate_content"></textarea>
+                                        <div class="form-control-focus"></div>
+
+                                    </div>
+                                    <div id="collapse1" class="col-md-offset-2 col-md-10 panel-collapse collapse">
+                                        <div class="panel-body">
+                                            oracle、sqlserver、mysql数据库直接使用sql语句，如：
+                                            select value from tmptab where to_char(date,'yyyy-mm-dd')=<#D#><br>
+                                            使用<#D#>替代取数时间点'yyyy-mm-dd'格式字符串,<br>
+                                            ----------------------------------------------------------------------------<br><br>
+                                            PI数据库，使用tag^type^starttime^endtime格式，如:<br>
+                                            DCS11.LAC20AP001XB83A.AV^real^<#D#>^<#D#><br>
+                                            tag表示点名;<br>
+                                            type表示取数方法(实时数据:real,平均值:avg, 最大值:max, 最小值:min, 差值:delta),缺省为real;<br>
+                                            starttime表示开始时间，type为real时表示取数时间，缺省为<#D#>;<br>
+                                            endtime表示结束时间，type为real时无效，缺省为<#D#>。<br><br>
+                                            ----------------------------------------------------------------------------<br><br>
+                                            <#D#>格式说明：<br>
+                                            D代表取数时刻，<br>
+                                            DS代表当天0点，<br>
+                                            DE代表当天24点，<br>
+                                            L代表昨天同时刻，<br>
+                                            LDS代表昨天0点，<br>
+                                            LDE代表昨天24点，<br>
+                                            MS代表月初，<br>
+                                            ME代表月末，<br>
+                                            LMS代表上月初，<br>
+                                            LME代表上月末， <br>
+                                            SS代表季初，<br>
+                                            SE代表季末，<br>
+                                            LSS代表上季初，<br>
+                                            LSE代表上季末， <br>
+                                            HS代表半年初，<br>
+                                            HE代表半年末，<br>
+                                            LHS代表上个半年初，<br>
+                                            LHE代表上个半年末，<br>
+                                            YS代表年初，<br>
+                                            YE代表年末，<br>
+                                            LYS代表去年年初，<br>
+                                            LYE代表去年末<br>
+
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
                             <div id="calculate">
                                 <hr style="height:1px;border:none;border-top:1px solid #87cefa;"/>
                                 <div class="form-group">
@@ -435,7 +510,6 @@
                                             LYE代表去年末<br>
 
 
-
                                         </div>
                                     </div>
 
@@ -483,7 +557,7 @@
                                         <div class="form-control-focus"></div>
 
                                     </div>
-                                   <div id="collapse2" class="col-md-offset-2 col-md-10 panel-collapse collapse">
+                                    <div id="collapse2" class="col-md-offset-2 col-md-10 panel-collapse collapse">
                                         <div class="panel-body">
                                             配置数据保存字段，如：curvalue，<#DS#>。多个字段用逗号隔开。<br>
                                             id列自动保存，不需要配置，存储表中必须有id字段，且设置为自增长，<br>

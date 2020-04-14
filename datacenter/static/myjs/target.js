@@ -61,7 +61,7 @@ $(document).ready(function () {
     $('#sample_1').dataTable({
         "bAutoWidth": true,
         "bSort": true,
-        "iDisplayLength":25,
+        "iDisplayLength": 25,
         "bProcessing": true,
         "ajax": "../target_data/",
         "columns": [
@@ -82,8 +82,8 @@ $(document).ready(function () {
             "data": null,
             "width": "100px",
             "defaultContent": "<button  id='edit' title='编辑' data-toggle='modal'  data-target='#static'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>" +
-            "<button  id='copy' title='复制' data-toggle='modal'  data-target='#static'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-copy'></i></button>" +
-            "<button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>"
+                "<button  id='copy' title='复制' data-toggle='modal'  data-target='#static'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-copy'></i></button>" +
+                "<button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>"
         }
         ],
         "oLanguage": {
@@ -209,7 +209,6 @@ $(document).ready(function () {
     }
 
     $('#sample_1 tbody').on('click', 'button#edit', function () {
-
         var table = $('#sample_1').DataTable();
         var data = table.row($(this).parents('tr')).data();
         $("#id").val(data.id);
@@ -239,6 +238,8 @@ $(document).ready(function () {
         $("#storagefields").val(data.storagefields);
         $("#is_repeat").val(data.is_repeat);
 
+        $("#data_from").val(data.data_from);
+
         // 过滤出所有works
         $('#work_edit').empty();
 
@@ -259,16 +260,34 @@ $(document).ready(function () {
         $('#calculate_analysis').hide();
         $('#extract').hide();
 
+        $('#data_from').parent().hide();
+        $('#data_from').parent().prev().hide();
+
         $('#is_digit').show();
         $('#digit').show();
         $('#magnification_digit').show();
         $('#upperlimit_lowerlimit').show();
 
+
+        // 数据来源
+        if (data.data_from == 'et') {
+            $('#data_from_config').show();
+        } else {
+            $('#data_from_config').hide();
+        }
+
         // 操作类型：提取/电表走字 显示数据源配置
         var selected_operation_type = $('#operationtype option:selected').text();
         if (selected_operation_type == '计算') {
-            $('#calculate').show();
-            $('#calculate_analysis').show();
+            if (data.data_from == 'et') {
+                $('#calculate').hide();
+                $('#calculate_analysis').hide();
+            } else {
+                $('#calculate').show();
+                $('#calculate_analysis').show();
+            }
+            $('#data_from').parent().show();
+            $('#data_from').parent().prev().show();
         }
         if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
             $('#extract').show();
@@ -386,6 +405,20 @@ $(document).ready(function () {
     });
 
 
+    // 数据来源
+    $('#data_from').change(function () {
+        var data_from = $(this).val();
+        if (data_from == 'et') {
+            $('#data_from_config').show();
+            $('#calculate').hide();
+            $('#calculate_analysis').hide();
+        } else {
+            $('#data_from_config').hide();
+            $('#calculate').show();
+            $('#calculate_analysis').show();
+        }
+    });
+
     $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit,#works').change(function () {
         var table = $('#sample_1').DataTable();
         table.ajax.url("../target_data?search_adminapp=" + $('#search_adminapp').val() + "&search_app=" + $('#search_app').val() +
@@ -420,10 +453,17 @@ $(document).ready(function () {
         $('#calculate_analysis').hide();
         $('#extract').hide();
 
+        $('#data_from').parent().hide();
+        $('#data_from').parent().prev().hide();
+
         var selected_operation_type = $('#operationtype option:selected').text();
         if (selected_operation_type == '计算') {
-            $('#calculate').show();
-            $('#calculate_analysis').show();
+            // $('#calculate').show();
+            // $('#calculate_analysis').show();
+
+            $('#data_from').val('');
+            $('#data_from').parent().show();
+            $('#data_from').parent().prev().show();
         }
         if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
             $('#extract').show();
@@ -447,7 +487,7 @@ $(document).ready(function () {
             $('#calculate').show();
             $('#calculate_analysis').show();
         }
-    })
+    });
 
 
     $("#new").click(function () {
@@ -489,6 +529,12 @@ $(document).ready(function () {
             analysisFunction();
         });
 
+        $('#data_from').val('');
+        $('#calculate_source').val('');
+        $('#calculate_content').val('');
+        $('#data_from').parent().hide();
+        $('#data_from').parent().prev().hide();
+        $('#data_from_config').hide();
     });
 
 
@@ -498,37 +544,40 @@ $(document).ready(function () {
             type: "POST",
             dataType: 'json',
             url: "../target_save/",
-            data:
-                {
-                    id: $("#id").val(),
-                    name: $("#name").val(),
-                    code: $("#code").val(),
-                    operationtype: $("#operationtype").val(),
-                    cycletype: $("#cycletype").val(),
-                    businesstype: $("#businesstype").val(),
-                    unit: $("#unit").val(),
-                    magnification: $("#magnification").val(),
-                    digit: $("#digit").val(),
-                    upperlimit: $("#upperlimit").val(),
-                    lowerlimit: $("#lowerlimit").val(),
-                    adminapp: $("#adminapp").val(),
-                    app: $("#app").val(),
-                    datatype: $("#datatype").val(),
-                    cumulative: $("#cumulative").val(),
-                    sort: $("#sort").val(),
-                    unity: $("#unity").val(),
-                    formula: $("#formula").val(),
+            data: {
+                id: $("#id").val(),
+                name: $("#name").val(),
+                code: $("#code").val(),
+                operationtype: $("#operationtype").val(),
+                cycletype: $("#cycletype").val(),
+                businesstype: $("#businesstype").val(),
+                unit: $("#unit").val(),
+                magnification: $("#magnification").val(),
+                digit: $("#digit").val(),
+                upperlimit: $("#upperlimit").val(),
+                lowerlimit: $("#lowerlimit").val(),
+                adminapp: $("#adminapp").val(),
+                app: $("#app").val(),
+                datatype: $("#datatype").val(),
+                cumulative: $("#cumulative").val(),
+                sort: $("#sort").val(),
+                unity: $("#unity").val(),
+                formula: $("#formula").val(),
 
-                    cycle: $("#cycle").val(),
-                    source: $("#source").val(),
-                    source_content: $("#source_content").val(),
-                    storage: $("#storage").val(),
-                    storagetag: $("#storagetag").val(),
-                    storagefields: $("#storagefields").val(),
-                    is_repeat: $("#is_repeat").val(),
+                cycle: $("#cycle").val(),
+                source: $("#source").val(),
+                source_content: $("#source_content").val(),
+                storage: $("#storage").val(),
+                storagetag: $("#storagetag").val(),
+                storagefields: $("#storagefields").val(),
+                is_repeat: $("#is_repeat").val(),
 
-                    works: $('#work_edit').val(),
-                },
+                works: $('#work_edit').val(),
+
+                data_from: $('#data_from').val(),
+                calculate_source: $('#calculate_source').val(),
+                calculate_content: $('#calculate_content').val(),
+            },
             success: function (data) {
                 var myres = data["res"];
                 var mydata = data["data"];
@@ -580,56 +629,57 @@ $(document).ready(function () {
 
 
     var completed = false;
+
     function loadcycleData() {
         if (completed) {
             $('#sample_3').dataTable().fnDestroy();
         }
         $('#sample_3').dataTable({
-        "bAutoWidth": true,
-        "bSort": true,
-        "bProcessing": true,
-        "ajax": "../../target_data/?&datatype=" + $('#datatype').val(),
-        "columns": [
-            {"data": "id"},
-            {"data": "name"},
-            {"data": "code"},
-            {"data": "cumulative"},
-            {"data": "cycletype_name"},
-            {"data": null},
-            {"data": null},
-            {"data": null}
-        ],
-        "columnDefs": [{
-            "targets": -3,
-            "data": null,
-            "mRender": function (data, type, full) {
-                if (full.cumulative == "否") {
-                    return "<select style='width:100px'><option value='d'>当前值</option>"
-                }
-                if (full.cumulative == "是" && full.cycletype_name == "日") {
-                    return "<select style='width:100px'><option value='d'>当前值</option><option value='m'>月累计</option><option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
-                }
-                if (full.cumulative == "是" && full.cycletype_name == "月") {
-                    return "<select style='width:100px'><option value='d'>当前值</option><option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
-                }
-                if (full.cumulative == "是" && full.cycletype_name == "季") {
-                    return "<select style='width:100px'><option value='d'>当前值</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
-                }
-                if (full.cumulative == "是" && full.cycletype_name == "半年") {
-                    return "<select style='width:100px'><option value='d'>当前值</option><option value='y'>年累计</option></select>";
-                }
-                if (full.cumulative == "是" && full.cycletype_name == "年") {
-                    return "<select style='width:100px'><option value='d'>当前值</option></select>";
-                }
-                if (full.cumulative == null || full.cumulative == '') {
+            "bAutoWidth": true,
+            "bSort": true,
+            "bProcessing": true,
+            "ajax": "../../target_data/?&datatype=" + $('#datatype').val(),
+            "columns": [
+                {"data": "id"},
+                {"data": "name"},
+                {"data": "code"},
+                {"data": "cumulative"},
+                {"data": "cycletype_name"},
+                {"data": null},
+                {"data": null},
+                {"data": null}
+            ],
+            "columnDefs": [{
+                "targets": -3,
+                "data": null,
+                "mRender": function (data, type, full) {
+                    if (full.cumulative == "否") {
+                        return "<select style='width:100px'><option value='d'>当前值</option>"
+                    }
+                    if (full.cumulative == "是" && full.cycletype_name == "日") {
+                        return "<select style='width:100px'><option value='d'>当前值</option><option value='m'>月累计</option><option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
+                    }
+                    if (full.cumulative == "是" && full.cycletype_name == "月") {
+                        return "<select style='width:100px'><option value='d'>当前值</option><option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
+                    }
+                    if (full.cumulative == "是" && full.cycletype_name == "季") {
+                        return "<select style='width:100px'><option value='d'>当前值</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
+                    }
+                    if (full.cumulative == "是" && full.cycletype_name == "半年") {
+                        return "<select style='width:100px'><option value='d'>当前值</option><option value='y'>年累计</option></select>";
+                    }
+                    if (full.cumulative == "是" && full.cycletype_name == "年") {
+                        return "<select style='width:100px'><option value='d'>当前值</option></select>";
+                    }
+                    if (full.cumulative == null || full.cumulative == '') {
+                        return ""
+                    }
                     return ""
-                }
-                return ""
-            },
-        }, {
-            "targets": -2,
-            "data": null,
-            "mRender": function (data, type, full) {
+                },
+            }, {
+                "targets": -2,
+                "data": null,
+                "mRender": function (data, type, full) {
                     if ($("#cycletype").val() == '10' && full.cycletype_name == '日') {
                         return "<select style='width:100px'><option value='D'>当天</option><option value='L'>前一天</option><option value='LME'>上月末</option>" +
                             "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
@@ -787,34 +837,34 @@ $(document).ready(function () {
 
                     }
                     return ""
-            }
-        },
-            {
-                "targets": -1,
-                "data": null,
-                "defaultContent": "<button  id='select' title='选择'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-check'></i></button>"
-            }
-
-        ],
-        "oLanguage": {
-            "sLengthMenu": "每页显示 _MENU_ 条记录",
-            "sZeroRecords": "抱歉， 没有找到",
-            "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
-            "sInfoEmpty": "没有数据",
-            "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
-            "sSearch": "搜索",
-            "oPaginate": {
-                "sFirst": "首页",
-                "sPrevious": "前一页",
-                "sNext": "后一页",
-                "sLast": "尾页"
+                }
             },
-            "sZeroRecords": "没有检索到数据"
-        },
-        initComplete: function (settings, json) {
-            completed = true;
-        }
-    });
+                {
+                    "targets": -1,
+                    "data": null,
+                    "defaultContent": "<button  id='select' title='选择'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-check'></i></button>"
+                }
+
+            ],
+            "oLanguage": {
+                "sLengthMenu": "每页显示 _MENU_ 条记录",
+                "sZeroRecords": "抱歉， 没有找到",
+                "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                "sInfoEmpty": "没有数据",
+                "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                "sSearch": "搜索",
+                "oPaginate": {
+                    "sFirst": "首页",
+                    "sPrevious": "前一页",
+                    "sNext": "后一页",
+                    "sLast": "尾页"
+                },
+                "sZeroRecords": "没有检索到数据"
+            },
+            initComplete: function (settings, json) {
+                completed = true;
+            }
+        });
     }
 
 
@@ -865,7 +915,7 @@ $(document).ready(function () {
             "targets": -1,
             "data": null,
             "defaultContent": "<button  id='select' title='选择'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-check'></i></button>"
-            }
+        }
         ],
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",

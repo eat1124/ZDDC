@@ -612,7 +612,7 @@ $(document).ready(function () {
                     reporting_date: $('#reporting_date').val(),
                 },
             success: function (data) {
-                $("#formuladiv").append(data)
+                $("#formuladiv").append(data);
                 $.formulabtnclick();
             },
             error: function (e) {

@@ -1259,36 +1259,45 @@ def report_index(request, funid):
                                                         else:
                                                             # 判断报表路径是否存在
                                                             # 若不存在，提示不存在，报表上传失败
-                                                            report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
-                                                                report_file_path=rs.report_file_path)
-                                                            rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
-                                                                              remote_password, remote_platform)
-                                                            rc_result = rc.run("")
-
-                                                            if rc_result['exec_tag'] == 1:
-                                                                errors.append(rc_result['log'])
+                                                            # 获取app_code
+                                                            try:
+                                                                cur_app = App.objects.get(id=int(app))
+                                                            except:
+                                                                write_tag = False
+                                                                errors.append('应用不存在。')
                                                             else:
-                                                                # 获取本地IP
-                                                                try:
-                                                                    web_server = socket.gethostbyname(
-                                                                        socket.gethostname())
-                                                                except Exception as e:
-                                                                    errors.append("获取服务器IP失败：%s" % e)
-                                                                else:
-                                                                    url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
-                                                                        web_server=web_server, file_name=file_name)
-                                                                    remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                        ps_script_path, report_file_path, url_visited)
+                                                                app_code = cur_app.code
+                                                                aft_report_file_path = os.path.join(rs.report_file_path, str(app_code))
+                                                                report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
+                                                                    report_file_path=aft_report_file_path)
+                                                                rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
+                                                                                  remote_password, remote_platform)
+                                                                rc_result = rc.run("")
 
-                                                                    server_obj = ServerByPara(remote_cmd, remote_ip,
-                                                                                              remote_user,
-                                                                                              remote_password,
-                                                                                              remote_platform)
-                                                                    result = server_obj.run("")
-                                                                    if result["exec_tag"] == 0:
-                                                                        write_tag = True
+                                                                if rc_result['exec_tag'] == 1:
+                                                                    errors.append(rc_result['log'])
+                                                                else:
+                                                                    # 获取本地IP
+                                                                    try:
+                                                                        web_server = socket.gethostbyname(
+                                                                            socket.gethostname())
+                                                                    except Exception as e:
+                                                                        errors.append("获取服务器IP失败：%s" % e)
                                                                     else:
-                                                                        errors.append(result['log'])
+                                                                        url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
+                                                                            web_server=web_server, file_name=file_name)
+                                                                        remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                                            ps_script_path, os.path.join(aft_report_file_path, file_name), url_visited)
+
+                                                                        server_obj = ServerByPara(remote_cmd, remote_ip,
+                                                                                                  remote_user,
+                                                                                                  remote_password,
+                                                                                                  remote_platform)
+                                                                        result = server_obj.run("")
+                                                                        if result["exec_tag"] == 0:
+                                                                            write_tag = True
+                                                                        else:
+                                                                            errors.append(result['log'])
 
                                         if id != 0 and not my_file:
                                             write_tag = True
@@ -1553,8 +1562,18 @@ def report_app_index(request, funid):
                                                         else:
                                                             # 判断报表路径是否存在
                                                             # 若不存在，提示不存在，报表上传失败
-                                                            report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
-                                                                report_file_path=rs.report_file_path)
+                                                            # 获取app_code
+                                                            try:
+                                                                cur_app = App.objects.get(id=int(app))
+                                                            except:
+                                                                write_tag = False
+                                                                errors.append('应用不存在。')
+                                                            else:
+                                                                app_code = cur_app.code
+                                                                aft_report_file_path = os.path.join(rs.report_file_path, str(app_code))
+                                                                report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
+                                                                    report_file_path=aft_report_file_path)
+
                                                             rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
                                                                               remote_password, remote_platform)
                                                             rc_result = rc.run("")
@@ -1572,7 +1591,7 @@ def report_app_index(request, funid):
                                                                     url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
                                                                         web_server=web_server, file_name=file_name)
                                                                     remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                        ps_script_path, report_file_path, url_visited)
+                                                                        ps_script_path, os.path.join(aft_report_file_path, file_name), url_visited)
 
                                                                     server_obj = ServerByPara(remote_cmd, remote_ip,
                                                                                               remote_user,
@@ -3014,7 +3033,8 @@ def target_data(request):
                 'work_selected': work_selected,
                 'works': str(works),
                 "unity": target.unity,
-                "is_repeat": target.is_repeat
+                "is_repeat": target.is_repeat,
+                "data_from": target.data_from
             })
         return JsonResponse({"data": result})
 
@@ -3071,6 +3091,10 @@ def target_save(request):
 
         works = request.POST.get('works', '')
         unity = request.POST.get('unity', '')
+
+        data_from = request.POST.get('data_from', '')
+        calculate_source = request.POST.get('calculate_source', '')
+        calculate_content = request.POST.get('calculate_content', '')
 
         all_app = App.objects.exclude(state="9")
         all_cycle = Cycle.objects.exclude(state="9")
@@ -3129,6 +3153,8 @@ def target_save(request):
                                                     target_save.businesstype = businesstype
                                                     target_save.unit = unit
                                                     target_save.unity = unity
+                                                    if data_from:
+                                                        target_save.data_from = data_from
 
                                                     # 业务
                                                     try:
@@ -3192,8 +3218,17 @@ def target_save(request):
                                                         target_save.sort = int(sort)
                                                     except:
                                                         pass
+                                                    # 计算
                                                     if operationtype == '17':
                                                         target_save.formula = formula
+                                                        target_save.source_content = calculate_content
+                                                        try:
+                                                            calculate_source = int(calculate_source)
+                                                        except:
+                                                            calculate_source = None
+                                                        finally:
+                                                            target_save.source_id = calculate_source
+                                                    # 电表走字/提取
                                                     if operationtype in ['1', '16'] and savetype != 'app':
                                                         try:
                                                             cycle_id = int(cycle)
@@ -3259,6 +3294,8 @@ def target_save(request):
                                                         target_save.businesstype = businesstype
                                                         target_save.unit = unit
                                                         target_save.unity = unity
+                                                        if data_from:
+                                                            target_save.data_from = data_from
 
                                                         # 业务
                                                         try:
@@ -3323,6 +3360,13 @@ def target_save(request):
                                                             pass
                                                         if operationtype == '17':
                                                             target_save.formula = formula
+                                                            target_save.source_content = calculate_content
+                                                            try:
+                                                                calculate_source = int(calculate_source)
+                                                            except:
+                                                                calculate_source = None
+                                                            finally:
+                                                                target_save.source_id = calculate_source
                                                         if operationtype in ['1', '16'] and savetype != 'app':
                                                             try:
                                                                 cycle_id = int(cycle)
@@ -4611,261 +4655,304 @@ def getcalculatedata(target, date, guid):
     """
     数据计算
     """
+    # 所有常数
     all_constant = Constant.objects.exclude(state="9")
     constant_code = []
     for constant in all_constant:
         constant_code.append(constant.code)
 
     curvalue = -9999
-    formula = ""
-    if target.formula is not None:
-        formula = target.formula.replace(" ", "")
-    members = formula.split('>')
-    for member in members:
-        if member.replace(" ", "") != "":
-            col = "d";
-            cond = "D";
-            if (member.find('<') >= 0):
-                membertarget = member[member.find('<') + 1:]
-                th = membertarget
-                if membertarget.find(':') > 0:
-                    col = membertarget[membertarget.find(':') + 1:]
-                    membertarget = membertarget[0:membertarget.find(':')]
-                    if col.find(':') > 0:
-                        cond = col[col.find(':') + 1:]
-                        col = col[0:col.find(':')]
 
-                # 查询常数库value值
-                value = ""
-                if membertarget in constant_code:
-                    memberconstant = Constant.objects.filter(code=membertarget).exclude(state="9")
-                    if len(memberconstant) <= 0:
-                        value = 0
+    if target.data_from == 'et':
+        # 外部系统，直接取数
+        # 从数据库中获取，取第一个值，其他情况抛错
+        ret = Extract.getDataFromSource(target, datetime.datetime.now())
+        if ret['result']:
+            try:
+                print(ret['result'][0][0])
+                curvalue = float(ret['result'][0][0])
+            except Exception as e:
+                print(e)
+                raise Exception('获取外部系统数据失败。')
+            else:
+                pass
+        else:
+            raise Exception('获取外部系统数据失败。')
+    else:
+        formula = ""
+
+        # 本地系统根据公式计算
+        if target.formula is not None:
+            formula = target.formula
+
+        # 从公式中提取指标与d:D
+        members = formula.split('>')
+        for member in members:
+            if member.replace(" ", "") != "":
+                col = "d"
+                cond = "D"
+                if (member.find('<') >= 0):
+                    membertarget = member[member.find('<') + 1:].replace(" ", "")
+                    th = membertarget
+                    if membertarget.find(':') > 0:
+                        col = membertarget[membertarget.find(':') + 1:]
+                        membertarget = membertarget[0:membertarget.find(':')]
+                        if col.find(':') > 0:
+                            cond = col[col.find(':') + 1:]
+                            col = col[0:col.find(':')]
+
+                    # 查询常数库value值
+                    # 公式中取常数值，不存在则去指标值
+                    value = ""
+                    if membertarget in constant_code:
+                        memberconstant = Constant.objects.filter(code=membertarget).exclude(state="9")
+                        if len(memberconstant) <= 0:
+                            value = 0
+                        else:
+                            memberconstant = memberconstant[0]
+                            value = memberconstant.value
                     else:
-                        memberconstant = memberconstant[0]
-                        value = memberconstant.value
-                else:
-                    membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
-                    if len(membertarget) <= 0:
-                        curvalue = 0
-                    else:
-                        membertarget = membertarget[0]
-                        if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id and membertarget.cycletype == target.cycletype and membertarget.calculateguid != guid:
-                            getcalculatedata(membertarget, date, guid)
-
-                        tableyear = str(date.year)
-                        queryset = getmodels("Entrydata", tableyear).objects
-                        if cond == "LYS" or cond == "LYE" or (
-                                (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
-                                (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
-                                (cond == "LMS" or cond == "LME") and int(date.month) < 2):
-                            tableyear = str(int(date.year) - 1)
-                        operationtype = membertarget.operationtype
-                        if operationtype == "1":
-                            queryset = getmodels("Meterdata", tableyear).objects
-                        if operationtype == "15":
-                            queryset = getmodels("Entrydata", tableyear).objects
-                        if operationtype == "16":
-                            queryset = getmodels("Extractdata", tableyear).objects
-                        if operationtype == "17":
-                            queryset = getmodels("Calculatedata", tableyear).objects
-                        condtions = {'datadate': date}
-                        if cond == "D":
-                            condtions = {'datadate': date}
-                        if cond == "M":
-                            condtions = {'datadate__year': date.year, 'datadate__month': date.month}
-                        if cond == "Y":
-                            condtions = {'datadate__year': date.year}
-                        if cond == "L":
-                            newdate = date + datetime.timedelta(days=-1)
-                            condtions = {'datadate': newdate}
-
-                        if cond == "MS":
-                            newdate = date.replace(day=1)
-                            condtions = {'datadate': newdate}
-                        if cond == "ME":
-                            year = date.year
-                            month = date.month
-                            a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
-                            newdate = datetime.datetime(year=year, month=month, day=b)  # 构造本月月末datetime
-                            condtions = {'datadate': newdate}
-                        if cond == "LME":
-                            date_now = date.replace(day=1)
-                            newdate = date_now + datetime.timedelta(days=-1)
-                            condtions = {'datadate': newdate}
-                        if cond == "LMS":
-                            date_now = date.replace(day=1)
-                            date_now = date_now + datetime.timedelta(days=-1)
-                            newdate = datetime.datetime(date_now.year, date_now.month, 1)
-                            condtions = {'datadate': newdate}
-
-                        if cond == "YS":
-                            newdate = date.replace(month=1, day=1)
-                            condtions = {'datadate': newdate}
-                        if cond == "YE":
-                            newdate = date.replace(month=12, day=31)
-                            condtions = {'datadate': newdate}
-                        if cond == "LYS":
-                            newdate = date.replace(month=1, day=1)
-                            newdate = newdate + datetime.timedelta(days=-1)
-                            newdate = datetime.datetime(newdate.year, 1, 1)
-                            condtions = {'datadate': newdate}
-                        if cond == "LYE":
-                            newdate = date.replace(month=1, day=1)
-                            newdate = newdate + datetime.timedelta(days=-1)
-                            condtions = {'datadate': newdate}
-
-                        if cond == "SS":
-                            month = (date.month - 1) - (date.month - 1) % 3 + 1
-                            newdate = datetime.datetime(date.year, month, 1)
-                            condtions = {'datadate': newdate}
-                        if cond == "SE":
-                            month = (date.month - 1) - (date.month - 1) % 3 + 1
-                            if month == 10:
-                                newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-                            else:
-                                newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
-                            condtions = {'datadate': newdate}
-                        if cond == "LSS":
-                            month = (date.month - 1) - (date.month - 1) % 3 + 1
-                            newdate = datetime.datetime(date.year, month, 1)
-                            newdate = newdate + datetime.timedelta(days=-1)
-                            newdate = datetime.datetime(newdate.year, newdate.month - 2, 1)
-                            condtions = {'datadate': newdate}
-                        if cond == "LSE":
-                            month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
-                            newdate = datetime.datetime(date.year, month, 1)
-                            newdate = newdate + datetime.timedelta(days=-1)
-                            condtions = {'datadate': newdate}
-
-                        if cond == "HS":
-                            month = (date.month - 1) - (date.month - 1) % 6 + 1
-                            newdate = datetime.datetime(date.year, month, 1)
-                            condtions = {'datadate': newdate}
-                        if cond == "HE":
-                            month = (date.month - 1) - (date.month - 1) % 6 + 1
-                            if month == 7:
-                                newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-                            else:
-                                newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
-                            condtions = {'datadate': newdate}
-                        if cond == "LHS":
-                            month = (date.month - 1) - (date.month - 1) % 6 + 1
-                            newdate = datetime.datetime(date.year, month, 1)
-                            newdate = newdate + datetime.timedelta(days=-1)
-                            newdate = datetime.datetime(newdate.year, newdate.month - 5, 1)
-                            condtions = {'datadate': newdate}
-                        if cond == "LHE":
-                            month = (date.month - 1) - (date.month - 1) % 6 + 1
-                            newdate = datetime.datetime(date.year, month, 1)
-                            newdate = newdate + datetime.timedelta(days=-1)
-                            condtions = {'datadate': newdate}
-
-                        new_date = ""
-                        if cond == "MAVG" or cond == "MMAX" or cond == "MMIN":
-                            ms_newdate = date.replace(day=1)
-                            me_newdate = date
-                            new_date = (ms_newdate, me_newdate)
-
-                        if cond == "SAVG" or cond == "SMAX" or cond == "SMIN":
-                            month = (date.month - 1) - (date.month - 1) % 3 + 1
-                            ss_newdate = datetime.datetime(date.year, month, 1)
-                            se_newdate = date
-                            new_date = (ss_newdate, se_newdate)
-
-                        if cond == "HAVG" or cond == "HMAX" or cond == "HMIN":
-                            month = (date.month - 1) - (date.month - 1) % 6 + 1
-                            hs_newdate = datetime.datetime(date.year, month, 1)
-                            he_newdate = date
-                            new_date = (hs_newdate, he_newdate)
-
-                        if cond == "YAVG" or cond == "YMAX" or cond == "YMIN":
-                            ys_newdate = date.replace(month=1, day=1)
-                            ye_newdate = date
-                            new_date = (ys_newdate, ye_newdate)
-
-                        if condtions:
-                            query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9")
-                        if new_date:
-                            query_res = queryset.filter(datadate__range=new_date).filter(target=membertarget).exclude(
-                                state="9")
-                        if len(query_res) <= 0:
+                        membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
+                        if len(membertarget) <= 0:
                             curvalue = 0
                         else:
-                            value = 0
-                            if col == 'd':
-                                if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                    value = query_res.aggregate(Avg('curvalue'))["curvalue__avg"]
-                                elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
-                                    value = query_res.aggregate(Max('curvalue'))["curvalue__max"]
-                                elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
-                                    value = query_res.aggregate(Min('curvalue'))["curvalue__min"]
-                                else:
-                                    value = query_res[0].curvalue
-                            if col == 'm':
-                                if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                    value = query_res.aggregate(Avg('cumulativemonth'))["cumulativemonth__avg"]
-                                elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
-                                    value = query_res.aggregate(Max('cumulativemonth'))["cumulativemonth__max"]
-                                elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
-                                    value = query_res.aggregate(Min('cumulativemonth'))["cumulativemonth__min"]
-                                else:
-                                    value = query_res[0].cumulativemonth
-                            if col == 's':
-                                if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                    value = query_res.aggregate(Avg('cumulativequarter'))["cumulativequarter__avg"]
-                                elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
-                                    value = query_res.aggregate(Max('cumulativequarter'))["cumulativequarter__max"]
-                                elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
-                                    value = query_res.aggregate(Min('cumulativequarter'))["cumulativequarter__min"]
-                                else:
-                                    value = query_res[0].cumulativequarter
-                            if col == 'h':
-                                if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                    value = query_res.aggregate(Avg('cumulativehalfyear'))["cumulativehalfyear__avg"]
-                                elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
-                                    value = query_res.aggregate(Max('cumulativehalfyear'))["cumulativehalfyear__max"]
-                                elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
-                                    value = query_res.aggregate(Min('cumulativehalfyear'))["cumulativehalfyear__min"]
-                                else:
-                                    value = query_res[0].cumulativehalfyear
-                            if col == 'y':
-                                if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                    value = query_res.aggregate(Avg('cumulativeyear'))["cumulativeyear__avg"]
-                                elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
-                                    value = query_res.aggregate(Max('cumulativeyear'))["cumulativeyear__max"]
-                                elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
-                                    value = query_res.aggregate(Min('cumulativeyear'))["cumulativeyear__min"]
-                                else:
-                                    value = query_res[0].cumulativeyear
+                            # 同一应用，同一周期，同一业务，计算操作类型，guid不同(未计算过)的指标，先计算
+                            # 即：当前指标由另一个公式中其他指标计算所得，'其他'指标值未计算出结果，先计算
+                            #     A = B + 1 B未计算出，先计算出B
+                            membertarget = membertarget[0]
+                            if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id \
+                                    and membertarget.cycletype == target.cycletype and membertarget.work == target.work \
+                                    and membertarget.calculateguid != guid:
+                                getcalculatedata(membertarget, date, guid)
 
-                formula = formula.replace("<" + th + ">", str(value))
+                            # 取当年表
+                            tableyear = str(date.year)
+                            queryset = getmodels("Entrydata", tableyear).objects
+                            # 取去年表
+                            if cond == "LYS" or cond == "LYE" or (
+                                    (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
+                                    (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
+                                    (cond == "LMS" or cond == "LME") and int(date.month) < 2):
+                                tableyear = str(int(date.year) - 1)
+                            operationtype = membertarget.operationtype
+                            if operationtype == "1":
+                                queryset = getmodels("Meterdata", tableyear).objects
+                            if operationtype == "15":
+                                queryset = getmodels("Entrydata", tableyear).objects
+                            if operationtype == "16":
+                                queryset = getmodels("Extractdata", tableyear).objects
+                            if operationtype == "17":
+                                queryset = getmodels("Calculatedata", tableyear).objects
 
-    try:
-        curvalue = eval(formula)
-    except:
-        pass
-    calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(
-        target_id=target.id).filter(datadate=date)
+                            # 过滤时间
+                            condtions = {'datadate': date}
+                            if cond == "D":
+                                condtions = {'datadate': date}
+                            if cond == "M":
+                                condtions = {'datadate__year': date.year, 'datadate__month': date.month}
+                            if cond == "Y":
+                                condtions = {'datadate__year': date.year}
+                            if cond == "L":
+                                newdate = date + datetime.timedelta(days=-1)
+                                condtions = {'datadate': newdate}
+
+                            if cond == "MS":
+                                newdate = date.replace(day=1)
+                                condtions = {'datadate': newdate}
+                            if cond == "ME":
+                                year = date.year
+                                month = date.month
+                                a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
+                                newdate = datetime.datetime(year=year, month=month, day=b)  # 构造本月月末datetime
+                                condtions = {'datadate': newdate}
+                            if cond == "LME":
+                                date_now = date.replace(day=1)
+                                newdate = date_now + datetime.timedelta(days=-1)
+                                condtions = {'datadate': newdate}
+                            if cond == "LMS":
+                                date_now = date.replace(day=1)
+                                date_now = date_now + datetime.timedelta(days=-1)
+                                newdate = datetime.datetime(date_now.year, date_now.month, 1)
+                                condtions = {'datadate': newdate}
+
+                            if cond == "YS":
+                                newdate = date.replace(month=1, day=1)
+                                condtions = {'datadate': newdate}
+                            if cond == "YE":
+                                newdate = date.replace(month=12, day=31)
+                                condtions = {'datadate': newdate}
+                            if cond == "LYS":
+                                newdate = date.replace(month=1, day=1)
+                                newdate = newdate + datetime.timedelta(days=-1)
+                                newdate = datetime.datetime(newdate.year, 1, 1)
+                                condtions = {'datadate': newdate}
+                            if cond == "LYE":
+                                newdate = date.replace(month=1, day=1)
+                                newdate = newdate + datetime.timedelta(days=-1)
+                                condtions = {'datadate': newdate}
+
+                            if cond == "SS":
+                                month = (date.month - 1) - (date.month - 1) % 3 + 1
+                                newdate = datetime.datetime(date.year, month, 1)
+                                condtions = {'datadate': newdate}
+                            if cond == "SE":
+                                month = (date.month - 1) - (date.month - 1) % 3 + 1
+                                if month == 10:
+                                    newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+                                else:
+                                    newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
+                                condtions = {'datadate': newdate}
+                            if cond == "LSS":
+                                month = (date.month - 1) - (date.month - 1) % 3 + 1
+                                newdate = datetime.datetime(date.year, month, 1)
+                                newdate = newdate + datetime.timedelta(days=-1)
+                                newdate = datetime.datetime(newdate.year, newdate.month - 2, 1)
+                                condtions = {'datadate': newdate}
+                            if cond == "LSE":
+                                month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
+                                newdate = datetime.datetime(date.year, month, 1)
+                                newdate = newdate + datetime.timedelta(days=-1)
+                                condtions = {'datadate': newdate}
+
+                            if cond == "HS":
+                                month = (date.month - 1) - (date.month - 1) % 6 + 1
+                                newdate = datetime.datetime(date.year, month, 1)
+                                condtions = {'datadate': newdate}
+                            if cond == "HE":
+                                month = (date.month - 1) - (date.month - 1) % 6 + 1
+                                if month == 7:
+                                    newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+                                else:
+                                    newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
+                                condtions = {'datadate': newdate}
+                            if cond == "LHS":
+                                month = (date.month - 1) - (date.month - 1) % 6 + 1
+                                newdate = datetime.datetime(date.year, month, 1)
+                                newdate = newdate + datetime.timedelta(days=-1)
+                                newdate = datetime.datetime(newdate.year, newdate.month - 5, 1)
+                                condtions = {'datadate': newdate}
+                            if cond == "LHE":
+                                month = (date.month - 1) - (date.month - 1) % 6 + 1
+                                newdate = datetime.datetime(date.year, month, 1)
+                                newdate = newdate + datetime.timedelta(days=-1)
+                                condtions = {'datadate': newdate}
+
+                            new_date = ""
+                            if cond == "MAVG" or cond == "MMAX" or cond == "MMIN":
+                                ms_newdate = date.replace(day=1)
+                                me_newdate = date
+                                new_date = (ms_newdate, me_newdate)
+
+                            if cond == "SAVG" or cond == "SMAX" or cond == "SMIN":
+                                month = (date.month - 1) - (date.month - 1) % 3 + 1
+                                ss_newdate = datetime.datetime(date.year, month, 1)
+                                se_newdate = date
+                                new_date = (ss_newdate, se_newdate)
+
+                            if cond == "HAVG" or cond == "HMAX" or cond == "HMIN":
+                                month = (date.month - 1) - (date.month - 1) % 6 + 1
+                                hs_newdate = datetime.datetime(date.year, month, 1)
+                                he_newdate = date
+                                new_date = (hs_newdate, he_newdate)
+
+                            if cond == "YAVG" or cond == "YMAX" or cond == "YMIN":
+                                ys_newdate = date.replace(month=1, day=1)
+                                ye_newdate = date
+                                new_date = (ys_newdate, ye_newdate)
+
+                            query_res = []
+                            if condtions:
+                                query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9")
+                            if new_date:
+                                query_res = queryset.filter(datadate__range=new_date).filter(
+                                    target=membertarget).exclude(
+                                    state="9")
+                            if len(query_res) <= 0:
+                                curvalue = 0
+                            else:
+                                # 获取季累计、年累计等字段值
+                                value = 0
+                                if col == 'd':
+                                    if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                        value = query_res.aggregate(Avg('curvalue'))["curvalue__avg"]
+                                    elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                        value = query_res.aggregate(Max('curvalue'))["curvalue__max"]
+                                    elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                        value = query_res.aggregate(Min('curvalue'))["curvalue__min"]
+                                    else:
+                                        value = query_res[0].curvalue
+                                if col == 'm':
+                                    if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                        value = query_res.aggregate(Avg('cumulativemonth'))["cumulativemonth__avg"]
+                                    elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                        value = query_res.aggregate(Max('cumulativemonth'))["cumulativemonth__max"]
+                                    elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                        value = query_res.aggregate(Min('cumulativemonth'))["cumulativemonth__min"]
+                                    else:
+                                        value = query_res[0].cumulativemonth
+                                if col == 's':
+                                    if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                        value = query_res.aggregate(Avg('cumulativequarter'))["cumulativequarter__avg"]
+                                    elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                        value = query_res.aggregate(Max('cumulativequarter'))["cumulativequarter__max"]
+                                    elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                        value = query_res.aggregate(Min('cumulativequarter'))["cumulativequarter__min"]
+                                    else:
+                                        value = query_res[0].cumulativequarter
+                                if col == 'h':
+                                    if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                        value = query_res.aggregate(Avg('cumulativehalfyear'))[
+                                            "cumulativehalfyear__avg"]
+                                    elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                        value = query_res.aggregate(Max('cumulativehalfyear'))[
+                                            "cumulativehalfyear__max"]
+                                    elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                        value = query_res.aggregate(Min('cumulativehalfyear'))[
+                                            "cumulativehalfyear__min"]
+                                    else:
+                                        value = query_res[0].cumulativehalfyear
+                                if col == 'y':
+                                    if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                        value = query_res.aggregate(Avg('cumulativeyear'))["cumulativeyear__avg"]
+                                    elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                        value = query_res.aggregate(Max('cumulativeyear'))["cumulativeyear__max"]
+                                    elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                        value = query_res.aggregate(Min('cumulativeyear'))["cumulativeyear__min"]
+                                    else:
+                                        value = query_res[0].cumulativeyear
+                    # 公式中指标替换成值
+                    formula = formula.replace("<" + th + ">", str(value))
+
+        # 根据公式计算出值
+        try:
+            curvalue = eval(formula)
+        except:
+            pass
+
+    calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(target_id=target.id).filter(datadate=date)
     if len(calculatedata) > 0:
         calculatedata = calculatedata[0]
     else:
         calculatedata = getmodels("Calculatedata", str(date.year))()
     calculatedata.target = target
     calculatedata.datadate = date
+    # 根据倍率与保留位数得出最后的值
     calculatedata.curvalue = curvalue
     calculatedata.curvalue = decimal.Decimal(str(float(calculatedata.curvalue))) * decimal.Decimal(
         str(float(target.magnification)))
     calculatedata.curvalue = decimal.Decimal(str(calculatedata.curvalue)).quantize(decimal.Decimal(Digit(target.digit)),
                                                                                    rounding=decimal.ROUND_HALF_UP)
+    # 累计值计算
     if target.cumulative == "是":
         cumulative = getcumulative(target, date, decimal.Decimal(str(calculatedata.curvalue)))
         calculatedata.cumulativemonth = cumulative["cumulativemonth"]
         calculatedata.cumulativequarter = cumulative["cumulativequarter"]
         calculatedata.cumulativehalfyear = cumulative["cumulativehalfyear"]
         calculatedata.cumulativeyear = cumulative["cumulativeyear"]
+    # 保存最终计算公式
     calculatedata.formula = target.formula
     calculatedata.save()
+    # 保存该次计算guid，不再参与本次计算
     target.calculateguid = guid
     target.save()
 
@@ -4909,275 +4996,296 @@ def reporting_formulacalculate(request):
             id=id).select_related("target")
         if len(calculatedata) > 0:
             formula = calculatedata[0].formula
-            if formula is not None:
-                formula = formula.replace(" ", "")
-            formula_chinese = formula + " = " + str(round(calculatedata[0].curvalue, calculatedata[0].target.digit))
-            members = formula.split('>')
-            for member in members:
-                if member.replace(" ", "") != "":
-                    if (member.find('<') >= 0):
-                        col = "d";
-                        cond = "D";
-                        membertarget = member[member.find('<') + 1:]
-                        target_english = '<' + membertarget + '>'
-                        if membertarget.find(':') > 0:
-                            col = membertarget[membertarget.find(':') + 1:]
-                            membertarget = membertarget[0:membertarget.find(':')]
-                            if col.find(':') > 0:
-                                cond = col[col.find(':') + 1:]
-                                col = col[0:col.find(':')]
+            target = calculatedata[0].target
+            data_from = target.data_from if target else 'lc'
 
-                        value = ""
-                        if membertarget in constant_codename:
-                            constant_name = constant_codename[membertarget]
-                            constant_col = data_field[col]
-                            memberconstant = Constant.objects.filter(code=membertarget).exclude(state="9")
-                            if len(memberconstant) <= 0:
-                                value = 0
-                            else:
-                                memberconstant = memberconstant[0]
-                                value = memberconstant.value
+            if data_from == 'lc':
+                if formula is not None:
+                    formula = formula.replace(" ", "")
 
-                            constant_chinese = '<' + constant_name + ':' + constant_col + '>(' + str(
-                                remove_decimal(value)) + ')'
-                            formula_chinese = formula_chinese.replace(target_english, constant_chinese)
+                formula_chinese = formula + " = " + str(round(calculatedata[0].curvalue, calculatedata[0].target.digit))
+                members = formula.split('>')
+                for member in members:
+                    if member.replace(" ", "") != "":
+                        if (member.find('<') >= 0):
+                            col = "d"
+                            cond = "D"
+                            membertarget = member[member.find('<') + 1:]
+                            target_english = '<' + membertarget + '>'
+                            if membertarget.find(':') > 0:
+                                col = membertarget[membertarget.find(':') + 1:]
+                                membertarget = membertarget[0:membertarget.find(':')]
+                                if col.find(':') > 0:
+                                    cond = col[col.find(':') + 1:]
+                                    col = col[0:col.find(':')]
 
-                        else:
-                            target_name = target_codename[membertarget]
-                            target_col = data_field[col]
-                            target_cond = data_time[cond]
-
-                            membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
-
-                            childid = None
-                            if len(membertarget) <= 0:
-                                value = "指标不存在"
-                            else:
-                                membertarget = membertarget[0]
-                                tableyear = str(date.year)
-                                queryset = getmodels("Entrydata", tableyear).objects
-                                if cond == "LYS" or cond == "LYE" or (
-                                        (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
-                                        (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
-                                        (cond == "LMS" or cond == "LME") and int(date.month) < 2):
-                                    tableyear = str(int(date.year) - 1)
-                                operationtype = membertarget.operationtype
-                                if operationtype == "1":
-                                    queryset = getmodels("Meterdata", tableyear).objects
-                                if operationtype == "15":
-                                    queryset = getmodels("Entrydata", tableyear).objects
-                                if operationtype == "16":
-                                    queryset = getmodels("Extractdata", tableyear).objects
-                                if operationtype == "17":
-                                    queryset = getmodels("Calculatedata", tableyear).objects
-                                condtions = {'datadate': date}
-                                if cond == "D":
-                                    condtions = {'datadate': date}
-                                if cond == "M":
-                                    condtions = {'datadate__year': date.year, 'datadate__month': date.month}
-                                if cond == "Y":
-                                    condtions = {'datadate__year': date.year}
-                                if cond == "L":
-                                    newdate = date + datetime.timedelta(days=-1)
-                                    condtions = {'datadate': newdate}
-
-                                if cond == "MS":
-                                    newdate = date.replace(day=1)
-                                    condtions = {'datadate': newdate}
-                                if cond == "ME":
-                                    year = date.year
-                                    month = date.month
-                                    a, b = calendar.monthrange(year, month)
-                                    newdate = datetime.datetime(year=year, month=month, day=b)
-                                    condtions = {'datadate': newdate}
-                                if cond == "LME":
-                                    date_now = date.replace(day=1)
-                                    newdate = date_now + datetime.timedelta(days=-1)
-                                    condtions = {'datadate': newdate}
-                                if cond == "LMS":
-                                    date_now = date.replace(day=1)
-                                    date_now = date_now + datetime.timedelta(days=-1)
-                                    newdate = datetime.datetime(date_now.year, date_now.month, 1)
-                                    condtions = {'datadate': newdate}
-
-                                if cond == "YS":
-                                    newdate = date.replace(month=1, day=1)
-                                    condtions = {'datadate': newdate}
-                                if cond == "YE":
-                                    newdate = date.replace(month=12, day=31)
-                                    condtions = {'datadate': newdate}
-                                if cond == "LYS":
-                                    newdate = date.replace(month=1, day=1)
-                                    newdate = newdate + datetime.timedelta(days=-1)
-                                    newdate = datetime.datetime(newdate.year, 1, 1)
-                                    condtions = {'datadate': newdate}
-                                if cond == "LYE":
-                                    newdate = date.replace(month=1, day=1)
-                                    newdate = newdate + datetime.timedelta(days=-1)
-                                    condtions = {'datadate': newdate}
-
-                                if cond == "SS":
-                                    month = (date.month - 1) - (date.month - 1) % 3 + 1
-                                    newdate = datetime.datetime(date.year, month, 1)
-                                    condtions = {'datadate': newdate}
-                                if cond == "SE":
-                                    month = (date.month - 1) - (date.month - 1) % 3 + 1
-                                    if month == 10:
-                                        newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-                                    else:
-                                        newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(
-                                            days=-1)
-                                    condtions = {'datadate': newdate}
-                                if cond == "LSS":
-                                    month = (date.month - 1) - (date.month - 1) % 3 + 1
-                                    newdate = datetime.datetime(date.year, month, 1)
-                                    newdate = newdate + datetime.timedelta(days=-1)
-                                    newdate = datetime.datetime(newdate.year, newdate.month - 2, 1)
-                                    condtions = {'datadate': newdate}
-                                if cond == "LSE":
-                                    month = (date.month - 1) - (date.month - 1) % 3 + 1
-                                    newdate = datetime.datetime(date.year, month, 1)
-                                    newdate = newdate + datetime.timedelta(days=-1)
-                                    condtions = {'datadate': newdate}
-
-                                if cond == "HS":
-                                    month = (date.month - 1) - (date.month - 1) % 6 + 1
-                                    newdate = datetime.datetime(date.year, month, 1)
-                                    condtions = {'datadate': newdate}
-                                if cond == "HE":
-                                    month = (date.month - 1) - (date.month - 1) % 6 + 1
-                                    if month == 7:
-                                        newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
-                                    else:
-                                        newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(
-                                            days=-1)
-                                    condtions = {'datadate': newdate}
-                                if cond == "LHS":
-                                    month = (date.month - 1) - (date.month - 1) % 6 + 1
-                                    newdate = datetime.datetime(date.year, month, 1)
-                                    newdate = newdate + datetime.timedelta(days=-1)
-                                    newdate = datetime.datetime(newdate.year, newdate.month - 5, 1)
-                                    condtions = {'datadate': newdate}
-                                if cond == "LHE":
-                                    month = (date.month - 1) - (date.month - 1) % 6 + 1
-                                    newdate = datetime.datetime(date.year, month, 1)
-                                    newdate = newdate + datetime.timedelta(days=-1)
-                                    condtions = {'datadate': newdate}
-
-                                new_date = ""
-                                if cond == "MAVG" or cond == "MMAX" or cond == "MMIN":
-                                    ms_newdate = date.replace(day=1)
-                                    me_newdate = date
-                                    new_date = (ms_newdate, me_newdate)
-
-                                if cond == "SAVG" or cond == "SMAX" or cond == "SMIN":
-                                    month = (date.month - 1) - (date.month - 1) % 3 + 1
-                                    ss_newdate = datetime.datetime(date.year, month, 1)
-                                    se_newdate = date
-                                    new_date = (ss_newdate, se_newdate)
-
-                                if cond == "HAVG" or cond == "HMAX" or cond == "HMIN":
-                                    month = (date.month - 1) - (date.month - 1) % 6 + 1
-                                    hs_newdate = datetime.datetime(date.year, month, 1)
-                                    he_newdate = date
-                                    new_date = (hs_newdate, he_newdate)
-
-                                if cond == "YAVG" or cond == "YMAX" or cond == "YMIN":
-                                    ys_newdate = date.replace(month=1, day=1)
-                                    ye_newdate = date
-                                    new_date = (ys_newdate, ye_newdate)
-
-                                if condtions:
-                                    query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(
-                                        state="9").select_related("target")
-                                if new_date:
-                                    query_res = queryset.filter(datadate__range=new_date).filter(
-                                        target=membertarget).exclude(state="9")
-                                if len(query_res) <= 0:
-                                    value = "数据不存在"
+                            value = ""
+                            if membertarget in constant_codename:
+                                constant_name = constant_codename[membertarget]
+                                constant_col = data_field[col]
+                                memberconstant = Constant.objects.filter(code=membertarget).exclude(state="9")
+                                if len(memberconstant) <= 0:
+                                    value = 0
                                 else:
-                                    value = "0"
-                                    if col == 'd':
-                                        if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                            value = str(round(query_res.aggregate(Avg('curvalue'))["curvalue__avg"],
-                                                              query_res[0].target.digit))
-                                        elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
-                                            value = str(round(query_res.aggregate(Max('curvalue'))["curvalue__max"],
-                                                              query_res[0].target.digit))
-                                        elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
-                                            value = str(round(query_res.aggregate(Min('curvalue'))["curvalue__min"],
-                                                              query_res[0].target.digit))
-                                        else:
-                                            value = str(round(query_res[0].curvalue, query_res[0].target.digit))
-                                            if operationtype == "17":
-                                                childid = str(query_res[0].id)
-                                    if col == 'm':
-                                        if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                            value = str(
-                                                round(
-                                                    query_res.aggregate(Avg('cumulativemonth'))['cumulativemonth__avg'],
-                                                    query_res[0].target.digit))
-                                        elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
-                                            value = str(round(query_res.aggregate(Max('cumulativemonth'))["cumulativemonth__max"],
-                                                              query_res[0].target.digit))
-                                        elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
-                                            value = str(round(query_res.aggregate(Min('cumulativemonth'))["cumulativemonth__min"],
-                                                              query_res[0].target.digit))
-                                        else:
-                                            value = str(round(query_res[0].cumulativemonth, query_res[0].target.digit))
-                                    if col == 's':
-                                        if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                            value = str(
-                                                round(
-                                                    query_res.aggregate(Avg('cumulativequarter'))[
-                                                        'cumulativequarter__avg'],
-                                                    query_res[0].target.digit))
-                                        elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
-                                            value = str(round(query_res.aggregate(Max('cumulativequarter'))["cumulativequarter__max"],
-                                                              query_res[0].target.digit))
-                                        elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
-                                            value = str(round(query_res.aggregate(Min('cumulativequarter'))["cumulativequarter__min"],
-                                                              query_res[0].target.digit))
-                                        else:
-                                            value = str(
-                                                round(query_res[0].cumulativequarter, query_res[0].target.digit))
-                                    if col == 'h':
-                                        if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                            value = str(
-                                                round(query_res.aggregate(Avg('cumulativehalfyear'))[
-                                                          'cumulativehalfyear__avg'],
-                                                      query_res[0].target.digit))
-                                        elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
-                                            value = str(round(query_res.aggregate(Max('cumulativehalfyear'))["cumulativehalfyear__max"],
-                                                              query_res[0].target.digit))
-                                        elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
-                                            value = str(round(query_res.aggregate(Min('cumulativehalfyear'))["cumulativehalfyear__min"],
-                                                              query_res[0].target.digit))
-                                        else:
-                                            value = str(
-                                                round(query_res[0].cumulativehalfyear, query_res[0].target.digit))
-                                    if col == 'y':
-                                        if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
-                                            value = str(
-                                                round(query_res.aggregate(Avg('cumulativeyear'))['cumulativeyear__avg'],
-                                                      query_res[0].target.digit))
-                                        elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
-                                            value = str(round(query_res.aggregate(Max('cumulativeyear'))["cumulativeyear__max"],
-                                                              query_res[0].target.digit))
-                                        elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
-                                            value = str(round(query_res.aggregate(Min('cumulativeyear'))["cumulativeyear__min"],
-                                                              query_res[0].target.digit))
-                                        else:
-                                            value = str(round(query_res[0].cumulativeyear, query_res[0].target.digit))
+                                    memberconstant = memberconstant[0]
+                                    value = memberconstant.value
 
-                            target_chinese = '<' + target_name + ':' + target_col + ':' + target_cond + '>(' + value + ')'
-                            if childid:
-                                target_chinese = "<button id='formulabtn_" + childid + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\">" + target_chinese + "</button>"
-                            formula_chinese = formula_chinese.replace(target_english, target_chinese)
+                                constant_chinese = '<' + constant_name + ':' + constant_col + '>(' + str(
+                                    remove_decimal(value)) + ')'
+                                formula_chinese = formula_chinese.replace(target_english, constant_chinese)
 
-            formula_chinese = "<div style=\"font-size:18px\"><span style=\"font-size:18px\"  class=\"label label-primary\"> " + \
-                              calculatedata[0].target.name + "</span>" + formula_chinese + "<br><br></div>"
-            # "<span style=\"font-size:18px\"  class=\"label label-primary\">#1机组发电量" + aa + "</span><button id='formulabtn_" + aa + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\"><#1_发电量:当前值:当天>221.3</button> + <发电量:当前值:当天>+1+#1机组发电量</span> 123.2<#1_发电量:当前值:当天>+221.3<发电量:当前值:当天>+1=31.12<br><br></div>")
+                            else:
+                                target_name = target_codename[membertarget]
+                                target_col = data_field[col]
+                                target_cond = data_time[cond]
+
+                                membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
+
+                                childid = None
+                                if len(membertarget) <= 0:
+                                    value = "指标不存在"
+                                else:
+                                    membertarget = membertarget[0]
+
+                                    # 判断计算指标数据来源是否为外部系统
+
+                                    tableyear = str(date.year)
+                                    queryset = getmodels("Entrydata", tableyear).objects
+                                    if cond == "LYS" or cond == "LYE" or (
+                                            (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
+                                            (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
+                                            (cond == "LMS" or cond == "LME") and int(date.month) < 2):
+                                        tableyear = str(int(date.year) - 1)
+                                    operationtype = membertarget.operationtype
+                                    if operationtype == "1":
+                                        queryset = getmodels("Meterdata", tableyear).objects
+                                    if operationtype == "15":
+                                        queryset = getmodels("Entrydata", tableyear).objects
+                                    if operationtype == "16":
+                                        queryset = getmodels("Extractdata", tableyear).objects
+                                    if operationtype == "17":
+                                        queryset = getmodels("Calculatedata", tableyear).objects
+                                    condtions = {'datadate': date}
+                                    if cond == "D":
+                                        condtions = {'datadate': date}
+                                    if cond == "M":
+                                        condtions = {'datadate__year': date.year, 'datadate__month': date.month}
+                                    if cond == "Y":
+                                        condtions = {'datadate__year': date.year}
+                                    if cond == "L":
+                                        newdate = date + datetime.timedelta(days=-1)
+                                        condtions = {'datadate': newdate}
+
+                                    if cond == "MS":
+                                        newdate = date.replace(day=1)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "ME":
+                                        year = date.year
+                                        month = date.month
+                                        a, b = calendar.monthrange(year, month)
+                                        newdate = datetime.datetime(year=year, month=month, day=b)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "LME":
+                                        date_now = date.replace(day=1)
+                                        newdate = date_now + datetime.timedelta(days=-1)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "LMS":
+                                        date_now = date.replace(day=1)
+                                        date_now = date_now + datetime.timedelta(days=-1)
+                                        newdate = datetime.datetime(date_now.year, date_now.month, 1)
+                                        condtions = {'datadate': newdate}
+
+                                    if cond == "YS":
+                                        newdate = date.replace(month=1, day=1)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "YE":
+                                        newdate = date.replace(month=12, day=31)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "LYS":
+                                        newdate = date.replace(month=1, day=1)
+                                        newdate = newdate + datetime.timedelta(days=-1)
+                                        newdate = datetime.datetime(newdate.year, 1, 1)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "LYE":
+                                        newdate = date.replace(month=1, day=1)
+                                        newdate = newdate + datetime.timedelta(days=-1)
+                                        condtions = {'datadate': newdate}
+
+                                    if cond == "SS":
+                                        month = (date.month - 1) - (date.month - 1) % 3 + 1
+                                        newdate = datetime.datetime(date.year, month, 1)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "SE":
+                                        month = (date.month - 1) - (date.month - 1) % 3 + 1
+                                        if month == 10:
+                                            newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+                                        else:
+                                            newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(
+                                                days=-1)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "LSS":
+                                        month = (date.month - 1) - (date.month - 1) % 3 + 1
+                                        newdate = datetime.datetime(date.year, month, 1)
+                                        newdate = newdate + datetime.timedelta(days=-1)
+                                        newdate = datetime.datetime(newdate.year, newdate.month - 2, 1)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "LSE":
+                                        month = (date.month - 1) - (date.month - 1) % 3 + 1
+                                        newdate = datetime.datetime(date.year, month, 1)
+                                        newdate = newdate + datetime.timedelta(days=-1)
+                                        condtions = {'datadate': newdate}
+
+                                    if cond == "HS":
+                                        month = (date.month - 1) - (date.month - 1) % 6 + 1
+                                        newdate = datetime.datetime(date.year, month, 1)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "HE":
+                                        month = (date.month - 1) - (date.month - 1) % 6 + 1
+                                        if month == 7:
+                                            newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+                                        else:
+                                            newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(
+                                                days=-1)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "LHS":
+                                        month = (date.month - 1) - (date.month - 1) % 6 + 1
+                                        newdate = datetime.datetime(date.year, month, 1)
+                                        newdate = newdate + datetime.timedelta(days=-1)
+                                        newdate = datetime.datetime(newdate.year, newdate.month - 5, 1)
+                                        condtions = {'datadate': newdate}
+                                    if cond == "LHE":
+                                        month = (date.month - 1) - (date.month - 1) % 6 + 1
+                                        newdate = datetime.datetime(date.year, month, 1)
+                                        newdate = newdate + datetime.timedelta(days=-1)
+                                        condtions = {'datadate': newdate}
+
+                                    new_date = ""
+                                    if cond == "MAVG" or cond == "MMAX" or cond == "MMIN":
+                                        ms_newdate = date.replace(day=1)
+                                        me_newdate = date
+                                        new_date = (ms_newdate, me_newdate)
+
+                                    if cond == "SAVG" or cond == "SMAX" or cond == "SMIN":
+                                        month = (date.month - 1) - (date.month - 1) % 3 + 1
+                                        ss_newdate = datetime.datetime(date.year, month, 1)
+                                        se_newdate = date
+                                        new_date = (ss_newdate, se_newdate)
+
+                                    if cond == "HAVG" or cond == "HMAX" or cond == "HMIN":
+                                        month = (date.month - 1) - (date.month - 1) % 6 + 1
+                                        hs_newdate = datetime.datetime(date.year, month, 1)
+                                        he_newdate = date
+                                        new_date = (hs_newdate, he_newdate)
+
+                                    if cond == "YAVG" or cond == "YMAX" or cond == "YMIN":
+                                        ys_newdate = date.replace(month=1, day=1)
+                                        ye_newdate = date
+                                        new_date = (ys_newdate, ye_newdate)
+
+                                    query_res = []
+                                    if condtions:
+                                        query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(
+                                            state="9").select_related("target")
+                                    if new_date:
+                                        query_res = queryset.filter(datadate__range=new_date).filter(
+                                            target=membertarget).exclude(state="9")
+                                    if len(query_res) <= 0:
+                                        value = "数据不存在"
+                                    else:
+                                        value = "0"
+                                        if col == 'd':
+                                            if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                                value = str(round(query_res.aggregate(Avg('curvalue'))["curvalue__avg"],
+                                                                  query_res[0].target.digit))
+                                            elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                                value = str(round(query_res.aggregate(Max('curvalue'))["curvalue__max"],
+                                                                  query_res[0].target.digit))
+                                            elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                                value = str(round(query_res.aggregate(Min('curvalue'))["curvalue__min"],
+                                                                  query_res[0].target.digit))
+                                            else:
+                                                value = str(round(query_res[0].curvalue, query_res[0].target.digit))
+                                                if operationtype == "17":
+                                                    childid = str(query_res[0].id)
+                                        if col == 'm':
+                                            if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                                value = str(
+                                                    round(
+                                                        query_res.aggregate(Avg('cumulativemonth'))['cumulativemonth__avg'],
+                                                        query_res[0].target.digit))
+                                            elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                                value = str(round(
+                                                    query_res.aggregate(Max('cumulativemonth'))["cumulativemonth__max"],
+                                                    query_res[0].target.digit))
+                                            elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                                value = str(round(
+                                                    query_res.aggregate(Min('cumulativemonth'))["cumulativemonth__min"],
+                                                    query_res[0].target.digit))
+                                            else:
+                                                value = str(round(query_res[0].cumulativemonth, query_res[0].target.digit))
+                                        if col == 's':
+                                            if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                                value = str(
+                                                    round(
+                                                        query_res.aggregate(Avg('cumulativequarter'))[
+                                                            'cumulativequarter__avg'],
+                                                        query_res[0].target.digit))
+                                            elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                                value = str(round(
+                                                    query_res.aggregate(Max('cumulativequarter'))["cumulativequarter__max"],
+                                                    query_res[0].target.digit))
+                                            elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                                value = str(round(
+                                                    query_res.aggregate(Min('cumulativequarter'))["cumulativequarter__min"],
+                                                    query_res[0].target.digit))
+                                            else:
+                                                value = str(
+                                                    round(query_res[0].cumulativequarter, query_res[0].target.digit))
+                                        if col == 'h':
+                                            if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                                value = str(
+                                                    round(query_res.aggregate(Avg('cumulativehalfyear'))[
+                                                              'cumulativehalfyear__avg'],
+                                                          query_res[0].target.digit))
+                                            elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                                value = str(round(query_res.aggregate(Max('cumulativehalfyear'))[
+                                                                      "cumulativehalfyear__max"],
+                                                                  query_res[0].target.digit))
+                                            elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                                value = str(round(query_res.aggregate(Min('cumulativehalfyear'))[
+                                                                      "cumulativehalfyear__min"],
+                                                                  query_res[0].target.digit))
+                                            else:
+                                                value = str(
+                                                    round(query_res[0].cumulativehalfyear, query_res[0].target.digit))
+                                        if col == 'y':
+                                            if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
+                                                value = str(
+                                                    round(query_res.aggregate(Avg('cumulativeyear'))['cumulativeyear__avg'],
+                                                          query_res[0].target.digit))
+                                            elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
+                                                value = str(
+                                                    round(query_res.aggregate(Max('cumulativeyear'))["cumulativeyear__max"],
+                                                          query_res[0].target.digit))
+                                            elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
+                                                value = str(
+                                                    round(query_res.aggregate(Min('cumulativeyear'))["cumulativeyear__min"],
+                                                          query_res[0].target.digit))
+                                            else:
+                                                value = str(round(query_res[0].cumulativeyear, query_res[0].target.digit))
+
+                                target_chinese = '<' + target_name + ':' + target_col + ':' + target_cond + '>(' + value + ')'
+                                if childid:
+                                    target_chinese = "<button id='formulabtn_" + childid + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\">" + target_chinese + "</button>"
+                                formula_chinese = formula_chinese.replace(target_english, target_chinese)
+
+                formula_chinese = "<div style=\"font-size:18px\"><span style=\"font-size:18px\"  class=\"label label-primary\"> " + \
+                                  calculatedata[0].target.name + "</span>" + formula_chinese + "<br><br></div>"
+                # "<span style=\"font-size:18px\"  class=\"label label-primary\">#1机组发电量" + aa + "</span><button id='formulabtn_" + aa + "' style=\"font-size:18px;color: #0a6aa1;padding-top:-5px\" type=\"button\" class=\"btn btn-link formulabtn\"><#1_发电量:当前值:当天>221.3</button> + <发电量:当前值:当天>+1+#1机组发电量</span> 123.2<#1_发电量:当前值:当天>+221.3<发电量:当前值:当天>+1=31.12<br><br></div>")
+            else:
+                formula_chinese = " 外部系统获得 = " + str(round(calculatedata[0].curvalue, calculatedata[0].target.digit))
+                formula_chinese = "<div style=\"font-size:18px\"><span style=\"font-size:18px\"  class=\"label label-primary\"> " + \
+                                  calculatedata[0].target.name + "</span>" + formula_chinese + "<br><br></div>"
             return HttpResponse(formula_chinese)
 
 
@@ -5304,6 +5412,7 @@ def reporting_new(request):
             return HttpResponse(0)
 
         # 生成本次计算guid
+        # 数据库中与本次guid不同的指标才参数计算
         guid = uuid.uuid1()
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
                                                               operationtype=operationtype, work=work).order_by("sort")
@@ -5476,7 +5585,9 @@ def reporting_del(request):
         except:
             pass
 
-        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app, user_id=user_id)
+        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work,
+                                                                          cycletype=cycletype, adminapp_id=app,
+                                                                          user_id=user_id)
         if len(all_reportinglog) > 0:
             all_reportinglog = all_reportinglog[0]
         else:
@@ -5662,7 +5773,9 @@ def reporting_release(request):
         except:
             pass
 
-        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app, user_id=user_id)
+        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work,
+                                                                          cycletype=cycletype, adminapp_id=app,
+                                                                          user_id=user_id)
         if len(all_reportinglog) > 0:
             all_reportinglog = all_reportinglog[0]
         else:
@@ -6050,6 +6163,7 @@ def report_submit_data(request):
                 "name": report.name,
                 "code": report.code,
                 "file_name": report.file_name,
+                "relative_file_name": report.app.code + '/' + report.file_name,
                 "report_type": report_type,
                 "report_type_id": int(report.report_type) if report.report_type else "",
                 "app": report.app.name,
