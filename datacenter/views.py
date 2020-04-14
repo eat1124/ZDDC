@@ -4669,7 +4669,6 @@ def getcalculatedata(target, date, guid):
         ret = Extract.getDataFromSource(target, datetime.datetime.now())
         if ret['result']:
             try:
-                print(ret['result'][0][0])
                 curvalue = float(ret['result'][0][0])
             except Exception as e:
                 print(e)

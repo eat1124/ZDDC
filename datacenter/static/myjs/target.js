@@ -347,6 +347,8 @@ $(document).ready(function () {
         $("#storagefields").val(data.storagefields);
         $("#is_repeat").val(data.is_repeat);
 
+        $("#data_from").val(data.data_from);
+
         // 过滤出所有works
         $('#work_edit').empty();
 
@@ -375,8 +377,15 @@ $(document).ready(function () {
         // 操作类型：提取/电表走字 显示数据源配置
         var selected_operation_type = $('#operationtype option:selected').text();
         if (selected_operation_type == '计算') {
-            $('#calculate').show();
-            $('#calculate_analysis').show();
+            if (data.data_from == 'et') {
+                $('#calculate').hide();
+                $('#calculate_analysis').hide();
+            } else {
+                $('#calculate').show();
+                $('#calculate_analysis').show();
+            }
+            $('#data_from').parent().show();
+            $('#data_from').parent().prev().show();
         }
         if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
             $('#extract').show();
