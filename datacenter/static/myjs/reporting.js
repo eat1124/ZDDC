@@ -47,21 +47,21 @@ $(document).ready(function () {
                     }
                     $('#reporting_date').val(finaltime);
                     var table1 = $('#sample_1').DataTable();
-                    table1.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+                    table1.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
                         "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15" +
                         "&funid=" + $('#funid').val()).load();
                     var table2 = $('#sample_2').DataTable();
-                    table2.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+                    table2.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
                         "&reporting_date=" + $('#reporting_date').val() + "&operationtype=16" +
                         "&funid=" + $('#funid').val()).load();
                     var table3 = $('#sample_3').DataTable();
-                    table3.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+                    table3.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
                         "&reporting_date=" + $('#reporting_date').val() + "&operationtype=17" +
                         "&funid=" + $('#funid').val()).load();
                     var table4 = $('#sample_4').DataTable();
-                    table4.ajax.url("../../../reporting_search_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()).load();
+                    table4.ajax.url("../../../reporting_search_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()).load();
                     var table5 = $('#sample_5').DataTable();
-                    table5.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+                    table5.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
                         "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1" +
                         "&funid=" + $('#funid').val()).load();
                 }
@@ -124,21 +124,21 @@ $(document).ready(function () {
                     }
                     $('#reporting_date').val(finaltime);
                     var table1 = $('#sample_1').DataTable();
-                    table1.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+                    table1.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
                         "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15" +
                         "&funid=" + $('#funid').val()).load();
                     var table2 = $('#sample_2').DataTable();
-                    table2.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+                    table2.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
                         "&reporting_date=" + $('#reporting_date').val() + "&operationtype=16" +
                         "&funid=" + $('#funid').val()).load();
                     var table3 = $('#sample_3').DataTable();
-                    table3.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+                    table3.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
                         "&reporting_date=" + $('#reporting_date').val() + "&operationtype=17" +
                         "&funid=" + $('#funid').val()).load();
                     var table4 = $('#sample_4').DataTable();
-                    table4.ajax.url("../../../reporting_search_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()).load();
+                    table4.ajax.url("../../../reporting_search_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()).load();
                     var table5 = $('#sample_5').DataTable();
-                    table5.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+                    table5.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
                         "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1" +
                         "&funid=" + $('#funid').val()).load();
                 }
@@ -1083,21 +1083,21 @@ $(document).ready(function () {
 
     $('#reporting_date').change(function () {
         var table1 = $('#sample_1').DataTable();
-        table1.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+        table1.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
             "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15" +
             "&funid=" + $('#funid').val()).load();
         var table2 = $('#sample_2').DataTable();
-        table2.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+        table2.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
             "&reporting_date=" + $('#reporting_date').val() + "&operationtype=16" +
             "&funid=" + $('#funid').val()).load();
         var table3 = $('#sample_3').DataTable();
-        table3.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+        table3.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
             "&reporting_date=" + $('#reporting_date').val() + "&operationtype=17" +
             "&funid=" + $('#funid').val()).load();
         var table4 = $('#sample_4').DataTable();
-        table4.ajax.url("../../../reporting_search_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()).load();
+        table4.ajax.url("../../../reporting_search_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val()).load();
         var table5 = $('#sample_5').DataTable();
-        table5.ajax.url("../../../reporting_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+        table5.ajax.url("../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
             "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1" +
             "&funid=" + $('#funid').val()).load();
 
@@ -1122,7 +1122,7 @@ $(document).ready(function () {
         }
 
         var table4 = $('#sample_4').DataTable();
-        table4.ajax.url("../../../reporting_search_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+        table4.ajax.url("../../../reporting_search_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
             "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val() +
             "&works=" + $('#works').val()
         ).load();
@@ -1130,7 +1130,7 @@ $(document).ready(function () {
 
     $('#works').change(function () {
         var table4 = $('#sample_4').DataTable();
-        table4.ajax.url("../../../reporting_search_data?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
+        table4.ajax.url("../../../reporting_search_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
             "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val() +
             "&works=" + $('#works').val()
         ).load();

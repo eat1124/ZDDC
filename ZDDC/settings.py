@@ -208,11 +208,20 @@ LOGGING = {
             'formatter': 'default',
             'encoding': 'utf8',
         },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'process': {
             'handlers': ['process_handlers'],
             'level': 'INFO'
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level': 'DEBUG',
         },
     },
 }

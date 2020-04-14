@@ -4193,21 +4193,27 @@ def reporting_data(request):
                 all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
                     target__work=work).order_by("target__sort").select_related("target")
+
+            all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
+
             for data in all_data:
                 businesstypename = data.target.businesstype
-                unitname = data.target.unit
+
                 try:
-                    businesstype_dict_list = DictList.objects.filter(id=int(data.target.businesstype))
-                    if businesstype_dict_list.exists():
-                        businesstype_dict_list = businesstype_dict_list[0]
-                        businesstypename = businesstype_dict_list.name
+                    if businesstypename:
+                        for dict in all_dict_list:
+                            if businesstypename == str(dict['id']):
+                                businesstypename = dict['name']
+                                break
                 except:
                     pass
+                unitname = data.target.unit
                 try:
-                    unit_dict_list = DictList.objects.filter(id=int(data.target.unit))
-                    if unit_dict_list.exists():
-                        unit_dict_list = unit_dict_list[0]
-                        unitname = unit_dict_list.name
+                    if unitname:
+                        for dict in all_dict_list:
+                            if unitname == str(dict['id']):
+                                unitname = dict['name']
+                                break
                 except:
                     pass
                 curvalue = ""
@@ -4484,21 +4490,27 @@ def reporting_search_data(request):
                                      "cumulativeyear": targetvalue[0].cumulativeyear,
                                      "releasestate": targetvalue[0].releasestate}
             all_data.append(curtargetdata)
+
+        all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
+
         for data in all_data:
             businesstypename = data["target"].businesstype
-            unitname = data["target"].unit
+
             try:
-                businesstype_dict_list = DictList.objects.filter(id=int(data["target"].businesstype))
-                if businesstype_dict_list.exists():
-                    businesstype_dict_list = businesstype_dict_list[0]
-                    businesstypename = businesstype_dict_list.name
+                if businesstypename:
+                    for dict in all_dict_list:
+                        if businesstypename == str(dict['id']):
+                            businesstypename = dict['name']
+                            break
             except:
                 pass
+            unitname = data["target"].unit
             try:
-                unit_dict_list = DictList.objects.filter(id=int(data["target"].unit))
-                if unit_dict_list.exists():
-                    unit_dict_list = unit_dict_list[0]
-                    unitname = unit_dict_list.name
+                if unitname:
+                    for dict in all_dict_list:
+                        if unitname == str(dict['id']):
+                            unitname = dict['name']
+                            break
             except:
                 pass
             cumulativemonth = ""
@@ -4639,16 +4651,10 @@ def getcumulative(target, date, value):
             "cumulativehalfyear": cumulativehalfyear, "cumulativeyear": cumulativeyear}
 
 
-def getcalculatedata(target, date, guid):
+def getcalculatedata(target, date, guid,all_constant,all_target,tableList):
     """
     数据计算
     """
-    # 所有常数
-    all_constant = Constant.objects.exclude(state="9")
-    constant_code = []
-    for constant in all_constant:
-        constant_code.append(constant.code)
-
     curvalue = -9999
 
     if target.data_from == 'et':
@@ -4691,45 +4697,61 @@ def getcalculatedata(target, date, guid):
                     # 查询常数库value值
                     # 公式中取常数值，不存在则去指标值
                     value = ""
-                    if membertarget in constant_code:
-                        memberconstant = Constant.objects.filter(code=membertarget).exclude(state="9")
-                        if len(memberconstant) <= 0:
-                            value = 0
-                        else:
-                            memberconstant = memberconstant[0]
-                            value = memberconstant.value
-                    else:
-                        membertarget = Target.objects.filter(code=membertarget).exclude(state="9")
-                        if len(membertarget) <= 0:
-                            curvalue = 0
+                    isconstant=False
+                    for constant in all_constant:
+                        if membertarget==constant.code:
+                            value = constant.value
+                            isconstant = True
+                            break
+                    if not isconstant:
+                        istarget = False
+                        newtarget = None
+                        for new_target in all_target:
+                            if membertarget == new_target.code:
+                                istarget = True
+                                newtarget=new_target
+                                break
+                        if not istarget or newtarget is None:
+                            formula = "-9999"
+                            break
                         else:
                             # 同一应用，同一周期，同一业务，计算操作类型，guid不同(未计算过)的指标，先计算
                             # 即：当前指标由另一个公式中其他指标计算所得，'其他'指标值未计算出结果，先计算
                             #     A = B + 1 B未计算出，先计算出B
-                            membertarget = membertarget[0]
+                            membertarget = newtarget
                             if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id \
-                                    and membertarget.cycletype == target.cycletype and membertarget.work == target.work \
+                                    and membertarget.cycletype == target.cycletype and membertarget.work_id == target.work_id \
                                     and membertarget.calculateguid != guid:
-                                getcalculatedata(membertarget, date, guid)
+                                getcalculatedata(membertarget, date, guid,all_constant,all_target,tableList)
 
                             # 取当年表
                             tableyear = str(date.year)
                             queryset = getmodels("Entrydata", tableyear).objects
+                            operationtype = membertarget.operationtype
+                            if operationtype == "1":
+                                queryset = tableList["Meterdata"].objects
+                            if operationtype == "15":
+                                queryset = tableList["Entrydata"].objects
+                            if operationtype == "16":
+                                queryset = tableList["Extractdata"].objects
+                            if operationtype == "17":
+                                queryset = tableList["Calculatedata"].objects
                             # 取去年表
                             if cond == "LYS" or cond == "LYE" or (
                                     (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
                                     (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
                                     (cond == "LMS" or cond == "LME") and int(date.month) < 2):
                                 tableyear = str(int(date.year) - 1)
-                            operationtype = membertarget.operationtype
-                            if operationtype == "1":
-                                queryset = getmodels("Meterdata", tableyear).objects
-                            if operationtype == "15":
-                                queryset = getmodels("Entrydata", tableyear).objects
-                            if operationtype == "16":
-                                queryset = getmodels("Extractdata", tableyear).objects
-                            if operationtype == "17":
-                                queryset = getmodels("Calculatedata", tableyear).objects
+
+                                if operationtype == "1":
+                                    queryset = getmodels("Meterdata", tableyear).objects
+                                if operationtype == "15":
+                                    queryset = getmodels("Entrydata", tableyear).objects
+                                if operationtype == "16":
+                                    queryset = getmodels("Extractdata", tableyear).objects
+                                if operationtype == "17":
+                                    queryset = getmodels("Calculatedata", tableyear).objects
+
 
                             # 过滤时间
                             condtions = {'datadate': date}
@@ -4916,11 +4938,11 @@ def getcalculatedata(target, date, guid):
         except:
             pass
 
-    calculatedata = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(target_id=target.id).filter(datadate=date)
+    calculatedata = tableList["Calculatedata"].objects.exclude(state="9").filter(target_id=target.id).filter(datadate=date)
     if len(calculatedata) > 0:
         calculatedata = calculatedata[0]
     else:
-        calculatedata = getmodels("Calculatedata", str(date.year))()
+        calculatedata = tableList["Calculatedata"]()
     calculatedata.target = target
     calculatedata.datadate = date
     # 根据倍率与保留位数得出最后的值
@@ -5298,14 +5320,26 @@ def reporting_recalculate(request):
             return HttpResponse(0)
 
         guid = uuid.uuid1()
-        all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
+        cur_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
                                                               operationtype=operationtype, work=work)
-        for target in all_target:
+
+        # 所有常数
+        all_constant = Constant.objects.exclude(state="9")
+        all_target = Target.objects.exclude(state="9")
+        tableyear = str(reporting_date.year)
+        EntryTable = getmodels("Entrydata", tableyear)
+        MeterTable = getmodels("Meterdata", tableyear)
+        ExtractTable = getmodels("Extractdata", tableyear)
+        CalculateTable = getmodels("Calculatedata", tableyear)
+        tableList = {"Entrydata":EntryTable,"Meterdata":MeterTable,"Extractdata":ExtractTable,"Calculatedata":CalculateTable}
+
+
+        for target in cur_target:
             if operationtype == "17":
                 target = Target.objects.get(id=target.id)
                 if target.calculateguid != str(guid):
                     try:
-                        getcalculatedata(target, reporting_date, str(guid))
+                        getcalculatedata(target, reporting_date, str(guid),all_constant,all_target,tableList)
                     except Exception as e:
                         print(e)
                         HttpResponse(0)
@@ -5405,9 +5439,20 @@ def reporting_new(request):
         # 生成本次计算guid
         # 数据库中与本次guid不同的指标才参数计算
         guid = uuid.uuid1()
-        all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
+        cur_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
                                                               operationtype=operationtype, work=work).order_by("sort")
-        for target in all_target:
+        # 所有常数
+        all_constant = Constant.objects.exclude(state="9")
+        all_target = Target.objects.exclude(state="9")
+        tableyear = str(reporting_date.year)
+
+        EntryTable = getmodels("Entrydata", tableyear)
+        MeterTable = getmodels("Meterdata", tableyear)
+        ExtractTable = getmodels("Extractdata", tableyear)
+        CalculateTable = getmodels("Calculatedata", tableyear)
+        tableList = {"Entrydata":EntryTable,"Meterdata":MeterTable,"Extractdata":ExtractTable,"Calculatedata":CalculateTable}
+
+        for target in cur_target:
             # 电表走字
             if operationtype == "1":
 
@@ -5515,7 +5560,7 @@ def reporting_new(request):
                 # 为减少重复计算，判断指标calculate，如果指标calculate等于本次计算guid，则说明该指标在本次计算中以计算过
                 if target.calculateguid != str(guid):
                     try:
-                        getcalculatedata(target, reporting_date, str(guid))
+                        getcalculatedata(target, reporting_date, str(guid),all_constant,all_target,tableList)
                     except Exception as e:
                         print(e)
                         HttpResponse(0)
