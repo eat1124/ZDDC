@@ -205,6 +205,22 @@ $(document).ready(function () {
 
         "columnDefs": [
             {
+                "targets": 0,
+                "visible": false,
+            },
+            {
+                "targets": 3,
+                "visible": false,
+            },
+            {
+                "targets": 4,
+                "visible": false,
+            },
+            {
+                "targets": 5,
+                "visible": false,
+            },
+            {
                 "targets": -5,
                 "mRender": function (data, type, full) {
                     if (full.target_datatype == 'numbervalue') {
@@ -336,6 +352,22 @@ $(document).ready(function () {
         ],
 
         "columnDefs": [
+            {
+                "targets": 0,
+                "visible": false,
+            },
+            {
+                "targets": 3,
+                "visible": false,
+            },
+            {
+                "targets": 4,
+                "visible": false,
+            },
+            {
+                "targets": 5,
+                "visible": false,
+            },
             {
                 "targets": -5,
                 "mRender": function (data, type, full) {
@@ -471,6 +503,22 @@ $(document).ready(function () {
         ],
 
         "columnDefs": [
+            {
+                "targets": 0,
+                "visible": false,
+            },
+            {
+                "targets": 3,
+                "visible": false,
+            },
+            {
+                "targets": 4,
+                "visible": false,
+            },
+            {
+                "targets": 5,
+                "visible": false,
+            },
             {
                 "targets": -6,
                 "mRender": function (data, type, full) {
@@ -633,12 +681,7 @@ $(document).ready(function () {
         "bFilter": false,
         "ajax": "../../../reporting_search_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val(),
         "columns": [
-            {"data": "target_id"},
             {"data": "target_name"},
-            {"data": "target_unity"},
-            {"data": "target_code"},
-            {"data": "target_businesstypename"},
-            {"data": "target_unitname"},
             {"data": "zerodata"},
             {"data": "twentyfourdata"},
             {"data": "curvalue"},
@@ -702,6 +745,18 @@ $(document).ready(function () {
         ],
 
         "columnDefs": [
+            {
+                "targets": 0,
+                "visible": false,
+            },
+            {
+                "targets": -13,
+                "visible": false,
+            },
+            {
+                "targets": -12,
+                "visible": false,
+            },
             {
                 "targets": -11,
                 "visible": false,
