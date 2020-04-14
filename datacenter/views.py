@@ -5012,7 +5012,6 @@ def reporting_formulacalculate(request):
             if data_from == 'lc':
                 if formula is not None:
                     formula = formula.replace(" ", "")
-
                 formula_chinese = formula + " = " + str(round(calculatedata[0].curvalue, calculatedata[0].target.digit))
                 members = formula.split('>')
                 for member in members:

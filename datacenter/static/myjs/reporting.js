@@ -1633,8 +1633,20 @@ $(document).ready(function () {
             }
         });
     });
-
+    var customModal = {
+        "show": function () {
+            $('#waiting_calculate').modal('show');
+            $(".modal-backdrop").css('opacity', '0.2');
+        },
+        "hide": function () {
+            $('#waiting_calculate').modal('hide');
+            $(".modal-backdrop").css('opacity', '0.5');
+        },
+    }
+    // 新增数据计算
     $("#new3").click(function () {
+        // 滚动条
+        customModal.show();
         var table = $('#sample_3').DataTable();
         $.ajax({
             type: "POST",
@@ -1659,9 +1671,13 @@ $(document).ready(function () {
                     alert("新增成功！");
                 } else
                     alert("新增失败，请于管理员联系。");
+                // 隐藏滚动条
+                customModal.hide();
             },
             error: function (e) {
                 alert("新增失败，请于管理员联系。");
+                // 隐藏滚动条
+                customModal.hide();
             }
         });
     });
@@ -1740,6 +1756,7 @@ $(document).ready(function () {
         });
     });
     $('#reset3').click(function () {
+        customModal.show();
         var table = $('#sample_3').DataTable();
         $.ajax({
             type: "POST",
@@ -1759,9 +1776,13 @@ $(document).ready(function () {
                     alert("计算成功！");
                 } else
                     alert("计算失败，请于管理员联系。");
+                // 隐藏滚动条
+                customModal.hide();
             },
             error: function (e) {
                 alert("计算失败，请于管理员联系。");
+                // 隐藏滚动条
+                customModal.hide();
             }
         });
     });
