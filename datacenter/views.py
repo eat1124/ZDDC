@@ -5304,7 +5304,11 @@ def reporting_recalculate(request):
             if operationtype == "17":
                 target = Target.objects.get(id=target.id)
                 if target.calculateguid != str(guid):
-                    getcalculatedata(target, reporting_date, str(guid))
+                    try:
+                        getcalculatedata(target, reporting_date, str(guid))
+                    except Exception as e:
+                        print(e)
+                        HttpResponse(0)
         return HttpResponse(1)
 
 
@@ -5510,7 +5514,11 @@ def reporting_new(request):
                 target = Target.objects.get(id=target.id)
                 # 为减少重复计算，判断指标calculate，如果指标calculate等于本次计算guid，则说明该指标在本次计算中以计算过
                 if target.calculateguid != str(guid):
-                    getcalculatedata(target, reporting_date, str(guid))
+                    try:
+                        getcalculatedata(target, reporting_date, str(guid))
+                    except Exception as e:
+                        print(e)
+                        HttpResponse(0)
         return HttpResponse(1)
 
 
