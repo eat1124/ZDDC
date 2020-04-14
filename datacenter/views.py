@@ -142,7 +142,9 @@ def Digit(digit):
     """
     四舍五入quantize参数
     """
-    if digit == 1:
+    if digit == 0:
+        digit = '0'
+    elif digit == 1:
         digit = '0.0'
     elif digit == 2:
         digit = '0.00'
@@ -4656,6 +4658,23 @@ def getcalculatedata(target, date, guid,all_constant,all_target,tableList):
     数据计算
     """
     curvalue = -9999
+    formula = ""
+    if target.formula is not None:
+        formula = target.formula
+    members = formula.split('>')
+    for member in members:
+        if member.replace(" ", "") != "":
+            col = "d";
+            cond = "D";
+            if (member.find('<') >= 0):
+                membertarget = member[member.find('<') + 1:].replace(" ", "")
+                th = membertarget
+                if membertarget.find(':') > 0:
+                    col = membertarget[membertarget.find(':') + 1:]
+                    membertarget = membertarget[0:membertarget.find(':')]
+                    if col.find(':') > 0:
+                        cond = col[col.find(':') + 1:]
+                        col = col[0:col.find(':')]
 
     if target.data_from == 'et':
         # 外部系统，直接取数
@@ -5649,9 +5668,8 @@ def reporting_release(request):
         result = {}
         app = request.POST.get('app', '')
         savedata = request.POST.get('savedata')
-        operationtype = request.POST.get('operationtype')
-        cycletype = request.POST.get('cycletype', '')
         savedata = json.loads(savedata)
+        cycletype = request.POST.get('cycletype', '')
         reporting_date = request.POST.get('reporting_date', '')
         funid = request.POST.get('funid', '')
         work = None
@@ -5668,95 +5686,18 @@ def reporting_release(request):
             reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             return HttpResponse(0)
-        for curdata in savedata:
-            if operationtype == "1":
-                savedata = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").get(
-                    id=int(curdata["id"]))
-                if curdata["finalvalue"]:
-                    try:
-                        newmagnification = float(curdata["magnification"])
-                        if savedata.target.magnification != newmagnification:
-                            savedata.target.magnification = newmagnification
-                            savedata.target.save()
-                    except:
-                        pass
-                    meterchangedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=savedata.id)
-                    if len(meterchangedata) > 0:
-                        meterchangedata = meterchangedata[0]
-                    else:
-                        meterchangedata = Meterchangedata()
+        # 分别存入数据库
+        savedata1 = savedata['1']
+        savedata15 = savedata['15']
+        savedata16 = savedata['16']
+        savedata17 = savedata['17']
 
-                    reporting_date = datetime.datetime.strptime(curdata["reporting_date"], "%Y-%m-%d")
-                    try:
-                        meterchangedata.datadate = reporting_date
-                    except:
-                        pass
-                    try:
-                        meterchangedata.meterdata = savedata.id
-                    except:
-                        pass
-                    try:
-                        meterchangedata.oldtable_zerodata = float(curdata["oldtable_zerodata"])
-                    except:
-                        pass
-                    try:
-                        meterchangedata.oldtable_twentyfourdata = float(curdata["oldtable_twentyfourdata"])
-                    except:
-                        pass
-                    try:
-                        meterchangedata.oldtable_value = float(curdata["oldtable_value"])
-                    except:
-                        pass
-                    try:
-                        meterchangedata.oldtable_magnification = float(curdata["oldtable_magnification"])
-                    except:
-                        pass
-                    try:
-                        meterchangedata.oldtable_finalvalue = float(curdata["oldtable_finalvalue"])
-                    except:
-                        pass
-                    try:
-                        meterchangedata.newtable_zerodata = float(curdata["newtable_zerodata"])
-                    except:
-                        pass
-                    try:
-                        meterchangedata.newtable_twentyfourdata = float(curdata["newtable_twentyfourdata"])
-                    except:
-                        pass
-                    try:
-                        meterchangedata.newtable_value = float(curdata["newtable_value"])
-                    except:
-                        pass
-                    try:
-                        meterchangedata.newtable_magnification = float(curdata["newtable_magnification"])
-                    except:
-                        pass
-                    try:
-                        meterchangedata.newtable_finalvalue = float(curdata["newtable_finalvalue"])
-                    except:
-                        pass
-                    try:
-                        meterchangedata.finalvalue = float(curdata["finalvalue"])
-                    except:
-                        pass
-                    meterchangedata.save()
-
-            if operationtype == "15":
-                savedata = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").get(
-                    id=int(curdata["id"]))
-            if operationtype == "16":
-                savedata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").get(
-                    id=int(curdata["id"]))
-            if operationtype == "17":
-                savedata = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").get(
-                    id=int(curdata["id"]))
-
+        def savedataall(savedata):
             if savedata.target.datatype == 'numbervalue':
                 try:
                     savedata.curvalue = float(curdata["curvalue"])
                     savedata.curvalue = decimal.Decimal(str(savedata.curvalue)).quantize(
-                        decimal.Decimal(Digit(savedata.target.digit)),
-                        rounding=decimal.ROUND_HALF_UP)
+                        decimal.Decimal(Digit(savedata.target.digit)), rounding=decimal.ROUND_HALF_UP)
                 except:
                     pass
             if savedata.target.datatype == 'date':
@@ -5804,6 +5745,94 @@ def reporting_release(request):
 
             savedata.releasestate = '1'
             savedata.save()
+
+        for curdata in savedata1:
+            savedata = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").get(
+                id=int(curdata["id"]))
+            if curdata["finalvalue"]:
+                try:
+                    newmagnification = float(curdata["magnification"])
+                    if savedata.target.magnification != newmagnification:
+                        savedata.target.magnification = newmagnification
+                        savedata.target.save()
+                except:
+                    pass
+                meterchangedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=savedata.id)
+                if len(meterchangedata) > 0:
+                    meterchangedata = meterchangedata[0]
+                else:
+                    meterchangedata = Meterchangedata()
+
+                reporting_date = datetime.datetime.strptime(curdata["reporting_date"], "%Y-%m-%d")
+                try:
+                    meterchangedata.datadate = reporting_date
+                except:
+                    pass
+                try:
+                    meterchangedata.meterdata = savedata.id
+                except:
+                    pass
+                try:
+                    meterchangedata.oldtable_zerodata = float(curdata["oldtable_zerodata"])
+                except:
+                    pass
+                try:
+                    meterchangedata.oldtable_twentyfourdata = float(curdata["oldtable_twentyfourdata"])
+                except:
+                    pass
+                try:
+                    meterchangedata.oldtable_value = float(curdata["oldtable_value"])
+                except:
+                    pass
+                try:
+                    meterchangedata.oldtable_magnification = float(curdata["oldtable_magnification"])
+                except:
+                    pass
+                try:
+                    meterchangedata.oldtable_finalvalue = float(curdata["oldtable_finalvalue"])
+                except:
+                    pass
+                try:
+                    meterchangedata.newtable_zerodata = float(curdata["newtable_zerodata"])
+                except:
+                    pass
+                try:
+                    meterchangedata.newtable_twentyfourdata = float(curdata["newtable_twentyfourdata"])
+                except:
+                    pass
+                try:
+                    meterchangedata.newtable_value = float(curdata["newtable_value"])
+                except:
+                    pass
+                try:
+                    meterchangedata.newtable_magnification = float(curdata["newtable_magnification"])
+                except:
+                    pass
+                try:
+                    meterchangedata.newtable_finalvalue = float(curdata["newtable_finalvalue"])
+                except:
+                    pass
+                try:
+                    meterchangedata.finalvalue = float(curdata["finalvalue"])
+                except:
+                    pass
+                meterchangedata.save()
+
+            savedataall(savedata)
+        for curdata in savedata15:
+            savedata = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").get(
+                id=int(curdata["id"]))
+            savedataall(savedata)
+
+        for curdata in savedata16:
+            savedata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").get(
+                id=int(curdata["id"]))
+            savedataall(savedata)
+
+        for curdata in savedata17:
+            savedata = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").get(
+                id=int(curdata["id"]))
+            savedataall(savedata)
 
         username = UserInfo.objects.get(fullname=request.user.userinfo.fullname)
         user = username.user.id

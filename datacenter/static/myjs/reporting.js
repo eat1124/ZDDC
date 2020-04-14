@@ -1281,10 +1281,10 @@ $(document).ready(function () {
     });
     $('#release1').click(function (){
         $("Element").blur();
-        var table = $('#sample_1').DataTable().data();
-        var savedata = [];
-        $.each(table, function (i, item) {
-            savedata.push({
+        var table1 = $('#sample_1').DataTable().data();
+        var savedata1 = [];
+        $.each(table1, function (i, item) {
+            savedata1.push({
                 "id": item.id,
                 "curvalue": $('#table1_curvalue_' + item.id).val(),
                 "curvaluedate": $('#table1_curvaluedate_' + item.id).val(),
@@ -1295,6 +1295,70 @@ $(document).ready(function () {
                 "cumulativeyear": $('#table1_cumulativeyear_' + item.id).val()
             })
         });
+
+        var table2 = $('#sample_2').DataTable().data();
+        var savedata2 = [];
+        $.each(table2, function (i, item) {
+            savedata2.push({
+                "id": item.id,
+                "curvalue": $('#table2_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table2_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table2_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table2_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table2_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table2_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table2_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var table3 = $('#sample_3').DataTable().data();
+        var savedata3 = [];
+        $.each(table3, function (i, item) {
+            savedata3.push({
+                "id": item.id,
+                "curvalue": $('#table3_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table3_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table3_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table3_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table3_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table3_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table3_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var table5 = $('#sample_5').DataTable().data();
+        var savedata5 = [];
+        $.each(table5, function (i, item) {
+            savedata5.push({
+                "id": item.id,
+                "oldtable_zerodata": item.oldtable_zerodata,
+                "oldtable_twentyfourdata": item.oldtable_twentyfourdata,
+                "oldtable_value": item.oldtable_value,
+                "oldtable_magnification": item.oldtable_magnification,
+                "oldtable_finalvalue": item.oldtable_finalvalue,
+                "newtable_zerodata": item.newtable_zerodata,
+                "newtable_twentyfourdata": item.newtable_twentyfourdata,
+                "newtable_value": item.newtable_value,
+                "newtable_magnification": item.newtable_magnification,
+                "newtable_finalvalue": item.newtable_finalvalue,
+                "finalvalue": item.finalvalue,
+                "reporting_date": $("#reporting_date").val(),
+                "magnification": $('#table5_magnification_' + item.id).val(),
+                "zerodata": $('#table5_zerodata_' + item.id).val(),
+                "twentyfourdata": $('#table5_twentyfourdata_' + item.id).val(),
+                "metervalue": $('#table5_metervalue_' + item.id).val(),
+                "curvalue": $('#table5_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table5_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table5_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table5_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table5_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table5_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table5_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
+
         $.ajax({
             type: "POST",
             dataType: 'json',
@@ -1302,7 +1366,6 @@ $(document).ready(function () {
             data:
                 {
                     app: $('#app').val(),
-                    operationtype: 15,
                     cycletype: $('#cycletype').val(),
                     savedata: JSON.stringify(savedata),
                     reporting_date: $('#reporting_date').val(),
@@ -1310,7 +1373,10 @@ $(document).ready(function () {
                 },
             success: function (data) {
                 if (data == 1) {
-                    table.ajax.reload();
+                    table1.ajax.reload();
+                    table2.ajax.reload();
+                    table3.ajax.reload();
+                    table5.ajax.reload();
                     $("#new1").hide();
                     $("#save1").show();
                     $("#del1").show();
@@ -1324,7 +1390,6 @@ $(document).ready(function () {
             }
         });
     });
-
 
     $("#new2").click(function () {
         var table = $('#sample_2').DataTable();
@@ -1459,10 +1524,25 @@ $(document).ready(function () {
     });
     $('#release2').click(function (){
         $("Element").blur();
-        var table = $('#sample_2').DataTable().data();
-        var savedata = [];
-        $.each(table, function (i, item) {
-            savedata.push({
+        var table1 = $('#sample_1').DataTable().data();
+        var savedata1 = [];
+        $.each(table1, function (i, item) {
+            savedata1.push({
+                "id": item.id,
+                "curvalue": $('#table1_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table1_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table1_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table1_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table1_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table1_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table1_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var table2 = $('#sample_2').DataTable().data();
+        var savedata2 = [];
+        $.each(table2, function (i, item) {
+            savedata2.push({
                 "id": item.id,
                 "curvalue": $('#table2_curvalue_' + item.id).val(),
                 "curvaluedate": $('#table2_curvaluedate_' + item.id).val(),
@@ -1473,6 +1553,55 @@ $(document).ready(function () {
                 "cumulativeyear": $('#table2_cumulativeyear_' + item.id).val()
             })
         });
+
+        var table3 = $('#sample_3').DataTable().data();
+        var savedata3 = [];
+        $.each(table3, function (i, item) {
+            savedata3.push({
+                "id": item.id,
+                "curvalue": $('#table3_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table3_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table3_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table3_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table3_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table3_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table3_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var table5 = $('#sample_5').DataTable().data();
+        var savedata5 = [];
+        $.each(table5, function (i, item) {
+            savedata5.push({
+                "id": item.id,
+                "oldtable_zerodata": item.oldtable_zerodata,
+                "oldtable_twentyfourdata": item.oldtable_twentyfourdata,
+                "oldtable_value": item.oldtable_value,
+                "oldtable_magnification": item.oldtable_magnification,
+                "oldtable_finalvalue": item.oldtable_finalvalue,
+                "newtable_zerodata": item.newtable_zerodata,
+                "newtable_twentyfourdata": item.newtable_twentyfourdata,
+                "newtable_value": item.newtable_value,
+                "newtable_magnification": item.newtable_magnification,
+                "newtable_finalvalue": item.newtable_finalvalue,
+                "finalvalue": item.finalvalue,
+                "reporting_date": $("#reporting_date").val(),
+                "magnification": $('#table5_magnification_' + item.id).val(),
+                "zerodata": $('#table5_zerodata_' + item.id).val(),
+                "twentyfourdata": $('#table5_twentyfourdata_' + item.id).val(),
+                "metervalue": $('#table5_metervalue_' + item.id).val(),
+                "curvalue": $('#table5_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table5_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table5_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table5_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table5_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table5_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table5_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
+
         $.ajax({
             type: "POST",
             dataType: 'json',
@@ -1480,28 +1609,29 @@ $(document).ready(function () {
             data:
                 {
                     app: $('#app').val(),
-                    operationtype: 16,
                     cycletype: $('#cycletype').val(),
                     savedata: JSON.stringify(savedata),
                     reporting_date: $('#reporting_date').val(),
                     funid:$('#funid').val(),
                 },
-                success: function (data) {
-                    if (data == 1) {
-                        table.ajax.reload();
-                        $("#new2").hide();
-                        $("#save2").show();
-                        $("#del2").show();
-                        $("#reset2").show();
-                        alert("发布成功。");
-                    } else
-                        alert("发布失败，请于管理员联系。");
-                },
-                error: function (e) {
+            success: function (data) {
+                if (data == 1) {
+                    table1.ajax.reload();
+                    table2.ajax.reload();
+                    table3.ajax.reload();
+                    table5.ajax.reload();
+                    $("#new1").hide();
+                    $("#save1").show();
+                    $("#del1").show();
+                    $("#reset1").show();
+                    alert("发布成功。");
+                } else
                     alert("发布失败，请于管理员联系。");
-                }
-            });
-
+            },
+            error: function (e) {
+                alert("发布失败，请于管理员联系。");
+            }
+        });
     });
 
     $("#new3").click(function () {
@@ -1637,10 +1767,40 @@ $(document).ready(function () {
     });
     $('#release3').click(function (){
         $("Element").blur();
-        var table = $('#sample_3').DataTable().data();
-        var savedata = []
-        $.each(table, function (i, item) {
-            savedata.push({
+        var table1 = $('#sample_1').DataTable().data();
+        var savedata1 = [];
+        $.each(table1, function (i, item) {
+            savedata1.push({
+                "id": item.id,
+                "curvalue": $('#table1_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table1_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table1_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table1_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table1_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table1_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table1_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var table2 = $('#sample_2').DataTable().data();
+        var savedata2 = [];
+        $.each(table2, function (i, item) {
+            savedata2.push({
+                "id": item.id,
+                "curvalue": $('#table2_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table2_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table2_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table2_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table2_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table2_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table2_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var table3 = $('#sample_3').DataTable().data();
+        var savedata3 = [];
+        $.each(table3, function (i, item) {
+            savedata3.push({
                 "id": item.id,
                 "curvalue": $('#table3_curvalue_' + item.id).val(),
                 "curvaluedate": $('#table3_curvaluedate_' + item.id).val(),
@@ -1651,6 +1811,40 @@ $(document).ready(function () {
                 "cumulativeyear": $('#table3_cumulativeyear_' + item.id).val()
             })
         });
+
+        var table5 = $('#sample_5').DataTable().data();
+        var savedata5 = [];
+        $.each(table5, function (i, item) {
+            savedata5.push({
+                "id": item.id,
+                "oldtable_zerodata": item.oldtable_zerodata,
+                "oldtable_twentyfourdata": item.oldtable_twentyfourdata,
+                "oldtable_value": item.oldtable_value,
+                "oldtable_magnification": item.oldtable_magnification,
+                "oldtable_finalvalue": item.oldtable_finalvalue,
+                "newtable_zerodata": item.newtable_zerodata,
+                "newtable_twentyfourdata": item.newtable_twentyfourdata,
+                "newtable_value": item.newtable_value,
+                "newtable_magnification": item.newtable_magnification,
+                "newtable_finalvalue": item.newtable_finalvalue,
+                "finalvalue": item.finalvalue,
+                "reporting_date": $("#reporting_date").val(),
+                "magnification": $('#table5_magnification_' + item.id).val(),
+                "zerodata": $('#table5_zerodata_' + item.id).val(),
+                "twentyfourdata": $('#table5_twentyfourdata_' + item.id).val(),
+                "metervalue": $('#table5_metervalue_' + item.id).val(),
+                "curvalue": $('#table5_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table5_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table5_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table5_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table5_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table5_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table5_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
+
         $.ajax({
             type: "POST",
             dataType: 'json',
@@ -1658,28 +1852,29 @@ $(document).ready(function () {
             data:
                 {
                     app: $('#app').val(),
-                    operationtype: 17,
                     cycletype: $('#cycletype').val(),
                     savedata: JSON.stringify(savedata),
                     reporting_date: $('#reporting_date').val(),
                     funid:$('#funid').val(),
                 },
-                success: function (data) {
-                    if (data == 1) {
-                        table.ajax.reload();
-                        $("#new3").hide();
-                        $("#save3").show();
-                        $("#del3").show();
-                        $("#reset3").show();
-                        alert("发布成功。");
-                    } else
-                        alert("发布失败，请于管理员联系。");
-                },
-                error: function (e) {
+            success: function (data) {
+                if (data == 1) {
+                    table1.ajax.reload();
+                    table2.ajax.reload();
+                    table3.ajax.reload();
+                    table5.ajax.reload();
+                    $("#new1").hide();
+                    $("#save1").show();
+                    $("#del1").show();
+                    $("#reset1").show();
+                    alert("发布成功。");
+                } else
                     alert("发布失败，请于管理员联系。");
-                }
-            });
-
+            },
+            error: function (e) {
+                alert("发布失败，请于管理员联系。");
+            }
+        });
     });
 
     $("#new5").click(function () {
@@ -1803,10 +1998,55 @@ $(document).ready(function () {
     });
     $('#release5').click(function (){
         $("Element").blur();
-        var table = $('#sample_5').DataTable().data();
-        var savedata = [];
-        $.each(table, function (i, item) {
-            savedata.push({
+        var table1 = $('#sample_1').DataTable().data();
+        var savedata1 = [];
+        $.each(table1, function (i, item) {
+            savedata1.push({
+                "id": item.id,
+                "curvalue": $('#table1_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table1_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table1_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table1_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table1_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table1_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table1_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var table2 = $('#sample_2').DataTable().data();
+        var savedata2 = [];
+        $.each(table2, function (i, item) {
+            savedata2.push({
+                "id": item.id,
+                "curvalue": $('#table2_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table2_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table2_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table2_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table2_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table2_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table2_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var table3 = $('#sample_3').DataTable().data();
+        var savedata3 = [];
+        $.each(table3, function (i, item) {
+            savedata3.push({
+                "id": item.id,
+                "curvalue": $('#table3_curvalue_' + item.id).val(),
+                "curvaluedate": $('#table3_curvaluedate_' + item.id).val(),
+                "curvaluetext": $('#table3_curvaluetext_' + item.id).val(),
+                "cumulativemonth": $('#table3_cumulativemonth_' + item.id).val(),
+                "cumulativequarter": $('#table3_cumulativequarter_' + item.id).val(),
+                "cumulativehalfyear": $('#table3_cumulativehalfyear_' + item.id).val(),
+                "cumulativeyear": $('#table3_cumulativeyear_' + item.id).val()
+            })
+        });
+
+        var table5 = $('#sample_5').DataTable().data();
+        var savedata5 = [];
+        $.each(table5, function (i, item) {
+            savedata5.push({
                 "id": item.id,
                 "oldtable_zerodata": item.oldtable_zerodata,
                 "oldtable_twentyfourdata": item.oldtable_twentyfourdata,
@@ -1833,6 +2073,9 @@ $(document).ready(function () {
                 "cumulativeyear": $('#table5_cumulativeyear_' + item.id).val()
             })
         });
+
+        var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
+
         $.ajax({
             type: "POST",
             dataType: 'json',
@@ -1840,7 +2083,6 @@ $(document).ready(function () {
             data:
                 {
                     app: $('#app').val(),
-                    operationtype: 1,
                     cycletype: $('#cycletype').val(),
                     savedata: JSON.stringify(savedata),
                     reporting_date: $('#reporting_date').val(),
@@ -1848,12 +2090,15 @@ $(document).ready(function () {
                 },
             success: function (data) {
                 if (data == 1) {
-                    table.ajax.reload();
-                    $("#new5").hide();
-                    $("#save5").show();
-                    $("#del5").show();
+                    table1.ajax.reload();
+                    table2.ajax.reload();
+                    table3.ajax.reload();
+                    table5.ajax.reload();
+                    $("#new1").hide();
+                    $("#save1").show();
+                    $("#del1").show();
+                    $("#reset1").show();
                     alert("发布成功。");
-
                 } else
                     alert("发布失败，请于管理员联系。");
             },
@@ -1861,7 +2106,6 @@ $(document).ready(function () {
                 alert("发布失败，请于管理员联系。");
             }
         });
-
     });
 
     // nav_tab切换事件
