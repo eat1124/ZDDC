@@ -152,8 +152,12 @@ def Digit(digit):
         digit = '0.000'
     elif digit == 4:
         digit = '0.0000'
-    else:
+    elif digit == 5:
         digit = '0.00000'
+    elif digit == 6:
+        digit = '0.000000'
+    else:
+        digit = '0.0000000'
     return digit
 
 
