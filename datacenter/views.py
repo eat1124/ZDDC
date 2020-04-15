@@ -4661,7 +4661,7 @@ def getcalculatedata(target, date, guid,all_constant,all_target,tableList):
     """
     数据计算
     """
-
+    curvalue = -9999
     if target.data_from == 'et':
         # 外部系统，直接取数
         # 从数据库中获取，取第一个值，其他情况抛错
@@ -4704,8 +4704,8 @@ def getcalculatedata(target, date, guid,all_constant,all_target,tableList):
                     value = ""
                     isconstant=False
                     for constant in all_constant:
-                        if membertarget==constant.code:
-                            value = constant.value
+                        if membertarget==constant['code']:
+                            value = constant['value']
                             isconstant = True
                             break
                     if not isconstant:
@@ -5328,7 +5328,7 @@ def reporting_recalculate(request):
                                                               operationtype=operationtype, work=work)
 
         # 所有常数
-        all_constant = Constant.objects.exclude(state="9")
+        all_constant = Constant.objects.exclude(state="9").values()
         all_target = Target.objects.exclude(state="9")
         tableyear = str(reporting_date.year)
         EntryTable = getmodels("Entrydata", tableyear)
@@ -5446,7 +5446,7 @@ def reporting_new(request):
         cur_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
                                                               operationtype=operationtype, work=work).order_by("sort")
         # 所有常数
-        all_constant = Constant.objects.exclude(state="9")
+        all_constant = Constant.objects.exclude(state="9").values()
         all_target = Target.objects.exclude(state="9")
         tableyear = str(reporting_date.year)
 
