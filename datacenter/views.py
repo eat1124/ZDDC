@@ -5677,147 +5677,29 @@ def reporting_release(request):
         savedata16 = savedata['16']
         savedata17 = savedata['17']
 
-        def savedataall(savedata):
-            if savedata.target.datatype == 'numbervalue':
-                try:
-                    savedata.curvalue = float(curdata["curvalue"])
-                    savedata.curvalue = decimal.Decimal(str(savedata.curvalue)).quantize(
-                        decimal.Decimal(Digit(savedata.target.digit)), rounding=decimal.ROUND_HALF_UP)
-                except:
-                    pass
-            if savedata.target.datatype == 'date':
-                try:
-                    savedata.curvaluedate = datetime.datetime.strptime(curdata["curvaluedate"], "%Y-%m-%d %H:%M:%S")
-                except:
-                    pass
-            if savedata.target.datatype == 'text':
-                try:
-                    savedata.curvaluetext = curdata["curvaluetext"]
-                except:
-                    pass
-            try:
-                savedata.zerodata = curdata["zerodata"]
-            except:
-                pass
-            try:
-                savedata.twentyfourdata = curdata["twentyfourdata"]
-            except:
-                pass
-            try:
-                savedata.metervalue = curdata["metervalue"]
-            except:
-                pass
-            try:
-                savedata.cumulativemonth = float(curdata["cumulativemonth"])
-                savedata.cumulativemonth = round(savedata.cumulativemonth, savedata.target.digit)
-            except:
-                pass
-            try:
-                savedata.cumulativequarter = float(curdata["cumulativequarter"])
-                savedata.cumulativequarter = round(savedata.cumulativequarter, savedata.target.digit)
-            except:
-                pass
-            try:
-                savedata.cumulativehalfyear = float(curdata["cumulativehalfyear"])
-                savedata.cumulativehalfyear = round(savedata.cumulativehalfyear, savedata.target.digit)
-            except:
-                pass
-            try:
-                savedata.cumulativeyear = float(curdata["cumulativeyear"])
-                savedata.cumulativeyear = round(savedata.cumulativeyear, savedata.target.digit)
-            except:
-                pass
-
-            savedata.releasestate = '1'
-            savedata.save()
-
         for curdata in savedata1:
             savedata = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").get(
                 id=int(curdata["id"]))
-            if curdata["finalvalue"]:
-                try:
-                    newmagnification = float(curdata["magnification"])
-                    if savedata.target.magnification != newmagnification:
-                        savedata.target.magnification = newmagnification
-                        savedata.target.save()
-                except:
-                    pass
-                meterchangedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=savedata.id)
-                if len(meterchangedata) > 0:
-                    meterchangedata = meterchangedata[0]
-                else:
-                    meterchangedata = Meterchangedata()
+            savedata.releasestate = '1'
+            savedata.save()
 
-                reporting_date = datetime.datetime.strptime(curdata["reporting_date"], "%Y-%m-%d")
-                try:
-                    meterchangedata.datadate = reporting_date
-                except:
-                    pass
-                try:
-                    meterchangedata.meterdata = savedata.id
-                except:
-                    pass
-                try:
-                    meterchangedata.oldtable_zerodata = float(curdata["oldtable_zerodata"])
-                except:
-                    pass
-                try:
-                    meterchangedata.oldtable_twentyfourdata = float(curdata["oldtable_twentyfourdata"])
-                except:
-                    pass
-                try:
-                    meterchangedata.oldtable_value = float(curdata["oldtable_value"])
-                except:
-                    pass
-                try:
-                    meterchangedata.oldtable_magnification = float(curdata["oldtable_magnification"])
-                except:
-                    pass
-                try:
-                    meterchangedata.oldtable_finalvalue = float(curdata["oldtable_finalvalue"])
-                except:
-                    pass
-                try:
-                    meterchangedata.newtable_zerodata = float(curdata["newtable_zerodata"])
-                except:
-                    pass
-                try:
-                    meterchangedata.newtable_twentyfourdata = float(curdata["newtable_twentyfourdata"])
-                except:
-                    pass
-                try:
-                    meterchangedata.newtable_value = float(curdata["newtable_value"])
-                except:
-                    pass
-                try:
-                    meterchangedata.newtable_magnification = float(curdata["newtable_magnification"])
-                except:
-                    pass
-                try:
-                    meterchangedata.newtable_finalvalue = float(curdata["newtable_finalvalue"])
-                except:
-                    pass
-                try:
-                    meterchangedata.finalvalue = float(curdata["finalvalue"])
-                except:
-                    pass
-                meterchangedata.save()
-
-            savedataall(savedata)
         for curdata in savedata15:
             savedata = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").get(
                 id=int(curdata["id"]))
-            savedataall(savedata)
+            savedata.releasestate = '1'
+            savedata.save()
 
         for curdata in savedata16:
             savedata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").get(
                 id=int(curdata["id"]))
-            savedataall(savedata)
+            savedata.releasestate = '1'
+            savedata.save()
 
         for curdata in savedata17:
             savedata = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").get(
                 id=int(curdata["id"]))
-            savedataall(savedata)
+            savedata.releasestate = '1'
+            savedata.save()
 
         username = UserInfo.objects.get(fullname=request.user.userinfo.fullname)
         user = username.user.id
