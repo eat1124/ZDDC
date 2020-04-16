@@ -5386,12 +5386,19 @@ def reporting_reextract(request):
                     except:
                         pass
                     if tablename != "":
-                        cursor = connection.cursor()
-                        strsql = "select  curvalue from " + tablename + " where target_id = " + str(
-                            target.id) + " and datadate='" + reporting_date.strftime(
-                            "%Y-%m-%d %H:%M:%S") + "'  order by id desc"
-                        cursor.execute(strsql)
-                        rows = cursor.fetchall()
+                        rows = []
+                        try:
+                            cursor = connection.cursor()
+                            with connection.cursor() as cursor:
+                                reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
+                                strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
+                                    tablename=tablename, target_id=target.id, datadate=reporting_date_stf
+                                )
+                                cursor.execute(strsql)
+                                rows = cursor.fetchall()
+                            connection.close()
+                        except Exception as e:
+                            pass
                         if len(rows) > 0:
                             try:
                                 if target.is_repeat == '2':
@@ -5477,12 +5484,19 @@ def reporting_new(request):
                 except:
                     pass
                 if tablename != "":
-                    cursor = connection.cursor()
-                    strsql = "select  curvalue from " + tablename + " where  target_id = " + str(
-                        target.id) + " and  datadate='" + reporting_date.strftime(
-                        "%Y-%m-%d %H:%M:%S") + "'  order by id desc"
-                    cursor.execute(strsql)
-                    rows = cursor.fetchall()
+                    rows = []
+                    try:
+                        cursor = connection.cursor()
+                        with connection.cursor() as cursor:
+                            reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
+                            strsql = "SELECT * FROM {tablename}".format(
+                                tablename=tablename, target_id=target.id, datadate=reporting_date_stf
+                            )
+                            cursor.execute(strsql)
+                            rows = cursor.fetchall()
+                        connection.close()
+                    except Exception as e:
+                        pass
                     if len(rows) > 0:
                         try:
                             meterdata.twentyfourdata = rows[0][0]
@@ -5528,12 +5542,19 @@ def reporting_new(request):
                 except:
                     pass
                 if tablename != "":
-                    cursor = connection.cursor()
-                    strsql = "select  curvalue from " + tablename + " where target_id = " + str(
-                        target.id) + " and datadate='" + reporting_date.strftime(
-                        "%Y-%m-%d %H:%M:%S") + "' order by id desc"
-                    cursor.execute(strsql)
-                    rows = cursor.fetchall()
+                    rows = []
+                    try:
+                        cursor = connection.cursor()
+                        with connection.cursor() as cursor:
+                            reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
+                            strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
+                                tablename=tablename, target_id=target.id, datadate=reporting_date_stf
+                            )
+                            cursor.execute(strsql)
+                            rows = cursor.fetchall()
+                        connection.close()
+                    except Exception as e:
+                        pass
                     if len(rows) > 0:
                         try:
                             if target.is_repeat == '2':
@@ -5727,9 +5748,11 @@ def reporting_release(request):
 
     return HttpResponse(1)
 
-
+"""
 def reporting_save(request):
     if request.user.is_authenticated():
+        from django.db import reset_queries, connection
+        reset_queries()
         result = {}
         savedata = request.POST.get('savedata')
         operationtype = request.POST.get('operationtype')
@@ -5876,8 +5899,208 @@ def reporting_save(request):
 
             savedata.save()
 
+        print(len(connection.queries))
     return HttpResponse(1)
+"""
 
+def reporting_save(request):
+    if request.user.is_authenticated():
+        ret = {
+            'status': 1,
+            'data': '保存成功。'
+        }
+        from django.db import reset_queries, connection
+        reset_queries()
+        savedata = request.POST.get('savedata')
+        operationtype = request.POST.get('operationtype')
+        cycletype = request.POST.get('cycletype', '')
+        savedata = json.loads(savedata)
+        reporting_date = request.POST.get('reporting_date', '')
+        try:
+            reporting_date = getreporting_date(reporting_date, cycletype)
+        except:
+            return JsonResponse({
+                'status': 0,
+                'data': '日期处理异常。'
+            })
+
+        save_query_data = []
+        meterchangedata = []
+        # 循环前执行所有查询,所有需要存储的键值存储在{}中,直接执行queryset(id=?).update(**kwargs)
+        # 相比get(),save(),减少查询的操作,直接更新
+        if operationtype == "1":
+            save_query_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").values(
+                'zerodata', 'twentyfourdata', 'metervalue', 'target__magnification',
+                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth', 'cumulativequarter', 
+                'cumulativehalfyear', 'cumulativeyear', 'id'
+            )
+            meterchangedata = Meterchangedata.objects.exclude(state="9").values()
+        if operationtype == "15":
+            save_query_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").values(
+                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth', 'cumulativequarter', 
+                'cumulativehalfyear', 'cumulativeyear', 'id'
+            )
+        if operationtype == "16":
+            save_query_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").values(
+                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth', 'cumulativequarter', 
+                'cumulativehalfyear', 'cumulativeyear', 'id'
+            )
+        if operationtype == "17":
+            save_query_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").values(
+                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth', 'cumulativequarter', 
+                'cumulativehalfyear', 'cumulativeyear', 'id'
+            )
+        
+
+        for curdata in savedata:
+            result = dict()
+
+            # save to dict
+            single_save_query_data = {}
+            for sqd in save_query_data:
+                if sqd['id'] == curdata['id']:
+                    single_save_query_data = sqd
+                    break
+            if single_save_query_data:
+                if single_save_query_data['target__datatype'] == 'numbervalue':
+                    try:
+                        result['curvalue'] = float(curdata["curvalue"])
+                        result['curvalue'] = decimal.Decimal(str(single_save_query_data['curvalue'])).quantize(
+                            decimal.Decimal(Digit(single_save_query_data['target__digit'])),
+                            rounding=decimal.ROUND_HALF_UP)
+                    except Exception as e:
+                        pass
+                if single_save_query_data['target__datatype'] == 'date':
+                    try:
+                        result['curvaluedate'] = datetime.datetime.strptime(curdata["curvaluedate"], "%Y-%m-%d %H:%M:%S")
+                    except Exception as e:
+                        pass
+                if single_save_query_data['target__datatype'] == 'text':
+                    try:
+                        result['curvaluetext'] = curdata["curvaluetext"]
+                    except Exception as e:
+                        pass           
+                try:
+                    result['zerodata'] = curdata["zerodata"]
+                except Exception as e:
+                    pass
+                try:
+                    result['twentyfourdata'] = curdata["twentyfourdata"]
+                except Exception as e:
+                    pass
+                try:
+                    result['metervalue'] = curdata["metervalue"]
+                except Exception as e:
+                    pass
+                try:
+                    result['cumulativemonth'] = float(curdata["cumulativemonth"])
+                    result['cumulativemonth'] = round(single_save_query_data['cumulativemonth'], single_save_query_data['target__digit'])
+                except Exception as e:
+                    pass
+                try:
+                    result['cumulativequarter'] = float(curdata["cumulativequarter"])
+                    result['cumulativequarter'] = round(single_save_query_data['cumulativequarter'], single_save_query_data['target__digit'])
+                except Exception as e:
+                    pass
+                try:
+                    result['cumulativehalfyear'] = float(curdata["cumulativehalfyear"])
+                    result['cumulativehalfyear'] = round(save_query_data['cumulativehalfyear'], save_query_data['target__digit'])
+                except Exception as e:
+                    pass
+                try:
+                    result['cumulativeyear'] = float(curdata["cumulativeyear"])
+                    result['cumulativeyear'] = round(save_query_data['cumulativeyear'], save_query_data['target__digit'])
+                except Exception as e:
+                    pass
+
+                if operationtype == "1":
+                    getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(id=single_save_query_data['id']).update(**result)
+                    
+                    # 电表走字换新表
+                    if curdata["finalvalue"]:
+                        # 倍率发生变化后修改
+                        try:
+                            newmagnification = float(curdata["magnification"])
+                            if single_save_query_data['target__magnification'] != newmagnification:
+                                try:
+                                    tmp_metedata = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").get(id=single_save_query_data['id'])
+                                except Exception as e:
+                                    pass
+                                else:
+                                    if tmp_metedata.target:
+                                        tmp_metedata.target.magnification = newmagnification
+                                        tmp_metedata.target.save()
+                        except:
+                            pass
+                        
+                        meterchange_result = dict()
+
+                        reporting_date = datetime.datetime.strptime(curdata["reporting_date"], "%Y-%m-%d")
+                        try:
+                            meterchange_result['datadate'] = reporting_date
+                        except:
+                            pass
+                        try:
+                            meterchange_result['meterdata'] = single_save_query_data['id']
+                        except:
+                            pass
+                        try:
+                            meterchange_result['oldtable_zerodata'] = float(curdata["oldtable_zerodata"])
+                        except:
+                            pass
+                        try:
+                            meterchange_result['oldtable_twentyfourdata'] = float(curdata["oldtable_twentyfourdata"])
+                        except:
+                            pass
+                        try:
+                            meterchange_result['oldtable_value'] = float(curdata["oldtable_value"])
+                        except:
+                            pass
+                        try:
+                            meterchange_result['oldtable_magnification'] = float(curdata["oldtable_magnification"])
+                        except:
+                            pass
+                        try:
+                            meterchange_result['oldtable_finalvalue'] = float(curdata["oldtable_finalvalue"])
+                        except:
+                            pass
+                        try:
+                            meterchange_result['newtable_zerodata'] = float(curdata["newtable_zerodata"])
+                        except:
+                            pass
+                        try:
+                            meterchange_result['newtable_twentyfourdata'] = float(curdata["newtable_twentyfourdata"])
+                        except:
+                            pass
+                        try:
+                            meterchange_result['newtable_value'] = float(curdata["newtable_value"])
+                        except:
+                            pass
+                        try:
+                            meterchange_result['newtable_magnification'] = float(curdata["newtable_magnification"])
+                        except:
+                            pass
+                        try:
+                            meterchange_result['newtable_finalvalue'] = float(curdata["newtable_finalvalue"])
+                        except:
+                            pass
+                        try:
+                            meterchange_result['finalvalue'] = float(curdata["finalvalue"])
+                        except:
+                            pass
+                        
+                        Meterchangedata.objects.exclude(state="9").filter(meterdata=single_save_query_data['id']).update_or_create(**meterchange_result)
+                if operationtype == "15":
+                    getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(id=single_save_query_data['id']).update(**result)
+                if operationtype == "16":
+                    getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(id=single_save_query_data['id']).update(**result)
+                if operationtype == "17":
+                    getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(id=single_save_query_data['id']).update(**result)
+            else:
+                pass
+
+        print(len(connection.queries))  # 1404>>704
+        return JsonResponse(ret)
 
 def report_submit_index(request, funid):
     """
@@ -6370,6 +6593,7 @@ def index(request, funid):
                     funlist = getfun(funlist, fun)
                 except:
                     pass
+            connection.close()
         for index, value in enumerate(funlist):
             if value.sort is None:
                 value.sort = 0

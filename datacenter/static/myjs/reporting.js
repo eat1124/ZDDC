@@ -1240,6 +1240,32 @@ $(document).ready(function () {
 
         }
     });
+
+    function reportingSave(operationtype, savedata, table){
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_save/",
+            data: {
+                operationtype: operationtype,
+                cycletype: $('#cycletype').val(),
+                savedata: JSON.stringify(savedata),
+                reporting_date: $('#reporting_date').val(),
+                funid: $('#funid').val(),
+            },
+            success: function (data) {
+                console.log(data['data'])
+                if (data['status'] == 1) {
+                    table.ajax.reload();
+                } 
+                alert(data['data']);
+            },
+            error: function (e) {
+                alert("页面出现错误，请于管理员联系。");
+            }
+        });
+    }
+
     $('#save1').click(function () {
         $("Element").blur();
         var table = $('#sample_1').DataTable().data();
@@ -1256,28 +1282,7 @@ $(document).ready(function () {
                 "cumulativeyear": $('#table1_cumulativeyear_' + item.id).val()
             })
         });
-        $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../../reporting_save/",
-            data:
-                {
-                    operationtype: 15,
-                    cycletype: $('#cycletype').val(),
-                    savedata: JSON.stringify(savedata),
-                    reporting_date: $('#reporting_date').val(),
-                    funid:$('#funid').val(),
-                },
-            success: function (data) {
-                if (data == 1) {
-                    table.ajax.reload();
-                }
-                alert("保存成功。");
-            },
-            error: function (e) {
-                alert("页面出现错误，请于管理员联系。");
-            }
-        });
+        reportingSave(15, savedata, table);
     });
     $('#release1').click(function (){
         $("Element").blur();
@@ -1429,28 +1434,7 @@ $(document).ready(function () {
                 "cumulativeyear": $('#table2_cumulativeyear_' + item.id).val()
             })
         });
-        $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../../reporting_save/",
-            data:
-                {
-                    operationtype: 16,
-                    cycletype: $('#cycletype').val(),
-                    savedata: JSON.stringify(savedata),
-                    reporting_date: $('#reporting_date').val(),
-                    funid:$('#funid').val(),
-                },
-            success: function (data) {
-                if (data == 1) {
-                    table.ajax.reload();
-                }
-                alert("保存成功。");
-            },
-            error: function (e) {
-                alert("页面出现错误，请于管理员联系。");
-            }
-        });
+        reportingSave(16, savedata, table);
     });
     $('#reset2').click(function () {
         var table = $('#sample_2').DataTable();
@@ -1644,28 +1628,7 @@ $(document).ready(function () {
                 "cumulativeyear": $('#table3_cumulativeyear_' + item.id).val()
             })
         });
-        $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../../reporting_save/",
-            data:
-                {
-                    operationtype: 17,
-                    cycletype: $('#cycletype').val(),
-                    savedata: JSON.stringify(savedata),
-                    reporting_date: $('#reporting_date').val(),
-                    funid:$('#funid').val(),
-                },
-            success: function (data) {
-                if (data == 1) {
-                    table.ajax.reload();
-                }
-                alert("保存成功。");
-            },
-            error: function (e) {
-                alert("页面出现错误，请于管理员联系。");
-            }
-        });
+        reportingSave(17, savedata, table);
     });
     $('#reset3').click(function () {
         customModal.show();
@@ -1862,28 +1825,7 @@ $(document).ready(function () {
                 "cumulativeyear": $('#table5_cumulativeyear_' + item.id).val()
             })
         });
-        $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../../reporting_save/",
-            data:
-                {
-                    operationtype: 1,
-                    cycletype: $('#cycletype').val(),
-                    savedata: JSON.stringify(savedata),
-                    reporting_date: $('#reporting_date').val(),
-                    funid:$('#funid').val(),
-                },
-            success: function (data) {
-                if (data == 1) {
-                    table.ajax.reload();
-                }
-                alert("保存成功。");
-            },
-            error: function (e) {
-                alert("页面出现错误，请于管理员联系。");
-            }
-        });
+        reportingSave(1, savedata, table);
     });
     $('#release5').click(function (){
         $("Element").blur();
