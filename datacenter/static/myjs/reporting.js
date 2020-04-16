@@ -1265,6 +1265,36 @@ $(document).ready(function () {
             }
         });
     }
+    function reportingRelease(savedata, ...tables) {
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_release/",
+            data:
+            {
+                app: $('#app').val(),
+                cycletype: $('#cycletype').val(),
+                savedata: JSON.stringify(savedata),
+                reporting_date: $('#reporting_date').val(),
+                funid: $('#funid').val(),
+            },
+            success: function (data) {
+                if (data['status'] == 1) {
+                    for (var i=0; i<tables.length; i++){
+                        tables[i].ajax.reload();
+                    }
+                    $("#new1").hide();
+                    $("#save1").show();
+                    $("#del1").show();
+                    $("#reset1").show();
+                } 
+                alert(data['data']);
+            },
+            error: function (e) {
+                alert("发布失败，请于管理员联系。");
+            }
+        });
+    }
 
     $('#save1').click(function () {
         $("Element").blur();
@@ -1320,36 +1350,7 @@ $(document).ready(function () {
 
         var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
 
-        $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../../reporting_release/",
-            data:
-                {
-                    app: $('#app').val(),
-                    cycletype: $('#cycletype').val(),
-                    savedata: JSON.stringify(savedata),
-                    reporting_date: $('#reporting_date').val(),
-                    funid:$('#funid').val(),
-                },
-            success: function (data) {
-                if (data == 1) {
-                    table1.ajax.reload();
-                    table2.ajax.reload();
-                    table3.ajax.reload();
-                    table5.ajax.reload();
-                    $("#new1").hide();
-                    $("#save1").show();
-                    $("#del1").show();
-                    $("#reset1").show();
-                    alert("发布成功。");
-                } else
-                    alert("发布失败，请于管理员联系。");
-            },
-            error: function (e) {
-                alert("发布失败，请于管理员联系。");
-            }
-        });
+        reportingRelease(savedata, table1, table2, table3, table5);
     });
 
     $("#new2").click(function () {
@@ -1498,36 +1499,7 @@ $(document).ready(function () {
 
         var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
 
-        $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../../reporting_release/",
-            data:
-                {
-                    app: $('#app').val(),
-                    cycletype: $('#cycletype').val(),
-                    savedata: JSON.stringify(savedata),
-                    reporting_date: $('#reporting_date').val(),
-                    funid:$('#funid').val(),
-                },
-            success: function (data) {
-                if (data == 1) {
-                    table1.ajax.reload();
-                    table2.ajax.reload();
-                    table3.ajax.reload();
-                    table5.ajax.reload();
-                    $("#new1").hide();
-                    $("#save1").show();
-                    $("#del1").show();
-                    $("#reset1").show();
-                    alert("发布成功。");
-                } else
-                    alert("发布失败，请于管理员联系。");
-            },
-            error: function (e) {
-                alert("发布失败，请于管理员联系。");
-            }
-        });
+        reportingRelease(savedata, table1, table2, table3, table5);
     });
     var customModal = {
         "show": function () {
@@ -1697,36 +1669,7 @@ $(document).ready(function () {
 
         var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
 
-        $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../../reporting_release/",
-            data:
-                {
-                    app: $('#app').val(),
-                    cycletype: $('#cycletype').val(),
-                    savedata: JSON.stringify(savedata),
-                    reporting_date: $('#reporting_date').val(),
-                    funid:$('#funid').val(),
-                },
-            success: function (data) {
-                if (data == 1) {
-                    table1.ajax.reload();
-                    table2.ajax.reload();
-                    table3.ajax.reload();
-                    table5.ajax.reload();
-                    $("#new1").hide();
-                    $("#save1").show();
-                    $("#del1").show();
-                    $("#reset1").show();
-                    alert("发布成功。");
-                } else
-                    alert("发布失败，请于管理员联系。");
-            },
-            error: function (e) {
-                alert("发布失败，请于管理员联系。");
-            }
-        });
+        reportingRelease(savedata, table1, table2, table3, table5);
     });
 
     $("#new5").click(function () {
@@ -1863,36 +1806,7 @@ $(document).ready(function () {
 
         var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
 
-        $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../../reporting_release/",
-            data:
-                {
-                    app: $('#app').val(),
-                    cycletype: $('#cycletype').val(),
-                    savedata: JSON.stringify(savedata),
-                    reporting_date: $('#reporting_date').val(),
-                    funid:$('#funid').val(),
-                },
-            success: function (data) {
-                if (data == 1) {
-                    table1.ajax.reload();
-                    table2.ajax.reload();
-                    table3.ajax.reload();
-                    table5.ajax.reload();
-                    $("#new1").hide();
-                    $("#save1").show();
-                    $("#del1").show();
-                    $("#reset1").show();
-                    alert("发布成功。");
-                } else
-                    alert("发布失败，请于管理员联系。");
-            },
-            error: function (e) {
-                alert("发布失败，请于管理员联系。");
-            }
-        });
+        reportingRelease(savedata, table1, table2, table3, table5);
     });
 
     // nav_tab切换事件

@@ -5671,7 +5671,10 @@ def reporting_del(request):
 
 def reporting_release(request):
     if request.user.is_authenticated():
-        result = {}
+        result = {
+            'status': 1,
+            'data': '发布成功。'
+        }
         app = request.POST.get('app', '')
         savedata = request.POST.get('savedata')
         savedata = json.loads(savedata)
@@ -5679,74 +5682,120 @@ def reporting_release(request):
         reporting_date = request.POST.get('reporting_date', '')
         funid = request.POST.get('funid', '')
         work = None
-        work_id = ""
+        user_id = request.user.id
+
         try:
             funid = int(funid)
             fun = Fun.objects.get(id=funid)
             work = fun.work
-            work_id = fun.work_id
-        except:
-            pass
-        try:
             app = int(app)
-            reporting_date = getreporting_date(reporting_date, cycletype)
-        except:
-            return HttpResponse(0)
-        # 分别存入数据库
-        savedata1 = savedata['1']
-        savedata15 = savedata['15']
-        savedata16 = savedata['16']
-        savedata17 = savedata['17']
-
-        for curdata in savedata1:
-            savedata = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").get(
-                id=int(curdata["id"]))
-            savedata.releasestate = '1'
-            savedata.save()
-
-        for curdata in savedata15:
-            savedata = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").get(
-                id=int(curdata["id"]))
-            savedata.releasestate = '1'
-            savedata.save()
-
-        for curdata in savedata16:
-            savedata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").get(
-                id=int(curdata["id"]))
-            savedata.releasestate = '1'
-            savedata.save()
-
-        for curdata in savedata17:
-            savedata = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").get(
-                id=int(curdata["id"]))
-            savedata.releasestate = '1'
-            savedata.save()
-
-        username = UserInfo.objects.get(fullname=request.user.userinfo.fullname)
-        user = username.user.id
-        user_id = ""
-        try:
-            user_id = int(user)
-        except:
-            pass
-
-        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work,
-                                                                          cycletype=cycletype, adminapp_id=app,
-                                                                          user_id=user_id)
-        if len(all_reportinglog) > 0:
-            all_reportinglog = all_reportinglog[0]
+        except Exception as e:
+            print(e)
+            result['status'] = 0
+            result['data'] = '网络异常。'
         else:
-            all_reportinglog = ReportingLog()
+            try:
+                reporting_date = getreporting_date(reporting_date, cycletype)
+            except Exception as e:
+                result['status'] = 0
+                result['data'] = '报表时间处理异常。'
+            else:
+                # 分别存入数据库
+                savedata1 = savedata['1']
+                savedata15 = savedata['15']
+                savedata16 = savedata['16']
+                savedata17 = savedata['17']
 
-        all_reportinglog.datadate = reporting_date
-        all_reportinglog.cycletype = cycletype
-        all_reportinglog.adminapp_id = app
-        all_reportinglog.work_id = work_id
-        all_reportinglog.user_id = user_id
-        all_reportinglog.type = 'release'
-        all_reportinglog.save()
+                # 发布
+                error_info = ''
 
-    return HttpResponse(1)
+                try:
+                    getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(id__in=[int(x['id']) for x in savedata1]).update(releasestate='1')
+                except Exception as e:
+                    error_info += '电表走字指标数据,'
+                    result['status'] = 0
+                try:
+                    getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(id__in=[int(x['id']) for x in savedata15]).update(releasestate='1')
+                except Exception as e:
+                    error_info += '数据录入指标数据,'
+                    result['status'] = 0
+                try:
+                    getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(id__in=[int(x['id']) for x in savedata16]).update(releasestate='1')
+                except Exception as e:
+                    error_info += '数据提取指标数据,'
+                    result['status'] = 0
+                try:
+                    getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(id__in=[int(x['id']) for x in savedata17]).update(releasestate='1')
+                except Exception as e:
+                    error_info += '数据计算指标数据'
+                    result['status'] = 0
+
+                if result['status']:
+                    try:
+                        ReportingLog.objects.exclude(state="9").filter(
+                            datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app, user_id=user_id
+                        ).update_or_create(**{
+                            'datadate': reporting_date,
+                            'cycletype': cycletype,
+                            'adminapp_id': app,
+                            'work': work,
+                            'user_id': user_id,
+                            'type': 'release',
+                        })
+                    except Exception as e:
+                        pass
+                else:
+                    result['data'] = '{0}发布失败。'.format(error_info[:-1] if error_info.endswith(',') else error_info)
+
+        # for curdata in savedata1:
+        #     savedata = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").get(
+        #         id=int(curdata["id"]))
+        #     savedata.releasestate = '1'
+        #     savedata.save()
+
+        # for curdata in savedata15:
+        #     savedata = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").get(
+        #         id=int(curdata["id"]))
+        #     savedata.releasestate = '1'
+        #     savedata.save()
+
+        # for curdata in savedata16:
+        #     savedata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").get(
+        #         id=int(curdata["id"]))
+        #     savedata.releasestate = '1'
+        #     savedata.save()
+
+        # for curdata in savedata17:
+        #     savedata = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").get(
+        #         id=int(curdata["id"]))
+        #     savedata.releasestate = '1'
+        #     savedata.save()
+
+        # username = UserInfo.objects.get(fullname=request.user.userinfo.fullname)
+        # user = username.user.id
+        # user_id = ""
+        # try:
+        #     user_id = int(user)
+        # except:
+        #     pass
+
+        # all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work,
+        #                                                                   cycletype=cycletype, adminapp_id=app,
+        #                                                                   user_id=user_id)
+        # if len(all_reportinglog) > 0:
+        #     all_reportinglog = all_reportinglog[0]
+        # else:
+        #     all_reportinglog = ReportingLog()
+
+        # all_reportinglog.datadate = reporting_date
+        # all_reportinglog.cycletype = cycletype
+        # all_reportinglog.adminapp_id = app
+        # all_reportinglog.work_id = work_id
+        # all_reportinglog.user_id = user_id
+        # all_reportinglog.type = 'release'
+        # all_reportinglog.save()
+        return JsonResponse(result)
+
 
 """
 def reporting_save(request):
@@ -5909,8 +5958,6 @@ def reporting_save(request):
             'status': 1,
             'data': '保存成功。'
         }
-        from django.db import reset_queries, connection
-        reset_queries()
         savedata = request.POST.get('savedata')
         operationtype = request.POST.get('operationtype')
         cycletype = request.POST.get('cycletype', '')
@@ -6099,7 +6146,6 @@ def reporting_save(request):
             else:
                 pass
 
-        print(len(connection.queries))  # 1404>>704
         return JsonResponse(ret)
 
 def report_submit_index(request, funid):
