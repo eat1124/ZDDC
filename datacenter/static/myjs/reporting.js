@@ -1222,16 +1222,15 @@ $(document).ready(function () {
 
                     },
                 success: function (data) {
-                    if (data == 1) {
+                    if (data['status'] == 1) {
                         $("#new1").show();
                         $("#save1").hide();
                         $("#del1").hide();
                         $("#unrelease1").hide();
                         $("#gorelease1").hide();
                         table.ajax.reload();
-                        alert("删除成功！");
-                    } else
-                        alert("删除失败，请于管理员联系。");
+                    } 
+                    alert(data['data']);
                 },
                 error: function (e) {
                     alert("删除失败，请于管理员联系。");
@@ -1265,7 +1264,7 @@ $(document).ready(function () {
             }
         });
     }
-    function reportingRelease(savedata, ...tables) {
+    function reportingRelease(savedata, tables) {
         $.ajax({
             type: "POST",
             dataType: 'json',
@@ -1350,7 +1349,7 @@ $(document).ready(function () {
 
         var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
 
-        reportingRelease(savedata, table1, table2, table3, table5);
+        reportingRelease(savedata, [table1, table2, table3, table5]);
     });
 
     $("#new2").click(function () {
@@ -1400,7 +1399,7 @@ $(document).ready(function () {
 
                     },
                 success: function (data) {
-                    if (data == 1) {
+                    if (data['status'] == 1) {
                         table.ajax.reload();
                         $("#new2").show();
                         $("#save2").hide();
@@ -1408,9 +1407,8 @@ $(document).ready(function () {
                         $("#reset2").hide();
                         $("#unrelease2").hide();
                         $("#gorelease2").hide();
-                        alert("删除成功！");
-                    } else
-                        alert("删除失败，请于管理员联系。");
+                    } 
+                    alert(data['data']);
                 },
                 error: function (e) {
                     alert("删除失败，请于管理员联系。");
@@ -1499,7 +1497,7 @@ $(document).ready(function () {
 
         var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
 
-        reportingRelease(savedata, table1, table2, table3, table5);
+        reportingRelease(savedata, [table1, table2, table3, table5]);
     });
     var customModal = {
         "show": function () {
@@ -1565,7 +1563,7 @@ $(document).ready(function () {
 
                     },
                 success: function (data) {
-                    if (data == 1) {
+                    if (data['status'] == 1) {
                         table.ajax.reload();
                         $("#new3").show();
                         $("#save3").hide();
@@ -1573,9 +1571,8 @@ $(document).ready(function () {
                         $("#reset3").hide();
                         $("#unrelease3").hide();
                         $("#gorelease3").hide();
-                        alert("删除成功！");
-                    } else
-                        alert("删除失败，请于管理员联系。");
+                    }
+                    alert(data['data']);
                 },
                 error: function (e) {
                     alert("删除失败，请于管理员联系。");
@@ -1669,7 +1666,7 @@ $(document).ready(function () {
 
         var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
 
-        reportingRelease(savedata, table1, table2, table3, table5);
+        reportingRelease(savedata, [table1, table2, table3, table5]);
     });
 
     $("#new5").click(function () {
@@ -1718,16 +1715,15 @@ $(document).ready(function () {
 
                     },
                 success: function (data) {
-                    if (data == 1) {
+                    if (data['status'] == 1) {
                         table.ajax.reload();
                         $("#new5").show();
                         $("#save5").hide();
                         $("#del5").hide();
                         $("#unrelease5").hide();
                         $("#gorelease5").hide();
-                        alert("删除成功！");
-                    } else
-                        alert("删除失败，请于管理员联系。");
+                    } 
+                    alert(data['data']);
                 },
                 error: function (e) {
                     alert("删除失败，请于管理员联系。");
@@ -1806,7 +1802,7 @@ $(document).ready(function () {
 
         var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
 
-        reportingRelease(savedata, table1, table2, table3, table5);
+        reportingRelease(savedata, [table1, table2, table3, table5]);
     });
 
     // nav_tab切换事件

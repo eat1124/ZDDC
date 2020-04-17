@@ -5594,79 +5594,97 @@ def reporting_new(request):
 
 def reporting_del(request):
     if request.user.is_authenticated():
+        result = {
+            'status': 1,
+            'data': '删除成功。'
+        }
         app = request.POST.get('app', '')
         cycletype = request.POST.get('cycletype', '')
         reporting_date = request.POST.get('reporting_date', '')
         operationtype = request.POST.get('operationtype', '')
         funid = request.POST.get('funid', '')
         work = None
-        work_id = ""
+        user_id = request.user.id
         try:
             funid = int(funid)
             fun = Fun.objects.get(id=funid)
             work = fun.work
-            work_id = fun.work_id
-        except:
-            pass
-        try:
             app = int(app)
-            reporting_date = getreporting_date(reporting_date, cycletype)
         except:
-            return HttpResponse(0)
-
-        all_data = []
-        if operationtype == "1":
-            all_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app, target__cycletype=cycletype,
-                target__work=work,
-                datadate=reporting_date)
-        if operationtype == "15":
-            all_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app, target__cycletype=cycletype,
-                target__work=work,
-                datadate=reporting_date)
-        if operationtype == "16":
-            all_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app,
-                target__cycletype=cycletype,
-                target__work=work,
-                datadate=reporting_date)
-        if operationtype == "17":
-            all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                target__adminapp_id=app,
-                target__cycletype=cycletype,
-                target__work=work,
-                datadate=reporting_date)
-        for data in all_data:
-            data.state = "9"
-            data.releasestate = "0"
-            data.save()
-
-        username = UserInfo.objects.get(fullname=request.user.userinfo.fullname)
-        user = username.user.id
-        user_id = ""
-        try:
-            user_id = int(user)
-        except:
-            pass
-
-        all_reportinglog = ReportingLog.objects.exclude(state="9").filter(datadate=reporting_date, work=work,
-                                                                          cycletype=cycletype, adminapp_id=app,
-                                                                          user_id=user_id)
-        if len(all_reportinglog) > 0:
-            all_reportinglog = all_reportinglog[0]
+            result['status'] = 0
+            result['data'] = '网络异常。'
         else:
-            all_reportinglog = ReportingLog()
+            try:
+                reporting_date = getreporting_date(reporting_date, cycletype)
+            except:
+                result['status'] = 0
+                result['data'] = '报表时间处理异常。'
+            else:
+                all_data = []
+                if operationtype == "1":
+                    all_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        target__adminapp_id=app, target__cycletype=cycletype,
+                        target__work=work,
+                        datadate=reporting_date)
+                if operationtype == "15":
+                    all_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        target__adminapp_id=app, target__cycletype=cycletype,
+                        target__work=work,
+                        datadate=reporting_date)
+                if operationtype == "16":
+                    all_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        target__adminapp_id=app,
+                        target__cycletype=cycletype,
+                        target__work=work,
+                        datadate=reporting_date)
+                if operationtype == "17":
+                    all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        target__adminapp_id=app,
+                        target__cycletype=cycletype,
+                        target__work=work,
+                        datadate=reporting_date)
 
-        all_reportinglog.datadate = reporting_date
-        all_reportinglog.cycletype = cycletype
-        all_reportinglog.adminapp_id = app
-        all_reportinglog.work_id = work_id
-        all_reportinglog.user_id = user_id
-        all_reportinglog.type = 'del'
-        all_reportinglog.save()
+                if all_data:
+                    try:
+                        all_data.update(**{'state': '9', 'releasestate': '0'})
+                    except Exception as e:
+                        JsonResponse({
+                            'status': 0,
+                            'data': '删除失败。'
+                        })
+                    else:
+                        # for data in all_data:
+                        #     data.state = "9"
+                        #     data.releasestate = "0"
+                        #     data.save()
+                        try:
+                            all_reportinglog = ReportingLog.objects.exclude(state="9").filter(
+                                datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app, user_id=user_id
+                            ).update_or_create(**{
+                                'datadate': reporting_date,
+                                'cycletype': cycletype,
+                                'adminapp_id': app,
+                                'work': work,
+                                'user_id': user_id,
+                                'type': 'del',
+                            })
+                        except Exception as e:
+                            pass
 
-        return HttpResponse(1)
+                        # if len(all_reportinglog) > 0:
+                        #     all_reportinglog = all_reportinglog[0]
+                        # else:
+                        #     all_reportinglog = ReportingLog()
+
+                        # all_reportinglog.datadate = reporting_date
+                        # all_reportinglog.cycletype = cycletype
+                        # all_reportinglog.adminapp_id = app
+                        # all_reportinglog.work_id = work_id
+                        # all_reportinglog.user_id = user_id
+                        # all_reportinglog.type = 'del'
+                        # all_reportinglog.save()
+
+        return JsonResponse(result)
 
 
 def reporting_release(request):
