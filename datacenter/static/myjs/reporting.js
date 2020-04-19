@@ -1,4 +1,61 @@
 $(document).ready(function () {
+    $('#waiting_calculate').modal('show');
+
+    $.fakeLoader = function (options) {
+        var settings = $.extend({
+            targetClass: 'fakeLoader',
+            bgColor: '#2ecc71',
+            spinner: 'spinner2'
+        }, options);
+        var spinner01 = '<div class="fl fl-spinner spinner1"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>';
+        var spinner02 = '<div class="fl fl-spinner spinner2"><div class="spinner-container container1"><div class="circle1"></div><div class="circle2"></div><div class="circle3"></div><div class="circle4"></div></div><div class="spinner-container container2"><div class="circle1"></div><div class="circle2"></div><div class="circle3"></div><div class="circle4"></div></div><div class="spinner-container container3"><div class="circle1"></div><div class="circle2"></div><div class="circle3"></div><div class="circle4"></div></div></div>';
+        var spinner03 = '<div class="fl fl-spinner spinner3"><div class="dot1"></div><div class="dot2"></div></div>';
+        var spinner04 = '<div class="fl fl-spinner spinner4"></div>';
+        var spinner05 = '<div class="fl fl-spinner spinner5"><div class="cube1"></div><div class="cube2"></div></div>';
+        var spinner06 = '<div class="fl fl-spinner spinner6"><div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div></div>';
+        var spinner07 = '<div class="fl fl-spinner spinner7"><div class="circ1"></div><div class="circ2"></div><div class="circ3"></div><div class="circ4"></div></div>';
+
+        var el = $('body').find('.' + settings.targetClass);
+        el.each(function () {
+            var a = settings.spinner;
+
+            switch (a) {
+                case 'spinner1':
+                    el.html(spinner01);
+                    break;
+                case 'spinner2':
+                    el.html(spinner02);
+                    break;
+                case 'spinner3':
+                    el.html(spinner03);
+                    break;
+                case 'spinner4':
+                    el.html(spinner04);
+                    break;
+                case 'spinner5':
+                    el.html(spinner05);
+                    break;
+                case 'spinner6':
+                    el.html(spinner06);
+                    break;
+                case 'spinner7':
+                    el.html(spinner07);
+                    break;
+                default:
+                    el.html(spinner01);
+            }
+        });
+
+        el.css({
+            'backgroundColor': settings.bgColor
+        });
+        return el;
+    };
+    var el = $.fakeLoader({
+        bgColor: "transparent;",
+        spinner: "spinner7"
+    });
+
     function seasonFunction() {
         renderSeasonDate(document.getElementById('season'), 1);
 
@@ -295,20 +352,20 @@ $(document).ready(function () {
             }
         },
         "createdRow": function (row, data, index) {
-            if((data.target_upperlimit && data.curvalue > data.target_upperlimit)||(data.target_lowerlimit &&data.curvalue < data.target_lowerlimit )){
+            if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)) {
                 $('td', row).css("color", "#FF0000");
             }
 
-            if (data.releasestate == '0'){
-                    $("#release1").show();
-                    $("#gorelease1").hide();
-                    $("#unrelease1").show();
-                }
-            if (data.releasestate == '1'){
-                    $("#release1").hide();
-                    $("#unrelease1").hide();
-                    $("#gorelease1").show();
-                }
+            if (data.releasestate == '0') {
+                $("#release1").show();
+                $("#gorelease1").hide();
+                $("#unrelease1").show();
+            }
+            if (data.releasestate == '1') {
+                $("#release1").hide();
+                $("#unrelease1").hide();
+                $("#gorelease1").show();
+            }
 
         },
     });
@@ -322,9 +379,9 @@ $(document).ready(function () {
             $('#table1_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))));
             $('#table1_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))))
         }
-        if((data.target_upperlimit && Number($('#table1_curvalue_' + data.id).val()) > data.target_upperlimit)||(data.target_lowerlimit &&Number($('#table1_curvalue_' + data.id).val()) < data.target_lowerlimit )){
+        if ((data.target_upperlimit && Number($('#table1_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table1_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
-        }else {
+        } else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
@@ -444,20 +501,20 @@ $(document).ready(function () {
             }
         },
         "createdRow": function (row, data, index) {
-            if((data.target_upperlimit && data.curvalue > data.target_upperlimit)||(data.target_lowerlimit &&data.curvalue < data.target_lowerlimit )||data.curvalue==-9999){
+            if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit) || data.curvalue == -9999) {
                 $('td', row).css("color", "#FF0000");
             }
 
-            if (data.releasestate == '0'){
-                    $("#release2").show();
-                    $("#gorelease2").hide();
-                    $("#unrelease2").show();
-                }
-            if (data.releasestate == '1'){
-                    $("#release2").hide();
-                    $("#unrelease2").hide();
-                    $("#gorelease2").show();
-                }
+            if (data.releasestate == '0') {
+                $("#release2").show();
+                $("#gorelease2").hide();
+                $("#unrelease2").show();
+            }
+            if (data.releasestate == '1') {
+                $("#release2").hide();
+                $("#unrelease2").hide();
+                $("#gorelease2").show();
+            }
 
 
         },
@@ -472,9 +529,9 @@ $(document).ready(function () {
             $('#table2_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))));
             $('#table2_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))))
         }
-        if((data.target_upperlimit && Number($('#table2_curvalue_' + data.id).val()) > data.target_upperlimit)||(data.target_lowerlimit &&Number($('#table2_curvalue_' + data.id).val()) < data.target_lowerlimit )){
+        if ((data.target_upperlimit && Number($('#table2_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table2_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
-        }else {
+        } else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
@@ -601,20 +658,20 @@ $(document).ready(function () {
             }
         },
         "createdRow": function (row, data, index) {
-            if((data.target_upperlimit && data.curvalue > data.target_upperlimit)||(data.target_lowerlimit &&data.curvalue < data.target_lowerlimit )||data.curvalue==-9999){
+            if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit) || data.curvalue == -9999) {
                 $('td', row).css("color", "#FF0000");
             }
 
-            if (data.releasestate == '0'){
-                    $("#release3").show();
-                    $("#gorelease3").hide();
-                    $("#unrelease3").show();
-                }
-            if (data.releasestate == '1'){
-                    $("#release3").hide();
-                    $("#unrelease3").hide();
-                    $("#gorelease3").show();
-                }
+            if (data.releasestate == '0') {
+                $("#release3").show();
+                $("#gorelease3").hide();
+                $("#unrelease3").show();
+            }
+            if (data.releasestate == '1') {
+                $("#release3").hide();
+                $("#unrelease3").hide();
+                $("#gorelease3").show();
+            }
 
         },
 
@@ -629,9 +686,9 @@ $(document).ready(function () {
             $('#table3_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))));
             $('#table3_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))))
         }
-        if((data.target_upperlimit && Number($('#table3_curvalue_' + data.id).val()) > data.target_upperlimit)||(data.target_lowerlimit &&Number($('#table3_curvalue_' + data.id).val()) < data.target_lowerlimit )){
+        if ((data.target_upperlimit && Number($('#table3_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table3_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
-        }else {
+        } else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
@@ -693,8 +750,7 @@ $(document).ready(function () {
         "createdRow": function (row, data, index) {
             if (data.curvalue == "" || data.releasestate == "0") {
                 $('td', row).css("color", "#FF0000");
-            }
-           else if((data.target_upperlimit && data.curvalue > data.target_upperlimit)||(data.target_lowerlimit &&data.curvalue < data.target_lowerlimit )){
+            } else if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)) {
                 $('td', row).css("color", "#FF0000");
             }
         },
@@ -880,13 +936,13 @@ $(document).ready(function () {
                 $('td', row).css("color", "#FF0000");
             }
 
-            if (data.releasestate == '0'){
+            if (data.releasestate == '0') {
                 $("#release5").show();
                 $("#gorelease5").hide();
                 $("#unrelease5").show();
 
             }
-            if (data.releasestate == '1'){
+            if (data.releasestate == '1') {
                 $("#release5").hide();
                 $("#unrelease5").hide();
                 $("#gorelease5").show();
@@ -909,9 +965,9 @@ $(document).ready(function () {
         }
         if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else if((data.target_upperlimit && Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit)||(data.target_lowerlimit &&dNumber($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit )){
+        } else if ((data.target_upperlimit && Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && dNumber($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
-        }else {
+        } else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
@@ -928,9 +984,9 @@ $(document).ready(function () {
         }
         if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else if((data.target_upperlimit && (Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit))||(data.target_lowerlimit &&Number($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit )){
+        } else if ((data.target_upperlimit && (Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit)) || (data.target_lowerlimit && Number($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
-        }else {
+        } else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
@@ -1187,7 +1243,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     reporting_date: $('#reporting_date').val(),
                     operationtype: 15,
-                    funid:$('#funid').val(),
+                    funid: $('#funid').val(),
 
                 },
             success: function (data) {
@@ -1218,7 +1274,7 @@ $(document).ready(function () {
                         cycletype: $('#cycletype').val(),
                         reporting_date: $('#reporting_date').val(),
                         operationtype: 15,
-                        funid:$('#funid').val(),
+                        funid: $('#funid').val(),
 
                     },
                 success: function (data) {
@@ -1229,7 +1285,7 @@ $(document).ready(function () {
                         $("#unrelease1").hide();
                         $("#gorelease1").hide();
                         table.ajax.reload();
-                    } 
+                    }
                     alert(data['data']);
                 },
                 error: function (e) {
@@ -1240,7 +1296,7 @@ $(document).ready(function () {
         }
     });
 
-    function reportingSave(operationtype, savedata, table){
+    function reportingSave(operationtype, savedata, table) {
         $.ajax({
             type: "POST",
             dataType: 'json',
@@ -1256,7 +1312,7 @@ $(document).ready(function () {
                 console.log(data['data'])
                 if (data['status'] == 1) {
                     table.ajax.reload();
-                } 
+                }
                 alert(data['data']);
             },
             error: function (e) {
@@ -1264,29 +1320,30 @@ $(document).ready(function () {
             }
         });
     }
+
     function reportingRelease(savedata, tables) {
         $.ajax({
             type: "POST",
             dataType: 'json',
             url: "../../../reporting_release/",
             data:
-            {
-                app: $('#app').val(),
-                cycletype: $('#cycletype').val(),
-                savedata: JSON.stringify(savedata),
-                reporting_date: $('#reporting_date').val(),
-                funid: $('#funid').val(),
-            },
+                {
+                    app: $('#app').val(),
+                    cycletype: $('#cycletype').val(),
+                    savedata: JSON.stringify(savedata),
+                    reporting_date: $('#reporting_date').val(),
+                    funid: $('#funid').val(),
+                },
             success: function (data) {
                 if (data['status'] == 1) {
-                    for (var i=0; i<tables.length; i++){
+                    for (var i = 0; i < tables.length; i++) {
                         tables[i].ajax.reload();
                     }
                     $("#new1").hide();
                     $("#save1").show();
                     $("#del1").show();
                     $("#reset1").show();
-                } 
+                }
                 alert(data['data']);
             },
             error: function (e) {
@@ -1313,7 +1370,7 @@ $(document).ready(function () {
         });
         reportingSave(15, savedata, table);
     });
-    $('#release1').click(function (){
+    $('#release1').click(function () {
         $("Element").blur();
         var table1 = $('#sample_1').DataTable().data();
         var savedata1 = [];
@@ -1347,7 +1404,7 @@ $(document).ready(function () {
             })
         });
 
-        var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
+        var savedata = {'15': savedata1, '16': savedata2, '17': savedata3, '1': savedata5};
 
         reportingRelease(savedata, [table1, table2, table3, table5]);
     });
@@ -1363,7 +1420,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     reporting_date: $('#reporting_date').val(),
                     operationtype: 16,
-                    funid:$('#funid').val(),
+                    funid: $('#funid').val(),
 
                 },
             success: function (data) {
@@ -1395,7 +1452,7 @@ $(document).ready(function () {
                         cycletype: $('#cycletype').val(),
                         reporting_date: $('#reporting_date').val(),
                         operationtype: 16,
-                        funid:$('#funid').val(),
+                        funid: $('#funid').val(),
 
                     },
                 success: function (data) {
@@ -1407,7 +1464,7 @@ $(document).ready(function () {
                         $("#reset2").hide();
                         $("#unrelease2").hide();
                         $("#gorelease2").hide();
-                    } 
+                    }
                     alert(data['data']);
                 },
                 error: function (e) {
@@ -1447,7 +1504,7 @@ $(document).ready(function () {
                     reporting_date: $('#reporting_date').val(),
                     app: $('#app').val(),
                     cycletype: $('#cycletype').val(),
-                    funid:$('#funid').val(),
+                    funid: $('#funid').val(),
                 },
             success: function (data) {
                 if (data == 1) {
@@ -1461,7 +1518,7 @@ $(document).ready(function () {
             }
         });
     });
-    $('#release2').click(function (){
+    $('#release2').click(function () {
         $("Element").blur();
         var table1 = $('#sample_1').DataTable().data();
         var savedata1 = [];
@@ -1495,20 +1552,22 @@ $(document).ready(function () {
             })
         });
 
-        var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
+        var savedata = {'15': savedata1, '16': savedata2, '17': savedata3, '1': savedata5};
 
         reportingRelease(savedata, [table1, table2, table3, table5]);
     });
     var customModal = {
         "show": function () {
             $('#waiting_calculate').modal('show');
-            $(".modal-backdrop").css('opacity', '0.2');
+            $(el).show();
+            $(".modal-backdrop").css('opacity', '0.3');
         },
         "hide": function () {
             $('#waiting_calculate').modal('hide');
+            $(el).hide();
             $(".modal-backdrop").css('opacity', '0.5');
         },
-    }
+    };
     // 新增数据计算
     $("#new3").click(function () {
         // 滚动条
@@ -1523,7 +1582,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     reporting_date: $('#reporting_date').val(),
                     operationtype: 17,
-                    funid:$('#funid').val(),
+                    funid: $('#funid').val(),
 
                 },
             success: function (data) {
@@ -1559,7 +1618,7 @@ $(document).ready(function () {
                         cycletype: $('#cycletype').val(),
                         reporting_date: $('#reporting_date').val(),
                         operationtype: 17,
-                        funid:$('#funid').val(),
+                        funid: $('#funid').val(),
 
                     },
                 success: function (data) {
@@ -1612,7 +1671,7 @@ $(document).ready(function () {
                     reporting_date: $('#reporting_date').val(),
                     app: $('#app').val(),
                     cycletype: $('#cycletype').val(),
-                    funid:$('#funid').val(),
+                    funid: $('#funid').val(),
                 },
             success: function (data) {
                 if (data == 1) {
@@ -1630,7 +1689,7 @@ $(document).ready(function () {
             }
         });
     });
-    $('#release3').click(function (){
+    $('#release3').click(function () {
         $("Element").blur();
         var table1 = $('#sample_1').DataTable().data();
         var savedata1 = [];
@@ -1664,7 +1723,7 @@ $(document).ready(function () {
             })
         });
 
-        var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
+        var savedata = {'15': savedata1, '16': savedata2, '17': savedata3, '1': savedata5};
 
         reportingRelease(savedata, [table1, table2, table3, table5]);
     });
@@ -1680,7 +1739,7 @@ $(document).ready(function () {
                     cycletype: $('#cycletype').val(),
                     reporting_date: $('#reporting_date').val(),
                     operationtype: 1,
-                    funid:$('#funid').val(),
+                    funid: $('#funid').val(),
 
                 },
             success: function (data) {
@@ -1711,7 +1770,7 @@ $(document).ready(function () {
                         cycletype: $('#cycletype').val(),
                         reporting_date: $('#reporting_date').val(),
                         operationtype: 1,
-                        funid:$('#funid').val(),
+                        funid: $('#funid').val(),
 
                     },
                 success: function (data) {
@@ -1722,7 +1781,7 @@ $(document).ready(function () {
                         $("#del5").hide();
                         $("#unrelease5").hide();
                         $("#gorelease5").hide();
-                    } 
+                    }
                     alert(data['data']);
                 },
                 error: function (e) {
@@ -1766,7 +1825,7 @@ $(document).ready(function () {
         });
         reportingSave(1, savedata, table);
     });
-    $('#release5').click(function (){
+    $('#release5').click(function () {
         $("Element").blur();
         var table1 = $('#sample_1').DataTable().data();
         var savedata1 = [];
@@ -1800,7 +1859,7 @@ $(document).ready(function () {
             })
         });
 
-        var savedata = {'15':savedata1, '16':savedata2, '17': savedata3, '1':savedata5};
+        var savedata = {'15': savedata1, '16': savedata2, '17': savedata3, '1': savedata5};
 
         reportingRelease(savedata, [table1, table2, table3, table5]);
     });
