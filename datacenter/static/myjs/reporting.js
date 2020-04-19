@@ -1,6 +1,4 @@
 $(document).ready(function () {
-    $('#waiting_calculate').modal('show');
-
     $.fakeLoader = function (options) {
         var settings = $.extend({
             targetClass: 'fakeLoader',
