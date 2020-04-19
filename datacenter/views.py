@@ -2909,7 +2909,9 @@ def target_data(request):
         datatype = request.GET.get('datatype', '')
         works = request.GET.get('works', '')
 
-        all_target = Target.objects.exclude(state="9").order_by("sort").select_related("adminapp", "storage", "work")
+        all_target = Target.objects.exclude(state="9").order_by("sort").select_related(
+            "adminapp", "storage", "work"
+        ).prefetch_related('app')
         if search_adminapp != "":
             if search_adminapp == 'null':
                 all_target = all_target.filter(adminapp=None)
@@ -2942,6 +2944,7 @@ def target_data(request):
             pass
 
         all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
+        all_works = Work.objects.exclude(state='9').values('id', 'name')
 
         for target in all_target:
             operationtype = target.operationtype
@@ -2997,9 +3000,10 @@ def target_data(request):
             # 根据adminapp过滤出业务，并选中的业务
             work_selected = target.work.id if target.work else ''
             admin_app = target.adminapp
-            works = []
             if admin_app:
-                works = admin_app.work_set.exclude(state='9').values('id', 'name')
+                works = [work for work in all_works if work['id'] == admin_app.id]
+            # if admin_app:
+            #     works = admin_app.work_set.exclude(state='9').values('id', 'name')
             result.append({
                 "operationtype_name": operationtype,
                 "cycletype_name": cycletype,
