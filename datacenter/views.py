@@ -4317,47 +4317,47 @@ def reporting_data(request):
                         finalvalue = all_changedata[0].finalvalue
                         if data.target.cumulative == '是':
                             try:
-                                oldtable_zerodata = round(data.oldtable_zerodata, data.target.digit)
+                                oldtable_zerodata = round(oldtable_zerodata, data.target.digit)
                             except:
                                 pass
                             try:
-                                oldtable_twentyfourdata = round(data.oldtable_twentyfourdata, data.target.digit)
+                                oldtable_twentyfourdata = round(oldtable_twentyfourdata, data.target.digit)
                             except:
                                 pass
                             try:
-                                oldtable_value = round(data.oldtable_value, data.target.digit)
+                                oldtable_value = round(oldtable_value, data.target.digit)
                             except:
                                 pass
                             try:
-                                oldtable_magnification = round(data.oldtable_magnification, data.target.digit)
+                                oldtable_magnification = round(oldtable_magnification, data.target.digit)
                             except:
                                 pass
                             try:
-                                oldtable_finalvalue = round(data.oldtable_finalvalue, data.target.digit)
+                                oldtable_finalvalue = round(oldtable_finalvalue, data.target.digit)
                             except:
                                 pass
                             try:
-                                newtable_zerodata = round(data.newtable_zerodata, data.target.digit)
+                                newtable_zerodata = round(newtable_zerodata, data.target.digit)
                             except:
                                 pass
                             try:
-                                newtable_twentyfourdata = round(data.newtable_twentyfourdata, data.target.digit)
+                                newtable_twentyfourdata = round(newtable_twentyfourdata, data.target.digit)
                             except:
                                 pass
                             try:
-                                newtable_value = round(data.newtable_value, data.target.digit)
+                                newtable_value = round(newtable_value, data.target.digit)
                             except:
                                 pass
                             try:
-                                newtable_magnification = round(data.newtable_magnification, data.target.digit)
+                                newtable_magnification = round(newtable_magnification, data.target.digit)
                             except:
                                 pass
                             try:
-                                newtable_finalvalue = round(data.newtable_finalvalue, data.target.digit)
+                                newtable_finalvalue = round(newtable_finalvalue, data.target.digit)
                             except:
                                 pass
                             try:
-                                finalvalue = round(data.finalvalue, data.target.digit)
+                                finalvalue = round(finalvalue, data.target.digit)
                             except:
                                 pass
 
