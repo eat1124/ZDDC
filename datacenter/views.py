@@ -6034,8 +6034,8 @@ def reporting_save(request):
                 if single_save_query_data['target__datatype'] == 'numbervalue':
                     try:
                         result['curvalue'] = float(curdata["curvalue"])
-                        result['curvalue'] = decimal.Decimal(str(single_save_query_data['curvalue'])).quantize(
-                            decimal.Decimal(Digit(single_save_query_data['target__digit'])),
+                        result['curvalue'] = decimal.Decimal(str(curdata['curvalue'])).quantize(
+                            decimal.Decimal(Digit(curdata['target__digit'])),
                             rounding=decimal.ROUND_HALF_UP)
                     except Exception as e:
                         pass
@@ -6063,22 +6063,22 @@ def reporting_save(request):
                     pass
                 try:
                     result['cumulativemonth'] = float(curdata["cumulativemonth"])
-                    result['cumulativemonth'] = round(single_save_query_data['cumulativemonth'], single_save_query_data['target__digit'])
+                    result['cumulativemonth'] = round(curdata['cumulativemonth'], single_save_query_data['target__digit'])
                 except Exception as e:
                     pass
                 try:
                     result['cumulativequarter'] = float(curdata["cumulativequarter"])
-                    result['cumulativequarter'] = round(single_save_query_data['cumulativequarter'], single_save_query_data['target__digit'])
+                    result['cumulativequarter'] = round(curdata['cumulativequarter'], single_save_query_data['target__digit'])
                 except Exception as e:
                     pass
                 try:
                     result['cumulativehalfyear'] = float(curdata["cumulativehalfyear"])
-                    result['cumulativehalfyear'] = round(save_query_data['cumulativehalfyear'], save_query_data['target__digit'])
+                    result['cumulativehalfyear'] = round(curdata['cumulativehalfyear'], save_query_data['target__digit'])
                 except Exception as e:
                     pass
                 try:
                     result['cumulativeyear'] = float(curdata["cumulativeyear"])
-                    result['cumulativeyear'] = round(save_query_data['cumulativeyear'], save_query_data['target__digit'])
+                    result['cumulativeyear'] = round(curdata['cumulativeyear'], save_query_data['target__digit'])
                 except Exception as e:
                     pass
 
@@ -6114,47 +6114,58 @@ def reporting_save(request):
                         except:
                             pass
                         try:
-                            meterchange_result['oldtable_zerodata'] = float(curdata["oldtable_zerodata"])
+                            # meterchange_result['oldtable_zerodata'] = float(curdata["oldtable_zerodata"])
+                            meterchange_result['oldtable_zerodata'] = decimal.Decimal(str(float(curdata["oldtable_zerodata"])))
                         except:
                             pass
                         try:
-                            meterchange_result['oldtable_twentyfourdata'] = float(curdata["oldtable_twentyfourdata"])
+                            # meterchange_result['oldtable_twentyfourdata'] = float(curdata["oldtable_twentyfourdata"])
+                            meterchange_result['oldtable_twentyfourdata'] = decimal.Decimal(str(float(curdata["oldtable_twentyfourdata"])))
                         except:
                             pass
                         try:
-                            meterchange_result['oldtable_value'] = float(curdata["oldtable_value"])
+                            # meterchange_result['oldtable_value'] = float(curdata["oldtable_value"])
+                            meterchange_result['oldtable_value'] = decimal.Decimal(str(float(curdata["oldtable_value"])))
                         except:
                             pass
                         try:
-                            meterchange_result['oldtable_magnification'] = float(curdata["oldtable_magnification"])
+                            # meterchange_result['oldtable_magnification'] = float(curdata["oldtable_magnification"])
+                            meterchange_result['oldtable_magnification'] = decimal.Decimal(str(float(curdata["oldtable_magnification"])))
                         except:
                             pass
                         try:
-                            meterchange_result['oldtable_finalvalue'] = float(curdata["oldtable_finalvalue"])
+                            # meterchange_result['oldtable_finalvalue'] = float(curdata["oldtable_finalvalue"])
+                            meterchange_result['oldtable_finalvalue'] = decimal.Decimal(str(float(curdata["oldtable_finalvalue"])))
                         except:
                             pass
                         try:
-                            meterchange_result['newtable_zerodata'] = float(curdata["newtable_zerodata"])
+                            # meterchange_result['newtable_zerodata'] = float(curdata["newtable_zerodata"])
+                            meterchange_result['newtable_zerodata'] = decimal.Decimal(str(float(curdata["newtable_zerodata"])))
                         except:
                             pass
                         try:
-                            meterchange_result['newtable_twentyfourdata'] = float(curdata["newtable_twentyfourdata"])
+                            # meterchange_result['newtable_twentyfourdata'] = float(curdata["newtable_twentyfourdata"])
+                            meterchange_result['newtable_twentyfourdata'] = decimal.Decimal(str(float(curdata["newtable_twentyfourdata"])))
                         except:
                             pass
                         try:
-                            meterchange_result['newtable_value'] = float(curdata["newtable_value"])
+                            # meterchange_result['newtable_value'] = float(curdata["newtable_value"])
+                            meterchange_result['newtable_value'] = decimal.Decimal(str(float(curdata["newtable_value"])))
                         except:
                             pass
                         try:
-                            meterchange_result['newtable_magnification'] = float(curdata["newtable_magnification"])
+                            # meterchange_result['newtable_magnification'] = float(curdata["newtable_magnification"])
+                            meterchange_result['newtable_magnification'] = decimal.Decimal(str(float(curdata["newtable_magnification"])))
                         except:
                             pass
                         try:
-                            meterchange_result['newtable_finalvalue'] = float(curdata["newtable_finalvalue"])
+                            # meterchange_result['newtable_finalvalue'] = float(curdata["newtable_finalvalue"])
+                            meterchange_result['newtable_finalvalue'] = decimal.Decimal(str(float(curdata["newtable_finalvalue"])))
                         except:
                             pass
                         try:
-                            meterchange_result['finalvalue'] = float(curdata["finalvalue"])
+                            # meterchange_result['finalvalue'] = float(curdata["finalvalue"])
+                            meterchange_result['finalvalue'] = decimal.Decimal(str(float(curdata["finalvalue"])))
                         except:
                             pass
                         
