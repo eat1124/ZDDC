@@ -4024,9 +4024,17 @@ def reporting_index(request, cycletype, funid):
             # 只有该功能对应的业务为核心业务，才显示数据查询标签
             if work is not None and work.core == '是':
                 search_target = Target.objects.exclude(state='9').filter(cycletype=cycletype).filter(
-                    (Q(app__in=curapp) & ~Q(adminapp_id=app)) | (Q(adminapp_id=app) & ~Q(work__core='是')))
+                    (Q(app__in=curapp) & ~Q(adminapp_id=app)) | (Q(adminapp_id=app) & ~Q(work__core='是'))
+                ).values(
+                    'adminapp__id', 'adminapp__name', 'work_id'
+                )
+                works = Work.objects.exclude(state='9').values(
+                    'id', 'name', 'app_id'
+                )
             else:
-                search_target = None
+                search_target = []
+                works = []
+
             meter_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, work=work,
                                                                     operationtype='1')
             entry_target = Target.objects.exclude(state='9').filter(cycletype=cycletype, adminapp_id=app, work=work,
@@ -4057,30 +4065,37 @@ def reporting_index(request, cycletype, funid):
             search_app = []
             check_search_app = []
 
-            if search_target is None or len(search_target) <= 0:
+            if not search_target:
                 searchtag = "display: none;"
             else:
                 for target in search_target:
-                    if target.adminapp is not None:
-                        works = target.adminapp.work_set.exclude(state='9', id=work.id)
+                    if target['adminapp__id']:
+                        works_list = []
+                        for w in works:
+                            if target['adminapp__id'] == w['app_id'] and w['id'] != work.id:
+                                # 过滤掉没有指标的业务项
+                                has_target = False
 
-                        works_list = [
-                            {"id": work.id, "name": work.name} for work in works if work.target_set.exclude(state='9').
-                                filter(cycletype=cycletype).
-                                filter(
-                                (Q(app__in=curapp) & ~Q(adminapp_id=app)) | (Q(adminapp_id=app) & ~Q(work__core='是'))).
-                                exists()
-                        ]
+                                for t in search_target:
+                                    if t['work_id'] == w['id']:
+                                        has_target = True
+                                        break
+
+                                if has_target:
+                                    works_list.append({
+                                        'id': w['id'],
+                                        'name': w['name']
+                                    })
 
                         # 数据查询的业务下拉框过滤掉没指标的项
                         cursearchapp = {
-                            "id": target.adminapp.id,
-                            "name": target.adminapp.name,
+                            "id": target['adminapp__id'],
+                            "name": target['adminapp__name'],
                             'works': works_list,
                         }
                         check_cursearchapp = {
-                            "id": target.adminapp.id,
-                            "name": target.adminapp.name,
+                            "id": target['adminapp__id'],
+                            "name": target['adminapp__name'],
                         }
                         if check_cursearchapp not in check_search_app:
                             search_app.append(cursearchapp)
@@ -5662,7 +5677,7 @@ def reporting_del(request):
                         #     data.releasestate = "0"
                         #     data.save()
                         try:
-                            all_reportinglog = ReportingLog.objects.exclude(state="9").filter(
+                            ReportingLog.objects.exclude(state="9").filter(
                                 datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app, user_id=user_id
                             ).update_or_create(**{
                                 'datadate': reporting_date,
