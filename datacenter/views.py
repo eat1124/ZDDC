@@ -4217,6 +4217,9 @@ def reporting_data(request):
 
             all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
 
+            # 电表走字数据
+            all_changedata = Meterchangedata.objects.exclude(state="9").filter(datadate=reporting_date).values()
+
             for data in all_data:
                 businesstypename = data.target.businesstype
 
@@ -4311,21 +4314,25 @@ def reporting_data(request):
                     newtable_finalvalue = ""
                     finalvalue = ""
 
-                    all_changedata = Meterchangedata.objects.exclude(state="9").filter(meterdata=data.id,
-                                                                                       datadate=reporting_date)
-                    if len(all_changedata) > 0:
-                        meterchangedata_id = all_changedata[0].id
-                        oldtable_zerodata = all_changedata[0].oldtable_zerodata
-                        oldtable_twentyfourdata = all_changedata[0].oldtable_twentyfourdata
-                        oldtable_value = all_changedata[0].oldtable_value
-                        oldtable_magnification = all_changedata[0].oldtable_magnification
-                        oldtable_finalvalue = all_changedata[0].oldtable_finalvalue
-                        newtable_zerodata = all_changedata[0].newtable_zerodata
-                        newtable_twentyfourdata = all_changedata[0].newtable_twentyfourdata
-                        newtable_value = all_changedata[0].newtable_value
-                        newtable_magnification = all_changedata[0].newtable_magnification
-                        newtable_finalvalue = all_changedata[0].newtable_finalvalue
-                        finalvalue = all_changedata[0].finalvalue
+                    cur_meterchange = {}
+                    for mcd in all_changedata:
+                        if mcd['meterdata'] == data.id:
+                            cur_meterchange = mcd
+                            break
+
+                    if cur_meterchange:
+                        meterchangedata_id = cur_meterchange['id']
+                        oldtable_zerodata = cur_meterchange['oldtable_zerodata']
+                        oldtable_twentyfourdata = cur_meterchange['oldtable_twentyfourdata']
+                        oldtable_value = cur_meterchange['oldtable_value']
+                        oldtable_magnification = cur_meterchange['oldtable_magnification']
+                        oldtable_finalvalue = cur_meterchange['oldtable_finalvalue']
+                        newtable_zerodata = cur_meterchange['newtable_zerodata']
+                        newtable_twentyfourdata = cur_meterchange['newtable_twentyfourdata']
+                        newtable_value = cur_meterchange['newtable_value']
+                        newtable_magnification = cur_meterchange['newtable_magnification']
+                        newtable_finalvalue = cur_meterchange['newtable_finalvalue']
+                        finalvalue = cur_meterchange['finalvalue']
                         if data.target.cumulative == '是':
                             try:
                                 oldtable_zerodata = round(oldtable_zerodata, data.target.digit)
