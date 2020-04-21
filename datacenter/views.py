@@ -6692,50 +6692,50 @@ def userpassword(request):
     return HttpResponse(result)
 
 
-def get_fun_tree(parent, selectid, all_app):
+def get_fun_tree(parent, selectid, all_apps, all_nodes, all_works):
     nodes = []
-    children = parent.children.order_by("sort").exclude(state="9")
+
+    children = [child for child in all_nodes if child['pnode_id'] == parent['id']]
     for child in children:
-        node = {}
-        node["text"] = child.name
-        node["id"] = child.id
-        node["type"] = child.funtype
+        node = dict()
+        node["text"] = child['name']
+        node["id"] = child['id']
+        node["type"] = child['funtype']
         # app应用
         # 当前节点的所有外键
-        current_app = child.app
-        if current_app:
-            current_app_id = current_app.id
-        else:
-            current_app_id = ""
+        current_app_id = child['app_id']
 
-        app_select_list = []
-        app_select_list.append({
+        app_select_list = [{
             "app_name": "",
             "id": "",
             "app_state": "",
-        })
-        for app in all_app:
-            works = app.work_set.exclude(state='9').values('id', 'name')
+        }]
+        for app in all_apps:
+            works = [{
+                'id': work['id'],
+                'name': work['name']
+            } for work in all_works if work['app_id'] == app['id']]
+
             app_select_list.append({
-                "app_name": app.name,
-                "id": app.id,
-                "app_state": "selected" if app.id == current_app_id else "",
+                "app_name": app['name'],
+                "id": app['id'],
+                "app_state": "selected" if app['id'] == current_app_id else "",
                 "works": str(works),
             })
 
-        selected_work = child.work_id
+        selected_work = child['work_id']
 
-        node["data"] = {"url": child.url,
-                        "icon": child.icon,
-                        "pname": parent.name,
+        node["data"] = {"url": child['url'],
+                        "icon": child['icon'],
+                        "pname": parent['name'],
                         "app_list": app_select_list,
-                        "app_div_show": True if child.funtype == "fun" else False,
+                        "app_div_show": True if child['funtype'] == "fun" else False,
                         "selected_work": selected_work
                         }
-        node["children"] = get_fun_tree(child, selectid, all_app)
+        node["children"] = get_fun_tree(child, selectid, all_apps, all_nodes, all_works)
 
         try:
-            if int(selectid) == child.id:
+            if int(selectid) == child['id']:
                 node["state"] = {"selected": True}
         except:
             pass
@@ -6761,7 +6761,8 @@ def function(request, funid):
             works_select_list = []
             hiddendiv = "hidden"
             app_hidden_div = ""
-            all_app = App.objects.exclude(state="9")
+            all_apps = App.objects.exclude(state="9").values()
+            all_works = Work.objects.exclude(state='9').values('id', 'name', 'app_id')
 
             if request.method == 'POST':
                 hiddendiv = ""
@@ -6844,12 +6845,11 @@ def function(request, funid):
 
                                 title = name
                         # 保存成功后，重新刷新页面，重新构造app_select_list
-                        for c_app in all_app:
-                            works_list = c_app.work_set.exclude(state='9').values('id', 'name')
+                        for c_app in all_apps:
                             pre_app_select_list.append({
-                                "app_name": c_app.name,
-                                "id": c_app.id,
-                                "app_state": "selected" if str(c_app.id) == app else "",
+                                "app_name": c_app['name'],
+                                "id": c_app['id'],
+                                "app_state": "selected" if str(c_app['id']) == app else "",
                             })
                         # 保存成功后，重新构造 works_select_list
                         try:
@@ -6886,53 +6886,55 @@ def function(request, funid):
                         print(e)
                         errors.append('保存失败。')
             treedata = []
-            rootnodes = Fun.objects.order_by("sort").filter(pnode=None)
-            if len(rootnodes) > 0:
-                for rootnode in rootnodes:
-                    root = {}
-                    root["text"] = rootnode.name
-                    root["id"] = rootnode.id
-                    root["type"] = "node"
 
-                    # 当前节点的所有外键
-                    current_app = rootnode.app
-                    if current_app:
-                        current_app_id = current_app.id
-                    else:
-                        current_app_id = ""
-                    app_select_list = []
+            all_nodes = Fun.objects.exclude(state='9').order_by('sort').values()
+            rootnodes = [node for node in all_nodes if node['pnode_id'] == None]
+
+            for rootnode in rootnodes:
+                root = dict()
+                root["text"] = rootnode['name']
+                root["id"] = rootnode['id']
+                root["type"] = "node"
+
+                # 当前节点的所有外键
+                current_app_id = rootnode['app_id']
+
+                app_select_list = [{
+                    "app_name": "",
+                    "id": "",
+                    "app_state": "",
+                }]
+                for app in all_apps:
+                    works = [{
+                        'id': work['id'],
+                        'name': work['name']
+                    } for work in all_works if work['app_id'] == app['id']]
+
                     app_select_list.append({
-                        "app_name": "",
-                        "id": "",
-                        "app_state": "",
+                        "app_name": app['name'],
+                        "id": app['id'],
+                        "app_state": "selected" if app['id'] == current_app_id else "",
+                        "works": str(works),
                     })
-                    for app in all_app:
-                        works = app.work_set.exclude(state='9').values('id', 'name')
-                        app_select_list.append({
-                            "app_name": app.name,
-                            "id": app.id,
-                            "app_state": "selected" if app.id == current_app_id else "",
-                            "works": str(works),
-                        })
 
-                    selected_work = rootnode.work_id
+                selected_work = rootnode['work_id']
 
-                    root["data"] = {"url": rootnode.url,
-                                    "icon": rootnode.icon,
-                                    "pname": "无",
-                                    "app_list": app_select_list,
-                                    "app_div_show": True if rootnode.funtype == "fun" else False,
-                                    "selected_work": selected_work,
-                                    }
-                    try:
-                        if int(selectid) == rootnode.id:
-                            root["state"] = {"opened": True, "selected": True}
-                        else:
-                            root["state"] = {"opened": True}
-                    except:
+                root["data"] = {"url": rootnode['url'],
+                                "icon": rootnode['icon'],
+                                "pname": "无",
+                                "app_list": app_select_list,
+                                "app_div_show": True if rootnode['funtype'] == "fun" else False,
+                                "selected_work": selected_work,
+                                }
+                try:
+                    if int(selectid) == rootnode['id']:
+                        root["state"] = {"opened": True, "selected": True}
+                    else:
                         root["state"] = {"opened": True}
-                    root["children"] = get_fun_tree(rootnode, selectid, all_app)
-                    treedata.append(root)
+                except:
+                    root["state"] = {"opened": True}
+                root["children"] = get_fun_tree(rootnode, selectid, all_apps, all_nodes, all_works)
+                treedata.append(root)
 
             treedata = json.dumps(treedata)
             return render(request, 'function.html',
