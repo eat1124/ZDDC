@@ -1272,10 +1272,12 @@ def report_index(request, funid):
                                                                 errors.append('应用不存在。')
                                                             else:
                                                                 app_code = cur_app.code
-                                                                aft_report_file_path = os.path.join(rs.report_file_path, str(app_code))
+                                                                aft_report_file_path = os.path.join(rs.report_file_path,
+                                                                                                    str(app_code))
                                                                 report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
                                                                     report_file_path=aft_report_file_path)
-                                                                rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
+                                                                rc = ServerByPara(report_check_cmd, remote_ip,
+                                                                                  remote_user,
                                                                                   remote_password, remote_platform)
                                                                 rc_result = rc.run("")
 
@@ -1292,7 +1294,9 @@ def report_index(request, funid):
                                                                         url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
                                                                             web_server=web_server, file_name=file_name)
                                                                         remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                            ps_script_path, os.path.join(aft_report_file_path, file_name), url_visited)
+                                                                            ps_script_path,
+                                                                            os.path.join(aft_report_file_path,
+                                                                                         file_name), url_visited)
 
                                                                         server_obj = ServerByPara(remote_cmd, remote_ip,
                                                                                                   remote_user,
@@ -1575,7 +1579,8 @@ def report_app_index(request, funid):
                                                                 errors.append('应用不存在。')
                                                             else:
                                                                 app_code = cur_app.code
-                                                                aft_report_file_path = os.path.join(rs.report_file_path, str(app_code))
+                                                                aft_report_file_path = os.path.join(rs.report_file_path,
+                                                                                                    str(app_code))
                                                                 report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
                                                                     report_file_path=aft_report_file_path)
 
@@ -1596,7 +1601,9 @@ def report_app_index(request, funid):
                                                                     url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
                                                                         web_server=web_server, file_name=file_name)
                                                                     remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                        ps_script_path, os.path.join(aft_report_file_path, file_name), url_visited)
+                                                                        ps_script_path,
+                                                                        os.path.join(aft_report_file_path, file_name),
+                                                                        url_visited)
 
                                                                     server_obj = ServerByPara(remote_cmd, remote_ip,
                                                                                               remote_user,
@@ -4675,7 +4682,7 @@ def getcumulative(target, date, value):
             "cumulativehalfyear": cumulativehalfyear, "cumulativeyear": cumulativeyear}
 
 
-def getcalculatedata(target, date, guid,all_constant,all_target,tableList):
+def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
     """
     数据计算
     """
@@ -4718,11 +4725,11 @@ def getcalculatedata(target, date, guid,all_constant,all_target,tableList):
                             col = col[0:col.find(':')]
 
                     # 查询常数库value值
-                    # 公式中取常数值，不存在则去指标值
+                    # 公式中取常数值，不存在则取指标值
                     value = ""
-                    isconstant=False
+                    isconstant = False
                     for constant in all_constant:
-                        if membertarget==constant['code']:
+                        if membertarget == constant['code']:
                             value = constant['value']
                             isconstant = True
                             break
@@ -4732,7 +4739,7 @@ def getcalculatedata(target, date, guid,all_constant,all_target,tableList):
                         for new_target in all_target:
                             if membertarget == new_target.code:
                                 istarget = True
-                                newtarget=new_target
+                                newtarget = new_target
                                 break
                         if not istarget or newtarget is None:
                             formula = "-9999"
@@ -4745,7 +4752,7 @@ def getcalculatedata(target, date, guid,all_constant,all_target,tableList):
                             if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id \
                                     and membertarget.cycletype == target.cycletype and membertarget.work_id == target.work_id \
                                     and membertarget.calculateguid != guid:
-                                getcalculatedata(membertarget, date, guid,all_constant,all_target,tableList)
+                                getcalculatedata(membertarget, date, guid, all_constant, all_target, tableList)
 
                             # 取当年表
                             tableyear = str(date.year)
@@ -4774,7 +4781,6 @@ def getcalculatedata(target, date, guid,all_constant,all_target,tableList):
                                     queryset = getmodels("Extractdata", tableyear).objects
                                 if operationtype == "17":
                                     queryset = getmodels("Calculatedata", tableyear).objects
-
 
                             # 过滤时间
                             condtions = {'datadate': date}
@@ -4961,7 +4967,8 @@ def getcalculatedata(target, date, guid,all_constant,all_target,tableList):
         except:
             pass
 
-    calculatedata = tableList["Calculatedata"].objects.exclude(state="9").filter(target_id=target.id).filter(datadate=date)
+    calculatedata = tableList["Calculatedata"].objects.exclude(state="9").filter(target_id=target.id).filter(
+        datadate=date)
     if len(calculatedata) > 0:
         calculatedata = calculatedata[0]
     else:
@@ -5149,7 +5156,8 @@ def reporting_formulacalculate(request):
                                     if cond == "SE":
                                         month = (date.month - 1) - (date.month - 1) % 3 + 1
                                         if month == 10:
-                                            newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+                                            newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(
+                                                days=-1)
                                         else:
                                             newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(
                                                 days=-1)
@@ -5173,7 +5181,8 @@ def reporting_formulacalculate(request):
                                     if cond == "HE":
                                         month = (date.month - 1) - (date.month - 1) % 6 + 1
                                         if month == 7:
-                                            newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+                                            newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(
+                                                days=-1)
                                         else:
                                             newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(
                                                 days=-1)
@@ -5242,7 +5251,8 @@ def reporting_formulacalculate(request):
                                             if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                                 value = str(
                                                     round(
-                                                        query_res.aggregate(Avg('cumulativemonth'))['cumulativemonth__avg'],
+                                                        query_res.aggregate(Avg('cumulativemonth'))[
+                                                            'cumulativemonth__avg'],
                                                         query_res[0].target.digit))
                                             elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
                                                 value = str(round(
@@ -5253,7 +5263,8 @@ def reporting_formulacalculate(request):
                                                     query_res.aggregate(Min('cumulativemonth'))["cumulativemonth__min"],
                                                     query_res[0].target.digit))
                                             else:
-                                                value = str(round(query_res[0].cumulativemonth, query_res[0].target.digit))
+                                                value = str(
+                                                    round(query_res[0].cumulativemonth, query_res[0].target.digit))
                                         if col == 's':
                                             if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                                 value = str(
@@ -5263,11 +5274,13 @@ def reporting_formulacalculate(request):
                                                         query_res[0].target.digit))
                                             elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
                                                 value = str(round(
-                                                    query_res.aggregate(Max('cumulativequarter'))["cumulativequarter__max"],
+                                                    query_res.aggregate(Max('cumulativequarter'))[
+                                                        "cumulativequarter__max"],
                                                     query_res[0].target.digit))
                                             elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
                                                 value = str(round(
-                                                    query_res.aggregate(Min('cumulativequarter'))["cumulativequarter__min"],
+                                                    query_res.aggregate(Min('cumulativequarter'))[
+                                                        "cumulativequarter__min"],
                                                     query_res[0].target.digit))
                                             else:
                                                 value = str(
@@ -5292,18 +5305,22 @@ def reporting_formulacalculate(request):
                                         if col == 'y':
                                             if cond == "MAVG" or cond == "SAVG" or cond == "HAVG" or cond == "YAVG":
                                                 value = str(
-                                                    round(query_res.aggregate(Avg('cumulativeyear'))['cumulativeyear__avg'],
+                                                    round(query_res.aggregate(Avg('cumulativeyear'))[
+                                                              'cumulativeyear__avg'],
                                                           query_res[0].target.digit))
                                             elif cond == "MMAX" or cond == "SMAX" or cond == "HMAX" or cond == "YMAX":
                                                 value = str(
-                                                    round(query_res.aggregate(Max('cumulativeyear'))["cumulativeyear__max"],
+                                                    round(query_res.aggregate(Max('cumulativeyear'))[
+                                                              "cumulativeyear__max"],
                                                           query_res[0].target.digit))
                                             elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
                                                 value = str(
-                                                    round(query_res.aggregate(Min('cumulativeyear'))["cumulativeyear__min"],
+                                                    round(query_res.aggregate(Min('cumulativeyear'))[
+                                                              "cumulativeyear__min"],
                                                           query_res[0].target.digit))
                                             else:
-                                                value = str(round(query_res[0].cumulativeyear, query_res[0].target.digit))
+                                                value = str(
+                                                    round(query_res[0].cumulativeyear, query_res[0].target.digit))
 
                                 target_chinese = '<' + target_name + ':' + target_col + ':' + target_cond + '>(' + value + ')'
                                 if childid:
@@ -5353,15 +5370,15 @@ def reporting_recalculate(request):
         MeterTable = getmodels("Meterdata", tableyear)
         ExtractTable = getmodels("Extractdata", tableyear)
         CalculateTable = getmodels("Calculatedata", tableyear)
-        tableList = {"Entrydata":EntryTable,"Meterdata":MeterTable,"Extractdata":ExtractTable,"Calculatedata":CalculateTable}
-
+        tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
+                     "Calculatedata": CalculateTable}
 
         for target in cur_target:
             if operationtype == "17":
                 target = Target.objects.get(id=target.id)
                 if target.calculateguid != str(guid):
                     try:
-                        getcalculatedata(target, reporting_date, str(guid),all_constant,all_target,tableList)
+                        getcalculatedata(target, reporting_date, str(guid), all_constant, all_target, tableList)
                     except Exception as e:
                         print(e)
                         HttpResponse(0)
@@ -5479,7 +5496,8 @@ def reporting_new(request):
         MeterTable = getmodels("Meterdata", tableyear)
         ExtractTable = getmodels("Extractdata", tableyear)
         CalculateTable = getmodels("Calculatedata", tableyear)
-        tableList = {"Entrydata":EntryTable,"Meterdata":MeterTable,"Extractdata":ExtractTable,"Calculatedata":CalculateTable}
+        tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
+                     "Calculatedata": CalculateTable}
 
         for target in cur_target:
             # 电表走字
@@ -5603,7 +5621,7 @@ def reporting_new(request):
                 # 为减少重复计算，判断指标calculate，如果指标calculate等于本次计算guid，则说明该指标在本次计算中以计算过
                 if target.calculateguid != str(guid):
                     try:
-                        getcalculatedata(target, reporting_date, str(guid),all_constant,all_target,tableList)
+                        getcalculatedata(target, reporting_date, str(guid), all_constant, all_target, tableList)
                     except Exception as e:
                         print(e)
                         HttpResponse(0)
@@ -5673,7 +5691,8 @@ def reporting_del(request):
                     else:
                         try:
                             ReportingLog.objects.exclude(state="9").filter(
-                                datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app, user_id=user_id
+                                datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app,
+                                user_id=user_id
                             ).update_or_create(**{
                                 'datadate': reporting_date,
                                 'cycletype': cycletype,
@@ -5729,22 +5748,26 @@ def reporting_release(request):
                 error_info = ''
 
                 try:
-                    getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(id__in=[int(x['id']) for x in savedata1]).update(releasestate='1')
+                    getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id__in=[int(x['id']) for x in savedata1]).update(releasestate='1')
                 except Exception as e:
                     error_info += '电表走字指标数据,'
                     result['status'] = 0
                 try:
-                    getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(id__in=[int(x['id']) for x in savedata15]).update(releasestate='1')
+                    getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id__in=[int(x['id']) for x in savedata15]).update(releasestate='1')
                 except Exception as e:
                     error_info += '数据录入指标数据,'
                     result['status'] = 0
                 try:
-                    getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(id__in=[int(x['id']) for x in savedata16]).update(releasestate='1')
+                    getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id__in=[int(x['id']) for x in savedata16]).update(releasestate='1')
                 except Exception as e:
                     error_info += '数据提取指标数据,'
                     result['status'] = 0
                 try:
-                    getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(id__in=[int(x['id']) for x in savedata17]).update(releasestate='1')
+                    getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id__in=[int(x['id']) for x in savedata17]).update(releasestate='1')
                 except Exception as e:
                     error_info += '数据计算指标数据'
                     result['status'] = 0
@@ -5795,26 +5818,29 @@ def reporting_save(request):
         if operationtype == "1":
             save_query_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").values(
                 'zerodata', 'twentyfourdata', 'metervalue', 'target__magnification',
-                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth', 'cumulativequarter', 
+                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
+                'cumulativequarter',
                 'cumulativehalfyear', 'cumulativeyear', 'id'
             )
             meterchangedata = Meterchangedata.objects.exclude(state="9").values()
         if operationtype == "15":
             save_query_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").values(
-                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth', 'cumulativequarter', 
+                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
+                'cumulativequarter',
                 'cumulativehalfyear', 'cumulativeyear', 'id'
             )
         if operationtype == "16":
             save_query_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").values(
-                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth', 'cumulativequarter', 
+                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
+                'cumulativequarter',
                 'cumulativehalfyear', 'cumulativeyear', 'id'
             )
         if operationtype == "17":
             save_query_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").values(
-                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth', 'cumulativequarter', 
+                'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
+                'cumulativequarter',
                 'cumulativehalfyear', 'cumulativeyear', 'id'
             )
-        
 
         for curdata in savedata:
             result = dict()
@@ -5836,14 +5862,15 @@ def reporting_save(request):
                         pass
                 if single_save_query_data['target__datatype'] == 'date':
                     try:
-                        result['curvaluedate'] = datetime.datetime.strptime(curdata["curvaluedate"], "%Y-%m-%d %H:%M:%S")
+                        result['curvaluedate'] = datetime.datetime.strptime(curdata["curvaluedate"],
+                                                                            "%Y-%m-%d %H:%M:%S")
                     except Exception as e:
                         pass
                 if single_save_query_data['target__datatype'] == 'text':
                     try:
                         result['curvaluetext'] = curdata["curvaluetext"]
                     except Exception as e:
-                        pass           
+                        pass
                 try:
                     result['zerodata'] = curdata["zerodata"]
                 except Exception as e:
@@ -5858,17 +5885,20 @@ def reporting_save(request):
                     pass
                 try:
                     result['cumulativemonth'] = float(curdata["cumulativemonth"])
-                    result['cumulativemonth'] = round(curdata['cumulativemonth'], single_save_query_data['target__digit'])
+                    result['cumulativemonth'] = round(curdata['cumulativemonth'],
+                                                      single_save_query_data['target__digit'])
                 except Exception as e:
                     pass
                 try:
                     result['cumulativequarter'] = float(curdata["cumulativequarter"])
-                    result['cumulativequarter'] = round(curdata['cumulativequarter'], single_save_query_data['target__digit'])
+                    result['cumulativequarter'] = round(curdata['cumulativequarter'],
+                                                        single_save_query_data['target__digit'])
                 except Exception as e:
                     pass
                 try:
                     result['cumulativehalfyear'] = float(curdata["cumulativehalfyear"])
-                    result['cumulativehalfyear'] = round(curdata['cumulativehalfyear'], save_query_data['target__digit'])
+                    result['cumulativehalfyear'] = round(curdata['cumulativehalfyear'],
+                                                         save_query_data['target__digit'])
                 except Exception as e:
                     pass
                 try:
@@ -5878,8 +5908,9 @@ def reporting_save(request):
                     pass
 
                 if operationtype == "1":
-                    getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(id=single_save_query_data['id']).update(**result)
-                    
+                    getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id=single_save_query_data['id']).update(**result)
+
                     # 电表走字换新表
                     if curdata["finalvalue"]:
                         # 倍率发生变化后修改
@@ -5887,7 +5918,8 @@ def reporting_save(request):
                             newmagnification = float(curdata["magnification"])
                             if single_save_query_data['target__magnification'] != newmagnification:
                                 try:
-                                    tmp_metedata = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").get(id=single_save_query_data['id'])
+                                    tmp_metedata = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(
+                                        state="9").get(id=single_save_query_data['id'])
                                 except Exception as e:
                                     pass
                                 else:
@@ -5896,7 +5928,7 @@ def reporting_save(request):
                                         tmp_metedata.target.save()
                         except:
                             pass
-                        
+
                         meterchange_result = dict()
 
                         reporting_date = datetime.datetime.strptime(curdata["reporting_date"], "%Y-%m-%d")
@@ -5910,52 +5942,62 @@ def reporting_save(request):
                             pass
                         try:
                             # meterchange_result['oldtable_zerodata'] = float(curdata["oldtable_zerodata"])
-                            meterchange_result['oldtable_zerodata'] = decimal.Decimal(str(float(curdata["oldtable_zerodata"])))
+                            meterchange_result['oldtable_zerodata'] = decimal.Decimal(
+                                str(float(curdata["oldtable_zerodata"])))
                         except:
                             pass
                         try:
                             # meterchange_result['oldtable_twentyfourdata'] = float(curdata["oldtable_twentyfourdata"])
-                            meterchange_result['oldtable_twentyfourdata'] = decimal.Decimal(str(float(curdata["oldtable_twentyfourdata"])))
+                            meterchange_result['oldtable_twentyfourdata'] = decimal.Decimal(
+                                str(float(curdata["oldtable_twentyfourdata"])))
                         except:
                             pass
                         try:
                             # meterchange_result['oldtable_value'] = float(curdata["oldtable_value"])
-                            meterchange_result['oldtable_value'] = decimal.Decimal(str(float(curdata["oldtable_value"])))
+                            meterchange_result['oldtable_value'] = decimal.Decimal(
+                                str(float(curdata["oldtable_value"])))
                         except:
                             pass
                         try:
                             # meterchange_result['oldtable_magnification'] = float(curdata["oldtable_magnification"])
-                            meterchange_result['oldtable_magnification'] = decimal.Decimal(str(float(curdata["oldtable_magnification"])))
+                            meterchange_result['oldtable_magnification'] = decimal.Decimal(
+                                str(float(curdata["oldtable_magnification"])))
                         except:
                             pass
                         try:
                             # meterchange_result['oldtable_finalvalue'] = float(curdata["oldtable_finalvalue"])
-                            meterchange_result['oldtable_finalvalue'] = decimal.Decimal(str(float(curdata["oldtable_finalvalue"])))
+                            meterchange_result['oldtable_finalvalue'] = decimal.Decimal(
+                                str(float(curdata["oldtable_finalvalue"])))
                         except:
                             pass
                         try:
                             # meterchange_result['newtable_zerodata'] = float(curdata["newtable_zerodata"])
-                            meterchange_result['newtable_zerodata'] = decimal.Decimal(str(float(curdata["newtable_zerodata"])))
+                            meterchange_result['newtable_zerodata'] = decimal.Decimal(
+                                str(float(curdata["newtable_zerodata"])))
                         except:
                             pass
                         try:
                             # meterchange_result['newtable_twentyfourdata'] = float(curdata["newtable_twentyfourdata"])
-                            meterchange_result['newtable_twentyfourdata'] = decimal.Decimal(str(float(curdata["newtable_twentyfourdata"])))
+                            meterchange_result['newtable_twentyfourdata'] = decimal.Decimal(
+                                str(float(curdata["newtable_twentyfourdata"])))
                         except:
                             pass
                         try:
                             # meterchange_result['newtable_value'] = float(curdata["newtable_value"])
-                            meterchange_result['newtable_value'] = decimal.Decimal(str(float(curdata["newtable_value"])))
+                            meterchange_result['newtable_value'] = decimal.Decimal(
+                                str(float(curdata["newtable_value"])))
                         except:
                             pass
                         try:
                             # meterchange_result['newtable_magnification'] = float(curdata["newtable_magnification"])
-                            meterchange_result['newtable_magnification'] = decimal.Decimal(str(float(curdata["newtable_magnification"])))
+                            meterchange_result['newtable_magnification'] = decimal.Decimal(
+                                str(float(curdata["newtable_magnification"])))
                         except:
                             pass
                         try:
                             # meterchange_result['newtable_finalvalue'] = float(curdata["newtable_finalvalue"])
-                            meterchange_result['newtable_finalvalue'] = decimal.Decimal(str(float(curdata["newtable_finalvalue"])))
+                            meterchange_result['newtable_finalvalue'] = decimal.Decimal(
+                                str(float(curdata["newtable_finalvalue"])))
                         except:
                             pass
                         try:
@@ -5963,18 +6005,23 @@ def reporting_save(request):
                             meterchange_result['finalvalue'] = decimal.Decimal(str(float(curdata["finalvalue"])))
                         except:
                             pass
-                        
-                        Meterchangedata.objects.exclude(state="9").filter(meterdata=single_save_query_data['id']).update_or_create(**meterchange_result)
+
+                        Meterchangedata.objects.exclude(state="9").filter(
+                            meterdata=single_save_query_data['id']).update_or_create(**meterchange_result)
                 if operationtype == "15":
-                    getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(id=single_save_query_data['id']).update(**result)
+                    getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id=single_save_query_data['id']).update(**result)
                 if operationtype == "16":
-                    getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(id=single_save_query_data['id']).update(**result)
+                    getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id=single_save_query_data['id']).update(**result)
                 if operationtype == "17":
-                    getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(id=single_save_query_data['id']).update(**result)
+                    getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id=single_save_query_data['id']).update(**result)
             else:
                 pass
 
         return JsonResponse(ret)
+
 
 def report_submit_index(request, funid):
     """
@@ -6357,11 +6404,11 @@ def report_submit_del(request):
 
 def getfun(myfunlist, fun):
     try:
-        if (fun.pnode_id is not None):
+        if (fun['pnode_id'] is not None):
             if fun not in myfunlist:
                 childfun = {}
-                if (fun.pnode_id != 1):
-                    myfunlist = getfun(myfunlist, fun.pnode)
+                if (fun['pnode_id'] != 1):
+                    myfunlist = getfun(myfunlist, fun['pnode'])
                 myfunlist.append(fun)
     except:
         pass
@@ -6370,24 +6417,32 @@ def getfun(myfunlist, fun):
 
 def childfun(myfun, funid):
     mychildfun = []
-    funs = myfun.children.order_by("sort").exclude(state="9")
+
+    funs = []
+    # 子节点排序
+    for f in funlist:
+        if f['pnode_id'] == myfun['id'] and f['state'] != '9':
+            funs.append(f)
+
+    funs = sorted(funs, key=lambda x: x['sort'])
+
     pisselected = False
     for fun in funs:
         if fun in funlist:
             isselected = False
-            url = fun.url if fun.url else ""
+            url = fun['url'] if fun['url'] else ""
             # if len(fun.app.all()) > 0:
-            if fun.app:
-                url = fun.url + str(fun.id) + "/" if fun.url else ""
-            if str(fun.id) == funid:
+            if fun['app_id']:
+                url = fun['url'] + str(fun['id']) + "/" if fun['url'] else ""
+            if str(fun['id']) == funid:
                 isselected = True
                 pisselected = True
                 mychildfun.append(
-                    {"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon, "isselected": isselected,
+                    {"id": fun['id'], "name": fun['name'], "url": url, "icon": fun['icon'], "isselected": isselected,
                      "child": []})
             else:
                 returnfuns = childfun(fun, funid)
-                mychildfun.append({"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
+                mychildfun.append({"id": fun['id'], "name": fun['name'], "url": url, "icon": fun['icon'],
                                    "isselected": returnfuns["isselected"], "child": returnfuns["fun"]})
                 if returnfuns["isselected"]:
                     pisselected = returnfuns["isselected"]
@@ -6401,21 +6456,22 @@ def getpagefuns(funid, request=""):
     task_nums = 0
 
     for fun in funlist:
-        if fun.pnode_id == 1:
+        if fun['pnode_id'] == 1:
             isselected = False
-            url = fun.url if fun.url else ""
+            url = fun['url'] if fun['url'] else ""
             # if len(fun.app.all()) > 0:
-            if fun.app:
-                url = fun.url + str(fun.id) + "/" if fun.url else ""
-            if str(fun.id) == funid:
+            if fun['app_id']:
+                url = fun['url'] + str(fun['id']) + "/" if fun['url'] else ""
+            if str(fun['id']) == funid:
                 isselected = True
                 pagefuns.append(
-                    {"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon, "isselected": isselected,
+                    {"id": fun['id'], "name": fun['name'], "url": url, "icon": fun['icon'], "isselected": isselected,
                      "child": []})
             else:
                 returnfuns = childfun(fun, funid)
-                pagefuns.append({"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
+                pagefuns.append({"id": fun['id'], "name": fun['name'], "url": url, "icon": fun['icon'],
                                  "isselected": returnfuns["isselected"], "child": returnfuns["fun"]})
+
     curfun = Fun.objects.filter(id=int(funid))
     if len(curfun) > 0:
         myurl = curfun[0].url
@@ -6431,6 +6487,7 @@ def getpagefuns(funid, request=""):
             #     jsurl = compile_obj.findall(myurl)[0][:-1]
         mycurfun = {
             "id": curfun[0].id, "name": curfun[0].name, "url": myurl, "jsurl": jsurl}
+
     return {"pagefuns": pagefuns, "curfun": mycurfun, "task_nums": task_nums}
 
 
@@ -6443,36 +6500,44 @@ def test(request):
         return HttpResponseRedirect("/login")
 
 
+def custom_personal_fun_list(if_superuser, userinfo_id):
+    funlist = Fun.objects.exclude(state='9').values()
+
+    if if_superuser != 1:
+        # 普通用户，访问权限内节点
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute(
+                    "select datacenter_fun.id from datacenter_group,datacenter_fun,datacenter_userinfo,datacenter_userinfo_group,datacenter_group_fun "
+                    "where datacenter_group.id=datacenter_userinfo_group.group_id and datacenter_group.id=datacenter_group_fun.group_id and "
+                    "datacenter_group_fun.fun_id=datacenter_fun.id and datacenter_userinfo.id=datacenter_userinfo_group.userinfo_id and userinfo_id= "
+                    + str(userinfo_id) + " order by datacenter_fun.sort"
+                )
+
+                rows = cursor.fetchall()
+                for row in rows:
+                    try:
+                        for fun in funlist:
+                            if fun['id'] == row[0]:
+                                funlist = getfun(funlist, fun)
+                                break
+                    except:
+                        pass
+            finally:
+                connection.close()
+
+    for index, value in enumerate(funlist):
+        if value['sort'] is None:
+            value['sort'] = 0
+    funlist = sorted(funlist, key=lambda fun: fun['sort'])
+    return funlist
+
+
 def index(request, funid):
     if request.user.is_authenticated():
         global funlist
-        funlist = []
-        if request.user.is_superuser == 1:
-            allfunlist = Fun.objects.all()
-            for fun in allfunlist:
-                funlist.append(fun)
-        else:
-            cursor = connection.cursor()
-            cursor.execute(
-                "select datacenter_fun.id from datacenter_group,datacenter_fun,datacenter_userinfo,datacenter_userinfo_group,datacenter_group_fun "
-                "where datacenter_group.id=datacenter_userinfo_group.group_id and datacenter_group.id=datacenter_group_fun.group_id and "
-                "datacenter_group_fun.fun_id=datacenter_fun.id and datacenter_userinfo.id=datacenter_userinfo_group.userinfo_id and userinfo_id= "
-                + str(request.user.userinfo.id) + " order by datacenter_fun.sort"
-            )
 
-            rows = cursor.fetchall()
-            for row in rows:
-                try:
-                    fun = Fun.objects.get(id=row[0])
-                    funlist = getfun(funlist, fun)
-                except:
-                    pass
-            connection.close()
-        for index, value in enumerate(funlist):
-            if value.sort is None:
-                value.sort = 0
-        funlist = sorted(funlist, key=lambda fun: fun.sort)
-
+        funlist = custom_personal_fun_list(request.user.is_superuser, request.user.userinfo.id)
         # 右上角消息任务
         return render(request, "index.html",
                       {'username': request.user.userinfo.fullname, "homepage": True,
@@ -6816,6 +6881,10 @@ def function(request, funid):
                             app_hidden_div = "hidden"
                         else:
                             app_hidden_div = ""
+
+                        # 功能节点修改后，更新funlist
+                        global funlist
+                        funlist = custom_personal_fun_list(request.user.is_superuser, request.user.userinfo.id)
                     except Exception as e:
                         print(e)
                         errors.append('保存失败。')
@@ -6904,6 +6973,11 @@ def fundel(request):
                             sortfun.save()
                         except:
                             pass
+
+                # 删除时更新右侧菜单
+                global funlist
+
+                funlist = custom_personal_fun_list(request.user.is_superuser, request.user.userinfo.id)
                 return HttpResponse(1)
             else:
                 return HttpResponse(0)

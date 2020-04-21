@@ -65,6 +65,7 @@ $(function () {
                                         if (data == 1) {
                                             inst.delete_node(obj);
                                             alert("删除成功！");
+                                            window.location.href = '/function/';
                                         } else
                                             alert("删除失败，请于管理员联系。");
                                     },
