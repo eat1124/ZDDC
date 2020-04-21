@@ -2152,27 +2152,24 @@ def storage_index(request, funid):
         storage_type_list = []
         valid_time_list = []
 
-        c_dict_index_1 = DictIndex.objects.filter(
-            id=4).exclude(state='9')
-        if c_dict_index_1.exists():
-            c_dict_index_1 = c_dict_index_1[0]
-            dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
-            for i in dict_list1:
+        dict_list = DictList.objects.exclude(state='9', dictindex__state='9').values(
+            'id', 'name', 'dictindex__id'
+        )
+
+        for dl in dict_list:
+            if dl['dictindex__id'] == 4:
+                # 存储类型
                 storage_type_list.append({
-                    "storage_name": i.name,
-                    "storage_type_id": i.id,
+                    "storage_name": dl['name'],
+                    "storage_type_id": dl['id'],
+                })
+            if dl['dictindex__id'] == 3:
+                # 有效时间
+                valid_time_list.append({
+                    "valid_time": dl['name'],
+                    "valid_time_id": dl['id'],
                 })
 
-        c_dict_index_2 = DictIndex.objects.filter(
-            id=3).exclude(state='9')
-        if c_dict_index_2.exists():
-            c_dict_index_2 = c_dict_index_2[0]
-            dict_list2 = c_dict_index_2.dictlist_set.exclude(state="9")
-            for i in dict_list2:
-                valid_time_list.append({
-                    "valid_time": i.name,
-                    "valid_time_id": i.id,
-                })
         return render(request, 'storage.html',
                       {'username': request.user.userinfo.fullname,
                        "storage_type_list": storage_type_list,
@@ -2198,7 +2195,7 @@ def storage_data(request):
                     storage_type_display = dict['name']
                     break
 
-            storagetype = storage.validtime
+            validtime = storage.validtime
             try:
                 validtime_dict_list = DictList.objects.filter(id=int(storage.validtime))
                 if validtime_dict_list.exists():
