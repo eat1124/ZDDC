@@ -467,22 +467,22 @@ def process_monitor_index(request, funid):
     if request.user.is_authenticated():
         # 检测进程是否启动
         process_monitors = ProcessMonitor.objects.exclude(state='9')
+
+        shutdown_process_set = set()
         for process_monitor in process_monitors:
             p_id = process_monitor.p_id
             try:
                 p_id = int(p_id)
             except ValueError as e:
-                process_monitor.status = "已关闭"
-                process_monitor.create_time = None
-                process_monitor.save()
+                shutdown_process_set.add(process_monitor.id)
             else:
                 py_process = check_py_exists(p_id)
                 if not py_process:
-                    process_monitor.status = "已关闭"
-                    process_monitor.create_time = None
-                    process_monitor.p_id = ""
-                    process_monitor.save()
-
+                    shutdown_process_set.add(process_monitor.id)
+        if shutdown_process_set:
+            process_monitors.filter(id__in=shutdown_process_set).update(**{
+                'status': '已关闭', 'create_time': None, 'p_id': ''
+            })
         return render(request, 'process_monitor.html',
                       {'username': request.user.userinfo.fullname,
                        "pagefuns": getpagefuns(funid)})
