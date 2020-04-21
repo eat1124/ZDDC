@@ -1974,17 +1974,10 @@ def app_data(request):
 
 def dictindex(request, funid):
     if request.user.is_authenticated():
-        try:
-            curfun = Fun.objects.get(id=int(funid))
-            if curfun in funlist:
-                alldict = DictIndex.objects.order_by("sort").exclude(state="9")
-                return render(request, 'dict.html',
-                              {'username': request.user.userinfo.fullname,
-                               "alldict": alldict, "pagefuns": getpagefuns(funid)})
-            else:
-                return HttpResponseRedirect("/index")
-        except:
-            return HttpResponseRedirect("/index")
+        alldict = DictIndex.objects.order_by("sort").exclude(state="9")
+        return render(request, 'dict.html',
+                      {'username': request.user.userinfo.fullname,
+                       "alldict": alldict, "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
