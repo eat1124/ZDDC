@@ -68,6 +68,8 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     # 'django.middleware.cache.FetchFromCacheMiddleware',
+    # 查看sql执行情况的中间件,优化时取消注释
+    # 'datacenter.middleware.SQLCountMiddleware',
 ]
 
 ROOT_URLCONF = 'ZDDC.urls'
@@ -117,8 +119,8 @@ DATABASES = {
         'USER': 'sa',
         'PASSWORD': 'tesunet@2020',
         'HOST': '10.150.99.185\SQLEXPRESS',
-        # 'HOST': '127.0.0.1\SQLEXPRESS',
-        # 'PASSWORD': '1',
+        # 'HOST': '127.0.0.1',
+        # 'PASSWORD': 'Passw0rD',
         # 'HOST': 'localhost',
         'PORT': '1433',
         'OPTIONS': {
@@ -191,7 +193,7 @@ if not os.path.exists(LOG_PATH):
     os.mkdir(LOG_PATH)
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": False,   # True表示禁用logger
+    "disable_existing_loggers": False,  # True表示禁用logger
     'formatters': {
         'default': {
             'format': '%(levelno)s %(module)s %(asctime)s %(message)s ',
@@ -208,22 +210,20 @@ LOGGING = {
             'formatter': 'default',
             'encoding': 'utf8',
         },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-        },
+        # 'console': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.StreamHandler',
+        # },
     },
     'loggers': {
         'process': {
             'handlers': ['process_handlers'],
             'level': 'INFO'
         },
-        'django.db.backends': {
-            'handlers': ['console'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
+        # 'django.db.backends': {
+        #     'handlers': ['console'],
+        #     'propagate': True,
+        #     'level': 'DEBUG',
+        # },
     },
 }
-
-
