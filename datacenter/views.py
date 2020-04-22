@@ -708,7 +708,7 @@ def pm_target_data(request):
             print(e)
         else:
             targets = Target.objects.exclude(state='9').filter(
-                Q(adminapp_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id))
+                Q(adminapp_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id)).select_related('storage')
 
             for target in targets:
                 result.append({
