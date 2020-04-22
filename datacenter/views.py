@@ -539,6 +539,18 @@ def handle_process(current_process, handle_type=None):
             process_path = BASE_DIR + os.sep + "utils" + os.sep + "handle_process.py" + " {0}".format(
                 current_process.id)
 
+            # 启动前，清理当前未关闭的进程,避免同ID的进程在取数
+            python_process = [p for p in psutil.process_iter() if 'python' in p.name()]
+
+            for pp in python_process:
+                try:
+                    # ['C:\\Python35\\python.exe', '-i', 'D:\\Pros\\ZDDC\\utils\\handle_process.py', '14']
+                    if 'handle_process.py' in pp.as_dict()['cmdline'][2] and current_process.id == int(
+                            pp.as_dict()['cmdline'][3]):
+                        pp.terminate()
+                except:
+                    pass
+
             win32api.ShellExecute(0, 'open', 'python', r'-i {process_path}'.format(process_path=process_path), '', 0)
             res = "程序启动成功。"
             tag = 1
@@ -2390,7 +2402,11 @@ def cycle_del(request):
             return HttpResponse(0)
 
 
-def get_select_source_type(temp_source_type=""):
+def get_select_source_type(temp_source_type=None):
+    try:
+        temp_source_type = int(temp_source_type)
+    except:
+        pass
     c_dict_index = DictIndex.objects.filter(id=2).exclude(state='9')
     if c_dict_index.exists():
         c_dict_index = c_dict_index[0]
