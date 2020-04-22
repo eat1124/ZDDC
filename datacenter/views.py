@@ -1537,36 +1537,36 @@ def report_app_index(request, funid):
                                                                 report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
                                                                     report_file_path=aft_report_file_path)
 
-                                                            rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
-                                                                              remote_password, remote_platform)
-                                                            rc_result = rc.run("")
+                                                                rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
+                                                                                  remote_password, remote_platform)
+                                                                rc_result = rc.run("")
 
-                                                            if rc_result['exec_tag'] == 1:
-                                                                errors.append(rc_result['log'])
-                                                            else:
-                                                                # 获取本地IP
-                                                                try:
-                                                                    web_server = socket.gethostbyname(
-                                                                        socket.gethostname())
-                                                                except Exception as e:
-                                                                    errors.append("获取服务器IP失败：%s" % e)
+                                                                if rc_result['exec_tag'] == 1:
+                                                                    errors.append(rc_result['log'])
                                                                 else:
-                                                                    url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
-                                                                        web_server=web_server, file_name=file_name)
-                                                                    remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                        ps_script_path,
-                                                                        os.path.join(aft_report_file_path, file_name),
-                                                                        url_visited)
-
-                                                                    server_obj = ServerByPara(remote_cmd, remote_ip,
-                                                                                              remote_user,
-                                                                                              remote_password,
-                                                                                              remote_platform)
-                                                                    result = server_obj.run("")
-                                                                    if result["exec_tag"] == 0:
-                                                                        write_tag = True
+                                                                    # 获取本地IP
+                                                                    try:
+                                                                        web_server = socket.gethostbyname(
+                                                                            socket.gethostname())
+                                                                    except Exception as e:
+                                                                        errors.append("获取服务器IP失败：%s" % e)
                                                                     else:
-                                                                        errors.append(result['log'])
+                                                                        url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
+                                                                            web_server=web_server, file_name=file_name)
+                                                                        remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                                            ps_script_path,
+                                                                            os.path.join(aft_report_file_path, file_name),
+                                                                            url_visited)
+
+                                                                        server_obj = ServerByPara(remote_cmd, remote_ip,
+                                                                                                  remote_user,
+                                                                                                  remote_password,
+                                                                                                  remote_platform)
+                                                                        result = server_obj.run("")
+                                                                        if result["exec_tag"] == 0:
+                                                                            write_tag = True
+                                                                        else:
+                                                                            errors.append(result['log'])
 
                                         if id != 0 and not my_file:
                                             write_tag = True
