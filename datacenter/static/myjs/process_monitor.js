@@ -99,8 +99,7 @@ $(document).ready(function () {
 
                             // tab
                             $('#navtabs').show();
-                            
-                            tabCheck5();
+                            tabCheck5(cp_id);
                         } else {
                             $('#navtabs').hide();
                         }
@@ -217,8 +216,6 @@ $(document).ready(function () {
                     $('#create_time').val(pm_data.create_time);
                     $('#last_time').val(pm_data.last_time);
                     $('#status').val(pm_data.status);
-                } else {
-                    alert(pm_data);
                 }
             },
             error: function () {
@@ -364,7 +361,7 @@ $(document).ready(function () {
         }
     }
 
-    function tabCheck5() {
+    function tabCheck5(cp_id) {
         // 根据主进程ID获取补取进程状态
         $.ajax({
             type: 'POST',
@@ -422,10 +419,10 @@ $(document).ready(function () {
             tabCheck4();
         }
         if (target_id == 'tabcheck5') {
-            tabCheck5();
+            tabCheck5(cp_id);
         }
         if (target_id == 'tabcheck1') {
-            tabCheck1();
+            tabCheck1(cp_id);
         }
     });
 
@@ -551,7 +548,7 @@ $(document).ready(function () {
                 // 获取激活的tab刷新数据
                 tab_id = $(this).prop('id');
                 if (tab_id == 'tab_1_1') {
-                    tabCheck1();
+                    tabCheck1(cp_id);
                 } else if (tab_id == 'tab_1_2') {
                     tabCheck2();
 
@@ -562,9 +559,9 @@ $(document).ready(function () {
                     tabCheck4();
 
                 } else {
-                    tabCheck5();
+                    tabCheck5(cp_id);
                 }
-                return;
+                return false;
             }
         });
     });
