@@ -526,48 +526,6 @@ def process_monitor_data(request):
         return JsonResponse({"data": result})
 
 
-def create_process(request):
-    """
-    修改数据源
-    :param request:
-    :return:
-    """
-    if request.user.is_authenticated():
-        process_id = request.POST.get("id", "")
-        name = request.POST.get("name", "")
-        code = request.POST.get("code", "")
-        source_type = request.POST.get("sourcetype", "")
-        try:
-            process_id = int(process_id)
-        except:
-            raise Http404()
-        result = {}
-
-        if code.strip() == '':
-            result["res"] = '数据源代码不能为空。'
-        else:
-            if name.strip() == '':
-                result["res"] = '数据源名称不能为空。'
-            else:
-                if source_type.strip() == '':
-                    result["res"] = '数据源类型不能为空。'
-                else:
-                    try:
-                        source = Source.objects.filter(id=process_id)
-                        if source.exists():
-                            source = source[0]
-                            source.name = name
-                            source.code = code
-                            source.sourcetype = source_type
-                            source.save()
-                            result["res"] = "保存成功。"
-                    except Exception as e:
-                        print(e)
-                        result["res"] = "保存失败。"
-
-        return JsonResponse(result)
-
-
 def handle_process(current_process, handle_type=None):
     """
     操作程序
@@ -714,23 +672,6 @@ def process_run(request):
                 'res': res,
                 'data': ''
             })
-
-
-def process_destroy(request):
-    if request.user.is_authenticated():
-        p_id = request.POST.get("id", "")
-        current_process = Source.objects.filter(id=p_id).exclude(
-            status__in=["已关闭", "", "进程异常关闭，请重新启动。"]).exclude(state="9")
-        result = {}
-        if current_process.exists():
-            # 异步开启程序
-            tag, res = handle_process(p_id, handle_type="DESTROY")
-            result["tag"] = tag
-            result["res"] = res
-        else:
-            result["tag"] = 0
-            result["res"] = "该程序未运行。"
-        return JsonResponse(result)
 
 
 def pm_target_data(request):
