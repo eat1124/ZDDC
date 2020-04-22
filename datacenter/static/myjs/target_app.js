@@ -395,6 +395,7 @@ $(document).ready(function () {
         $('#calculate_analysis').hide();
         $('#extract').hide();
 
+        $('#data_from_config').hide();
         $('#data_from').parent().hide();
         $('#data_from').parent().prev().hide();
 

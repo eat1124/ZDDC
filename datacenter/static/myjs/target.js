@@ -462,14 +462,12 @@ $(document).ready(function () {
         $('#calculate_analysis').hide();
         $('#extract').hide();
 
+        $('#data_from_config').hide();
         $('#data_from').parent().hide();
         $('#data_from').parent().prev().hide();
 
         var selected_operation_type = $('#operationtype option:selected').text();
         if (selected_operation_type == '计算') {
-            // $('#calculate').show();
-            // $('#calculate_analysis').show();
-
             $('#data_from').val('');
             $('#data_from').parent().show();
             $('#data_from').parent().prev().show();
