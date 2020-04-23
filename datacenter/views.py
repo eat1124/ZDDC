@@ -190,8 +190,9 @@ class DataCenter(View):
                 'data': {},
                 'msg': '传入时间有误。'
             })
-        extract_data = getmodels('Extractdata', str(date.year)).objects.exclude(state='9').filter(
-            datadate__gte=date, datadate__lt=end_time, target__name=target_name).select_related('target')
+        extract_data = getmodels('Extractdata', str(date.year)).objects.exclude(state='9').filter(datadate__gte=date,
+                                                                                                  datadate__lt=end_time,
+                                                                                                  target__name=target_name)
         data_list = []
         for ed in extract_data:
             data_list.append({
@@ -4420,83 +4421,60 @@ def reporting_search_data(request):
             except Exception as e:
                 print(e)
 
-        entry_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(datadate=reporting_date).values()
-        extract_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(datadate=reporting_date).values()
-        calculate_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(datadate=reporting_date).values()
-        meter_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(datadate=reporting_date).values()
-
         for target in all_target:
             curtargetdata = {"target": target, "zerodata": "", "twentyfourdata": "", "metervalue": "", "curvalue": "",
                              "curvaluedate": "", "curvaluetext": "", "cumulativemonth": "", "cumulativequarter": "",
                              "cumulativehalfyear": "", "cumulativeyear": "", "releasestate": ""}
             if target.operationtype == "15":
-                c_entry = {}
-                for entry in entry_data:
-                    if entry['target_id'] == target.id:
-                        c_entry = entry
-                        break
-
-                if c_entry:
+                targetvalue = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                    target=target, datadate=reporting_date)
+                if len(targetvalue) > 0:
                     curtargetdata = {"target": target, "zerodata": "", "twentyfourdata": "", "metervalue": "",
-                                     "curvalue": c_entry['curvalue'], "curvaluedate": c_entry['curvaluedate'],
-                                     "curvaluetext": c_entry['curvaluetext'],
-                                     "cumulativemonth": c_entry['cumulativemonth'],
-                                     "cumulativequarter": c_entry['cumulativequarter'],
-                                     "cumulativehalfyear": c_entry['cumulativehalfyear'],
-                                     "cumulativeyear": c_entry['cumulativeyear'],
-                                     "releasestate": c_entry['releasestate']}
-
+                                     "curvalue": targetvalue[0].curvalue, "curvaluedate": targetvalue[0].curvaluedate,
+                                     "curvaluetext": targetvalue[0].curvaluetext,
+                                     "cumulativemonth": targetvalue[0].cumulativemonth,
+                                     "cumulativequarter": targetvalue[0].cumulativequarter,
+                                     "cumulativehalfyear": targetvalue[0].cumulativehalfyear,
+                                     "cumulativeyear": targetvalue[0].cumulativeyear,
+                                     "releasestate": targetvalue[0].releasestate}
             elif target.operationtype == "16":
-                c_extract = {}
-                for extract in extract_data:
-                    if extract['target_id'] == target.id:
-                        c_extract = extract
-                        break
-                if c_extract:
+                targetvalue = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                    target=target, datadate=reporting_date)
+                if len(targetvalue) > 0:
                     curtargetdata = {"target": target, "zerodata": "", "twentyfourdata": "", "metervalue": "",
-                                     "curvalue": c_extract['curvalue'], "curvaluedate": c_extract['curvaluedate'],
-                                     "curvaluetext": c_extract['curvaluetext'],
-                                     "cumulativemonth": c_extract['cumulativemonth'],
-                                     "cumulativequarter": c_extract['cumulativequarter'],
-                                     "cumulativehalfyear": c_extract['cumulativehalfyear'],
-                                     "cumulativeyear": c_extract['cumulativeyear'],
-                                     "releasestate": c_extract['releasestate']}
-
+                                     "curvalue": targetvalue[0].curvalue, "curvaluedate": targetvalue[0].curvaluedate,
+                                     "curvaluetext": targetvalue[0].curvaluetext,
+                                     "cumulativemonth": targetvalue[0].cumulativemonth,
+                                     "cumulativequarter": targetvalue[0].cumulativequarter,
+                                     "cumulativehalfyear": targetvalue[0].cumulativehalfyear,
+                                     "cumulativeyear": targetvalue[0].cumulativeyear,
+                                     "releasestate": targetvalue[0].releasestate}
             elif target.operationtype == "17":
-                c_calculte = {}
-                for calculate in calculate_data:
-                    if calculate['target_id'] == target.id:
-                        c_calculte = calculate
-                        break
-                if c_calculte:
+                targetvalue = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                    target=target, datadate=reporting_date)
+                if len(targetvalue) > 0:
                     curtargetdata = {"target": target, "zerodata": "", "twentyfourdata": "", "metervalue": "",
-                                     "curvalue": c_calculte['curvalue'], "curvaluedate": c_calculte['curvaluedate'],
-                                     "curvaluetext": c_calculte['curvaluetext'],
-                                     "cumulativemonth": c_calculte['cumulativemonth'],
-                                     "cumulativequarter": c_calculte['cumulativequarter'],
-                                     "cumulativehalfyear": c_calculte['cumulativehalfyear'],
-                                     "cumulativeyear": c_calculte['cumulativeyear'],
-                                     "releasestate": c_calculte['releasestate']}
-
+                                     "curvalue": targetvalue[0].curvalue, "curvaluedate": targetvalue[0].curvaluedate,
+                                     "curvaluetext": targetvalue[0].curvaluetext,
+                                     "cumulativemonth": targetvalue[0].cumulativemonth,
+                                     "cumulativequarter": targetvalue[0].cumulativequarter,
+                                     "cumulativehalfyear": targetvalue[0].cumulativehalfyear,
+                                     "cumulativeyear": targetvalue[0].cumulativeyear,
+                                     "releasestate": targetvalue[0].releasestate}
             elif target.operationtype == "1":
-                c_meter = {}
-                for meter in meter_data:
-                    if meter['target_id'] == target.id:
-                        c_meter = meter
-                        break
-                
-                if c_meter:
-                    curtargetdata = {"target": target, "zerodata": c_meter['zerodata'],
-                                     "twentyfourdata": c_meter['twentyfourdata'],
-                                     "metervalue": c_meter['metervalue'], "curvalue": c_meter['curvalue'],
-                                     "curvaluedate": c_meter['curvaluedate'],
-                                     "curvaluetext": c_meter['curvaluetext'],
-                                     "cumulativemonth": c_meter['cumulativemonth'],
-                                     "cumulativequarter": c_meter['cumulativequarter'],
-                                     "cumulativehalfyear": c_meter['cumulativehalfyear'],
-                                     "cumulativeyear": c_meter['cumulativeyear'],
-                                     "releasestate": c_meter['releasestate']}
-
+                targetvalue = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                    target=target, datadate=reporting_date)
+                if len(targetvalue) > 0:
+                    curtargetdata = {"target": target, "zerodata": targetvalue[0].zerodata,
+                                     "twentyfourdata": targetvalue[0].twentyfourdata,
+                                     "metervalue": targetvalue[0].metervalue, "curvalue": targetvalue[0].curvalue,
+                                     "curvaluedate": targetvalue[0].curvaluedate,
+                                     "curvaluetext": targetvalue[0].curvaluetext,
+                                     "cumulativemonth": targetvalue[0].cumulativemonth,
+                                     "cumulativequarter": targetvalue[0].cumulativequarter,
+                                     "cumulativehalfyear": targetvalue[0].cumulativehalfyear,
+                                     "cumulativeyear": targetvalue[0].cumulativeyear,
+                                     "releasestate": targetvalue[0].releasestate}
             all_data.append(curtargetdata)
 
         all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
@@ -5015,7 +4993,6 @@ def reporting_formulacalculate(request):
             target = calculatedata[0].target
             data_from = target.data_from if target else 'lc'
 
-            # 判断计算指标数据来源是否为外部系统
             if data_from == 'lc':
                 if formula is not None:
                     formula = formula.replace(" ", "")
@@ -5062,6 +5039,8 @@ def reporting_formulacalculate(request):
                                     value = "指标不存在"
                                 else:
                                     membertarget = membertarget[0]
+
+                                    # 判断计算指标数据来源是否为外部系统
 
                                     tableyear = str(date.year)
                                     queryset = getmodels("Entrydata", tableyear).objects
@@ -6380,11 +6359,11 @@ def report_submit_del(request):
 
 def getfun(myfunlist, fun):
     try:
-        if (fun['pnode_id'] is not None):
+        if (fun.pnode_id is not None):
             if fun not in myfunlist:
                 childfun = {}
-                if (fun['pnode_id'] != 1):
-                    myfunlist = getfun(myfunlist, fun['pnode'])
+                if (fun.pnode_id != 1):
+                    myfunlist = getfun(myfunlist, fun.pnode)
                 myfunlist.append(fun)
     except:
         pass
@@ -6393,32 +6372,25 @@ def getfun(myfunlist, fun):
 
 def childfun(myfun, funid):
     mychildfun = []
-
-    funs = []
-    # 子节点排序
-    for f in funlist:
-        if f['pnode_id'] == myfun['id'] and f['state'] != '9':
-            funs.append(f)
-
-    funs = sorted(funs, key=lambda x: x['sort'])
+    funs = myfun.children.order_by("sort").exclude(state="9")
 
     pisselected = False
     for fun in funs:
         if fun in funlist:
             isselected = False
-            url = fun['url'] if fun['url'] else ""
+            url = fun.url if fun.url else ""
             # if len(fun.app.all()) > 0:
-            if fun['app_id']:
-                url = fun['url'] + str(fun['id']) + "/" if fun['url'] else ""
-            if str(fun['id']) == funid:
+            if fun.app:
+                url = fun.url + str(fun.id) + "/" if fun.url else ""
+            if str(fun.id) == funid:
                 isselected = True
                 pisselected = True
                 mychildfun.append(
-                    {"id": fun['id'], "name": fun['name'], "url": url, "icon": fun['icon'], "isselected": isselected,
+                    {"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon, "isselected": isselected,
                      "child": []})
             else:
                 returnfuns = childfun(fun, funid)
-                mychildfun.append({"id": fun['id'], "name": fun['name'], "url": url, "icon": fun['icon'],
+                mychildfun.append({"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
                                    "isselected": returnfuns["isselected"], "child": returnfuns["fun"]})
                 if returnfuns["isselected"]:
                     pisselected = returnfuns["isselected"]
@@ -6432,20 +6404,20 @@ def getpagefuns(funid, request=""):
     task_nums = 0
 
     for fun in funlist:
-        if fun['pnode_id'] == 1:
+        if fun.pnode_id == 1:
             isselected = False
-            url = fun['url'] if fun['url'] else ""
+            url = fun.url if fun.url else ""
             # if len(fun.app.all()) > 0:
-            if fun['app_id']:
-                url = fun['url'] + str(fun['id']) + "/" if fun['url'] else ""
-            if str(fun['id']) == funid:
+            if fun.app:
+                url = fun.url + str(fun.id) + "/" if fun.url else ""
+            if str(fun.id) == funid:
                 isselected = True
                 pagefuns.append(
-                    {"id": fun['id'], "name": fun['name'], "url": url, "icon": fun['icon'], "isselected": isselected,
+                    {"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon, "isselected": isselected,
                      "child": []})
             else:
                 returnfuns = childfun(fun, funid)
-                pagefuns.append({"id": fun['id'], "name": fun['name'], "url": url, "icon": fun['icon'],
+                pagefuns.append({"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
                                  "isselected": returnfuns["isselected"], "child": returnfuns["fun"]})
 
     curfun = Fun.objects.filter(id=int(funid))
@@ -6477,42 +6449,37 @@ def test(request):
 
 
 def custom_personal_fun_list(if_superuser, userinfo_id):
-    funlist = Fun.objects.exclude(state='9').values()
+    funlist = []
+    if if_superuser == 1:
+        allfunlist = Fun.objects.all()
+        for fun in allfunlist:
+            funlist.append(fun)
+    else:
+        cursor = connection.cursor()
+        cursor.execute(
+            "select datacenter_fun.id from datacenter_group,datacenter_fun,datacenter_userinfo,datacenter_userinfo_group,datacenter_group_fun "
+            "where datacenter_group.id=datacenter_userinfo_group.group_id and datacenter_group.id=datacenter_group_fun.group_id and "
+            "datacenter_group_fun.fun_id=datacenter_fun.id and datacenter_userinfo.id=datacenter_userinfo_group.userinfo_id and userinfo_id= "
+            + str(userinfo_id) + " order by datacenter_fun.sort"
+        )
 
-    if if_superuser != 1:
-        # 普通用户，访问权限内节点
-        with connection.cursor() as cursor:
+        rows = cursor.fetchall()
+        for row in rows:
             try:
-                cursor.execute(
-                    "select datacenter_fun.id from datacenter_group,datacenter_fun,datacenter_userinfo,datacenter_userinfo_group,datacenter_group_fun "
-                    "where datacenter_group.id=datacenter_userinfo_group.group_id and datacenter_group.id=datacenter_group_fun.group_id and "
-                    "datacenter_group_fun.fun_id=datacenter_fun.id and datacenter_userinfo.id=datacenter_userinfo_group.userinfo_id and userinfo_id= "
-                    + str(userinfo_id) + " order by datacenter_fun.sort"
-                )
-
-                rows = cursor.fetchall()
-                for row in rows:
-                    try:
-                        for fun in funlist:
-                            if fun['id'] == row[0]:
-                                funlist = getfun(funlist, fun)
-                                break
-                    except:
-                        pass
-            finally:
-                connection.close()
-
+                fun = Fun.objects.get(id=row[0])
+                funlist = getfun(funlist, fun)
+            except:
+                pass
+        connection.close()
     for index, value in enumerate(funlist):
-        if value['sort'] is None:
-            value['sort'] = 0
-    funlist = sorted(funlist, key=lambda fun: fun['sort'])
+        if value.sort is None:
+            value.sort = 0
+    funlist = sorted(funlist, key=lambda fun: fun.sort)
     return funlist
-
 
 def index(request, funid):
     if request.user.is_authenticated():
         global funlist
-
         funlist = custom_personal_fun_list(request.user.is_superuser, request.user.userinfo.id)
         # 右上角消息任务
         return render(request, "index.html",
