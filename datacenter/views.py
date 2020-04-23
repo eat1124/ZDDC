@@ -4563,7 +4563,7 @@ def reporting_search_data(request):
         return JsonResponse({"data": result})
 
 
-def getcumulative(target, date, value):
+def getcumulative(tableList,target, date, value):
     """
     数据累计
     """
@@ -4590,18 +4590,19 @@ def getcumulative(target, date, value):
             days=-1)
 
     all_data = []
-    if target.operationtype == "1":
-        all_data = getmodels("Meterdata", str(lastg_date.year)).objects.exclude(state="9").filter(target=target,
-                                                                                                  datadate=lastg_date)
-    if target.operationtype == "15":
-        all_data = getmodels("Entrydata", str(lastg_date.year)).objects.exclude(state="9").filter(target=target,
-                                                                                                  datadate=lastg_date)
-    if target.operationtype == "16":
-        all_data = getmodels("Extractdata", str(lastg_date.year)).objects.exclude(state="9").filter(target=target,
-                                                                                                    datadate=lastg_date)
-    if target.operationtype == "17":
-        all_data = getmodels("Calculatedata", str(lastg_date.year)).objects.exclude(state="9").filter(target=target,
-                                                                                                      datadate=lastg_date)
+
+    queryset = tableList["Entrydata"].objects
+    operationtype = target.operationtype
+    if operationtype == "1":
+        queryset = tableList["Meterdata"].objects
+    if operationtype == "15":
+        queryset = tableList["Entrydata"].objects
+    if operationtype == "16":
+        queryset = tableList["Extractdata"].objects
+    if operationtype == "17":
+        queryset = tableList["Calculatedata"].objects
+
+    all_data = queryset.exclude(state="9").filter(target=target,datadate=lastg_date)
     if len(all_data) > 0:
         lastcumulativemonth = 0
         lastcumulativequarter = 0
@@ -4710,8 +4711,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                 getcalculatedata(membertarget, date, guid, all_constant, all_target, tableList)
 
                             # 取当年表
-                            tableyear = str(date.year)
-                            queryset = getmodels("Entrydata", tableyear).objects
+                            queryset = tableList["Entrydata"].objects
                             operationtype = membertarget.operationtype
                             if operationtype == "1":
                                 queryset = tableList["Meterdata"].objects
@@ -4938,7 +4938,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                                                                    rounding=decimal.ROUND_HALF_UP)
     # 累计值计算
     if target.cumulative == "是":
-        cumulative = getcumulative(target, date, decimal.Decimal(str(calculatedata.curvalue)))
+        cumulative = getcumulative(tableList,target, date, decimal.Decimal(str(calculatedata.curvalue)))
         calculatedata.cumulativemonth = cumulative["cumulativemonth"]
         calculatedata.cumulativequarter = cumulative["cumulativequarter"]
         calculatedata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5330,7 +5330,6 @@ def reporting_recalculate(request):
 
         for target in cur_target:
             if operationtype == "17":
-                target = Target.objects.get(id=target.id)
                 if target.calculateguid != str(guid):
                     try:
                         getcalculatedata(target, reporting_date, str(guid), all_constant, all_target, tableList)
@@ -5364,6 +5363,14 @@ def reporting_reextract(request):
         guid = uuid.uuid1()
         all_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
                                                               operationtype=operationtype, work=work)
+        tableyear = str(reporting_date.year)
+
+        EntryTable = getmodels("Entrydata", tableyear)
+        MeterTable = getmodels("Meterdata", tableyear)
+        ExtractTable = getmodels("Extractdata", tableyear)
+        CalculateTable = getmodels("Calculatedata", tableyear)
+        tableList = {"Entrydata":EntryTable,"Meterdata":MeterTable,"Extractdata":ExtractTable,"Calculatedata":CalculateTable}
+
         for target in all_target:
             if operationtype == "16":
                 extractdata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
@@ -5407,7 +5414,7 @@ def reporting_reextract(request):
                             except:
                                 pass
                     if target.cumulative == "是":
-                        cumulative = getcumulative(target, reporting_date, extractdata.curvalue)
+                        cumulative = getcumulative(tableList,target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
                         extractdata.cumulativequarter = cumulative["cumulativequarter"]
                         extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5500,7 +5507,7 @@ def reporting_new(request):
                 meterdata.curvalue = decimal.Decimal(float(meterdata.metervalue) * float(target.magnification))
                 meterdata.curvalue = round(meterdata.curvalue, target.digit)
                 if target.cumulative == "是":
-                    cumulative = getcumulative(target, reporting_date, meterdata.curvalue)
+                    cumulative = getcumulative(tableList,target, reporting_date, meterdata.curvalue)
                     meterdata.cumulativemonth = cumulative["cumulativemonth"]
                     meterdata.cumulativequarter = cumulative["cumulativequarter"]
                     meterdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5514,7 +5521,7 @@ def reporting_new(request):
                 entrydata.curvalue = 0
                 entrydata.curvalue = round(entrydata.curvalue, target.digit)
                 if target.cumulative == "是":
-                    cumulative = getcumulative(target, reporting_date, entrydata.curvalue)
+                    cumulative = getcumulative(tableList,target, reporting_date, entrydata.curvalue)
                     entrydata.cumulativemonth = cumulative["cumulativemonth"]
                     entrydata.cumulativequarter = cumulative["cumulativequarter"]
                     entrydata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5564,7 +5571,7 @@ def reporting_new(request):
                         except:
                             pass
                 if target.cumulative == "是":
-                    cumulative = getcumulative(target, reporting_date, extractdata.curvalue)
+                    cumulative = getcumulative(tableList,target, reporting_date, extractdata.curvalue)
                     extractdata.cumulativemonth = cumulative["cumulativemonth"]
                     extractdata.cumulativequarter = cumulative["cumulativequarter"]
                     extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5572,7 +5579,6 @@ def reporting_new(request):
                 extractdata.save()
             # 计算
             if operationtype == "17":
-                target = Target.objects.get(id=target.id)
                 # 为减少重复计算，判断指标calculate，如果指标calculate等于本次计算guid，则说明该指标在本次计算中以计算过
                 if target.calculateguid != str(guid):
                     try:
