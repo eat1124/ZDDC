@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    // 加载中样式初始化
     $.fakeLoader = function (options) {
         var settings = $.extend({
             targetClass: 'fakeLoader',
@@ -49,6 +50,7 @@ $(document).ready(function () {
         });
         return el;
     };
+    // 加载中样式选择 $(el).show()展示 $(el).hide()隐藏
     var el = $.fakeLoader({
         bgColor: "transparent;",
         spinner: "spinner7"
@@ -219,6 +221,7 @@ $(document).ready(function () {
 
     var search_app_list = eval($('#search_app_list').val());
 
+    // 业务下拉框
     function workSelectInit() {
         $('#works').empty();
         var pre = '<option selected value="" >全部</option>';
@@ -236,6 +239,7 @@ $(document).ready(function () {
 
     workSelectInit();
 
+    // 数据录入 operationtype 15
     $('#sample_1').dataTable({
         "bAutoWidth": true,
         "bSort": true,
@@ -329,6 +333,7 @@ $(document).ready(function () {
             },
             "sZeroRecords": "没有检索到数据",
         },
+        // 加载结束回调函数
         "fnDrawCallback": function (data) {
             $('.table1_curvaluedate').datetimepicker({
                 format: 'yyyy-mm-dd hh:ii:ss',
@@ -349,11 +354,13 @@ $(document).ready(function () {
                 $("#unrelease1").hide();
             }
         },
+        // 创建行回调函数
         "createdRow": function (row, data, index) {
             if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)) {
                 $('td', row).css("color", "#FF0000");
             }
-
+            // 1 发布 0 未发布
+            // gorelease1 已发布 unrelease1 未发布
             if (data.releasestate == '0') {
                 $("#release1").show();
                 $("#gorelease1").hide();
@@ -367,7 +374,7 @@ $(document).ready(function () {
 
         },
     });
-    // 行按钮
+    // 填当前值，月累积、季累积、半年累积、年累积自动累加
     $('#sample_1 tbody').on('change', 'input[name="table1_curvalue"]', function () {
         var table = $('#sample_1').DataTable();
         var data = table.row($(this).parents('tr')).data();
@@ -377,6 +384,7 @@ $(document).ready(function () {
             $('#table1_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))));
             $('#table1_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))))
         }
+        // 超过上限，低于下限标红
         if ((data.target_upperlimit && Number($('#table1_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table1_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
         } else {
@@ -384,6 +392,7 @@ $(document).ready(function () {
         }
     });
 
+    // 数据提取 operationtype 16
     $('#sample_2').dataTable({
         "bAutoWidth": true,
         "bSort": true,
@@ -517,7 +526,6 @@ $(document).ready(function () {
 
         },
     });
-    // 行按钮
     $('#sample_2 tbody').on('change', 'input[name="table2_curvalue"]', function () {
         var table = $('#sample_2').DataTable();
         var data = table.row($(this).parents('tr')).data();
@@ -534,6 +542,7 @@ $(document).ready(function () {
         }
     });
 
+    // 数据计算 operationtype 17
     $('#sample_3').dataTable({
         "bAutoWidth": true,
         "bSort": true,
@@ -674,7 +683,6 @@ $(document).ready(function () {
         },
 
     });
-    // 行按钮
     $('#sample_3 tbody').on('change', 'input[name="table3_curvalue"]', function () {
         var table = $('#sample_3').DataTable();
         var data = table.row($(this).parents('tr')).data();
@@ -690,6 +698,7 @@ $(document).ready(function () {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
+    //
     $('#sample_3 tbody').on('click', 'button#edit', function () {
         $("#formuladiv").empty();
         var table = $('#sample_3').DataTable();
@@ -728,6 +737,7 @@ $(document).ready(function () {
         //$.formulabtnclick();
     }
 
+    // 数据查询
     $('#sample_4').dataTable({
         "bAutoWidth": true,
         "bSort": true,
@@ -771,6 +781,7 @@ $(document).ready(function () {
         },
     });
     var data5 = "";
+    // 电表走字 operationtype 1
     $('#sample_5').dataTable({
         "bAutoWidth": true,
         "bSort": true,
@@ -949,7 +960,7 @@ $(document).ready(function () {
 
     });
 
-    // 行按钮
+    // 0点走字、24点走字、当前值变动，重新计算累积值
     $('#sample_5 tbody').on('change', 'input[name="table5_zerodata"]', function () {
         var table = $('#sample_5').DataTable();
         var data = table.row($(this).parents('tr')).data();
@@ -998,7 +1009,7 @@ $(document).ready(function () {
             $('#table5_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))))
         }
     });
-
+    // 电表走字换表
     $('#sample_5 tbody').on('click', 'button#edit', function () {
         var data5 = $('#sample_5').DataTable().data();
         var table = $('#sample_5').DataTable();
@@ -1190,7 +1201,13 @@ $(document).ready(function () {
         ).load();
     });
 
-
+    /*
+        10 日报
+        11 月报
+        12 季报
+        13 半年报
+        14 年报
+    */
     if ($('#cycletype').val() == "10") {
         $('#reporting_date').datetimepicker({
             format: 'yyyy-mm-dd',
