@@ -190,9 +190,8 @@ class DataCenter(View):
                 'data': {},
                 'msg': '传入时间有误。'
             })
-        extract_data = getmodels('Extractdata', str(date.year)).objects.exclude(state='9').filter(datadate__gte=date,
-                                                                                                  datadate__lt=end_time,
-                                                                                                  target__name=target_name)
+        extract_data = getmodels('Extractdata', str(date.year)).objects.exclude(state='9').filter(
+            datadate__gte=date, datadate__lt=end_time, target__name=target_name).select_related('target')
         data_list = []
         for ed in extract_data:
             data_list.append({
@@ -4992,7 +4991,8 @@ def reporting_formulacalculate(request):
             formula = calculatedata[0].formula
             target = calculatedata[0].target
             data_from = target.data_from if target else 'lc'
-
+            
+            # 判断计算指标数据来源是否为外部系统
             if data_from == 'lc':
                 if formula is not None:
                     formula = formula.replace(" ", "")
@@ -5039,8 +5039,6 @@ def reporting_formulacalculate(request):
                                     value = "指标不存在"
                                 else:
                                     membertarget = membertarget[0]
-
-                                    # 判断计算指标数据来源是否为外部系统
 
                                     tableyear = str(date.year)
                                     queryset = getmodels("Entrydata", tableyear).objects
