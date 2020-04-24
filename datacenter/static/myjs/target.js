@@ -611,7 +611,17 @@ $(document).ready(function () {
         $('#add_constraint').parent().parent().prepend('<input class="form-control inline" type="text" style="width: 133px;"> ');
         push_fields = [["暂无", '', '']]
         loadFields();
+        renderRed();
+ 
     });
+
+    function renderRed(){
+        $("#push_table tbody").find('tr').each(function(){
+            if ($(this).find('td').eq(0).text() == '暂无'){
+                $(this).find('td').eq(0).css('color', 'red');
+            }
+        })
+    }
 
 
     $('#save').click(function () {
@@ -1127,12 +1137,7 @@ $(document).ready(function () {
                 push_completed = true;
             }
         });
-        table.rows().eq(0).each(function (index) {
-            var row = table.row(index).node();
-            if ($(row).find('td').eq(0).text().trim() == '暂无') {
-                $(row).css('color', 'red');
-            }
-        });
+        renderRed();
     }
 
     $('#push_table tbody').on('click', 'button#del_field', function () {
@@ -1145,12 +1150,7 @@ $(document).ready(function () {
         var load_list = ['暂无', "", ""];
         table.row.add(load_list).draw();
 
-        table.rows().eq(0).each(function (index) {
-            var row = table.row(index).node();
-            if ($(row).find('td').eq(0).text().trim() == '暂无') {
-                $(row).css('color', 'red');
-            }
-        });
+        renderRed();
     });
 
     $('#add_constraint').on('click', function(){
