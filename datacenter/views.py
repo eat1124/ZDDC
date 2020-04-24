@@ -2955,8 +2955,7 @@ def target_data(request):
             admin_app = target.adminapp
             if admin_app:
                 works = [work for work in all_works if work['id'] == admin_app.id]
-            # if admin_app:
-            #     works = admin_app.work_set.exclude(state='9').values('id', 'name')
+
             result.append({
                 "operationtype_name": operationtype,
                 "cycletype_name": cycletype,
@@ -2997,7 +2996,10 @@ def target_data(request):
                 'works': str(works),
                 "unity": target.unity,
                 "is_repeat": target.is_repeat,
-                "data_from": target.data_from
+                "data_from": target.data_from,
+
+                "if_push": target.if_push,
+                "push_config": target.push_config.replace("'", '"') if target.push_config else ""
             })
         return JsonResponse({"data": result})
 
@@ -3058,6 +3060,12 @@ def target_save(request):
         data_from = request.POST.get('data_from', '')
         calculate_source = request.POST.get('calculate_source', '')
         calculate_content = request.POST.get('calculate_content', '')
+
+        if_push = request.POST.get('if_push', '')
+        push_config = request.POST.get('push_config', '')
+
+        push_config = json.loads(push_config)
+        #{'dest_fields': ['b', 'd', 'werwer'], 'origin_source': '2', 'constraint_fields': ['rfe'], 'dest_table': 'reffa', 'origin_fields': ['a', 'c', 'wewer']}
 
         all_app = App.objects.exclude(state="9")
         all_cycle = Cycle.objects.exclude(state="9")
@@ -3190,6 +3198,12 @@ def target_save(request):
                                                             target_save.source_id = calculate_source
                                                     # 电表走字/提取
                                                     if operationtype in ['1', '16'] and savetype != 'app':
+                                                        # 提取：推送配置
+                                                        if operationtype == "16":
+                                                            if if_push == '1':
+                                                                target_save.push_config = str(push_config)
+                                                            target_save.if_push = if_push
+
                                                         try:
                                                             cycle_id = int(cycle)
                                                             my_cycle = all_cycle.get(id=cycle_id)
@@ -3322,6 +3336,11 @@ def target_save(request):
                                                             finally:
                                                                 target_save.source_id = calculate_source
                                                         if operationtype in ['1', '16'] and savetype != 'app':
+                                                            if operationtype == "16":
+                                                                if if_push == '1':
+                                                                    target_save.push_config = str(push_config)
+                                                                target_save.if_push = if_push
+                                                            
                                                             try:
                                                                 cycle_id = int(cycle)
                                                                 my_cycle = all_cycle.get(id=cycle_id)

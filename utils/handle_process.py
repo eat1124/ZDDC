@@ -479,6 +479,12 @@ class Extract(object):
                 result = ret
                 if not result:
                     error = db_update.error
+
+                # 行存推送
+
+
+
+
         return {"result": result, "error": error}
 
     def get_row_data(self, target, time):
@@ -556,6 +562,11 @@ class Extract(object):
         result = ret
         if not result:
             error = db_update.error
+        
+        # 列存推送
+
+        
+
         return {"result": result, "error": error}
 
     def get_col_data(self, target_list, time):

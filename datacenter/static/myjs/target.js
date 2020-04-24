@@ -239,7 +239,9 @@ $(document).ready(function () {
         $("#is_repeat").val(data.is_repeat);
 
         $("#data_from").val(data.data_from);
-
+        $('#if_push').val(data.if_push);
+        $('#push_config').hide();
+        
         // 过滤出所有works
         $('#work_edit').empty();
 
@@ -259,6 +261,7 @@ $(document).ready(function () {
         $('#calculate').hide();
         $('#calculate_analysis').hide();
         $('#extract').hide();
+        $('#if_push_div').hide();
 
         $('#data_from').parent().hide();
         $('#data_from').parent().prev().hide();
@@ -291,8 +294,43 @@ $(document).ready(function () {
         }
         if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
             $('#extract').show();
-        }
 
+            if (selected_operation_type == '提取'){
+                $('#if_push_div').show();
+                if (data.if_push=="1"){
+                    $('input:radio[name=radio2]')[0].checked = true;
+                    $("#push_config").show();
+
+                    // 加载数据
+                    var push_config = data.push_config;
+                    var push_config = eval(JSON.parse(push_config));
+                    var origin_fields = push_config.origin_fields,
+                        origin_source = push_config.origin_source,
+                        dest_table = push_config.dest_table,
+                        dest_fields = push_config.dest_fields,
+                        constraint_fields = push_config.constraint_fields;
+                    
+                    $('#push_source').val(origin_source);
+                    $('#dest_table').val(dest_table);
+                    // 约束字段
+                    $('#constraint_field').find('input').each(function(){
+                        $(this).remove();
+                    });
+                    for (var i=0; i<constraint_fields.length; i++){
+                        $('#add_constraint').parent().parent().prepend('<input class="form-control inline" type="text" style="width: 133px;" value="' + constraint_fields[i] + '"> ');
+                    }
+                    // 推送/目标字段
+                    push_fields = []
+                    for (var j=0; j<origin_fields.length; j++){
+                        push_fields.push([j+1, origin_fields[j], dest_fields[j]])
+                    }
+                    loadFields();
+                } else {
+                    $('input:radio[name=radio2]')[1].checked = true;
+                    $("#push_config").hide();
+                }
+            }
+        }
 
         if ($('#datatype option:selected').text() == '日期' || $('#datatype option:selected').text() == '文本') {
             $('#is_digit').hide();
@@ -461,6 +499,7 @@ $(document).ready(function () {
         $('#calculate').hide();
         $('#calculate_analysis').hide();
         $('#extract').hide();
+        $('#push_config').hide();
 
         $('#data_from_config').hide();
         $('#data_from').parent().hide();
@@ -474,6 +513,20 @@ $(document).ready(function () {
         }
         if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
             $('#extract').show();
+
+            // 是否推送
+            if (selected_operation_type == '提取'){
+                $('#if_push_div').show();
+                // 判断是否推送
+                if ($("#yes:checked").val() == "1") {
+                    $("#push_config").show();
+                } else {
+                    $("#push_config").hide();
+                }
+
+            } else {
+                $('#if_push_div').hide();
+            }
         }
     });
 
@@ -498,7 +551,6 @@ $(document).ready(function () {
 
 
     $("#new").click(function () {
-
         $('#calculate').hide();
         $('#calculate_analysis').hide();
         $('#extract').hide();
@@ -542,11 +594,65 @@ $(document).ready(function () {
         $('#data_from').parent().hide();
         $('#data_from').parent().prev().hide();
         $('#data_from_config').hide();
+
+        $('#if_push').val("0");
+        if ($("#if_push").val() == "1")
+            $('input:radio[name=radio2]')[0].checked = true;
+        if ($("#if_push").val() == "0")
+            $('input:radio[name=radio2]')[1].checked = true;
+
+        $("#push_config").hide();
+
+        $('#push_source').val('');
+        $('#dest_table').val('');
+        $('#constraint_field').find('input').each(function(){
+            $(this).remove();
+        });
+        $('#add_constraint').parent().parent().prepend('<input class="form-control inline" type="text" style="width: 133px;"> ');
+        push_fields = [["暂无", '', '']]
+        loadFields();
     });
 
 
     $('#save').click(function () {
         var table = $('#sample_1').DataTable();
+
+        // 构造推送配置数据
+        var origin_source = $('#push_source').val();
+        var dest_table = $('#dest_table').val();
+        // {
+        //     "origin_source": "",
+        //     "dest_table": "",
+        //     "constraint_fields": []
+        //     "origin_fields": [],
+        //     "dest_fields": [],
+        // }
+        var constraint_fields = []
+        $('#constraint_field').find('input').each(function(){
+            constraint_fields.push($(this).val());
+        });
+
+        var push_table = $('#push_table').DataTable();
+
+        var origin_fields = [];
+        var dest_fields = [];
+        push_table.rows().eq(0).each(function (index) {
+            var row = push_table.row(index).node();
+            var origin_field = $(row).find('input').eq(0).val();
+            var dest_field = $(row).find('input').eq(1).val();
+            origin_fields.push(origin_field);
+            dest_fields.push(dest_field);
+        });
+
+        var push_config = JSON.stringify({
+            origin_source: origin_source,
+            dest_table: dest_table,
+            constraint_fields: constraint_fields,
+            origin_fields: origin_fields,
+            dest_fields: dest_fields
+        })
+        var if_push = $('#if_push').val();
+
         $.ajax({
             type: "POST",
             dataType: 'json',
@@ -584,6 +690,9 @@ $(document).ready(function () {
                 data_from: $('#data_from').val(),
                 calculate_source: $('#calculate_source').val(),
                 calculate_content: $('#calculate_content').val(),
+
+                if_push: if_push,
+                push_config: push_config,
             },
             success: function (data) {
                 var myres = data["res"];
@@ -953,7 +1062,116 @@ $(document).ready(function () {
         $('#myModal').modal('hide');
     });
 
+    // 推送
+    $("input:radio[name=radio2]").change(function () {
+        if ($("#yes:checked").val() == "1") {
+            $("#push_config").show();
+        } else {
+            $("#push_config").hide();
+        }
+    })
 
+    var push_completed = false;
+    var push_fields = [['暂无', '', '']];
+    function loadFields() {
+        if (push_completed) {
+            $('#push_table').dataTable().fnDestroy();
+        }
+        var table = $('#push_table').dataTable({
+            "bAutoWidth": true,
+            "bSort": false,
+            "bProcessing": true,
+            "bPaginate": false,
+            "bFilter": false,
+            "info": false,
+            "paging":false,
+            "data": push_fields,
+            "columns": [
+                {"title": "序号"},
+                {"title": "推送字段"},
+                {"title": "目标字段"},
+                {"title": "操作"},
+            ],
+            "columnDefs": [{
+                "targets": -3,
+                "mRender": function (data, type, full) {
+                    return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[1] + "></input>"
+                }
+            },{
+                "targets": -2,
+                "mRender": function (data, type, full) {
+                    return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[2] + "></input>"
+                }
+            },{
+                "targets": -1,
+                "data": null,
+                "width": "40%",
+                "defaultContent": "<button title='删除'  id='del_field' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>"
+            }],
+            "oLanguage": {
+                "sLengthMenu": "每页显示 _MENU_ 条记录",
+                "sZeroRecords": "抱歉， 没有找到",
+                "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                "sInfoEmpty": "没有数据",
+                "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                "sSearch": "搜索",
+                "oPaginate": {
+                    "sFirst": "首页",
+                    "sPrevious": "前一页",
+                    "sNext": "后一页",
+                    "sLast": "尾页"
+                },
+                "sZeroRecords": "没有检索到数据",
+            },
+            initComplete: function (settings, json) {
+                push_completed = true;
+            }
+        });
+        table.rows().eq(0).each(function (index) {
+            var row = table.row(index).node();
+            if ($(row).find('td').eq(0).text().trim() == '暂无') {
+                $(row).css('color', 'red');
+            }
+        });
+    }
+
+    $('#push_table tbody').on('click', 'button#del_field', function () {
+        var table = $('#push_table').DataTable();
+        table.row($(this).parents('tr')).remove().draw();
+    });
+
+    $("#push_new").click(function () {
+        var table = $('#push_table').DataTable();
+        var load_list = ['暂无', "", ""];
+        table.row.add(load_list).draw();
+
+        table.rows().eq(0).each(function (index) {
+            var row = table.row(index).node();
+            if ($(row).find('td').eq(0).text().trim() == '暂无') {
+                $(row).css('color', 'red');
+            }
+        });
+    });
+
+    $('#add_constraint').on('click', function(){
+        $('#del_constraint').show();
+        // 判断是否超过5个input框
+        if ($(this).parent().prevAll().length > 3){
+            alert('已超过约束字段的限制个数。')
+        } else {
+            $(this).parent().before('<input class="form-control inline" type="text" style="width: 133px;"> ');
+        }
+    });
+    $('#del_constraint').on('click', function(){
+        // 判断是否少于2个input框
+        if ($(this).parent().prev().prevAll().length < 3){
+            // 隐藏-
+            $(this).parent().prev().prev().remove();
+            $(this).hide();
+        } else {
+            $(this).parent().prev().prev().remove();
+        }
+    });
 });
 
 

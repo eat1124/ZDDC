@@ -589,6 +589,100 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="form-group" id="if_push_div">
+                                    <label class="col-md-2 control-label">是否推送</label>
+                                    <div class="col-md-4">
+                                        <div class="md-radio-inline">
+                                            <input type="text" hidden id="if_push" value="">
+                                            <div class="md-radio">
+                                                <input type="radio" value="1" id="yes" name="radio2"
+                                                       class="md-radiobtn">
+                                                <label for="yes">
+                                                    <span></span>
+                                                    <span class="check"></span>
+                                                    <span class="box"></span> 是 </label>
+                                            </div>
+                                            <div class="md-radio has-error">
+                                                <input type="radio" value="0" id="no" name="radio2"
+                                                       class="md-radiobtn"
+                                                       checked>
+                                                <label for="no">
+                                                    <span></span>
+                                                    <span class="check"></span>
+                                                    <span class="box"></span> 否 </label>
+                                            </div>
+
+                                        </div>
+                                        <div class="form-control-focus"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="push_config" hidden>
+                                <div class="form-group">
+                                    <label class="col-md-2 control-label" style="color: #87cefa;height: auto;">推送配置</label>
+                                    <div class="col-md-10">
+                                        <hr style="height:1px;border:none;border-top:1px solid #87cefa;height: auto;">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-2 control-label row" style="margin-left: 15px;"></div>
+                                    <div class='row col-md-10'>
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label">推送数据源</label>
+                                            <div class="col-md-4">
+                                                <select class="form-control" id="push_source" name="push_source">
+                                                    {% for source in source_list %}
+                                                        <option value="{{ source.source_id }}">{{ source.source_name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <label class="col-md-2 control-label">目标表</label>
+                                            <div class="col-md-4">
+                                                <input class="form-control" id="dest_table" name="dest_table">
+                                            </div>
+                                        </div>
+                                        <div class="form-group" id="constraint_field">
+                                            <label class="col-md-2 control-label">约束字段</label>
+                                            <div class="col-md-10">
+                                                <input class="form-control inline" type="text" style="width: 133px;">&nbsp;
+                                                <span><a href="javascript:;" title="新增" id="add_constraint" name="add"><i class="fa fa-lg fa-plus-square-o"></i></a></span>
+                                                <span><a href="javascript:;" title="删除" id="del_constraint" name="add"><i class="fa fa-lg fa-minus-square-o"></i></a></span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="row" style="margin-left: 1px;">
+                                                <div class="col-md-6">
+                                                    <div>
+                                                        <button id="push_new" type="button" data-toggle="modal"
+                                                                data-target="#static_push"
+                                                                class="btn green">
+                                                            新增
+                                                            <i class="fa fa-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12 control-label">
+                                                <table class="table table-striped table-bordered table-hover table-checkable order-column"
+                                                       id="push_table">
+                                                    <thead>
+                                                    <tr>
+                                                        <th style="width:40px;"> 序号</th>
+                                                        <th> 推送字段</th>
+                                                        <th> 目标字段</th>
+                                                        <th> 操作</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+            
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                         <div class="form-actions ">

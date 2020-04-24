@@ -143,6 +143,10 @@ class Target(models.Model):
     )
     data_from = models.CharField("数据来源", null=True, max_length=20, choices=data_from_choices, default="lc")
 
+    # 数据推送
+    if_push = models.CharField("是否推送", null=True, max_length=20, default="0")
+    push_config = models.TextField("推送配置:{'dest_fields': ['', ''], 'origin_source': '', 'constraint_fields': [''], 'dest_table': '', 'origin_fields': ['', '']}", null=True)
+
 
 class Constant(models.Model):
     """
