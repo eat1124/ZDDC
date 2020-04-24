@@ -319,6 +319,11 @@ $(document).ready(function () {
                     for (var i=0; i<constraint_fields.length; i++){
                         $('#add_constraint').parent().parent().prepend('<input class="form-control inline" type="text" style="width: 133px;" value="' + constraint_fields[i] + '"> ');
                     }
+                    if (constraint_fields.length < 2){
+                        $('#del_constraint').hide();
+                    } else {
+                        $('#del_constraint').show();
+                    }
                     // 推送/目标字段
                     push_fields = []
                     for (var j=0; j<origin_fields.length; j++){
@@ -612,7 +617,8 @@ $(document).ready(function () {
         push_fields = [["暂无", '', '']]
         loadFields();
         renderRed();
- 
+
+        $('#del_constraint').hide();
     });
 
     function renderRed(){
