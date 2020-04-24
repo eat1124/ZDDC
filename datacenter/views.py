@@ -6237,11 +6237,11 @@ def report_submit_save(request):
             length_tag = report_time.count("-")
             if length_tag == 0:
                 report_time = datetime.datetime.strptime(report_time, "%Y") if report_time else None
-                report_time = report_time.replace(month=12, day=31)
+                report_time = report_time.replace(month=12, day=31) if report_time else None
             elif length_tag == 1:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m") if report_time else None
-                a, b = calendar.monthrange(report_time.year, report_time.month)
-                report_time = datetime.datetime(year=report_time.year, month=report_time.month, day=b)
+                a, b = calendar.monthrange(report_time.year, report_time.month) if report_time else None
+                report_time = datetime.datetime(year=report_time.year, month=report_time.month, day=b) if report_time else None
             elif length_tag == 2:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m-%d") if report_time else None
             else:
@@ -6334,8 +6334,11 @@ def report_submit_del(request):
             length_tag = report_time.count("-")
             if length_tag == 0:
                 report_time = datetime.datetime.strptime(report_time, "%Y") if report_time else None
+                report_time = report_time.replace(month=12, day=31) if report_time else None
             elif length_tag == 1:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m") if report_time else None
+                a, b = calendar.monthrange(report_time.year, report_time.month) if report_time else None
+                report_time = datetime.datetime(year=report_time.year, month=report_time.month, day=b) if report_time else None
             elif length_tag == 2:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m-%d") if report_time else None
             else:
