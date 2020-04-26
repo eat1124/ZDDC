@@ -421,7 +421,7 @@ $(document).ready(function() {
                 if (myres == "保存成功。") {
                     $('#static').modal('hide');
                     var table = $('#sample_1').DataTable();
-                    table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
+                    table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
                 }
                 alert(myres);
             },
@@ -443,7 +443,7 @@ $(document).ready(function() {
                 if (myres == "保存成功。") {
                     $('#static').modal('hide');
                     var table = $('#sample_1').DataTable();
-                    table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(), ).load();
+                    table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
                 }
                 alert(myres);
             },
