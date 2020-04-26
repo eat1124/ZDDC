@@ -659,7 +659,7 @@ $(document).ready(function () {
         // }
         var constraint_fields = []
         $('#constraint_field').find('input').each(function(){
-            constraint_fields.push($(this).val());
+            constraint_fields.push($(this).val().trim());
         });
 
         var push_table = $('#push_table').DataTable();
@@ -670,13 +670,13 @@ $(document).ready(function () {
             var row = push_table.row(index).node();
             var origin_field = $(row).find('input').eq(0).val();
             var dest_field = $(row).find('input').eq(1).val();
-            origin_fields.push(origin_field);
-            dest_fields.push(dest_field);
+            origin_fields.push(origin_field.trim());
+            dest_fields.push(dest_field.trim());
         });
 
         var push_config = JSON.stringify({
             origin_source: origin_source,
-            dest_table: dest_table,
+            dest_table: dest_table.trim(),
             constraint_fields: constraint_fields,
             origin_fields: origin_fields,
             dest_fields: dest_fields
