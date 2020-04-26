@@ -121,11 +121,11 @@ DATABASES = {
         # 'HOST': '127.0.0.1\SQLEXPRESS',
         # 'PASSWORD': 'Passw0rD',
 
-        # 'PASSWORD': 'tesunet@2020',
-        # 'HOST': '10.150.99.185\SQLEXPRESS',
+        'PASSWORD': 'tesunet@2020',
+        'HOST': '10.150.99.185\SQLEXPRESS',
 
-        'PASSWORD': '1',
-        'HOST': 'localhost',
+        # 'PASSWORD': '1',
+        # 'HOST': 'localhost',
 
         'PORT': '1433',
         'OPTIONS': {
