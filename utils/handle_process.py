@@ -481,10 +481,7 @@ class Extract(object):
                     error = db_update.error
 
                 # 行存推送
-
-
-
-
+                result, error = self.push_data(target, storage)
         return {"result": result, "error": error}
 
     def get_row_data(self, target, time):
@@ -564,9 +561,8 @@ class Extract(object):
             error = db_update.error
         
         # 列存推送
-
+        result, error = self.push_data(target, storage)
         
-
         return {"result": result, "error": error}
 
     def get_col_data(self, target_list, time):
@@ -791,6 +787,149 @@ class Extract(object):
                             take_notes(self.source_id, self.app_id, self.circle_id,
                                        'Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
 
+    def push_data(self, target, storage):
+        """
+        推送数据至其他数据库
+        """
+        result = False
+        error = ""
+        if_push = target.if_push
+        if if_push == "1":
+            push_config = target.push_config
+            try:
+                push_config = eval(push_config)
+            except:
+                result = False
+                error = '未配置推送字段。'
+            else:
+                constraint_fields = push_config['constraint_fields']
+                dest_table = push_config['dest_table']
+                origin_source = push_config['origin_source']
+                origin_fields = push_config['origin_fields']
+                dest_fields = push_config['dest_fields']
+                try:
+                    origin_source = int(origin_source)
+                    push_source = Source.objects.get(id=origin_source)
+                except Exception as e:
+                    result = False
+                    error = '推送数据源不存在: {0}。'.format(e)
+                else:
+                    push_source_connection = push_source.connection
+                    push_source_name = push_source.name
+                    push_source_db_name = ''
+                    try:
+                        push_source_connection = eval(push_source_connection)
+                        if type(push_source_connection) == list:
+                            push_source_connection = push_source_connection[0]
+                    except Exception as e:
+                        pass
+                    else:
+                        push_source_db_name = push_source_connection['db']
+
+                    # 推送的SQL
+                    #   根据 push_source_name 是否 SQL Server区分
+                    #   根据 约束字段的值 是否在对方数据库中存在
+                    #       如果存在，返回ID更新；
+                    #       如果不存在，新增;
+                    condition = "WHERE "
+                    set_value = ''
+                    create_fields = ''
+                    create_values = ''
+                    for k, v in storage.items():
+                        k = k.strip()
+                        # 约束字段
+                        if k in constraint_fields:
+                            if type(v) == str:
+                                condition += "{k}='{v}' AND ".format(k=k, v=v.strip())
+                            elif type(v) == datetime.datetime:
+                                condition += "{k}='{v}' AND ".format(k=k, v=str(v))
+                            else:
+                                condition += "{k}={v} AND ".format(k=k, v=str(v))
+
+                        # 更新字段 
+                        #     从获取到的字段对应推送字段，取得value值，重新构造目标字段与value的关系
+                        # 推送字段索引
+                        try:
+                            push_index = origin_fields.index(k)
+                        except Exception as e:
+                            pass
+                        else:
+                            dest_field = dest_fields[push_index]
+                            create_fields += dest_field.strip() + ','
+                            if type(v) == str:
+                                set_value += "{k}='{v}' ,".format(k=dest_field, v=v.strip())
+                                create_values += '"%s"' % v.strip() + ','
+                            elif type(v) == datetime.datetime:
+                                set_value += "{k}='{v}' ,".format(k=dest_field, v=str(v))
+                                create_values += "'%s'" % str(v) + ','
+                            else:
+                                set_value += "{k}='{v}' ,".format(k=dest_field, v=str(v))
+                                create_values += str(v) + ','
+
+                    if condition.endswith(' AND '):
+                        condition = condition[:-5]
+                    if set_value.endswith(' ,'):
+                        set_value = set_value[:-2]
+
+                    # 处理单双引号
+                    set_value = set_value.replace('"', "'")
+                    create_values = create_values.replace('"', "'")
+                    condition = condition.replace('"', "'")
+
+                    create_fields = create_fields[:-1] if create_fields.endswith(',') else create_fields
+                    create_values = create_values[:-1] if create_values.endswith(',') else create_values
+
+                    push_db = SeveralDBQuery(push_source_name, push_source_connection)
+                    # 修改/新增
+                    update_id = None
+                    if constraint_fields:
+                        check_exist_sql = """SELECT id from {dest_table} {condition}""".format(dest_table=dest_table, condition=condition)
+                        if push_source_name == "SQL Server":
+                            check_exist_sql = """SELECT id from {db}.dbo.{dest_table} {condition}""".format(
+                                db=push_source_db_name, dest_table=dest_table, condition=condition
+                            )
+                        logger.info('检查是否存在约束字段的数据: %s' % check_exist_sql)
+                        check_ret = push_db.fetch_all(check_exist_sql)
+                        if check_ret:
+                            update_id = check_ret[-1][0]
+                            
+                    if update_id:
+                        try:
+                            # 修改
+                            push_update_sql = """UPDATE {dest_table} SET {set_value} WHERE id={update_id}""".format(
+                                dest_table=dest_table, set_value=set_value, update_id=update_id
+                            )
+                            if push_source_name == "SQL Server":
+                                push_update_sql = """UPDATE {db}.dbo.{dest_table} SET {set_value} WHERE id={update_id}""".format(
+                                    db=push_source_db_name, dest_table=dest_table, set_value=set_value, update_id=update_id
+                                )
+                            logger.info('Target~%d 推送SQL:%s' % (target.id, push_create_sql))
+                            push_update_ret = push_db.update(push_update_sql)
+                        except Exception as e:
+                            logger.info('数据推送失败：%s' % e)
+                            return False, str(e)
+                    else:
+                        try:
+                            # 新增
+                            push_create_sql = """INSERT INTO {dest_table}({fields}) VALUES({values})""".format(
+                                dest_table=dest_table, fields=create_fields, values=create_values
+                            )
+                            if push_source_name == "SQL Server":
+                                push_create_sql = """INSERT INTO {db}.dbo.{dest_table}({fields}) VALUES({values})""".format(
+                                    db=push_source_db_name, dest_table=dest_table, fields=create_fields, values=create_values
+                                )
+                            logger.info('Target~%d 推送SQL:%s' % (target.id, push_create_sql))
+                            push_update_ret = push_db.update(push_create_sql)
+                        except Exception as e:
+                            logger.info('数据推送失败：%s' % e)
+                            return False, str(e)
+                    if not push_update_ret:
+                        result = False
+                        error = '推送数据失败: {0}'.format(push_db.error)  
+
+                    push_db.close()
+        return result, error
+
     def run(self):
         # 补取()
         # 启动定时器，每分钟执行一次
@@ -1013,6 +1152,8 @@ def run_process(process_id, targets=None):
 
 
 if __name__ == '__main__':
+    logger.info('=======================================================================================================================================')
+    logger.info('======================================================================================================================================')
     if len(sys.argv) == 2:
         logger.info('进程启动。')
 

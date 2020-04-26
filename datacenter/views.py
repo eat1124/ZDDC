@@ -3064,7 +3064,10 @@ def target_save(request):
         if_push = request.POST.get('if_push', '')
         push_config = request.POST.get('push_config', '')
 
-        push_config = json.loads(push_config)
+        try:
+            push_config = json.loads(push_config)
+        except:
+            pass
         #{'dest_fields': ['b', 'd', 'werwer'], 'origin_source': '2', 'constraint_fields': ['rfe'], 'dest_table': 'reffa', 'origin_fields': ['a', 'c', 'wewer']}
 
         all_app = App.objects.exclude(state="9")

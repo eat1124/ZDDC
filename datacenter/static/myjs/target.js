@@ -329,10 +329,24 @@ $(document).ready(function () {
                     for (var j=0; j<origin_fields.length; j++){
                         push_fields.push([j+1, origin_fields[j], dest_fields[j]])
                     }
+                    if (!push_fields){
+                        push_fields = [["暂无", '', '']]
+                    }
                     loadFields();
                 } else {
                     $('input:radio[name=radio2]')[1].checked = true;
                     $("#push_config").hide();
+
+                    // 初始化推送配置
+                    $('#push_source').val('');
+                    $('#dest_table').val('');
+                    $('#constraint_field').find('input').each(function(){
+                        $(this).remove();
+                    });
+                    $('#add_constraint').parent().parent().prepend('<input class="form-control inline" type="text" style="width: 133px;"> ');
+                    push_fields = [["暂无", '', '']]
+                    loadFields();
+                    renderRed();
                 }
             }
         }
@@ -667,7 +681,7 @@ $(document).ready(function () {
             origin_fields: origin_fields,
             dest_fields: dest_fields
         })
-        var if_push = $('#if_push').val();
+        var if_push = $('input[name="radio2"]:checked').val();
 
         $.ajax({
             type: "POST",
