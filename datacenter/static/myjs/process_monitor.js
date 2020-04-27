@@ -329,7 +329,7 @@ $(document).ready(function () {
         } else {
             // 指标信息
             $('#sample_4').dataTable({
-                "bAutoWidth": true,
+                "bAutoWidth": false,
                 "bSort": false,
                 "bProcessing": true,
                 "ajax": "../../get_log_info/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val(),
@@ -339,7 +339,10 @@ $(document).ready(function () {
                     {"data": "content"},
                 ],
 
-                "columnDefs": [],
+                "columnDefs": [{
+                    "targets": -2,
+                    "width": "20%",
+                }],
                 "oLanguage": {
                     "sLengthMenu": "每页显示 _MENU_ 条记录",
                     "sZeroRecords": "没有检索到数据",
