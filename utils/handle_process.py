@@ -889,10 +889,11 @@ class Extract(object):
                                 db=push_source_db_name, dest_table=dest_table, condition=condition
                             )
                         logger.info('检查是否存在约束字段的数据: %s' % check_exist_sql)
-                        check_ret = push_db.fetch_all(check_exist_sql)
+                        push_db.fetch_all(check_exist_sql)
+                        check_ret = push_db.result
                         if check_ret:
                             update_id = check_ret[-1][0]
-                            
+                    
                     if update_id:
                         try:
                             # 修改
@@ -903,7 +904,7 @@ class Extract(object):
                                 push_update_sql = """UPDATE {db}.dbo.{dest_table} SET {set_value} WHERE id={update_id}""".format(
                                     db=push_source_db_name, dest_table=dest_table, set_value=set_value, update_id=update_id
                                 )
-                            logger.info('Target~%d 推送SQL:%s' % (target.id, push_create_sql))
+                            logger.info('Target~%d 推送SQL:%s' % (target.id, push_update_sql))
                             push_update_ret = push_db.update(push_update_sql)
                         except Exception as e:
                             logger.info('数据推送失败：%s' % e)
