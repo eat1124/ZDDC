@@ -277,7 +277,8 @@ def get_process_monitor_tree(request):
         app = App.objects.exclude(state='9')
         cycle = Cycle.objects.exclude(state='9')
 
-        s_info_list = []
+        variable_info_list = []
+        fixed_info_list = []
         for s in source:
             # 指标管理中匹配
             if not s.type:
@@ -387,7 +388,7 @@ def get_process_monitor_tree(request):
                             a_info_list.append(a_info)
                     s_info['children'] = a_info_list
 
-                    s_info_list.append(s_info)
+                    variable_info_list.append(s_info)
             else:
                 # 固定节点(数据补取、数据清理、数据服务、短信服务)
                 fixed_s_info = dict()
@@ -429,9 +430,11 @@ def get_process_monitor_tree(request):
                     'last_time': f_last_time,
                     'status': f_status
                 }
-                s_info_list.append(fixed_s_info)
+                fixed_info_list.append(fixed_s_info)
 
-        root_info['children'] = s_info_list
+        # 固定进程放在后面
+        variable_info_list.extend(fixed_info_list)
+        root_info['children'] = variable_info_list
         root_info['state'] = {'opened': True}
         root_info['data'] = {
             'type': 'root'
