@@ -6444,7 +6444,6 @@ def getpagefuns(funid, request=""):
         if fun.pnode_id == 1:
             isselected = False
             url = fun.url if fun.url else ""
-            # if len(fun.app.all()) > 0:
             if fun.app:
                 url = fun.url + str(fun.id) + "/" if fun.url else ""
             if str(fun.id) == funid:
@@ -6466,10 +6465,7 @@ def getpagefuns(funid, request=""):
             jsurl = jsurl[1:-1]
             curjsurl = jsurl.split('/')
             jsurl = '/' + curjsurl[0]
-            #
-            # if "falconstorswitch" in myurl:
-            #     compile_obj = re.compile(r"/.*/")
-            #     jsurl = compile_obj.findall(myurl)[0][:-1]
+
         mycurfun = {
             "id": curfun[0].id, "name": curfun[0].name, "url": myurl, "jsurl": jsurl}
 
@@ -6492,27 +6488,30 @@ def custom_personal_fun_list(if_superuser, userinfo_id):
         for fun in allfunlist:
             funlist.append(fun)
     else:
-        cursor = connection.cursor()
-        cursor.execute(
-            "select datacenter_fun.id from datacenter_group,datacenter_fun,datacenter_userinfo,datacenter_userinfo_group,datacenter_group_fun "
-            "where datacenter_group.id=datacenter_userinfo_group.group_id and datacenter_group.id=datacenter_group_fun.group_id and "
-            "datacenter_group_fun.fun_id=datacenter_fun.id and datacenter_userinfo.id=datacenter_userinfo_group.userinfo_id and userinfo_id= "
-            + str(userinfo_id) + " order by datacenter_fun.sort"
-        )
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "select datacenter_fun.id from datacenter_group,datacenter_fun,datacenter_userinfo,datacenter_userinfo_group,datacenter_group_fun "
+                    "where datacenter_group.id=datacenter_userinfo_group.group_id and datacenter_group.id=datacenter_group_fun.group_id and "
+                    "datacenter_group_fun.fun_id=datacenter_fun.id and datacenter_userinfo.id=datacenter_userinfo_group.userinfo_id and userinfo_id= "
+                    + str(userinfo_id) + " order by datacenter_fun.sort"
+                )
 
-        rows = cursor.fetchall()
-        for row in rows:
-            try:
-                fun = Fun.objects.get(id=row[0])
-                funlist = getfun(funlist, fun)
-            except:
-                pass
-        connection.close()
+                rows = cursor.fetchall()
+                for row in rows:
+                    try:
+                        fun = Fun.objects.get(id=row[0])
+                        funlist = getfun(funlist, fun)
+                    except:
+                        pass
+        finally:
+            connection.close()
     for index, value in enumerate(funlist):
         if value.sort is None:
             value.sort = 0
     funlist = sorted(funlist, key=lambda fun: fun.sort)
     return funlist
+
 
 def index(request, funid):
     if request.user.is_authenticated():
