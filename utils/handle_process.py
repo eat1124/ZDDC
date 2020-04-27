@@ -791,7 +791,7 @@ class Extract(object):
         """
         推送数据至其他数据库
         """
-        result = False
+        result = True
         error = ""
         if_push = target.if_push
         if if_push == "1":
@@ -1094,7 +1094,7 @@ def run_process(process_id, targets=None):
                             except Exception as e:
                                 logger.info('数据补取失败：%s' % e)
 
-                            time.sleep(60 * 60 * 24)  # 定时1日
+                            time.sleep(60 * 60 * 12)  # 定时0.5日
                     elif process_type == '2':
                         while True:
                             try:
