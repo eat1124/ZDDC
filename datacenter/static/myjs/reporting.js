@@ -740,7 +740,7 @@ $(document).ready(function () {
     // 数据查询
     $('#sample_4').dataTable({
         "bAutoWidth": true,
-        "bSort": true,
+        "bSort": false,
         "bProcessing": true,
         "bPaginate": false,
         "bFilter": false,
