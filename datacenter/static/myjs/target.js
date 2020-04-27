@@ -570,6 +570,24 @@ $(document).ready(function () {
 
 
     $("#new").click(function () {
+        // 推送相关
+        $('#if_push').val("0");
+        if ($("#if_push").val() == "1")
+            $('input:radio[name=radio2]')[0].checked = true;
+        if ($("#if_push").val() == "0")
+            $('input:radio[name=radio2]')[1].checked = true;
+        $("#push_config").hide();
+        $('#push_source').val('');
+        $('#dest_table').val('');
+        $('#constraint_field').find('input').each(function(){
+            $(this).remove();
+        });
+        $('#add_constraint').parent().parent().prepend('<input class="form-control inline" type="text" style="width: 133px;"> ');
+        push_fields = [["暂无", '', '']]
+        loadFields();
+        renderRed();
+        $('#del_constraint').hide();
+
         $('#calculate').hide();
         $('#calculate_analysis').hide();
         $('#extract').hide();
@@ -613,26 +631,6 @@ $(document).ready(function () {
         $('#data_from').parent().hide();
         $('#data_from').parent().prev().hide();
         $('#data_from_config').hide();
-
-        $('#if_push').val("0");
-        if ($("#if_push").val() == "1")
-            $('input:radio[name=radio2]')[0].checked = true;
-        if ($("#if_push").val() == "0")
-            $('input:radio[name=radio2]')[1].checked = true;
-
-        $("#push_config").hide();
-
-        $('#push_source').val('');
-        $('#dest_table').val('');
-        $('#constraint_field').find('input').each(function(){
-            $(this).remove();
-        });
-        $('#add_constraint').parent().parent().prepend('<input class="form-control inline" type="text" style="width: 133px;"> ');
-        push_fields = [["暂无", '', '']]
-        loadFields();
-        renderRed();
-
-        $('#del_constraint').hide();
     });
 
     function renderRed(){
@@ -1099,7 +1097,7 @@ $(document).ready(function () {
         } else {
             $("#push_config").hide();
         }
-    })
+    });
 
     var push_completed = false;
     var push_fields = [['暂无', '', '']];
