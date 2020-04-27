@@ -740,7 +740,7 @@ $(document).ready(function () {
     // 数据查询
     $('#sample_4').dataTable({
         "bAutoWidth": true,
-        "bSort": false,
+        "bSort": true,
         "bProcessing": true,
         "bPaginate": false,
         "bFilter": false,
@@ -784,7 +784,7 @@ $(document).ready(function () {
     // 电表走字 operationtype 1
     $('#sample_5').dataTable({
         "bAutoWidth": true,
-        "bSort": true,
+        "bSort": false,
         "bProcessing": true,
         "bPaginate": false,
         "bFilter": false,
