@@ -5509,20 +5509,22 @@ def reporting_new(request):
                 if tablename != "":
                     rows = []
                     try:
-                        cursor = connection.cursor()
                         with connection.cursor() as cursor:
                             reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
-                            strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
+                            strsql = "SELECT * FROM {tablename} WHERE target_id={target_id} AND datadate='{datadate}' ORDER BY datadate desc ".format(
                                 tablename=tablename, target_id=target.id, datadate=reporting_date_stf
                             )
+                            # strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
+                            #     tablename=tablename, target_id=target.id, datadate=reporting_date_stf
+                            # )
                             cursor.execute(strsql)
                             rows = cursor.fetchall()
-                        connection.close()
-                    except Exception as e:
-                        pass
+                    finally:
+                            connection.close()
+
                     if len(rows) > 0:
                         try:
-                            meterdata.twentyfourdata = rows[0][0]
+                            meterdata.twentyfourdata = rows[0][4]
                         except:
                             pass
 
