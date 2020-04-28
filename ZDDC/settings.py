@@ -118,8 +118,8 @@ DATABASES = {
         'NAME': 'datacenter',
         'USER': 'sa',
         # 'PASSWORD': 'tesunet@2020',
-        #'HOST': '10.150.99.185\SQLEXPRESS',
-        'HOST': '127.0.0.1\SQLEXPRESS',
+        'HOST': '10.150.99.185\SQLEXPRESS',
+        #'HOST': '127.0.0.1\SQLEXPRESS',
         'PASSWORD': 'tesunet@2020',
         # 'HOST': 'localhost',
 
