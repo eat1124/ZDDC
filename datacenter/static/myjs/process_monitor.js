@@ -479,9 +479,7 @@ $(document).ready(function () {
     $('#test').click(function () {
         if (testData.length < 1) {
             alert("请至少选择一个指标");
-            $('#test').button('reset');
         } else {
-            $('#test').button('loading');
             $.ajax({
                 type: "POST",
                 dataType: 'json',
@@ -511,12 +509,10 @@ $(document).ready(function () {
                     } else {
                         alert('测试失败。')
                     }
-                    $('#test').button('reset');
 
                 },
                 error: function (e) {
                     alert("页面出现错误，请于管理员联系。");
-                    $('#test').button('reset');
                 }
             });
         }
