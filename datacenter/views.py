@@ -5511,12 +5511,9 @@ def reporting_new(request):
                     try:
                         with connection.cursor() as cursor:
                             reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
-                            strsql = "SELECT * FROM {tablename} WHERE target_id={target_id} AND datadate='{datadate}' ORDER BY datadate desc ".format(
+                            strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
                                 tablename=tablename, target_id=target.id, datadate=reporting_date_stf
                             )
-                            # strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
-                            #     tablename=tablename, target_id=target.id, datadate=reporting_date_stf
-                            # )
                             cursor.execute(strsql)
                             rows = cursor.fetchall()
                     finally:
@@ -5524,7 +5521,7 @@ def reporting_new(request):
 
                     if len(rows) > 0:
                         try:
-                            meterdata.twentyfourdata = rows[0][4]
+                            meterdata.twentyfourdata = rows[0][0]
                         except:
                             pass
 
