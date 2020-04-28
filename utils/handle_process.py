@@ -217,7 +217,6 @@ class PIQuery(object):
                     if curvalue['success'] == "0":
                         error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
                     else:
-                        logger.info("***************" + str(digit))
                         # curvalue保留位数处理
                         if curvalue['value'] is not None and digit != "" and digit is not None:
                             try:

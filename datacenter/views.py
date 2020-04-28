@@ -811,7 +811,7 @@ def target_test(request):
     :return:
     """
     if request.user.is_authenticated():
-        selectedtarget = request.POST.getlist('selectedtarget[]', [])
+        selectedtarget = request.POST.get('selectedtarget', '[]')
         result = {
             "status": 1,
             "data": [],
@@ -830,7 +830,7 @@ def target_test(request):
         try:
             now_time = datetime.datetime.now()
 
-            targets = Target.objects.filter(id__in=selectedtarget)
+            targets = Target.objects.filter(id__in=eval(selectedtarget))
             tmp_list = []
             for target in targets:
                 ret = Extract.getDataFromSource(target, now_time)
