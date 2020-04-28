@@ -51,6 +51,8 @@ $(document).ready(function () {
                     "plugins": ["types", "role"]
                 })
                     .bind('select_node.jstree', function (event, data) {
+                        testData = [];
+
                         // 写入进程ID
                         $('#cp_id').val(data.node.data.cp_id);
                         cp_id = data.node.data.cp_id;
@@ -291,6 +293,7 @@ $(document).ready(function () {
                     } else {
                         $('#supplement').show();
                     }
+                    testData = [];
                 }
             });
 
@@ -458,23 +461,34 @@ $(document).ready(function () {
         $('#storage_fields').val(data.storage_fields);
     });
 
+    var testData = [];
+    // 补取/测试的选中事件
+    $('#sample_2 tbody').on('click', 'input[name="selecttarget"]', function () {
+        if ($(this).prop('checked')) {
+            testData.push($(this).val());
+        } else {
+            for (var i = 0; i < testData.length; i++) {
+                if (testData[i] == $(this).val()) {
+                    testData.splice(i, 1);
+                }
+            }
+        }
+    });
+
     // 测试
     $('#test').click(function () {
-        var selectArray = [];
-        $("input[name=selecttarget]:checked").each(function () {
-            selectArray.push($(this).val());
-        });
-        if (selectArray.length < 1) {
+        if (testData.length < 1) {
             alert("请至少选择一个指标");
+            $('#test').button('reset');
         } else {
-            $(this).button('loading');
+            $('#test').button('loading');
             $.ajax({
                 type: "POST",
                 dataType: 'json',
                 url: "../../target_test/",
                 data:
                     {
-                        selectedtarget: selectArray,
+                        selectedtarget: JSON.stringify(testData),
                     },
                 success: function (data) {
                     // 测试结束弹出模态框，展示数据或者错误信息
@@ -521,14 +535,10 @@ $(document).ready(function () {
         minuteStep: 1
     });
     $('#supplement').click(function () {
-        var selectArray = [];
-        $("input[name=selecttarget]:checked").each(function () {
-            selectArray.push($(this).val());
-        });
-        if (selectArray.length < 1) {
+        if (testData.length < 1) {
             alert("请至少选择一个指标");
         } else {
-            $('#selectArray').val(selectArray);
+            $('#selectArray').val(testData);
 
             // 弹出模态框
             $('#static1').modal({backdrop: "static"});
