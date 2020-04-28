@@ -32,10 +32,10 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.join(BASE_DIR, 'utils'), 'dlls'))
 
-import clr
-
-clr.AddReference('PIApp')
-from PIApp import *
+# import clr
+#
+# clr.AddReference('PIApp')
+# from PIApp import *
 
 logger = logging.getLogger('process')
 
