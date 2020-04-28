@@ -5512,7 +5512,7 @@ def reporting_new(request):
                         cursor = connection.cursor()
                         with connection.cursor() as cursor:
                             reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
-                            strsql = "SELECT * FROM {tablename}".format(
+                            strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
                                 tablename=tablename, target_id=target.id, datadate=reporting_date_stf
                             )
                             cursor.execute(strsql)
@@ -5528,8 +5528,8 @@ def reporting_new(request):
 
                 meterdata.target = target
                 meterdata.datadate = reporting_date
-                meterdata.metervalue = float(meterdata.twentyfourdata) - float(meterdata.zerodata)
-                meterdata.curvalue = decimal.Decimal(float(meterdata.metervalue) * float(target.magnification))
+                meterdata.metervalue = decimal.Decimal(meterdata.twentyfourdata) - decimal.Decimal(meterdata.zerodata)
+                meterdata.curvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
                 meterdata.curvalue = round(meterdata.curvalue, target.digit)
                 if target.cumulative == "是":
                     cumulative = getcumulative(tableList,target, reporting_date, meterdata.curvalue)

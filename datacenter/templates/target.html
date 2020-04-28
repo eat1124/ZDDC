@@ -366,9 +366,10 @@
                                             select value from tmptab where to_char(date,'yyyy-mm-dd')=<#D#><br>
                                             使用<#D#>替代取数时间点'yyyy-mm-dd'格式字符串,<br>
                                             ----------------------------------------------------------------------------<br><br>
-                                            PI数据库，使用tag^type^starttime^endtime格式，如:<br>
-                                            DCS11.LAC20AP001XB83A.AV^real^<#D#>^<#D#><br>
+                                            PI数据库，使用tag^digit^type^starttime^endtime格式，如:<br>
+                                            DCS11.LAC20AP001XB83A.AV^2^real^<#D#>^<#D#><br>
                                             tag表示点名;<br>
+                                            digit表示保留小数位数,可缺省;<br>
                                             type表示取数方法(实时数据:real,平均值:avg, 最大值:max, 最小值:min, 差值:delta),缺省为real;<br>
                                             starttime表示开始时间，type为real时表示取数时间，缺省为<#D#>;<br>
                                             endtime表示结束时间，type为real时无效，缺省为<#D#>。<br><br>
@@ -478,9 +479,10 @@
                                             select value from tmptab where to_char(date,'yyyy-mm-dd')=<#D#><br>
                                             使用<#D#>替代取数时间点'yyyy-mm-dd'格式字符串,<br>
                                             ----------------------------------------------------------------------------<br><br>
-                                            PI数据库，使用tag^type^starttime^endtime格式，如:<br>
-                                            DCS11.LAC20AP001XB83A.AV^real^<#D#>^<#D#><br>
+                                            PI数据库，使用tag^digit^type^starttime^endtime格式，如:<br>
+                                            DCS11.LAC20AP001XB83A.AV^2^real^<#D#>^<#D#><br>
                                             tag表示点名;<br>
+                                            digit表示保留小数位数,可缺省;<br>
                                             type表示取数方法(实时数据:real,平均值:avg, 最大值:max, 最小值:min, 差值:delta),缺省为real;<br>
                                             starttime表示开始时间，type为real时表示取数时间，缺省为<#D#>;<br>
                                             endtime表示结束时间，type为real时无效，缺省为<#D#>。<br><br>
@@ -561,7 +563,7 @@
                                         <div class="panel-body">
                                             配置数据保存字段，如：curvalue，<#DS#>。多个字段用逗号隔开。<br>
                                             id列自动保存，不需要配置，存储表中必须有id字段，且设置为自增长，<br>
-                                            target_id列自动保存指标标志,不需要配置,存储表中必须有target_id字段，<br>
+                                            target_id列自动保存指标标志,不需要配置,行模式存储表中必须有target_id字段，<br>
                                             savedate列自动保存当前时间,不需要配置,存储表中必须有savedate字段，<br>
                                             datadate列保存数据时间，需配置日期格式，日期格式如<#DS#>。<br>
                                             D代表取数时刻，<br>
