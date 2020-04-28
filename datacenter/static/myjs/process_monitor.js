@@ -146,6 +146,20 @@ $(document).ready(function () {
         var operate = $(this).prop('id');
         // 判断固定进程还是动态进程
         var check_type = $('#check_type').val();
+        $('#start, #stop, #restart').button('reset');
+        $(this).button('loading');
+
+        function operateButton(operate) {
+            if (operate == 'start') {
+                $('#start').button('reset');
+            }
+            if (operate == 'stop') {
+                $('#stop').button('reset');
+            }
+            if (operate == 'restart') {
+                $('#restart').button('reset');
+            }
+        }
 
         $.ajax({
             type: 'POST',
@@ -179,11 +193,13 @@ $(document).ready(function () {
                             $('#start, #stop, #restart').hide();
                         }
                     }
+                    operateButton(operate);
                 }
                 alert(data.res);
             },
             error: function () {
-                alert('页面出现错误，请于管理员联系。')
+                alert('页面出现错误，请于管理员联系。');
+                operateButton(operate);
             }
         })
     });
@@ -451,6 +467,7 @@ $(document).ready(function () {
         if (selectArray.length < 1) {
             alert("请至少选择一个指标");
         } else {
+            $(this).button('loading');
             $.ajax({
                 type: "POST",
                 dataType: 'json',
@@ -480,10 +497,12 @@ $(document).ready(function () {
                     } else {
                         alert('测试失败。')
                     }
+                    $('#test').button('reset');
 
                 },
                 error: function (e) {
                     alert("页面出现错误，请于管理员联系。");
+                    $('#test').button('reset');
                 }
             });
         }
