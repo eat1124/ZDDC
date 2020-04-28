@@ -14,6 +14,7 @@ import pymysql.cursors
 import cx_Oracle
 import pymssql
 import psutil
+import decimal
 
 # 使用ORM
 import sys
@@ -168,20 +169,20 @@ class PIQuery(object):
         从PI中取数据
             type: avg, max, min, delta, real
             # 解析PI的数据源内容
-            # tmp = 'DCS11.LAC20AP001XB83A.AV^real^<#D#>^<#D#>'
+            # tmp = 'DCS11.LAC20AP001XB83A.AV^保留为位数^real^<#D#>^<#D#>'
         :return:
         """
         result_list = []
         error = ""
         source_content = source_content.split('^')
 
-        tag, operate, start_time, end_time = source_content[0], 'real', '<#D#>', '<#D#>'
+        tag, digit, operate, start_time, end_time = source_content[0],  source_content[1], 'real', '<#D#>', '<#D#>'
         if len(source_content) > 1:
-            operate = source_content[1].upper()
+            operate = source_content[2].upper()
         if len(source_content) > 2:
-            start_time = source_content[2]
+            start_time = source_content[3]
         if len(source_content) > 3:
-            end_time = source_content[3]
+            end_time = source_content[4]
         start_time = Extract.format_date(time, start_time,
                                          return_type='timestamp').strftime("%Y-%m-%d %H:%M:%S")
         end_time = Extract.format_date(time, end_time,
@@ -192,23 +193,19 @@ class PIQuery(object):
         try:
             conn = self.connection['host']
 
-            if operate == 'DATATABLE':
-                curvalue = ManagePI.ReadDatetableFromPI(conn, tag, start_time, end_time, 100)
+            if operate == 'REAL':
+                curvalue = json.loads(ManagePI.ReadHisValueFromPI(conn, tag, start_time))
+            elif operate == 'AVG':
+                curvalue = json.loads(ManagePI.ReadAvgValueFromPI(conn, tag, start_time, end_time))
+            elif operate == 'MAX':
+                curvalue = json.loads(ManagePI.ReadMaxValueFromPI(conn, tag, start_time, end_time))
+            elif operate == 'MIN':
+                curvalue = json.loads(ManagePI.ReadMinValueFromPI(conn, tag, start_time, end_time))
+            elif operate == 'DELTA':
+                curvalue = json.loads(ManagePI.ReadCzValueFromPI(conn, tag, start_time, end_time))
             else:
-                # if operate == 'REAL':
-                #    curvalue = json.loads(ManagePI.ReadRealValueFromPI(conn, tag))
-                if operate == 'REAL':
-                    curvalue = json.loads(ManagePI.ReadHisValueFromPI(conn, tag, start_time))
-                elif operate == 'AVG':
-                    curvalue = json.loads(ManagePI.ReadAvgValueFromPI(conn, tag, start_time, end_time))
-                elif operate == 'MAX':
-                    curvalue = json.loads(ManagePI.ReadMaxValueFromPI(conn, tag, start_time, end_time))
-                elif operate == 'MIN':
-                    curvalue = json.loads(ManagePI.ReadMinValueFromPI(conn, tag, start_time, end_time))
-                elif operate == 'DELTA':
-                    curvalue = json.loads(ManagePI.ReadCzValueFromPI(conn, tag, start_time, end_time))
-                else:
-                    curvalue = None
+                curvalue = None
+
         except Exception as e:
             status = 0
             curvalue = e
@@ -220,6 +217,16 @@ class PIQuery(object):
                     if curvalue['success'] == "0":
                         error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
                     else:
+                        logger.info("***************" + str(digit))
+                        # curvalue保留位数处理
+                        if curvalue['value'] is not None and digit != "" and digit is not None:
+                            try:
+                                digit = int(digit)
+                                curvalue['value'] = decimal.Decimal(str(curvalue['value'])).quantize(
+                                    decimal.Decimal(PIQuery.quantize_digit(digit)), rounding=decimal.ROUND_HALF_UP)
+
+                            except Exception as e:
+                                logger.info("PI取数小数处理异常: " + str(e))
                         result_list = [[curvalue['value']]]
                 else:
                     error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
@@ -232,6 +239,28 @@ class PIQuery(object):
 
         return {"result": result_list, "error": error}
 
+    @staticmethod
+    def quantize_digit(digit):
+        """
+        四舍五入quantize参数
+        """
+        if digit == 0:
+            digit = '0'
+        elif digit == 1:
+            digit = '0.0'
+        elif digit == 2:
+            digit = '0.00'
+        elif digit == 3:
+            digit = '0.000'
+        elif digit == 4:
+            digit = '0.0000'
+        elif digit == 5:
+            digit = '0.00000'
+        elif digit == 6:
+            digit = '0.000000'
+        else:
+            digit = '0.0000000'
+        return digit
 
 class Extract(object):
     """
