@@ -69,7 +69,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.locale.LocaleMiddleware',
     # 'django.middleware.cache.FetchFromCacheMiddleware',
     # 查看sql执行情况的中间件,优化时取消注释
-    # 'datacenter.middleware.SQLCountMiddleware',
+    'datacenter.middleware.SQLCountMiddleware',
 ]
 
 ROOT_URLCONF = 'ZDDC.urls'
