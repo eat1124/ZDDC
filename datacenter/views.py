@@ -4281,8 +4281,8 @@ def reporting_data(request):
                         "target_lowerlimit": data.target.lowerlimit,
                     })
                 elif operationtype == "1":
-                    zerodata = data.zerodata
-                    twentyfourdata = data.twentyfourdata
+                    zerodata = float(decimal.Decimal(data.zerodata).normalize())
+                    twentyfourdata = float(decimal.Decimal(data.twentyfourdata).normalize())
                     metervalue = data.metervalue
                     meterchangedata_id = ""
                     oldtable_zerodata = ""
