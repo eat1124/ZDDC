@@ -177,11 +177,11 @@ class PIQuery(object):
         source_content = source_content.split('^')
 
         tag, digit, operate, start_time, end_time = source_content[0],  source_content[1], 'real', '<#D#>', '<#D#>'
-        if len(source_content) > 1:
-            operate = source_content[2].upper()
         if len(source_content) > 2:
-            start_time = source_content[3]
+            operate = source_content[2].upper()
         if len(source_content) > 3:
+            start_time = source_content[3]
+        if len(source_content) > 4:
             end_time = source_content[4]
         start_time = Extract.format_date(time, start_time,
                                          return_type='timestamp').strftime("%Y-%m-%d %H:%M:%S")
@@ -236,7 +236,7 @@ class PIQuery(object):
                 error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
         else:
             error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
-
+        logger.info(str({"result": result_list, "error": error}))
         return {"result": result_list, "error": error}
 
     @staticmethod
