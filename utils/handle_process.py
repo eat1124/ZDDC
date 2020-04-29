@@ -215,7 +215,7 @@ class PIQuery(object):
             if type(curvalue) == dict:
                 if curvalue['success']:
                     if curvalue['success'] == "0":
-                        error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
+                        error = 'Extract >> get_row_data() >> PI数据获取失败：' + str(curvalue)
                     else:
                         # curvalue保留位数处理
                         if curvalue['value'] is not None and digit != "" and digit is not None:
@@ -228,13 +228,13 @@ class PIQuery(object):
                                 logger.info("PI取数小数处理异常: " + str(e))
                         result_list = [[curvalue['value']]]
                 else:
-                    error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
+                    error = 'Extract >> get_row_data() >> PI数据获取失败：' + str(curvalue)
             elif type(curvalue) == list:
-                error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
+                error = 'Extract >> get_row_data() >> PI数据获取失败：' + str(curvalue)
             else:
-                error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
+                error = 'Extract >> get_row_data() >> PI数据获取失败：' + str(curvalue)
         else:
-            error = 'Extract >> get_row_data() >> PI数据获取失败：' + curvalue
+            error = 'Extract >> get_row_data() >> PI数据获取失败：' + str(curvalue)
         logger.info(str({"result": result_list, "error": error}))
         return {"result": result_list, "error": error}
 
