@@ -238,12 +238,12 @@ def getmodels(modelname, year):
 
 def get_process_monitor_tree(request):
     if request.user.is_authenticated():
-        circle_id = request.POST.get('circle_id', '')
+        cycle_id = request.POST.get('cycle_id', '')
         app_id = request.POST.get('app_id', '')
         source_id = request.POST.get('source_id', '')
         index = request.POST.get('index', '')
         try:
-            circle_id = int(circle_id)
+            cycle_id = int(cycle_id)
             app_id = int(app_id)
             source_id = int(source_id)
         except ValueError as e:
@@ -360,7 +360,7 @@ def get_process_monitor_tree(request):
                                         'a_id': a.id,
                                         'c_id': c.id,
                                         'c_name': c.name,
-                                        'type': 'circle',
+                                        'type': 'cycle',
 
                                         # 主进程id
                                         'cp_id': cp_id,
@@ -373,7 +373,7 @@ def get_process_monitor_tree(request):
 
                                     c_info['state'] = {'opened': True}
                                     #
-                                    if circle_id == c.id and app_id == a.id and source_id == s.id:
+                                    if cycle_id == c.id and app_id == a.id and source_id == s.id:
                                         c_info['state']['selected'] = True
 
                                     # 判断进程状态
@@ -595,23 +595,23 @@ def process_run(request):
 
         source_id = request.POST.get("source_id", "")
         app_id = request.POST.get("app_id", "")
-        circle_id = request.POST.get("circle_id", "")
+        cycle_id = request.POST.get("cycle_id", "")
         operate = request.POST.get("operate", "")
         check_type = request.POST.get("check_type", "")
         try:
             source_id = int(source_id)
             app_id = int(app_id)
-            circle_id = int(circle_id)
+            cycle_id = int(cycle_id)
         except ValueError as e:
             print(e)
 
         # 进程操作记入日志
-        def record_log(app_id, source_id, circle_id, msg):
+        def record_log(app_id, source_id, cycle_id, msg):
             try:
                 log = LogInfo()
                 log.source_id = source_id
                 log.app_id = app_id
-                log.cycle_id = circle_id
+                log.cycle_id = cycle_id
                 log.create_time = datetime.datetime.now()
                 log.content = msg
                 log.save()
@@ -624,7 +624,7 @@ def process_run(request):
         # 动态进程
         if not check_type:
             current_process = ProcessMonitor.objects.filter(source_id=source_id).filter(app_admin_id=app_id).filter(
-                cycle_id=circle_id).exclude(state='9')
+                cycle_id=cycle_id).exclude(state='9')
 
         if current_process.exists():
             current_process = current_process[0]
@@ -645,14 +645,14 @@ def process_run(request):
                     res = "请勿重复执行该程序。"
                 else:
                     tag, res = handle_process(current_process, handle_type="RUN")
-                    record_log(app_id, source_id, circle_id, '进程启动成功。')
+                    record_log(app_id, source_id, cycle_id, '进程启动成功。')
             elif operate == 'stop':
                 if current_process.status != "运行中":
                     tag = 0
                     res = "当前进程未在运行中。"
                 else:
                     tag, res = handle_process(current_process, handle_type="DESTROY")
-                    record_log(app_id, source_id, circle_id, '进程关闭成功。')
+                    record_log(app_id, source_id, cycle_id, '进程关闭成功。')
             elif operate == 'restart':
                 if current_process.status != "运行中":
                     tag = 0
@@ -661,7 +661,7 @@ def process_run(request):
                     tag, res = handle_process(current_process, handle_type="DESTROY")
                     if tag == 1:
                         tag, res = handle_process(current_process, handle_type="RUN")
-                        record_log(app_id, source_id, circle_id, '进程重启成功。')
+                        record_log(app_id, source_id, cycle_id, '进程重启成功。')
                     else:
                         tag = 0
                         res = "关闭进程失败。"
@@ -678,10 +678,10 @@ def process_run(request):
             current_process.source_id = source_id
             if not check_type:
                 current_process.app_admin_id = app_id
-                current_process.cycle_id = circle_id
+                current_process.cycle_id = cycle_id
             current_process.save()
             tag, res = handle_process(current_process, handle_type="RUN")
-            record_log(app_id, source_id, circle_id, '进程启动成功。')
+            record_log(app_id, source_id, cycle_id, '进程启动成功。')
             return JsonResponse({
                 'tag': tag,
                 'res': res,
@@ -698,7 +698,7 @@ def pm_target_data(request):
     if request.user.is_authenticated():
         app_id = request.GET.get('app_id', '')
         source_id = request.GET.get('source_id', '')
-        circle_id = request.GET.get('circle_id', '')
+        cycle_id = request.GET.get('cycle_id', '')
 
         result = []
 
@@ -706,12 +706,12 @@ def pm_target_data(request):
         try:
             app_id = int(app_id)
             source_id = int(source_id)
-            circle_id = int(circle_id)
+            cycle_id = int(cycle_id)
         except ValueError as e:
             print(e)
         else:
             targets = Target.objects.exclude(state='9').filter(
-                Q(adminapp_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id)).select_related('storage')
+                Q(adminapp_id=app_id) & Q(source_id=source_id) & Q(cycle_id=cycle_id)).select_related('storage')
 
             for target in targets:
                 result.append({
@@ -728,7 +728,7 @@ def pm_target_data(request):
             try:
                 primary_process = ProcessMonitor.objects.exclude(state='9').get(app_admin_id=app_id,
                                                                                 source_id=source_id,
-                                                                                cycle_id=circle_id)
+                                                                                cycle_id=cycle_id)
             except ProcessMonitor.DoesNotExist as e:
                 print(e)
             else:
@@ -749,16 +749,16 @@ def get_exception_data(request):
         result = []
         app_id = request.GET.get('app_id', '')
         source_id = request.GET.get('source_id', '')
-        circle_id = request.GET.get('circle_id', '')
+        cycle_id = request.GET.get('cycle_id', '')
 
         try:
             app_id = int(app_id)
             source_id = int(source_id)
-            circle_id = int(circle_id)
+            cycle_id = int(cycle_id)
         except ValueError as e:
             print(e)
         else:
-            exceptions = ExceptionData.objects.filter(app_id=app_id, source_id=source_id, cycle_id=circle_id).exclude(
+            exceptions = ExceptionData.objects.filter(app_id=app_id, source_id=source_id, cycle_id=cycle_id).exclude(
                 state=9)
             for exception in exceptions:
                 result.append({
@@ -780,17 +780,17 @@ def get_log_info(request):
         result = []
         app_id = request.GET.get('app_id', '')
         source_id = request.GET.get('source_id', '')
-        circle_id = request.GET.get('circle_id', '')
+        cycle_id = request.GET.get('cycle_id', '')
 
         try:
             app_id = int(app_id)
             source_id = int(source_id)
-            circle_id = int(circle_id)
+            cycle_id = int(cycle_id)
         except ValueError as e:
             print(e)
         else:
             log_infos = LogInfo.objects.filter(
-                Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id)).order_by('-create_time')
+                Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=cycle_id)).order_by('-create_time')
 
             for num, log_info in enumerate(log_infos):
                 result.append({
@@ -1043,7 +1043,7 @@ def get_process_monitor_info(request):
                 except Exception as e:
                     print(e)
                 app_name = pm.app_admin.name if pm.app_admin else ''
-                circle_name = pm.cycle.name if pm.cycle else ''
+                cycle_name = pm.cycle.name if pm.cycle else ''
                 status = pm.status
                 create_time = '{:%Y-%m-%d %H:%M:%S}'.format(pm.create_time) if pm.create_time else ''
                 last_time = '{:%Y-%m-%d %H:%M:%S}'.format(pm.last_time) if pm.last_time else ''
@@ -1053,7 +1053,7 @@ def get_process_monitor_info(request):
                     'source_code': source_code,
                     'source_type': source_type,
                     'app_name': app_name,
-                    'circle_name': circle_name,
+                    'cycle_name': cycle_name,
                     'create_time': create_time,
                     'last_time': last_time,
                     'status': status,
