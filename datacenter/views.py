@@ -27,6 +27,7 @@ import win32api
 import calendar
 import socket
 
+
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
 from django.shortcuts import render
