@@ -369,12 +369,15 @@ class Extract(object):
         self.pm.save()
 
     def _get_data(self, now_time, targets=None):
-        ordered_targets = Target.objects.filter(adminapp_id=self.app_id, source_id=self.source_id,
-                                                cycle_id=self.cycle_id).exclude(state='9').order_by('storage_id',
-                                                                                                     'storagetag')
+        ordered_targets = Target.objects.filter(
+            adminapp_id=self.app_id, source_id=self.source_id, cycle_id=self.cycle_id
+        ).exclude(state='9').order_by('storage_id', 'storagetag')
 
         if targets:
+            # 选中指标
             ordered_targets = ordered_targets.filter(id__in=targets)
+        # 行存的方式，对单个指标取数
+        # 列存的方式，对相同存储标志的多个指标取数，完成之后需要剔除这些指标，避免重复
         copy_ordered_targets = copy.deepcopy(ordered_targets)
         for o_target in ordered_targets:
             storage = o_target.storage
@@ -508,9 +511,9 @@ class Extract(object):
                 result = ret
                 if not result:
                     error = db_update.error
-
-                # 行存推送
-                result, error = self.push_data(target, storage)
+                else:
+                    # 行存推送
+                    result, error = self.push_data(target, storage, result=result, error=error)
         return {"result": result, "error": error}
 
     def get_row_data(self, target, time):
@@ -569,10 +572,8 @@ class Extract(object):
 
         # 列存，将storage存成一条记录,本地数据库
         tablename = target.storage.tablename
-        col_save_sql = r"""INSERT INTO {tablename}({fields}) VALUES({values})""".format(tablename=tablename,
-                                                                                        fields=fields,
-                                                                                        values=values).replace(
-            '"', "'")
+        col_save_sql = r"""INSERT INTO {tablename}({fields}) VALUES({values})""".format(
+            tablename=tablename, fields=fields, values=values).replace('"', "'")
 
         # SQL Server update操作的sql不同
         if 'sql_server' in settings.DATABASES['default']['ENGINE']:
@@ -588,9 +589,9 @@ class Extract(object):
         result = ret
         if not result:
             error = db_update.error
-
-        # 列存推送
-        result, error = self.push_data(target, storage)
+        else:
+            # 列存推送
+            result, error = self.push_data(target, storage, result=result, error=error)
 
         return {"result": result, "error": error}
 
@@ -816,12 +817,12 @@ class Extract(object):
                             take_notes(self.source_id, self.app_id, self.cycle_id,
                                        'Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
 
-    def push_data(self, target, storage):
+    def push_data(self, target, storage, result=True, error=""):
         """
         推送数据至其他数据库
         """
-        result = True
-        error = ""
+        result = result
+        error = error
         if_push = target.if_push
         if if_push == "1":
             push_config = target.push_config
@@ -1137,7 +1138,7 @@ def run_process(process_id, targets=None):
                             except Exception as e:
                                 logger.info('数据补取失败：%s' % e)
 
-                            time.sleep(60 * 60 * 12)  # 定时0.5日
+                            time.sleep(60 * 60 * 0.5)  # 半小时对所有异常取数记录进行补取一次，10次补取失败作罢，历时5小时
                     elif process_type == '2':
                         while True:
                             try:
