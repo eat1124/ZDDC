@@ -873,7 +873,7 @@ def target_test(request):
             "data": "",
             "status": "ERROR"
         }]
-                
+
         """
         return JsonResponse(result)
     else:
@@ -1540,7 +1540,8 @@ def report_app_index(request, funid):
                                                                 report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
                                                                     report_file_path=aft_report_file_path)
 
-                                                                rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
+                                                                rc = ServerByPara(report_check_cmd, remote_ip,
+                                                                                  remote_user,
                                                                                   remote_password, remote_platform)
                                                                 rc_result = rc.run("")
 
@@ -1558,7 +1559,8 @@ def report_app_index(request, funid):
                                                                             web_server=web_server, file_name=file_name)
                                                                         remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                                             ps_script_path,
-                                                                            os.path.join(aft_report_file_path, file_name),
+                                                                            os.path.join(aft_report_file_path,
+                                                                                         file_name),
                                                                             url_visited)
 
                                                                         server_obj = ServerByPara(remote_cmd, remote_ip,
@@ -1905,26 +1907,24 @@ def app_data(request):
     if request.user.is_authenticated():
         result = []
 
-        all_app = App.objects.exclude(state="9").order_by("sort")
+        all_app = App.objects.exclude(state="9").order_by("sort").values()
+        all_work = Work.objects.exclude(state='9').order_by("sort").values()
         for app in all_app:
-            # 应用对应的所有业务
-            works = app.work_set.exclude(state='9').order_by('sort')
-
             work_list = []
-
-            for work in works:
-                tmp_list = [work.id, work.name, work.code, work.remark, work.core, work.sort]
-                work_list.append(tmp_list)
-
+            # 应用对应的所有业务
+            for work in all_work:
+                if app['id'] == work['app_id']:
+                    tmp_list = [work['id'], work['name'], work['code'], work['remark'], work['core'], work['sort']]
+                    work_list.append(tmp_list)
+                    
             result.append({
-                "id": app.id,
-                "name": app.name,
-                "code": app.code,
-                "remark": app.remark,
-                "sort": app.sort,
+                "id": app['id'],
+                "name": app['name'],
+                "code": app['code'],
+                "remark": app['remark'],
+                "sort": app['sort'],
                 "works": json.dumps(work_list, ensure_ascii=False),
             })
-
         return JsonResponse({"data": result})
 
 
@@ -3071,7 +3071,7 @@ def target_save(request):
             push_config = json.loads(push_config)
         except:
             pass
-        #{'dest_fields': ['b', 'd', 'werwer'], 'origin_source': '2', 'constraint_fields': ['rfe'], 'dest_table': 'reffa', 'origin_fields': ['a', 'c', 'wewer']}
+        # {'dest_fields': ['b', 'd', 'werwer'], 'origin_source': '2', 'constraint_fields': ['rfe'], 'dest_table': 'reffa', 'origin_fields': ['a', 'c', 'wewer']}
 
         all_app = App.objects.exclude(state="9")
         all_cycle = Cycle.objects.exclude(state="9")
@@ -3249,7 +3249,8 @@ def target_save(request):
                                                     result["res"] = "保存成功。"
                                                     result["data"] = target_save.id
                                         else:
-                                            all_target = Target.objects.filter(code=code).exclude(id=id).exclude(state="9")
+                                            all_target = Target.objects.filter(code=code).exclude(id=id).exclude(
+                                                state="9")
                                             all_constant = Constant.objects.filter(code=code).exclude(state="9")
                                             if (len(all_target) > 0):
                                                 result["res"] = '指标代码:' + \
@@ -3346,7 +3347,7 @@ def target_save(request):
                                                                 if if_push == '1':
                                                                     target_save.push_config = str(push_config)
                                                                 target_save.if_push = if_push
-                                                            
+
                                                             try:
                                                                 cycle_id = int(cycle)
                                                                 my_cycle = all_cycle.get(id=cycle_id)
@@ -4588,7 +4589,7 @@ def reporting_search_data(request):
         return JsonResponse({"data": result})
 
 
-def getcumulative(tableList,target, date, value):
+def getcumulative(tableList, target, date, value):
     """
     数据累计
     """
@@ -4627,7 +4628,7 @@ def getcumulative(tableList,target, date, value):
     if operationtype == "17":
         queryset = tableList["Calculatedata"].objects
 
-    all_data = queryset.exclude(state="9").filter(target=target,datadate=lastg_date)
+    all_data = queryset.exclude(state="9").filter(target=target, datadate=lastg_date)
     if len(all_data) > 0:
         lastcumulativemonth = 0
         lastcumulativequarter = 0
@@ -4963,7 +4964,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                                                                    rounding=decimal.ROUND_HALF_UP)
     # 累计值计算
     if target.cumulative == "是":
-        cumulative = getcumulative(tableList,target, date, decimal.Decimal(str(calculatedata.curvalue)))
+        cumulative = getcumulative(tableList, target, date, decimal.Decimal(str(calculatedata.curvalue)))
         calculatedata.cumulativemonth = cumulative["cumulativemonth"]
         calculatedata.cumulativequarter = cumulative["cumulativequarter"]
         calculatedata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5394,7 +5395,8 @@ def reporting_reextract(request):
         MeterTable = getmodels("Meterdata", tableyear)
         ExtractTable = getmodels("Extractdata", tableyear)
         CalculateTable = getmodels("Calculatedata", tableyear)
-        tableList = {"Entrydata":EntryTable,"Meterdata":MeterTable,"Extractdata":ExtractTable,"Calculatedata":CalculateTable}
+        tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
+                     "Calculatedata": CalculateTable}
 
         for target in all_target:
             if operationtype == "16":
@@ -5439,7 +5441,7 @@ def reporting_reextract(request):
                             except:
                                 pass
                     if target.cumulative == "是":
-                        cumulative = getcumulative(tableList,target, reporting_date, extractdata.curvalue)
+                        cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
                         extractdata.cumulativequarter = cumulative["cumulativequarter"]
                         extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5517,7 +5519,7 @@ def reporting_new(request):
                             cursor.execute(strsql)
                             rows = cursor.fetchall()
                     finally:
-                            connection.close()
+                        connection.close()
 
                     if len(rows) > 0:
                         try:
@@ -5531,7 +5533,7 @@ def reporting_new(request):
                 meterdata.curvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
                 meterdata.curvalue = round(meterdata.curvalue, target.digit)
                 if target.cumulative == "是":
-                    cumulative = getcumulative(tableList,target, reporting_date, meterdata.curvalue)
+                    cumulative = getcumulative(tableList, target, reporting_date, meterdata.curvalue)
                     meterdata.cumulativemonth = cumulative["cumulativemonth"]
                     meterdata.cumulativequarter = cumulative["cumulativequarter"]
                     meterdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5545,7 +5547,7 @@ def reporting_new(request):
                 entrydata.curvalue = 0
                 entrydata.curvalue = round(entrydata.curvalue, target.digit)
                 if target.cumulative == "是":
-                    cumulative = getcumulative(tableList,target, reporting_date, entrydata.curvalue)
+                    cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
                     entrydata.cumulativemonth = cumulative["cumulativemonth"]
                     entrydata.cumulativequarter = cumulative["cumulativequarter"]
                     entrydata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5595,7 +5597,7 @@ def reporting_new(request):
                         except:
                             pass
                 if target.cumulative == "是":
-                    cumulative = getcumulative(tableList,target, reporting_date, extractdata.curvalue)
+                    cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                     extractdata.cumulativemonth = cumulative["cumulativemonth"]
                     extractdata.cumulativequarter = cumulative["cumulativequarter"]
                     extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -6265,7 +6267,8 @@ def report_submit_save(request):
             elif length_tag == 1:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m") if report_time else None
                 a, b = calendar.monthrange(report_time.year, report_time.month) if report_time else None
-                report_time = datetime.datetime(year=report_time.year, month=report_time.month, day=b) if report_time else None
+                report_time = datetime.datetime(year=report_time.year, month=report_time.month,
+                                                day=b) if report_time else None
             elif length_tag == 2:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m-%d") if report_time else None
             else:
@@ -6362,7 +6365,8 @@ def report_submit_del(request):
             elif length_tag == 1:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m") if report_time else None
                 a, b = calendar.monthrange(report_time.year, report_time.month) if report_time else None
-                report_time = datetime.datetime(year=report_time.year, month=report_time.month, day=b) if report_time else None
+                report_time = datetime.datetime(year=report_time.year, month=report_time.month,
+                                                day=b) if report_time else None
             elif length_tag == 2:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m-%d") if report_time else None
             else:

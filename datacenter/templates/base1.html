@@ -5,29 +5,29 @@
     <meta charset="utf-8"/>
     <title>
         {% if homepage %}
-        上海特速自动化灾备管理软件
-        {% else %}
-        {% for fun in pagefuns.pagefuns %}
-        {% if fun.isselected %}
-        {% if not fun.child %}
-        {{ fun.name }}
-        {% else %}
-        {% for fun1 in fun.child %}
-        {% if fun1.isselected %}
-        {% if not fun1.child %}
-        {{ fun1.name }}
-        {% else %}
-        {% for fun2 in fun1.child %}
-        {% if fun2.isselected %}
-        {{ fun2.name }}
-        {% endif %}
-        {% endfor %}
-        {% endif %}
-        {% endif %}
-        {% endfor %}
-        {% endif %}
-        {% endif %}
-        {% endfor %}
+            上海特速自动化灾备管理软件
+            {% else %}
+                {% for fun in pagefuns.pagefuns %}
+                    {% if fun.isselected %}
+                        {% if not fun.child %}
+                        {{ fun.name }}
+                        {% else %}
+                            {% for fun1 in fun.child %}
+                                {% if fun1.isselected %}
+                                    {% if not fun1.child %}
+                                    {{ fun1.name }}
+                                    {% else %}
+                                        {% for fun2 in fun1.child %}
+                                            {% if fun2.isselected %}
+                                            {{ fun2.name }}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
         {% endif %}
     </title>
     <meta name="description"
@@ -220,54 +220,54 @@
             <section id="content">
                 <section class="vbox">
                     {% if homepage %}
-                    {% block contenthome %}{% endblock %}
+                        {% block contenthome %}{% endblock %}
                     {% else %}
                     <section class="scrollable wrapper">
                         <!-- .breadcrumb -->
                         <ul class="breadcrumb">
                             <li><a href="/index"><i class="fa fa-home"></i> 首页</a></li>
                             {% for fun in pagefuns.pagefuns %}
-                            {% if fun.isselected %}
-                            <li>{{ fun.name }}</li>
-                            {% if fun.child %}
-                            {% for fun1 in fun.child %}
-                            {% if fun1.isselected %}
-                            <li>{{ fun1.name }}</li>
-                            {% if fun1.child %}
-                            {% for fun2 in fun1.child %}
-                            {% if fun2.isselected %}
-                            <li>{{ fun2.name }}</li>
-                            {% endif %}
-                            {% endfor %}
-                            {% endif %}
-                            {% endif %}
-                            {% endfor %}
-                            {% endif %}
-                            {% endif %}
+                                {% if fun.isselected %}
+                                    <li>{{ fun.name }}</li>
+                                    {% if fun.child %}
+                                        {% for fun1 in fun.child %}
+                                            {% if fun1.isselected %}
+                                                <li>{{ fun1.name }}</li>
+                                                {% if fun1.child %}
+                                                    {% for fun2 in fun1.child %}
+                                                        {% if fun2.isselected %}
+                                                            <li>{{ fun2.name }}</li>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endif %}
                             {% endfor %}
                         </ul>
                         <section class="panel panel-default">
                             <header class="panel-heading">
                                 {% for fun in pagefuns.pagefuns %}
-                                {% if fun.isselected %}
-                                {% if not fun.child %}
-                                {{ fun.name }}
-                                {% else %}
-                                {% for fun1 in fun.child %}
-                                {% if fun1.isselected %}
-                                {% if not fun1.child %}
-                                {{ fun1.name }}
-                                {% else %}
-                                {% for fun2 in fun1.child %}
-                                {% if fun2.isselected %}
-                                {{ fun2.name }}
-                                {% endif %}
-                                {% endfor %}
-                                {% endif %}
-                                {% endif %}
-                                {% endfor %}
-                                {% endif %}
-                                {% endif %}
+                                    {% if fun.isselected %}
+                                        {% if not fun.child %}
+                                            {{ fun.name }}
+                                            {% else %}
+                                                {% for fun1 in fun.child %}
+                                                    {% if fun1.isselected %}
+                                                        {% if not fun1.child %}
+                                                            {{ fun1.name }}
+                                                            {% else %}
+                                                                {% for fun2 in fun1.child %}
+                                                                    {% if fun2.isselected %}
+                                                                        {{ fun2.name }}
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
                                 {% endfor %}
                             </header>
                             {% block content %}{% endblock %}

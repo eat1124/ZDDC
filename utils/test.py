@@ -10,7 +10,7 @@ clr.AddReference('PIApp')
 from PIApp import *
 
 conn = '10.150.106.40'
-tag = 'DCSCOM.Y0GAC11CF101'
+tag = 'DCS1.10BBB01CE501XB83A'
 curvalue = json.loads(ManagePI.ReadHisValueFromPI(conn, tag, strat_time))
 print(curvalue)
 # curvalue=json.loads(ManagePI.ReadAvgValueFromPI(conn,tag,strat_time,end_time))
