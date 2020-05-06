@@ -1,13 +1,13 @@
 $(document).ready(function () {
     var index = 0;
 
-    function getProcessMonitorTree(circle_id, app_id, source_id) {
+    function getProcessMonitorTree(cycle_id, app_id, source_id) {
         $.ajax({
             type: "POST",
             dataType: "json",
             url: "../get_process_monitor_tree/",
             data: {
-                circle_id: circle_id,
+                cycle_id: cycle_id,
                 app_id: app_id,
                 source_id: source_id,
                 index: index
@@ -65,7 +65,7 @@ $(document).ready(function () {
                             $("#form_div").show();
                         }
 
-                        $('#source_div, #app_div, #circle_div, #process_exec').hide();
+                        $('#source_div, #app_div, #cycle_div, #process_exec').hide();
 
                         // 根据data.node.data.status判断展示开启/关闭/重启按钮
                         if (['已关闭', ''].indexOf(data.node.data.status) != -1) {
@@ -84,15 +84,15 @@ $(document).ready(function () {
                         $('#source_code').val(data.node.data.s_code);
                         $('#source_type').val(data.node.data.s_type);
 
-                        if (['source', 'app', 'circle'].indexOf(data.node.data.type) != -1) {
+                        if (['source', 'app', 'cycle'].indexOf(data.node.data.type) != -1) {
                             $('#source_div').show();
                         }
 
-                        if (['app', 'circle'].indexOf(data.node.data.type) != -1) {
+                        if (['app', 'cycle'].indexOf(data.node.data.type) != -1) {
                             $('#app_div').show();
                         }
-                        if (data.node.data.type == 'circle') {
-                            $('#circle_div').show();
+                        if (data.node.data.type == 'cycle') {
+                            $('#cycle_div').show();
                             $('#process_exec').show();
 
                             $('#create_time').val(data.node.data.create_time);
@@ -106,18 +106,18 @@ $(document).ready(function () {
                             $('#navtabs').hide();
                         }
 
-                        // app/circle
+                        // app/cycle
                         $('#app_name').val(data.node.data.a_name);
-                        $('#circle_name').val(data.node.data.c_name);
+                        $('#cycle_name').val(data.node.data.c_name);
 
                         $('#source_id').val(data.node.data.s_id);
                         $('#app_id').val(data.node.data.a_id);
-                        $('#circle_id').val(data.node.data.c_id);
+                        $('#cycle_id').val(data.node.data.c_id);
 
                         // 固定进程 单独写
                         if (data.node.data.check_type) {
-                            $('#circle_div').show();
-                            $('#circle_name').parent().parent().hide();
+                            $('#cycle_div').show();
+                            $('#cycle_name').parent().parent().hide();
                             $('#process_exec').show();
                             $('#source_name').val(data.node.data.f_s_name);
 
@@ -126,7 +126,7 @@ $(document).ready(function () {
                             $('#last_time').val(data.node.data.last_time);
 
                         } else {
-                            $('#circle_name').parent().parent().show();
+                            $('#cycle_name').parent().parent().show();
                         }
                         $('#check_type').val(data.node.data.check_type);
 
@@ -172,12 +172,12 @@ $(document).ready(function () {
                 'operate': operate,
                 'source_id': $('#source_id').val(),
                 'app_id': $('#app_id').val(),
-                'circle_id': $('#circle_id').val()
+                'cycle_id': $('#cycle_id').val()
             },
             success: function (data) {
                 if (data.tag == 1) {
                     // 刷新树
-                    getProcessMonitorTree($('#circle_id').val(), $('#app_id').val(), $('#source_id').val());
+                    getProcessMonitorTree($('#cycle_id').val(), $('#app_id').val(), $('#source_id').val());
 
                     // 写入状态，时间
                     if (data.data) {
@@ -230,7 +230,7 @@ $(document).ready(function () {
                     $('#source_code').val(pm_data.source_code);
                     $('#source_type').val(pm_data.source_type);
                     $('#app_name').val(pm_data.app_name);
-                    $('#circle_name').val(pm_data.circle_name);
+                    $('#cycle_name').val(pm_data.cycle_name);
                     $('#create_time').val(pm_data.create_time);
                     $('#last_time').val(pm_data.last_time);
                     $('#status').val(pm_data.status);
@@ -245,14 +245,14 @@ $(document).ready(function () {
     function tabCheck2() {
         if (sample_2_completed) {
             var table_2 = $('#sample_2').DataTable();
-            table_2.ajax.url("../../pm_target_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val()).load();
+            table_2.ajax.url("../../pm_target_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&cycle_id=" + $('#cycle_id').val()).load();
         } else {
             // 指标信息
             $('#sample_2').dataTable({
                 "bAutoWidth": true,
                 "bSort": false,
                 "bProcessing": true,
-                "ajax": "../../pm_target_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val(),
+                "ajax": "../../pm_target_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&cycle_id=" + $('#cycle_id').val(),
                 "columns": [
                     {"data": "id"},
                     {"data": "id"},
@@ -303,14 +303,14 @@ $(document).ready(function () {
     function tabCheck3() {
         if (sample_3_completed) {
             var table_3 = $('#sample_3').DataTable();
-            table_3.ajax.url("../../get_exception_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val()).load();
+            table_3.ajax.url("../../get_exception_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&cycle_id=" + $('#cycle_id').val()).load();
         } else {
             // 指标信息
             $('#sample_3').dataTable({
                 "bAutoWidth": true,
                 "bSort": false,
                 "bProcessing": true,
-                "ajax": "../../get_exception_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val(),
+                "ajax": "../../get_exception_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&cycle_id=" + $('#cycle_id').val(),
                 "columns": [
                     {"data": "id"},
                     {"data": "target_name"},
@@ -344,14 +344,14 @@ $(document).ready(function () {
     function tabCheck4() {
         if (sample_4_completed) {
             var table = $('#sample_4').DataTable();
-            table.ajax.url("../../get_log_info/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val()).load();
+            table.ajax.url("../../get_log_info/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&cycle_id=" + $('#cycle_id').val()).load();
         } else {
             // 指标信息
             $('#sample_4').dataTable({
                 "bAutoWidth": false,
                 "bSort": false,
                 "bProcessing": true,
-                "ajax": "../../get_log_info/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&circle_id=" + $('#circle_id').val(),
+                "ajax": "../../get_log_info/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&cycle_id=" + $('#cycle_id').val(),
                 "columns": [
                     {"data": "id"},
                     {"data": "create_time"},

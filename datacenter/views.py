@@ -27,6 +27,7 @@ import win32api
 import calendar
 import socket
 
+
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
 from django.shortcuts import render
@@ -238,12 +239,12 @@ def getmodels(modelname, year):
 
 def get_process_monitor_tree(request):
     if request.user.is_authenticated():
-        circle_id = request.POST.get('circle_id', '')
+        cycle_id = request.POST.get('cycle_id', '')
         app_id = request.POST.get('app_id', '')
         source_id = request.POST.get('source_id', '')
         index = request.POST.get('index', '')
         try:
-            circle_id = int(circle_id)
+            cycle_id = int(cycle_id)
             app_id = int(app_id)
             source_id = int(source_id)
         except ValueError as e:
@@ -360,7 +361,7 @@ def get_process_monitor_tree(request):
                                         'a_id': a.id,
                                         'c_id': c.id,
                                         'c_name': c.name,
-                                        'type': 'circle',
+                                        'type': 'cycle',
 
                                         # 主进程id
                                         'cp_id': cp_id,
@@ -373,7 +374,7 @@ def get_process_monitor_tree(request):
 
                                     c_info['state'] = {'opened': True}
                                     #
-                                    if circle_id == c.id and app_id == a.id and source_id == s.id:
+                                    if cycle_id == c.id and app_id == a.id and source_id == s.id:
                                         c_info['state']['selected'] = True
 
                                     # 判断进程状态
@@ -595,23 +596,23 @@ def process_run(request):
 
         source_id = request.POST.get("source_id", "")
         app_id = request.POST.get("app_id", "")
-        circle_id = request.POST.get("circle_id", "")
+        cycle_id = request.POST.get("cycle_id", "")
         operate = request.POST.get("operate", "")
         check_type = request.POST.get("check_type", "")
         try:
             source_id = int(source_id)
             app_id = int(app_id)
-            circle_id = int(circle_id)
+            cycle_id = int(cycle_id)
         except ValueError as e:
             print(e)
 
         # 进程操作记入日志
-        def record_log(app_id, source_id, circle_id, msg):
+        def record_log(app_id, source_id, cycle_id, msg):
             try:
                 log = LogInfo()
                 log.source_id = source_id
                 log.app_id = app_id
-                log.cycle_id = circle_id
+                log.cycle_id = cycle_id
                 log.create_time = datetime.datetime.now()
                 log.content = msg
                 log.save()
@@ -624,7 +625,7 @@ def process_run(request):
         # 动态进程
         if not check_type:
             current_process = ProcessMonitor.objects.filter(source_id=source_id).filter(app_admin_id=app_id).filter(
-                cycle_id=circle_id).exclude(state='9')
+                cycle_id=cycle_id).exclude(state='9')
 
         if current_process.exists():
             current_process = current_process[0]
@@ -645,14 +646,14 @@ def process_run(request):
                     res = "请勿重复执行该程序。"
                 else:
                     tag, res = handle_process(current_process, handle_type="RUN")
-                    record_log(app_id, source_id, circle_id, '进程启动成功。')
+                    record_log(app_id, source_id, cycle_id, '进程启动成功。')
             elif operate == 'stop':
                 if current_process.status != "运行中":
                     tag = 0
                     res = "当前进程未在运行中。"
                 else:
                     tag, res = handle_process(current_process, handle_type="DESTROY")
-                    record_log(app_id, source_id, circle_id, '进程关闭成功。')
+                    record_log(app_id, source_id, cycle_id, '进程关闭成功。')
             elif operate == 'restart':
                 if current_process.status != "运行中":
                     tag = 0
@@ -661,7 +662,7 @@ def process_run(request):
                     tag, res = handle_process(current_process, handle_type="DESTROY")
                     if tag == 1:
                         tag, res = handle_process(current_process, handle_type="RUN")
-                        record_log(app_id, source_id, circle_id, '进程重启成功。')
+                        record_log(app_id, source_id, cycle_id, '进程重启成功。')
                     else:
                         tag = 0
                         res = "关闭进程失败。"
@@ -678,10 +679,10 @@ def process_run(request):
             current_process.source_id = source_id
             if not check_type:
                 current_process.app_admin_id = app_id
-                current_process.cycle_id = circle_id
+                current_process.cycle_id = cycle_id
             current_process.save()
             tag, res = handle_process(current_process, handle_type="RUN")
-            record_log(app_id, source_id, circle_id, '进程启动成功。')
+            record_log(app_id, source_id, cycle_id, '进程启动成功。')
             return JsonResponse({
                 'tag': tag,
                 'res': res,
@@ -698,7 +699,7 @@ def pm_target_data(request):
     if request.user.is_authenticated():
         app_id = request.GET.get('app_id', '')
         source_id = request.GET.get('source_id', '')
-        circle_id = request.GET.get('circle_id', '')
+        cycle_id = request.GET.get('cycle_id', '')
 
         result = []
 
@@ -706,12 +707,12 @@ def pm_target_data(request):
         try:
             app_id = int(app_id)
             source_id = int(source_id)
-            circle_id = int(circle_id)
+            cycle_id = int(cycle_id)
         except ValueError as e:
             print(e)
         else:
             targets = Target.objects.exclude(state='9').filter(
-                Q(adminapp_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id)).select_related('storage')
+                Q(adminapp_id=app_id) & Q(source_id=source_id) & Q(cycle_id=cycle_id)).select_related('storage')
 
             for target in targets:
                 result.append({
@@ -728,7 +729,7 @@ def pm_target_data(request):
             try:
                 primary_process = ProcessMonitor.objects.exclude(state='9').get(app_admin_id=app_id,
                                                                                 source_id=source_id,
-                                                                                cycle_id=circle_id)
+                                                                                cycle_id=cycle_id)
             except ProcessMonitor.DoesNotExist as e:
                 print(e)
             else:
@@ -749,16 +750,16 @@ def get_exception_data(request):
         result = []
         app_id = request.GET.get('app_id', '')
         source_id = request.GET.get('source_id', '')
-        circle_id = request.GET.get('circle_id', '')
+        cycle_id = request.GET.get('cycle_id', '')
 
         try:
             app_id = int(app_id)
             source_id = int(source_id)
-            circle_id = int(circle_id)
+            cycle_id = int(cycle_id)
         except ValueError as e:
             print(e)
         else:
-            exceptions = ExceptionData.objects.filter(app_id=app_id, source_id=source_id, cycle_id=circle_id).exclude(
+            exceptions = ExceptionData.objects.filter(app_id=app_id, source_id=source_id, cycle_id=cycle_id).exclude(
                 state=9)
             for exception in exceptions:
                 result.append({
@@ -780,17 +781,17 @@ def get_log_info(request):
         result = []
         app_id = request.GET.get('app_id', '')
         source_id = request.GET.get('source_id', '')
-        circle_id = request.GET.get('circle_id', '')
+        cycle_id = request.GET.get('cycle_id', '')
 
         try:
             app_id = int(app_id)
             source_id = int(source_id)
-            circle_id = int(circle_id)
+            cycle_id = int(cycle_id)
         except ValueError as e:
             print(e)
         else:
             log_infos = LogInfo.objects.filter(
-                Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=circle_id)).order_by('-create_time')
+                Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=cycle_id)).order_by('-create_time')
 
             for num, log_info in enumerate(log_infos):
                 result.append({
@@ -873,7 +874,7 @@ def target_test(request):
             "data": "",
             "status": "ERROR"
         }]
-                
+
         """
         return JsonResponse(result)
     else:
@@ -1043,7 +1044,7 @@ def get_process_monitor_info(request):
                 except Exception as e:
                     print(e)
                 app_name = pm.app_admin.name if pm.app_admin else ''
-                circle_name = pm.cycle.name if pm.cycle else ''
+                cycle_name = pm.cycle.name if pm.cycle else ''
                 status = pm.status
                 create_time = '{:%Y-%m-%d %H:%M:%S}'.format(pm.create_time) if pm.create_time else ''
                 last_time = '{:%Y-%m-%d %H:%M:%S}'.format(pm.last_time) if pm.last_time else ''
@@ -1053,7 +1054,7 @@ def get_process_monitor_info(request):
                     'source_code': source_code,
                     'source_type': source_type,
                     'app_name': app_name,
-                    'circle_name': circle_name,
+                    'cycle_name': cycle_name,
                     'create_time': create_time,
                     'last_time': last_time,
                     'status': status,
@@ -1540,7 +1541,8 @@ def report_app_index(request, funid):
                                                                 report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
                                                                     report_file_path=aft_report_file_path)
 
-                                                                rc = ServerByPara(report_check_cmd, remote_ip, remote_user,
+                                                                rc = ServerByPara(report_check_cmd, remote_ip,
+                                                                                  remote_user,
                                                                                   remote_password, remote_platform)
                                                                 rc_result = rc.run("")
 
@@ -1558,7 +1560,8 @@ def report_app_index(request, funid):
                                                                             web_server=web_server, file_name=file_name)
                                                                         remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                                             ps_script_path,
-                                                                            os.path.join(aft_report_file_path, file_name),
+                                                                            os.path.join(aft_report_file_path,
+                                                                                         file_name),
                                                                             url_visited)
 
                                                                         server_obj = ServerByPara(remote_cmd, remote_ip,
@@ -1905,26 +1908,24 @@ def app_data(request):
     if request.user.is_authenticated():
         result = []
 
-        all_app = App.objects.exclude(state="9").order_by("sort")
+        all_app = App.objects.exclude(state="9").order_by("sort").values()
+        all_work = Work.objects.exclude(state='9').order_by("sort").values()
         for app in all_app:
-            # 应用对应的所有业务
-            works = app.work_set.exclude(state='9').order_by('sort')
-
             work_list = []
-
-            for work in works:
-                tmp_list = [work.id, work.name, work.code, work.remark, work.core, work.sort]
-                work_list.append(tmp_list)
-
+            # 应用对应的所有业务
+            for work in all_work:
+                if app['id'] == work['app_id']:
+                    tmp_list = [work['id'], work['name'], work['code'], work['remark'], work['core'], work['sort']]
+                    work_list.append(tmp_list)
+                    
             result.append({
-                "id": app.id,
-                "name": app.name,
-                "code": app.code,
-                "remark": app.remark,
-                "sort": app.sort,
+                "id": app['id'],
+                "name": app['name'],
+                "code": app['code'],
+                "remark": app['remark'],
+                "sort": app['sort'],
                 "works": json.dumps(work_list, ensure_ascii=False),
             })
-
         return JsonResponse({"data": result})
 
 
@@ -3071,7 +3072,7 @@ def target_save(request):
             push_config = json.loads(push_config)
         except:
             pass
-        #{'dest_fields': ['b', 'd', 'werwer'], 'origin_source': '2', 'constraint_fields': ['rfe'], 'dest_table': 'reffa', 'origin_fields': ['a', 'c', 'wewer']}
+        # {'dest_fields': ['b', 'd', 'werwer'], 'origin_source': '2', 'constraint_fields': ['rfe'], 'dest_table': 'reffa', 'origin_fields': ['a', 'c', 'wewer']}
 
         all_app = App.objects.exclude(state="9")
         all_cycle = Cycle.objects.exclude(state="9")
@@ -3249,7 +3250,8 @@ def target_save(request):
                                                     result["res"] = "保存成功。"
                                                     result["data"] = target_save.id
                                         else:
-                                            all_target = Target.objects.filter(code=code).exclude(id=id).exclude(state="9")
+                                            all_target = Target.objects.filter(code=code).exclude(id=id).exclude(
+                                                state="9")
                                             all_constant = Constant.objects.filter(code=code).exclude(state="9")
                                             if (len(all_target) > 0):
                                                 result["res"] = '指标代码:' + \
@@ -3346,7 +3348,7 @@ def target_save(request):
                                                                 if if_push == '1':
                                                                     target_save.push_config = str(push_config)
                                                                 target_save.if_push = if_push
-                                                            
+
                                                             try:
                                                                 cycle_id = int(cycle)
                                                                 my_cycle = all_cycle.get(id=cycle_id)
@@ -4281,8 +4283,8 @@ def reporting_data(request):
                         "target_lowerlimit": data.target.lowerlimit,
                     })
                 elif operationtype == "1":
-                    zerodata = float(decimal.Decimal(data.zerodata).normalize())
-                    twentyfourdata = float(decimal.Decimal(data.twentyfourdata).normalize())
+                    zerodata = "{:f}".format(decimal.Decimal(data.zerodata if data.zerodata else "0").normalize())
+                    twentyfourdata = "{:f}".format(decimal.Decimal(data.twentyfourdata if data.zerodata else "0").normalize())
                     metervalue = data.metervalue
                     meterchangedata_id = ""
                     oldtable_zerodata = ""
@@ -4588,7 +4590,7 @@ def reporting_search_data(request):
         return JsonResponse({"data": result})
 
 
-def getcumulative(tableList,target, date, value):
+def getcumulative(tableList, target, date, value):
     """
     数据累计
     """
@@ -4627,7 +4629,7 @@ def getcumulative(tableList,target, date, value):
     if operationtype == "17":
         queryset = tableList["Calculatedata"].objects
 
-    all_data = queryset.exclude(state="9").filter(target=target,datadate=lastg_date)
+    all_data = queryset.exclude(state="9").filter(target=target, datadate=lastg_date)
     if len(all_data) > 0:
         lastcumulativemonth = 0
         lastcumulativequarter = 0
@@ -4963,7 +4965,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                                                                    rounding=decimal.ROUND_HALF_UP)
     # 累计值计算
     if target.cumulative == "是":
-        cumulative = getcumulative(tableList,target, date, decimal.Decimal(str(calculatedata.curvalue)))
+        cumulative = getcumulative(tableList, target, date, decimal.Decimal(str(calculatedata.curvalue)))
         calculatedata.cumulativemonth = cumulative["cumulativemonth"]
         calculatedata.cumulativequarter = cumulative["cumulativequarter"]
         calculatedata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5394,7 +5396,8 @@ def reporting_reextract(request):
         MeterTable = getmodels("Meterdata", tableyear)
         ExtractTable = getmodels("Extractdata", tableyear)
         CalculateTable = getmodels("Calculatedata", tableyear)
-        tableList = {"Entrydata":EntryTable,"Meterdata":MeterTable,"Extractdata":ExtractTable,"Calculatedata":CalculateTable}
+        tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
+                     "Calculatedata": CalculateTable}
 
         for target in all_target:
             if operationtype == "16":
@@ -5439,7 +5442,7 @@ def reporting_reextract(request):
                             except:
                                 pass
                     if target.cumulative == "是":
-                        cumulative = getcumulative(tableList,target, reporting_date, extractdata.curvalue)
+                        cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
                         extractdata.cumulativequarter = cumulative["cumulativequarter"]
                         extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5517,7 +5520,7 @@ def reporting_new(request):
                             cursor.execute(strsql)
                             rows = cursor.fetchall()
                     finally:
-                            connection.close()
+                        connection.close()
 
                     if len(rows) > 0:
                         try:
@@ -5531,7 +5534,7 @@ def reporting_new(request):
                 meterdata.curvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
                 meterdata.curvalue = round(meterdata.curvalue, target.digit)
                 if target.cumulative == "是":
-                    cumulative = getcumulative(tableList,target, reporting_date, meterdata.curvalue)
+                    cumulative = getcumulative(tableList, target, reporting_date, meterdata.curvalue)
                     meterdata.cumulativemonth = cumulative["cumulativemonth"]
                     meterdata.cumulativequarter = cumulative["cumulativequarter"]
                     meterdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5545,7 +5548,7 @@ def reporting_new(request):
                 entrydata.curvalue = 0
                 entrydata.curvalue = round(entrydata.curvalue, target.digit)
                 if target.cumulative == "是":
-                    cumulative = getcumulative(tableList,target, reporting_date, entrydata.curvalue)
+                    cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
                     entrydata.cumulativemonth = cumulative["cumulativemonth"]
                     entrydata.cumulativequarter = cumulative["cumulativequarter"]
                     entrydata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -5595,7 +5598,7 @@ def reporting_new(request):
                         except:
                             pass
                 if target.cumulative == "是":
-                    cumulative = getcumulative(tableList,target, reporting_date, extractdata.curvalue)
+                    cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                     extractdata.cumulativemonth = cumulative["cumulativemonth"]
                     extractdata.cumulativequarter = cumulative["cumulativequarter"]
                     extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
@@ -6265,7 +6268,8 @@ def report_submit_save(request):
             elif length_tag == 1:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m") if report_time else None
                 a, b = calendar.monthrange(report_time.year, report_time.month) if report_time else None
-                report_time = datetime.datetime(year=report_time.year, month=report_time.month, day=b) if report_time else None
+                report_time = datetime.datetime(year=report_time.year, month=report_time.month,
+                                                day=b) if report_time else None
             elif length_tag == 2:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m-%d") if report_time else None
             else:
@@ -6362,7 +6366,8 @@ def report_submit_del(request):
             elif length_tag == 1:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m") if report_time else None
                 a, b = calendar.monthrange(report_time.year, report_time.month) if report_time else None
-                report_time = datetime.datetime(year=report_time.year, month=report_time.month, day=b) if report_time else None
+                report_time = datetime.datetime(year=report_time.year, month=report_time.month,
+                                                day=b) if report_time else None
             elif length_tag == 2:
                 report_time = datetime.datetime.strptime(report_time, "%Y-%m-%d") if report_time else None
             else:
