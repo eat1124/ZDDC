@@ -132,13 +132,6 @@ def report_server_save(request):
         return HttpResponseRedirect('/login')
 
 
-def remove_decimal(num):
-    """
-    移除小数点后多余的0
-    """
-    return num.to_integral() if num == num.to_integral() else num.normalize()
-
-
 def Digit(digit):
     """
     四舍五入quantize参数
@@ -3732,8 +3725,7 @@ def constant_data(request):
                 adminapp_name = constant.adminapp.name
             except:
                 pass
-            value = remove_decimal(decimal.Decimal(constant.value))
-
+            value = "{:f}".format(decimal.Decimal(str(constant.value) if str(constant.value) else "0").normalize())
             result.append({
                 "adminapp_name": adminapp_name,
                 "id": constant.id,
@@ -5049,9 +5041,8 @@ def reporting_formulacalculate(request):
                                 else:
                                     memberconstant = memberconstant[0]
                                     value = memberconstant.value
-
-                                constant_chinese = '<' + constant_name + ':' + constant_col + '>(' + str(
-                                    remove_decimal(value)) + ')'
+                                value = "{:f}".format(decimal.Decimal(str(value) if str(value) else "0").normalize())
+                                constant_chinese = '<' + constant_name + ':' + constant_col + '>(' + value + ')'
                                 formula_chinese = formula_chinese.replace(target_english, constant_chinese)
 
                             else:
