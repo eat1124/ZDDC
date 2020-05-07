@@ -33,10 +33,13 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.join(BASE_DIR, 'utils'), 'dlls'))
 
-# import clr
-#
-# clr.AddReference('PIApp')
-# from PIApp import *
+# Oracle中文乱码
+os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.UTF8'
+
+import clr
+
+clr.AddReference('PIApp')
+from PIApp import *
 
 logger = logging.getLogger('process')
 

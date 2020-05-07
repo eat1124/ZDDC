@@ -69,7 +69,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.locale.LocaleMiddleware',
     # 'django.middleware.cache.FetchFromCacheMiddleware',
     # 查看sql执行情况的中间件,优化时取消注释
-    'datacenter.middleware.SQLCountMiddleware',
+    # 'datacenter.middleware.SQLCountMiddleware',
 ]
 
 ROOT_URLCONF = 'ZDDC.urls'
@@ -122,13 +122,8 @@ DATABASES = {
         'HOST': 'localhost',
         # 'PASSWORD': 'tesunet@2020',
         # 'HOST': '10.150.99.185\SQLEXPRESS',
-        # 'HOST': '127.0.0.1',
         # 'PASSWORD': 'Passw0rD',
-        'HOST': '10.150.99.185\SQLEXPRESS',
-        #'HOST': '127.0.0.1\SQLEXPRESS',
-        'PASSWORD': 'tesunet@2020',
-        # 'HOST': 'localhost',
-
+        # 'HOST': '127.0.0.1',
         'PORT': '1433',
         'OPTIONS': {
             'driver': 'SQL Server Native Client 11.0',  # Windows管理工具>>ODBC源数据>>点击添加即可查看驱动
@@ -217,6 +212,14 @@ LOGGING = {
             'formatter': 'default',
             'encoding': 'utf8',
         },
+        'db_insert_handlers': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',  # 日志文件指定为5M, 超过5m重新命名，然后写入新的日志文件
+            'maxBytes': 5 * 1024,  # 指定文件大小
+            'filename': '%s/db_insert.txt' % LOG_PATH,  # 指定文件地址
+            'formatter': 'default',
+            'encoding': 'utf8',
+        },
         # 'console': {
         #     'level': 'DEBUG',
         #     'class': 'logging.StreamHandler',
@@ -225,6 +228,10 @@ LOGGING = {
     'loggers': {
         'process': {
             'handlers': ['process_handlers'],
+            'level': 'INFO'
+        },
+        'db_insert': {
+            'handlers': ['db_insert_handlers'],
             'level': 'INFO'
         },
         # 'django.db.backends': {
