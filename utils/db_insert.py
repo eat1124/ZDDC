@@ -138,9 +138,9 @@ for t in tmp:
     except Exception as e:
         logger.info('id:{id}的数据插入失败，原因是{error}'.format(id=t['CT_ID'], error=e))
     else:
-        insert_data.append(insert_dict)
-for i in insert_data:
-    try:
-        Target.objects.create(**i)
-    except Exception as e:
-        logger.info('code:{code}的数据插入失败，原因是{error}'.format(code=i['code'], error=e))
+        insert_data.append(Target(**insert_dict))
+
+try:
+    Target.objects.bulk_create(insert_data)
+except Exception as e:
+    logger.info('批量插入失败，原因是{error}'.format(error=e))
