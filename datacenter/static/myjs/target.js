@@ -226,6 +226,7 @@ $(document).ready(function () {
         $("#app").val(data.app).trigger("change");
         $("#datatype").val(data.datatype);
         $("#cumulative").val(data.cumulative);
+        $("#cumulate_type").val(data.cumulate_type);
         $("#sort").val(data.sort);
         $("#unity").val(data.unity);
         $("#formula").val(data.formula);
@@ -563,9 +564,9 @@ $(document).ready(function () {
             $('#upperlimit_lowerlimit').hide();
             $('#calculate').hide();
             $('#calculate_analysis').hide();
+
             $('#cumulate_type_div').hide();
             $('#data_from_config').hide();
-
             $('#data_from').parent().hide();
             $('#data_from').parent().prev().hide();
         }

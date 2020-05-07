@@ -183,6 +183,7 @@ $(document).ready(function () {
         $("#lowerlimit").val(data.lowerlimit);
         $("#datatype").val(data.datatype);
         $("#cumulative").val(data.cumulative);
+        $("#cumulate_type").val(data.cumulate_type);
         $("#sort").val(data.sort);
         $("#unity").val(data.unity);
         $("#formula").val(data.formula);
@@ -269,6 +270,13 @@ $(document).ready(function () {
         $("#formula").bind('input propertychange', function () {
             analysisFunction();
         });
+
+        // 累计类型
+        if (data.cumulative == '是') {
+            $('#cumulate_type_div').show();
+        } else {
+            $('#cumulate_type_div').hide();
+        }
     });
 
     $('#sample_1 tbody').on('click', 'button#copy', function () {
@@ -421,14 +429,49 @@ $(document).ready(function () {
             $('#upperlimit_lowerlimit').hide();
             $('#calculate').hide();
             $('#calculate_analysis').hide();
+
+            $('#cumulate_type_div').hide();
+            $('#data_from_config').hide();
+            $('#data_from').parent().hide();
+            $('#data_from').parent().prev().hide();
         }
         if ($('#datatype option:selected').text() == '数值') {
             $('#is_digit').show();
             $('#digit').show();
             $('#magnification_digit').show();
             $('#upperlimit_lowerlimit').show();
-            $('#calculate').show();
-            $('#calculate_analysis').show();
+
+            // 判断操作类型
+            // 判断数据来源
+            if ($('#operationtype option:selected').text().trim() == '计算') {
+                $('#data_from').parent().show();
+                $('#data_from').parent().prev().show();
+
+                if ($('#data_from').val() == 'lc') {
+                    $('#calculate').show();
+                    $('#calculate_analysis').show();
+                    $('#data_from_config').hide();
+                } else if (!$('#data_from').val()) {
+                    $('#calculate').hide();
+                    $('#calculate_analysis').hide();
+                    $('#data_from_config').hide();
+                } else {
+                    $('#calculate').hide();
+                    $('#calculate_analysis').hide();
+                    $('#data_from_config').show();
+                }
+            } else {
+                $('#calculate').hide();
+                $('#calculate_analysis').hide();
+                $('#data_from_config').hide();
+            }
+
+            // 判断是否累计
+            if ($('#cumulative').val()=='是'){
+                $('#cumulate_type_div').show();
+            } else {
+                $('#cumulate_type_div').hide();
+            }
         }
     });
 
@@ -489,6 +532,13 @@ $(document).ready(function () {
         $('#data_from').parent().hide();
         $('#data_from').parent().prev().hide();
         $('#data_from_config').hide();
+
+        // 累计类型
+        if ($('#cumulative').val() == '是') {
+            $('#cumulate_type_div').show();
+        } else {
+            $('#cumulate_type_div').hide();
+        }
     });
 
     $('#save').click(function () {
@@ -513,6 +563,8 @@ $(document).ready(function () {
                     adminapp: $("#adminapp").val(),
                     datatype: $("#datatype").val(),
                     cumulative: $("#cumulative").val(),
+                    cumulate_type: $('#cumulate_type').val(),
+
                     sort: $("#sort").val(),
                     unity: $("#unity").val(),
                     formula: $("#formula").val(),
@@ -899,7 +951,7 @@ $(document).ready(function () {
     }
 
 
-    $('#search_adminapp,#search_app,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3,#datatype').change(function () {
+    $('#search_adminapp,#search_app,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3').change(function () {
         var table = $('#sample_3').DataTable();
         table.ajax.url("../../target_data?search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val()).load();
     });
@@ -977,6 +1029,15 @@ $(document).ready(function () {
         $('#formula').val(data);
         analysisFunction();
         $('#myModal').modal('hide');
+    });
+
+    // 累计类型
+    $('#cumulative').change(function () {
+        if ($(this).val() == '是') {
+            $('#cumulate_type_div').show();
+        } else {
+            $('#cumulate_type_div').hide();
+        }
     });
 });
 
