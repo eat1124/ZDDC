@@ -241,7 +241,7 @@ $(document).ready(function () {
         $("#data_from").val(data.data_from);
         $('#if_push').val(data.if_push);
         $('#push_config').hide();
-        
+
         // 过滤出所有works
         $('#work_edit').empty();
 
@@ -295,9 +295,9 @@ $(document).ready(function () {
         if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
             $('#extract').show();
 
-            if (selected_operation_type == '提取'){
+            if (selected_operation_type == '提取') {
                 $('#if_push_div').show();
-                if (data.if_push=="1"){
+                if (data.if_push == "1") {
                     $('input:radio[name=radio2]')[0].checked = true;
                     $("#push_config").show();
 
@@ -309,27 +309,27 @@ $(document).ready(function () {
                         dest_table = push_config.dest_table,
                         dest_fields = push_config.dest_fields,
                         constraint_fields = push_config.constraint_fields;
-                    
+
                     $('#push_source').val(origin_source);
                     $('#dest_table').val(dest_table);
                     // 约束字段
-                    $('#constraint_field').find('input').each(function(){
+                    $('#constraint_field').find('input').each(function () {
                         $(this).remove();
                     });
-                    for (var i=0; i<constraint_fields.length; i++){
+                    for (var i = 0; i < constraint_fields.length; i++) {
                         $('#add_constraint').parent().parent().prepend('<input class="form-control inline" type="text" style="width: 133px;" value="' + constraint_fields[i] + '"> ');
                     }
-                    if (constraint_fields.length < 2){
+                    if (constraint_fields.length < 2) {
                         $('#del_constraint').hide();
                     } else {
                         $('#del_constraint').show();
                     }
                     // 推送/目标字段
                     push_fields = []
-                    for (var j=0; j<origin_fields.length; j++){
-                        push_fields.push([j+1, origin_fields[j], dest_fields[j]])
+                    for (var j = 0; j < origin_fields.length; j++) {
+                        push_fields.push([j + 1, origin_fields[j], dest_fields[j]])
                     }
-                    if (!push_fields){
+                    if (!push_fields) {
                         push_fields = [["暂无", '', '']]
                     }
                     loadFields();
@@ -340,7 +340,7 @@ $(document).ready(function () {
                     // 初始化推送配置
                     $('#push_source').val('');
                     $('#dest_table').val('');
-                    $('#constraint_field').find('input').each(function(){
+                    $('#constraint_field').find('input').each(function () {
                         $(this).remove();
                     });
                     $('#add_constraint').parent().parent().prepend('<input class="form-control inline" type="text" style="width: 133px;"> ');
@@ -370,6 +370,12 @@ $(document).ready(function () {
             analysisFunction();
         });
 
+        // 累计类型
+        if (data.cumulative == '是') {
+            $('#cumulate_type_div').show();
+        } else {
+            $('#cumulate_type_div').hide();
+        }
     });
 
 
@@ -534,7 +540,7 @@ $(document).ready(function () {
             $('#extract').show();
 
             // 是否推送
-            if (selected_operation_type == '提取'){
+            if (selected_operation_type == '提取') {
                 $('#if_push_div').show();
                 // 判断是否推送
                 if ($("#yes:checked").val() == "1") {
@@ -557,14 +563,49 @@ $(document).ready(function () {
             $('#upperlimit_lowerlimit').hide();
             $('#calculate').hide();
             $('#calculate_analysis').hide();
+            $('#cumulate_type_div').hide();
+            $('#data_from_config').hide();
+
+            $('#data_from').parent().hide();
+            $('#data_from').parent().prev().hide();
         }
         if ($('#datatype option:selected').text() == '数值') {
             $('#is_digit').show();
             $('#digit').show();
             $('#magnification_digit').show();
             $('#upperlimit_lowerlimit').show();
-            $('#calculate').show();
-            $('#calculate_analysis').show();
+
+            // 判断操作类型
+            // 判断数据来源
+            if ($('#operationtype option:selected').text().trim() == '计算') {
+                $('#data_from').parent().show();
+                $('#data_from').parent().prev().show();
+
+                if ($('#data_from').val() == 'lc') {
+                    $('#calculate').show();
+                    $('#calculate_analysis').show();
+                    $('#data_from_config').hide();
+                } else if (!$('#data_from').val()) {
+                    $('#calculate').hide();
+                    $('#calculate_analysis').hide();
+                    $('#data_from_config').hide();
+                } else {
+                    $('#calculate').hide();
+                    $('#calculate_analysis').hide();
+                    $('#data_from_config').show();
+                }
+            } else {
+                $('#calculate').hide();
+                $('#calculate_analysis').hide();
+                $('#data_from_config').hide();
+            }
+
+            // 判断是否累计
+            if ($('#cumulative').val()=='是'){
+                $('#cumulate_type_div').show();
+            } else {
+                $('#cumulate_type_div').hide();
+            }
         }
     });
 
@@ -579,7 +620,7 @@ $(document).ready(function () {
         $("#push_config").hide();
         $('#push_source').val('');
         $('#dest_table').val('');
-        $('#constraint_field').find('input').each(function(){
+        $('#constraint_field').find('input').each(function () {
             $(this).remove();
         });
         $('#add_constraint').parent().parent().prepend('<input class="form-control inline" type="text" style="width: 133px;"> ');
@@ -631,11 +672,18 @@ $(document).ready(function () {
         $('#data_from').parent().hide();
         $('#data_from').parent().prev().hide();
         $('#data_from_config').hide();
+
+        // 累计类型
+        if ($('#cumulative').val() == '是') {
+            $('#cumulate_type_div').show();
+        } else {
+            $('#cumulate_type_div').hide();
+        }
     });
 
-    function renderRed(){
-        $("#push_table tbody").find('tr').each(function(){
-            if ($(this).find('td').eq(0).text() == '暂无'){
+    function renderRed() {
+        $("#push_table tbody").find('tr').each(function () {
+            if ($(this).find('td').eq(0).text() == '暂无') {
                 $(this).find('td').eq(0).css('color', 'red');
             }
         })
@@ -656,7 +704,7 @@ $(document).ready(function () {
         //     "dest_fields": [],
         // }
         var constraint_fields = []
-        $('#constraint_field').find('input').each(function(){
+        $('#constraint_field').find('input').each(function () {
             constraint_fields.push($(this).val().trim());
         });
 
@@ -701,6 +749,8 @@ $(document).ready(function () {
                 app: $("#app").val(),
                 datatype: $("#datatype").val(),
                 cumulative: $("#cumulative").val(),
+                cumulate_type: $('#cumulate_type').val(),
+
                 sort: $("#sort").val(),
                 unity: $("#unity").val(),
                 formula: $("#formula").val(),
@@ -1012,7 +1062,7 @@ $(document).ready(function () {
     }
 
 
-    $('#search_adminapp3,#search_app3,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3,#datatype').change(function () {
+    $('#search_adminapp3,#search_app3,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3').change(function () {
         var table = $('#sample_3').DataTable();
         table.ajax.url("../../target_data?search_adminapp=" + $('#search_adminapp3').val() + "&search_app=" + $('#search_app3').val() + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val()).load();
     });
@@ -1101,6 +1151,7 @@ $(document).ready(function () {
 
     var push_completed = false;
     var push_fields = [['暂无', '', '']];
+
     function loadFields() {
         if (push_completed) {
             $('#push_table').dataTable().fnDestroy();
@@ -1112,7 +1163,7 @@ $(document).ready(function () {
             "bPaginate": false,
             "bFilter": false,
             "info": false,
-            "paging":false,
+            "paging": false,
             "data": push_fields,
             "columns": [
                 {"title": "序号"},
@@ -1125,12 +1176,12 @@ $(document).ready(function () {
                 "mRender": function (data, type, full) {
                     return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[1] + "></input>"
                 }
-            },{
+            }, {
                 "targets": -2,
                 "mRender": function (data, type, full) {
                     return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[2] + "></input>"
                 }
-            },{
+            }, {
                 "targets": -1,
                 "data": null,
                 "width": "40%",
@@ -1171,18 +1222,18 @@ $(document).ready(function () {
         renderRed();
     });
 
-    $('#add_constraint').on('click', function(){
+    $('#add_constraint').on('click', function () {
         $('#del_constraint').show();
         // 判断是否超过5个input框
-        if ($(this).parent().prevAll().length > 3){
+        if ($(this).parent().prevAll().length > 3) {
             alert('已超过约束字段的限制个数。')
         } else {
             $(this).parent().before('<input class="form-control inline" type="text" style="width: 133px;"> ');
         }
     });
-    $('#del_constraint').on('click', function(){
+    $('#del_constraint').on('click', function () {
         // 判断是否少于2个input框
-        if ($(this).parent().prev().prevAll().length < 3){
+        if ($(this).parent().prev().prevAll().length < 3) {
             // 隐藏-
             $(this).parent().prev().prev().remove();
             $(this).hide();
@@ -1190,6 +1241,16 @@ $(document).ready(function () {
             $(this).parent().prev().prev().remove();
         }
     });
+
+    // 累计类型
+    $('#cumulative').change(function () {
+        if ($(this).val() == '是') {
+            $('#cumulate_type_div').show();
+        } else {
+            $('#cumulate_type_div').hide();
+        }
+    });
+
 });
 
 

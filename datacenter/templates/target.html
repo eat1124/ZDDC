@@ -287,6 +287,17 @@
 
                                 </div>
                             </div>
+                            <div class="form-group" id="cumulate_type_div" hidden>
+                                <label class="col-md-2 control-label">累计类型</label>
+                                <div class="col-md-4">
+                                    <select id="cumulate_type" name="cumulate_type" class="form-control">
+                                        <option value="qh" selected>求和</option>
+                                        <option value="jqpj">加权平均</option>
+                                        <option value="sspj">算术平均</option>
+                                    </select>
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
                             <div class="form-group" id="upperlimit_lowerlimit">
 
                                 <label class="col-md-2 control-label">下限</label>
@@ -335,6 +346,7 @@
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>
+
                             <div id="data_from_config" hidden>
                                 <hr style="height:1px;border:none;border-top:1px solid #87cefa;"/>
                                 <div class="form-group ">
@@ -621,7 +633,8 @@
                             </div>
                             <div id="push_config" hidden>
                                 <div class="form-group">
-                                    <label class="col-md-2 control-label" style="color: #87cefa;height: auto;">推送配置</label>
+                                    <label class="col-md-2 control-label"
+                                           style="color: #87cefa;height: auto;">推送配置</label>
                                     <div class="col-md-10">
                                         <hr style="height:1px;border:none;border-top:1px solid #87cefa;height: auto;">
                                     </div>
@@ -647,8 +660,11 @@
                                             <label class="col-md-2 control-label">约束字段</label>
                                             <div class="col-md-10">
                                                 <input class="form-control inline" type="text" style="width: 133px;">
-                                                <span><a href="javascript:;" title="新增" id="add_constraint" name="add"><i class="fa fa-lg fa-plus-square-o"></i></a></span>
-                                                <span><a href="javascript:;" title="删除" id="del_constraint" name="add"><i class="fa fa-lg fa-minus-square-o"></i></a></span>
+                                                <span><a href="javascript:;" title="新增" id="add_constraint"
+                                                         name="add"><i class="fa fa-lg fa-plus-square-o"></i></a></span>
+                                                <span><a href="javascript:;" title="删除" id="del_constraint"
+                                                         name="add"><i
+                                                        class="fa fa-lg fa-minus-square-o"></i></a></span>
                                             </div>
                                         </div>
                                         <div class="form-group">
@@ -676,7 +692,7 @@
                                                     </tr>
                                                     </thead>
                                                     <tbody>
-            
+
                                                     </tbody>
                                                 </table>
                                             </div>

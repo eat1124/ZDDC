@@ -2972,6 +2972,8 @@ def target_data(request):
                 "digit": target.digit,
                 "datatype": target.datatype,
                 "cumulative": target.cumulative,
+                "cumulate_type": target.cumulate_type,
+
                 "upperlimit": target.upperlimit,
                 "lowerlimit": target.lowerlimit,
                 "formula": target.formula,
@@ -3035,6 +3037,7 @@ def target_save(request):
         upperlimit = request.POST.get("upperlimit", "")
         lowerlimit = request.POST.get("lowerlimit", "")
         cumulative = request.POST.get("cumulative", "")
+        cumulate_type = request.POST.get("cumulate_type", "")
         sort = request.POST.get("sort", "")
 
         formula = request.POST.get("formula", "")
@@ -3150,6 +3153,8 @@ def target_save(request):
                                                         except:
                                                             pass
                                                         target_save.cumulative = cumulative
+                                                        if cumulate_type:
+                                                            target_save.cumulate_type = cumulate_type
 
                                                     if datatype == 'date' or datatype == 'text':
                                                         magnification = request.POST.get("")
@@ -3292,6 +3297,9 @@ def target_save(request):
                                                             except:
                                                                 pass
                                                             target_save.cumulative = cumulative
+                                                            if cumulate_type:
+                                                                target_save.cumulate_type = cumulate_type
+
                                                         if datatype == 'date' or datatype == 'text':
                                                             magnification = request.POST.get("")
                                                             digit = request.POST.get("")
