@@ -2894,7 +2894,7 @@ def target_data(request):
             pass
 
         all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
-        all_works = Work.objects.exclude(state='9').values('id', 'name')
+        all_works = Work.objects.exclude(state='9').values('id', 'name', 'app_id')
 
         for target in all_target:
             operationtype = target.operationtype
@@ -2951,7 +2951,7 @@ def target_data(request):
             work_selected = target.work.id if target.work else ''
             admin_app = target.adminapp
             if admin_app:
-                works = [work for work in all_works if work['id'] == admin_app.id]
+                works = [work for work in all_works if work['app_id'] == admin_app.id]
 
             result.append({
                 "operationtype_name": operationtype,

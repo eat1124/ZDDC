@@ -30,7 +30,7 @@ operate_type_dict = {
 }
 
 work_type_dict = {
-    'ZBLX01': 56,
+    'ZBLX01': 28,
     'ZBLX02': 34,
     'ZBLX03': 35,
     'ZBLX04': 36,
@@ -55,7 +55,7 @@ jz_dict = {
     '06': 52,
     '11': 53,
     '12': 54,
-    '00': 55,
+    '00': 30,
 }
 
 work_dict = {
@@ -77,7 +77,9 @@ lj_type = {
 
 sql = 'SELECT * FROM "JYTJ_XTWH_ZBFL"'
 tmp = []
-connection = cx_Oracle.connect('abc/Passw0rD@192.168.225.102/dg2')
+# connection = cx_Oracle.connect('abc/Passw0rD@192.168.225.102/dg2')
+connection = cx_Oracle.connect('hbmis/hbmis@10.150.99.3/EMIS')
+# connection = cx_Oracle.connect('datacenter/datacenter@10.150.85.80/datacent')
 cursor = connection.cursor()
 cursor.execute(sql)
 ret = cursor.fetchall()
@@ -111,6 +113,11 @@ for t in tmp:
                 # 指标代码
                 insert_dict['code'] = v
             if k == 'CT_TYPE':
+                # 去除单指标录入操作类型 *****
+                if v == 'CZLX04':
+                    # 清空insert_dict
+                    insert_dict = {}
+                    break
                 # 操作类型
                 insert_dict['operationtype'] = str(operate_type_dict[v])
             if k == 'CT_SJLX':
@@ -120,6 +127,10 @@ for t in tmp:
                 # 业务类型
                 insert_dict['businesstype'] = str(work_type_dict[v])
             if k == 'CT_SSJZ':
+                # 去除 03/04/05/06机组信息 *****
+                if v in ['03', '04', '05', '06']:
+                    insert_dict = {}
+                    break
                 # 机组
                 insert_dict['unit'] = str(jz_dict[v])
             if k == 'AM_BEIL':
@@ -137,9 +148,9 @@ for t in tmp:
                 insert_dict['work_id'] = work_dict[v]
     except Exception as e:
         logger.info('id:{id}的数据插入失败，原因是{error}'.format(id=t['CT_ID'], error=e))
-    else:
+    if insert_dict:
         insert_data.append(Target(**insert_dict))
-
+# print(len(insert_data))
 try:
     Target.objects.bulk_create(insert_data)
 except Exception as e:
