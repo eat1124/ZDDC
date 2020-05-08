@@ -145,7 +145,7 @@ $(document).ready(function () {
             "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
             "YE": "年末", "LYS": "去年初", "LYE": "去年末", "MAVG": "月平均值", "SAVG": "季平均值", "HAVG": "半年平均值", "YAVG": "年均值",
             "MMAX": "月最大值", "MMIN": "月最小值", "SMAX": "季最大值", "SMIN": "季最小值", "HMAX": "半年最大值", "HMIN": "半年最小值",
-            "YMAX": "年最大值", "YMIN": "年最小值"
+            "YMAX": "年最大值", "YMIN": "年最小值", "SLME": "本季上月末"
         };
 
         var formula_data_list = formula_data.split(/[<>]/);
@@ -880,7 +880,7 @@ $(document).ready(function () {
                             "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
                             "<option value='LYE'>去年末</option><option value='MMAX'>月最大值</option><option value='MMIN'>月最小值</option><option value='SMAX'>季最大值</option><option value='SMIN'>季最小值</option>" +
                             "<option value='HMAX'>半年最大值</option><option value='HMIN'>半年最小值</option><option value='YMAX'>年最大值</option><option value='YMIN'>年最小值</option>" +
-                            "<option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                            "<option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option><option value='SLME'>本季上月末</option></select>"
 
                     }
                     if ($("#cycletype").val() == '10' && full.cycletype_name == '月') {
@@ -888,14 +888,14 @@ $(document).ready(function () {
                             "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
                             "<option value='LYE'>去年末</option><option value='SMAX'>季最大值</option><option value='SMIN'>季最小值</option>" +
                             "<option value='HMAX'>半年最大值</option><option value='HMIN'>半年最小值</option><option value='YMAX'>年最大值</option><option value='YMIN'>年最小值</option>" +
-                            "<option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                            "<option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option><option value='SLME'>本季上月末</option></select>"
 
                     }
                     if ($("#cycletype").val() == '10' && full.cycletype_name == '季') {
                         return "<select style='width:100px'><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
                             "<option value='LYE'>去年末</option>" +
                             "<option value='HMAX'>半年最大值</option><option value='HMIN'>半年最小值</option><option value='YMAX'>年最大值</option><option value='YMIN'>年最小值</option>" +
-                            "<option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                            "<option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option><option value='SLME'>本季上月末</option></select>"
 
                     }
                     if ($("#cycletype").val() == '10' && full.cycletype_name == '半年') {
@@ -914,7 +914,7 @@ $(document).ready(function () {
                             "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
                             "<option value='LYE'>去年末</option><option value='MMAX'>月最大值</option><option value='MMIN'>月最小值</option><option value='SMAX'>季最大值</option><option value='SMIN'>季最小值</option>" +
                             "<option value='HMAX'>半年最大值</option><option value='HMIN'>半年最小值</option><option value='YMAX'>年最大值</option><option value='YMIN'>年最小值</option>" +
-                            "<option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                            "<option value='MAVG'>月平均值</option><option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option><option value='SLME'>本季上月末</option></select>"
 
                     }
                     if ($("#cycletype").val() == '11' && full.cycletype_name == '月') {
@@ -922,14 +922,14 @@ $(document).ready(function () {
                             "<option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
                             "<option value='LYE'>去年末</option><option value='SMAX'>季最大值</option><option value='SMIN'>季最小值</option>" +
                             "<option value='HMAX'>半年最大值</option><option value='HMIN'>半年最小值</option><option value='YMAX'>年最大值</option><option value='YMIN'>年最小值</option>" +
-                            "<option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                            "<option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option><option value='SLME'>本季上月末</option></select>"
 
                     }
                     if ($("#cycletype").val() == '11' && full.cycletype_name == '季') {
                         return "<select style='width:100px'><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
                             "<option value='LYE'>去年末</option><option value='HMAX'>半年最大值</option><option value='HMIN'>半年最小值</option>" +
                             "<option value='YMAX'>年最大值</option><option value='YMIN'>年最小值</option>" +
-                            "<option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                            "<option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option><option value='SLME'>本季上月末</option></select>"
 
                     }
                     if ($("#cycletype").val() == '11' && full.cycletype_name == '半年') {
@@ -947,21 +947,21 @@ $(document).ready(function () {
                         return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
                             "<option value='LYE'>去年末</option><option value='SMAX'>季最大值</option><option value='SMIN'>季最小值</option>" +
                             "<option value='HMAX'>半年最大值</option><option value='HMIN'>半年最小值</option><option value='YMAX'>年最大值</option><option value='YMIN'>年最小值</option>" +
-                            "<option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                            "<option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option><option value='SLME'>本季上月末</option></select>"
 
                     }
                     if ($("#cycletype").val() == '12' && full.cycletype_name == '月') {
                         return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
                             "<option value='LYE'>去年末</option><option value='SMAX'>季最大值</option><option value='SMIN'>季最小值</option>" +
                             "<option value='HMAX'>半年最大值</option><option value='HMIN'>半年最小值</option><option value='YMAX'>年最大值</option><option value='YMIN'>年最小值</option>" +
-                            "<option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                            "<option value='SAVG'>季平均值</option><option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option><option value='SLME'>本季上月末</option></select>"
 
                     }
                     if ($("#cycletype").val() == '12' && full.cycletype_name == '季') {
                         return "<select style='width:100px'><option value='SE'>季末</option><option value='LSE'>上季末</option><option value='LHE'>前个半年末</option>" +
                             "<option value='LYE'>去年末</option><option value='HMAX'>半年最大值</option><option value='HMIN'>半年最小值</option>" +
                             "<option value='YMAX'>年最大值</option><option value='YMIN'>年最小值</option>" +
-                            "<option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option></select>"
+                            "<option value='HAVG'>半年平均值</option><option value='YAVG'>年平均值</option><option value='SLME'>本季上月末</option></select>"
 
                     }
                     if ($("#cycletype").val() == '12' && full.cycletype_name == '半年') {
