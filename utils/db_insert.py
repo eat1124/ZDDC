@@ -75,6 +75,11 @@ lj_type = {
     '3': 'sspj',
 }
 
+cumulative_dict = {
+    "01": '是',
+    "02": '否'
+}
+
 sql = 'SELECT * FROM "JYTJ_XTWH_ZBFL"'
 tmp = []
 # connection = cx_Oracle.connect('abc/Passw0rD@192.168.225.102/dg2')
@@ -136,8 +141,9 @@ for t in tmp:
             if k == 'AM_BEIL':
                 # 倍率
                 insert_dict['magnification'] = decimal.Decimal(str(v))
-            # 是否累计
-            insert_dict['cumulative'] = '是'
+            if k == 'CT_LJJS':
+                # 是否累计
+                insert_dict['cumulative'] = cumulative_dict[v]
             if k == 'CT_LJTYPE':
                 # 累计类型
                 insert_dict['cumulate_type'] = lj_type[v]
