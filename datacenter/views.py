@@ -4887,6 +4887,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
 
                             query_res = []
                             if condtions:
+                                newdate = condtions['datadate']
                                 query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9")
                             if new_date:
                                 query_res = queryset.filter(datadate__range=new_date).filter(
@@ -4904,7 +4905,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                         value = query_res.aggregate(Max('curvalue'))["curvalue__max"]
                                     elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
                                         value = query_res.aggregate(Min('curvalue'))["curvalue__min"]
-                                    elif cond == "SLME" and newdate.month in [1, 2, 3]:     # 时间为本季上月末且当是第一季度的时候，值为0
+                                    elif cond == "SLME" and newdate.month == 12:  # 时间为本季上月末且当是第一季度的时候，值为0
                                         value = 0
                                     else:
                                         value = query_res[0].curvalue
@@ -4915,7 +4916,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                         value = query_res.aggregate(Max('cumulativemonth'))["cumulativemonth__max"]
                                     elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
                                         value = query_res.aggregate(Min('cumulativemonth'))["cumulativemonth__min"]
-                                    elif cond == "SLME" and newdate.month in [1, 2, 3]:
+                                    elif cond == "SLME" and newdate.month == 12:
                                         value = 0
                                     else:
                                         value = query_res[0].cumulativemonth
@@ -4926,7 +4927,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                         value = query_res.aggregate(Max('cumulativequarter'))["cumulativequarter__max"]
                                     elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
                                         value = query_res.aggregate(Min('cumulativequarter'))["cumulativequarter__min"]
-                                    elif cond == "SLME" and newdate.month in [1, 2, 3]:
+                                    elif cond == "SLME" and newdate.month == 12:
                                         value = 0
                                     else:
                                         value = query_res[0].cumulativequarter
@@ -4940,7 +4941,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                     elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
                                         value = query_res.aggregate(Min('cumulativehalfyear'))[
                                             "cumulativehalfyear__min"]
-                                    elif cond == "SLME" and newdate.month in [1, 2, 3]:
+                                    elif cond == "SLME" and newdate.month == 12:
                                         value = 0
                                     else:
                                         value = query_res[0].cumulativehalfyear
@@ -4951,7 +4952,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                         value = query_res.aggregate(Max('cumulativeyear'))["cumulativeyear__max"]
                                     elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
                                         value = query_res.aggregate(Min('cumulativeyear'))["cumulativeyear__min"]
-                                    elif cond == "SLME" and newdate.month in [1, 2, 3]:
+                                    elif cond == "SLME" and newdate.month == 12:
                                         value = 0
                                     else:
                                         value = query_res[0].cumulativeyear
@@ -5069,7 +5070,11 @@ def reporting_formulacalculate(request):
                                 formula_chinese = formula_chinese.replace(target_english, constant_chinese)
 
                             else:
-                                target_name = target_codename[membertarget]
+                                target_name = membertarget
+                                try:
+                                    target_name = target_codename[membertarget]
+                                except:
+                                    pass
                                 target_col = data_field[col]
                                 target_cond = data_time[cond]
 
@@ -5225,11 +5230,13 @@ def reporting_formulacalculate(request):
 
                                     query_res = []
                                     if condtions:
+                                        newdate = condtions['datadate']
                                         query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(
                                             state="9").select_related("target")
                                     if new_date:
                                         query_res = queryset.filter(datadate__range=new_date).filter(
                                             target=membertarget).exclude(state="9")
+                                    print(newdate.month)
                                     if len(query_res) <= 0:
                                         value = "数据不存在"
                                     else:
@@ -5244,7 +5251,7 @@ def reporting_formulacalculate(request):
                                             elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
                                                 value = str(round(query_res.aggregate(Min('curvalue'))["curvalue__min"],
                                                                   query_res[0].target.digit))
-                                            elif cond == "SLME" and newdate.month in [1, 2, 3]:
+                                            elif cond == "SLME" and newdate.month == 12:
                                                 value = 0
                                             else:
                                                 value = str(round(query_res[0].curvalue, query_res[0].target.digit))
@@ -5265,7 +5272,7 @@ def reporting_formulacalculate(request):
                                                 value = str(round(
                                                     query_res.aggregate(Min('cumulativemonth'))["cumulativemonth__min"],
                                                     query_res[0].target.digit))
-                                            elif cond == "SLME" and newdate.month in [1, 2, 3]:
+                                            elif cond == "SLME" and newdate.month == 12:
                                                 value = 0
                                             else:
                                                 value = str(
@@ -5287,7 +5294,7 @@ def reporting_formulacalculate(request):
                                                     query_res.aggregate(Min('cumulativequarter'))[
                                                         "cumulativequarter__min"],
                                                     query_res[0].target.digit))
-                                            elif cond == "SLME" and newdate.month in [1, 2, 3]:
+                                            elif cond == "SLME" and newdate.month == 12:
                                                 value = 0
                                             else:
                                                 value = str(
@@ -5306,7 +5313,7 @@ def reporting_formulacalculate(request):
                                                 value = str(round(query_res.aggregate(Min('cumulativehalfyear'))[
                                                                       "cumulativehalfyear__min"],
                                                                   query_res[0].target.digit))
-                                            elif cond == "SLME" and newdate.month in [1, 2, 3]:
+                                            elif cond == "SLME" and newdate.month == 12:
                                                 value = 0
                                             else:
                                                 value = str(
@@ -5327,7 +5334,7 @@ def reporting_formulacalculate(request):
                                                     round(query_res.aggregate(Min('cumulativeyear'))[
                                                               "cumulativeyear__min"],
                                                           query_res[0].target.digit))
-                                            elif cond == "SLME" and newdate.month in [1, 2, 3]:
+                                            elif cond == "SLME" and newdate.month == 12:
                                                 value = 0
                                             else:
                                                 value = str(
