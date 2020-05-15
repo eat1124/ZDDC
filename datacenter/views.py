@@ -5495,12 +5495,13 @@ def reporting_formulacalculate(request):
                                     query_res = []
                                     if condtions:
                                         newdate = condtions['datadate']
+                                        print(newdate, '123')
                                         query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(
                                             state="9").select_related("target")
                                     if new_date:
                                         query_res = queryset.filter(datadate__range=new_date).filter(
                                             target=membertarget).exclude(state="9")
-                                    print(newdate.month)
+
                                     if len(query_res) <= 0:
                                         value = "数据不存在"
                                     else:
@@ -5516,7 +5517,7 @@ def reporting_formulacalculate(request):
                                                 value = str(round(query_res.aggregate(Min('curvalue'))["curvalue__min"],
                                                                   query_res[0].target.digit))
                                             elif cond == "SLME" and newdate.month == 12:
-                                                value = 0
+                                                value = "0"
                                             else:
                                                 value = str(round(query_res[0].curvalue, query_res[0].target.digit))
                                                 if operationtype == "17":
@@ -5537,7 +5538,7 @@ def reporting_formulacalculate(request):
                                                     query_res.aggregate(Min('cumulativemonth'))["cumulativemonth__min"],
                                                     query_res[0].target.digit))
                                             elif cond == "SLME" and newdate.month == 12:
-                                                value = 0
+                                                value = "0"
                                             else:
                                                 value = str(
                                                     round(query_res[0].cumulativemonth, query_res[0].target.digit))
@@ -5559,7 +5560,7 @@ def reporting_formulacalculate(request):
                                                         "cumulativequarter__min"],
                                                     query_res[0].target.digit))
                                             elif cond == "SLME" and newdate.month == 12:
-                                                value = 0
+                                                value = "0"
                                             else:
                                                 value = str(
                                                     round(query_res[0].cumulativequarter, query_res[0].target.digit))
@@ -5578,7 +5579,7 @@ def reporting_formulacalculate(request):
                                                                       "cumulativehalfyear__min"],
                                                                   query_res[0].target.digit))
                                             elif cond == "SLME" and newdate.month == 12:
-                                                value = 0
+                                                value = "0"
                                             else:
                                                 value = str(
                                                     round(query_res[0].cumulativehalfyear, query_res[0].target.digit))
@@ -5599,7 +5600,7 @@ def reporting_formulacalculate(request):
                                                               "cumulativeyear__min"],
                                                           query_res[0].target.digit))
                                             elif cond == "SLME" and newdate.month == 12:
-                                                value = 0
+                                                value = "0"
                                             else:
                                                 value = str(
                                                     round(query_res[0].cumulativeyear, query_res[0].target.digit))
