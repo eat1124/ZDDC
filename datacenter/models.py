@@ -117,13 +117,13 @@ class Target(models.Model):
     app = models.ManyToManyField(App, related_name='target_app_set')
     magnification = models.DecimalField("倍率", null=True, max_digits=18, decimal_places=5)
     digit = models.IntegerField("保留位数", blank=True, null=True)
-    cumulative = models.CharField("是否累计", blank=True, null=True, max_length=20)
-
-    cumulate_type = models.CharField("累计类型", max_length=20, choices=(
-        ('qh', '求和'),
-        ('jqpj', '加权平均'),
-        ('sspj', '算术平均')
-    ), default='qh', null=True)
+    cumulative = models.CharField("累计类型", null=True, max_length=20, choices=(
+        ('0', '不累计'),
+        ('1', '求和'),
+        ('2', '算术平均'),
+        ('3', '加权平均')
+    ))
+    weight_target = models.ForeignKey("self", null=True, verbose_name='加权指标')
     upperlimit = models.DecimalField("上限", null=True, max_digits=20, decimal_places=5)
     lowerlimit = models.DecimalField("下限", null=True, max_digits=20, decimal_places=5)
     formula = models.TextField("公式", blank=True, null=True)

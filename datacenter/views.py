@@ -27,7 +27,6 @@ import win32api
 import calendar
 import socket
 
-
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
 from django.shortcuts import render
@@ -1910,7 +1909,7 @@ def app_data(request):
                 if app['id'] == work['app_id']:
                     tmp_list = [work['id'], work['name'], work['code'], work['remark'], work['core'], work['sort']]
                     work_list.append(tmp_list)
-                    
+
             result.append({
                 "id": app['id'],
                 "name": app['name'],
@@ -2831,6 +2830,9 @@ def target_index(request, funid):
                 'storage_type': storage_type_display,
                 "tablename": i.tablename,
             })
+
+        # 加权指标
+        weight_targets = Target.objects.exclude(state='9').values('id', 'name', 'code')
         return render(request, 'target.html',
                       {'username': request.user.userinfo.fullname,
                        "app_list": app_list,
@@ -2841,9 +2843,29 @@ def target_index(request, funid):
                        "source_list": source_list,
                        "cycle_list": cycle_list,
                        "storage_list": storage_list,
+                       "weight_targets": weight_targets,
                        "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
+
+
+def load_weight_targets(request):
+    if request.user.is_authenticated():
+        app_id = request.POST.get('app_id', '')
+        weight_target_list = []
+        try:
+            app_id = int(app_id)
+        except:
+            # 加权指标
+            weight_targets = Target.objects.exclude(state='9').values('id', 'name', 'code')
+        else:
+            weight_targets = Target.objects.filter(adminapp_id=app_id).exclude(state='9').values('id', 'name', 'code')
+
+        weight_target_list = [{"id": w['id'], "text": "{name}({code})".format(name=w['name'], code=w['code'])} for w in
+                              weight_targets]
+        return JsonResponse({'data': str(weight_target_list)})
+    else:
+        return HttpResponseRedirect('/login')
 
 
 def target_data(request):
@@ -2972,7 +2994,7 @@ def target_data(request):
                 "digit": target.digit,
                 "datatype": target.datatype,
                 "cumulative": target.cumulative,
-                "cumulate_type": target.cumulate_type,
+                "weight_target": target.weight_target.id if target.weight_target else '',
 
                 "upperlimit": target.upperlimit,
                 "lowerlimit": target.lowerlimit,
@@ -3037,7 +3059,7 @@ def target_save(request):
         upperlimit = request.POST.get("upperlimit", "")
         lowerlimit = request.POST.get("lowerlimit", "")
         cumulative = request.POST.get("cumulative", "")
-        cumulate_type = request.POST.get("cumulate_type", "")
+        weight_target = request.POST.get("weight_target", "")
         sort = request.POST.get("sort", "")
 
         formula = request.POST.get("formula", "")
@@ -3103,6 +3125,13 @@ def target_save(request):
                                 if datatype.strip() == '':
                                     result["res"] = '数据类型不能为空。'
                                 else:
+                                    if datatype.strip() == 'numbervalue':
+                                        if not magnification:
+                                            result["res"] = '数据类型为数值时，倍率不能为空。'
+                                            return JsonResponse(result)
+                                        if not digit:
+                                            result["res"] = '数据类型为数值时，保留位数不能为空。'
+                                            return JsonResponse(result)
                                     if operationtype == '17' and not data_from:
                                         result["res"] = '操作类型为数据计算时，必须选择数据来源。'
                                     else:
@@ -3153,32 +3182,14 @@ def target_save(request):
                                                         except:
                                                             pass
                                                         target_save.cumulative = cumulative
-                                                        if cumulate_type:
-                                                            target_save.cumulate_type = cumulate_type
-
-                                                    if datatype == 'date' or datatype == 'text':
-                                                        magnification = request.POST.get("")
-                                                        digit = request.POST.get("")
-                                                        upperlimit = request.POST.get("")
-                                                        lowerlimit = request.POST.get("")
-                                                        cumulative = request.POST.get("")
-                                                        try:
-                                                            target_save.magnification = magnification
-                                                        except:
-                                                            pass
-                                                        try:
-                                                            target_save.digit = digit
-                                                        except:
-                                                            pass
-                                                        try:
-                                                            target_save.upperlimit = upperlimit
-                                                        except:
-                                                            pass
-                                                        try:
-                                                            target_save.lowerlimit = lowerlimit
-                                                        except:
-                                                            pass
-                                                        target_save.cumulative = cumulative
+                                                        if cumulative == '3':
+                                                            try:
+                                                                weight_target = int(weight_target)
+                                                            except:
+                                                                weight_target = None
+                                                            target_save.weight_target_id = weight_target
+                                                        else:
+                                                            target_save.weight_target_id = None
                                                     target_save.datatype = datatype
                                                     try:
                                                         app_id = int(adminapp)
@@ -3297,32 +3308,15 @@ def target_save(request):
                                                             except:
                                                                 pass
                                                             target_save.cumulative = cumulative
-                                                            if cumulate_type:
-                                                                target_save.cumulate_type = cumulate_type
+                                                            if cumulative == '3':
+                                                                try:
+                                                                    weight_target = int(weight_target)
+                                                                except:
+                                                                    weight_target = None
+                                                                target_save.weight_target_id = weight_target
+                                                            else:
+                                                                target_save.weight_target_id = None
 
-                                                        if datatype == 'date' or datatype == 'text':
-                                                            magnification = request.POST.get("")
-                                                            digit = request.POST.get("")
-                                                            upperlimit = request.POST.get("")
-                                                            lowerlimit = request.POST.get("")
-                                                            cumulative = request.POST.get("")
-                                                            try:
-                                                                target_save.magnification = magnification
-                                                            except:
-                                                                pass
-                                                            try:
-                                                                target_save.digit = digit
-                                                            except:
-                                                                pass
-                                                            try:
-                                                                target_save.upperlimit = upperlimit
-                                                            except:
-                                                                pass
-                                                            try:
-                                                                target_save.lowerlimit = lowerlimit
-                                                            except:
-                                                                pass
-                                                            target_save.cumulative = cumulative
                                                         target_save.datatype = datatype
                                                         try:
                                                             app_id = int(adminapp)
@@ -4239,8 +4233,7 @@ def reporting_data(request):
                     curvaluedate = data.curvaluedate.strftime('%Y-%m-%d %H:%M:%S') if data.curvaluedate else "",
                 except:
                     pass
-                if data.target.cumulative == '是':
-
+                if data.target.cumulative in ['1', '2', '3']:
                     try:
                         cumulativemonth = round(data.cumulativemonth, data.target.digit)
                     except:
@@ -4284,7 +4277,8 @@ def reporting_data(request):
                     })
                 elif operationtype == "1":
                     zerodata = "{:f}".format(decimal.Decimal(data.zerodata if data.zerodata else "0").normalize())
-                    twentyfourdata = "{:f}".format(decimal.Decimal(data.twentyfourdata if data.zerodata else "0").normalize())
+                    twentyfourdata = "{:f}".format(
+                        decimal.Decimal(data.twentyfourdata if data.zerodata else "0").normalize())
                     metervalue = data.metervalue
                     meterchangedata_id = ""
                     oldtable_zerodata = ""
@@ -4318,7 +4312,7 @@ def reporting_data(request):
                         newtable_magnification = cur_meterchange['newtable_magnification']
                         newtable_finalvalue = cur_meterchange['newtable_finalvalue']
                         finalvalue = cur_meterchange['finalvalue']
-                        if data.target.cumulative == '是':
+                        if data.target.cumulative in ['1', '2', '3']:
                             try:
                                 oldtable_zerodata = round(oldtable_zerodata, data.target.digit)
                             except:
@@ -4545,7 +4539,7 @@ def reporting_search_data(request):
                     pass
             elif data["target"].datatype == "text":
                 curvalue = data["curvaluetext"]
-            if data["target"].cumulative == '是':
+            if data["target"].cumulative in ['1', '2', '3']:
                 try:
                     cumulativemonth = round(data["cumulativemonth"], data["target"].digit)
                 except:
@@ -4593,74 +4587,294 @@ def reporting_search_data(request):
 def getcumulative(tableList, target, date, value):
     """
     数据累计
+        求和
+        算术平均
+        加权平均
     """
     cumulativemonth = value
     cumulativequarter = value
     cumulativehalfyear = value
     cumulativeyear = value
-    lastg_date = datetime.datetime.strptime('2000-01-01', "%Y-%m-%d")
-    if target.cycletype == "10":
-        lastg_date = date + datetime.timedelta(days=-1)
-    if target.cycletype == "11":
-        lastg_date = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)
-    if target.cycletype == "12":
-        month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
-        newdate = datetime.datetime(date.year, month, 1)
-        lastg_date = newdate + datetime.timedelta(days=-1)
-    if target.cycletype == "13":
-        month = (date.month - 1) - (date.month - 1) % 6 + 1  # 10
-        newdate = datetime.datetime(date.year, month, 1)
-        lastg_date = newdate + datetime.timedelta(days=-1)
-    if target.cycletype == "14":
-        lastg_date = date.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
-            days=-1)
 
-    all_data = []
-
-    queryset = tableList["Entrydata"].objects
-    operationtype = target.operationtype
-    if operationtype == "1":
-        queryset = tableList["Meterdata"].objects
-    if operationtype == "15":
-        queryset = tableList["Entrydata"].objects
-    if operationtype == "16":
-        queryset = tableList["Extractdata"].objects
-    if operationtype == "17":
-        queryset = tableList["Calculatedata"].objects
-
-    all_data = queryset.exclude(state="9").filter(target=target, datadate=lastg_date)
-    if len(all_data) > 0:
+    def get_last_cumulative_data(tableList, tmp_target, tmp_date):
+        """
+        找到指标指点时间点的月累计值、季累计值、半年累计值、年累计值
+        :param tableList:
+        :param tmp_target:
+        :param tmp_date:
+        :return:
+        """
         lastcumulativemonth = 0
         lastcumulativequarter = 0
         lastcumulativehalfyear = 0
         lastcumulativeyear = 0
-        try:
-            if lastg_date.year == date.year and lastg_date.month == date.month:
-                lastcumulativemonth += all_data[0].cumulativemonth
-        except:
-            pass
-        try:
-            if lastg_date.year == date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 3 == (
-                    date.month - 1) - (date.month - 1) % 3:
-                lastcumulativequarter += all_data[0].cumulativequarter
-        except:
-            pass
-        try:
-            if lastg_date.year == date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 6 == (
-                    date.month - 1) - (date.month - 1) % 6:
-                lastcumulativehalfyear += all_data[0].cumulativehalfyear
-        except:
-            pass
-        try:
-            if lastg_date.year == date.year:
-                lastcumulativeyear += all_data[0].cumulativeyear
-        except:
-            pass
+
+        lastg_date = datetime.datetime.strptime('2000-01-01', "%Y-%m-%d")
+        # 周期类型 =>
+        #   昨日
+        #   上个月末
+        #   上个季度末
+        #   上个半年末
+        #   上个年末
+        if tmp_target.cycletype == "10":
+            lastg_date = tmp_date + datetime.timedelta(days=-1)
+        if tmp_target.cycletype == "11":
+            lastg_date = tmp_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+                days=-1)
+        if tmp_target.cycletype == "12":
+            month = (tmp_date.month - 1) - (tmp_date.month - 1) % 3 + 1  # 10
+            newdate = datetime.datetime(tmp_date.year, month, 1)
+            lastg_date = newdate + datetime.timedelta(days=-1)
+        if tmp_target.cycletype == "13":
+            month = (tmp_date.month - 1) - (tmp_date.month - 1) % 6 + 1  # 10
+            newdate = datetime.datetime(tmp_date.year, month, 1)
+            lastg_date = newdate + datetime.timedelta(days=-1)
+        if tmp_target.cycletype == "14":
+            lastg_date = tmp_date.replace(
+                month=1, day=1, hour=0, minute=0, second=0, microsecond=0
+            ) + datetime.timedelta(days=-1)
+
+        queryset = tableList["Entrydata"].objects
+        operationtype = tmp_target.operationtype
+        if operationtype == "1":
+            queryset = tableList["Meterdata"].objects
+        if operationtype == "15":
+            queryset = tableList["Entrydata"].objects
+        if operationtype == "16":
+            queryset = tableList["Extractdata"].objects
+        if operationtype == "17":
+            queryset = tableList["Calculatedata"].objects
+
+        all_data = queryset.exclude(state="9").filter(target=tmp_target, datadate=lastg_date)
+        if len(all_data) > 0:
+            try:
+                if lastg_date.year == tmp_date.year and lastg_date.month == tmp_date.month:
+                    lastcumulativemonth += all_data[0].cumulativemonth
+            except:
+                pass
+            try:
+                if lastg_date.year == tmp_date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 3 == (
+                        tmp_date.month - 1) - (tmp_date.month - 1) % 3:
+                    lastcumulativequarter += all_data[0].cumulativequarter
+            except:
+                pass
+            try:
+                if lastg_date.year == tmp_date.year and (lastg_date.month - 1) - (lastg_date.month - 1) % 6 == (
+                        tmp_date.month - 1) - (tmp_date.month - 1) % 6:
+                    lastcumulativehalfyear += all_data[0].cumulativehalfyear
+            except:
+                pass
+            try:
+                if lastg_date.year == tmp_date.year:
+                    lastcumulativeyear += all_data[0].cumulativeyear
+            except:
+                pass
+
+        return lastcumulativemonth, lastcumulativequarter, lastcumulativehalfyear, lastcumulativeyear
+
+    lastcumulativemonth, lastcumulativequarter, lastcumulativehalfyear, lastcumulativeyear \
+        = get_last_cumulative_data(tableList, target, date)
+
+    cumulative = target.cumulative
+    weight_target = target.weight_target
+
+    if cumulative == '1':  # 求和
         cumulativemonth = lastcumulativemonth + value
         cumulativequarter = lastcumulativequarter + value
         cumulativehalfyear = lastcumulativehalfyear + value
         cumulativeyear = lastcumulativeyear + value
+    if cumulative == '2':  # 算术平均，保留位数
+        if target.cycletype == "10":
+            # 日报
+            yestoday_date = date + datetime.timedelta(days=-1)
+            if date.year == yestoday_date.year:
+                # 当月昨天天数、当季到昨天的天数、半年到昨天的天数、当年到昨天的天数
+                def get_days(start_time, end_time):
+                    return int(
+                        (end_time.replace(hour=0, minute=0, second=0, microsecond=0) - start_time.replace(
+                            day=1, hour=0, minute=0, second=0, microsecond=0
+                        )).total_seconds() / (60 * 60 * 24)
+                    ) + 1
+
+                now = datetime.datetime.now()
+
+                # 1.当月昨天的天数
+                if date.day > 1:  # 日报月初月累计为当前值
+                    cumulativemonth = ((lastcumulativemonth * (date.day - 1)) + value) / date.day
+                # 2.当季到昨天的天数
+                # 判断当前月所在季度，第一季度/非第一季度
+                if date.month <= 3:
+                    days_in_quarter = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
+                                               yestoday_date)
+                    cumulativequarter = (lastcumulativequarter * days_in_quarter + value) / (days_in_quarter + 1)
+                else:
+                    # 判断是否所在季度第一天
+                    if not (date.month % 3 == 1 and date.day == 1):
+                        # 当季到昨天的天数 = 昨天天数 - 上季度末天数
+                        m_month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
+                        m_newdate = datetime.datetime(date.year, m_month, 1)
+                        days_in_quarter = get_days(
+                            m_newdate.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
+                            yestoday_date)
+                        cumulativequarter = (lastcumulativequarter * days_in_quarter + value) / (days_in_quarter + 1)
+                # 3.半年到昨天的天数(区分前/后半年)
+                if date.month - 6 < 0:
+                    days_in_halfyear = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
+                                                yestoday_date)
+                    cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (days_in_halfyear + 1)
+                else:
+                    # 判断是否后半年的第一天
+                    if not (date.month == 7 and date.day == 1):
+                        # 半年到昨天的天数 = 昨天天数 - 上半年末天数
+                        h_month = (date.month - 1) - (date.month - 1) % 6 + 1  # 10
+                        h_newdate = datetime.datetime(date.year, h_month, 1)
+                        days_in_halfyear = get_days(
+                            h_newdate.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
+                            yestoday_date)
+                        cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (
+                                days_in_halfyear + 1)
+                # 4.当年到昨天的天数
+                days_in_year = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0), yestoday_date)
+                cumulativeyear = (lastcumulativeyear * days_in_year + value) / days_in_year + 1
+            else:
+                pass
+        if target.cycletype == "11":
+            # 月报
+            if date.month > 1:
+                last_month_date = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + \
+                                  datetime.timedelta(days=-1)
+                # 1.上个月份
+                # last_months = last_month_date.month
+                # cumulativemonth = (lastcumulativemonth * last_months + value) / (last_months + 1)
+                # 2.当季上个月所在月份
+                if date.month > 3:  # 不是第一个季度
+                    last_month_on_quarter = last_month_date.month % 3
+                else:
+                    last_month_on_quarter = last_month_date.month
+                if last_month_on_quarter > 0:  # 任何一季度首月季累计为当前值
+                    cumulativequarter = (lastcumulativequarter * last_month_on_quarter + value) / (
+                            last_month_on_quarter + 1)
+                # 3.半年上个月所在月份(区分前/后半年)
+                last_month_on_halfyear = -1
+                if date.month > 6:
+                    if date.month - 6 > 1:
+                        last_month_on_halfyear = last_month_date.month - 6
+                else:
+                    last_month_on_halfyear = last_month_date.month
+                if last_month_on_halfyear != -1:
+                    cumulativehalfyear = (lastcumulativehalfyear * last_month_on_halfyear + value) / (
+                            last_month_on_halfyear + 1)
+                # 4.年上个月所在月份
+                last_month_on_year = last_month_date.month
+                cumulativeyear = (lastcumulativeyear * last_month_on_year + value) / (last_month_on_year + 1)
+            else:
+                pass
+        if target.cycletype == "12":
+            # 季报
+            if date.month > 3:  # 非第一季度
+                q_month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
+                q_newdate = datetime.datetime(date.year, q_month, 1)
+                last_quarter_date = q_newdate + datetime.timedelta(days=-1)
+
+                # 1.上个季度
+                last_quarters = last_quarter_date.month // 3
+                cumulativequarter = (lastcumulativequarter * last_quarters + value) / (last_quarters + 1)
+                # 2.半年所在季度(区分前/后半年)
+                if date.month in [4, 5, 6, 10, 11, 12]:
+                    quarter_on_halfyear = 1
+                    cumulativehalfyear = (lastcumulativehalfyear * quarter_on_halfyear + value) / (
+                            quarter_on_halfyear + 1)
+                # 3.年所在季度
+                quarter_on_year = last_quarter_date.month // 3
+                cumulativeyear = (lastcumulativeyear * quarter_on_year + value) / (quarter_on_year + 1)
+        if target.cycletype == "13":
+            if date.month > 6:
+                cumulativeyear = (lastcumulativeyear + value) / 2
+        if target.cycletype == "14":
+            # 年报均为当前值
+            pass
+    if cumulative == '3':  # 加权平均
+        # 加权指标当前值
+        wt_value = 0
+        try:
+            wt_target_id = target.weight_target_id
+            queryset = tableList["Entrydata"].objects
+            operationtype = target.operationtype
+            if operationtype == "1":
+                queryset = tableList["Meterdata"].objects
+            if operationtype == "15":
+                queryset = tableList["Entrydata"].objects
+            if operationtype == "16":
+                queryset = tableList["Extractdata"].objects
+            if operationtype == "17":
+                queryset = tableList["Calculatedata"].objects
+
+            wt_calculatedata = queryset.exclude(state="9").filter(datadate=date).filter(target_id=wt_target_id)[0]
+            wt_value = wt_calculatedata.curvalue
+        except Exception as e:
+            print(e)
+
+        wt_lastcumulativemonth, wt_lastcumulativequarter, wt_lastcumulativehalfyear, wt_lastcumulativeyear \
+            = get_last_cumulative_data(tableList, weight_target, date)
+        if target.cycletype == "10":
+            # 日报：
+            yestoday_date = date + datetime.timedelta(days=-1)
+            if date.year == yestoday_date.year:
+                if date.day > 1:  # 日报月初月累计为当前值
+                    cumulativemonth = (lastcumulativemonth * wt_lastcumulativemonth + value * wt_value) / (
+                            wt_lastcumulativemonth + wt_value
+                    )
+                if not (date.month % 3 == 1 and date.day == 1):  # 判断是否所在季度第一天
+                    cumulativequarter = (lastcumulativequarter * wt_lastcumulativequarter + value * wt_value) / (
+                        wt_lastcumulativequarter + wt_value
+                    )
+                if not (date.month % 3 == 1 and date.day == 1):  # 判断是否所在季度第一天
+                    cumulativehalfyear = (lastcumulativehalfyear * wt_lastcumulativehalfyear + value * wt_value) / (
+                        wt_lastcumulativehalfyear + wt_value
+                    )
+                cumulativeyear = (cumulativeyear * lastcumulativeyear + value * wt_value) / (
+                    wt_lastcumulativeyear + wt_value
+                )
+        if target.cycletype == "11":
+            # 月报
+            if date.month > 1:
+                last_month_date = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + \
+                                  datetime.timedelta(days=-1)
+                if date.month > 3:  # 不是第一个季度
+                    last_month_on_quarter = last_month_date.month % 3
+                else:
+                    last_month_on_quarter = last_month_date.month
+                if last_month_on_quarter > 0:  # 任何一季度首月季累计为当前值
+                    cumulativequarter = (lastcumulativequarter * wt_lastcumulativequarter + value * wt_value) / (
+                        wt_lastcumulativequarter + wt_value
+                    )
+                if date.month != 7:  # 不是半年第一月
+                    cumulativehalfyear = (lastcumulativehalfyear * wt_lastcumulativehalfyear + value * wt_value) / (
+                        wt_lastcumulativehalfyear + wt_value
+                    )
+                cumulativeyear = (lastcumulativeyear + wt_lastcumulativeyear + value * wt_value) / (
+                    wt_lastcumulativeyear + wt_value
+                )
+        if target.cycletype == "12":
+            # 季报
+            if date.month > 3:  # 非第一季度
+                cumulativequarter = (lastcumulativequarter * wt_lastcumulativequarter + value * wt_value) / (
+                    wt_lastcumulativequarter + wt_value
+                )
+                if date.month in [4, 5, 6, 10, 11, 12]:  # 半年后季
+                    cumulativehalfyear = (lastcumulativehalfyear * wt_lastcumulativehalfyear + value * wt_value) / (
+                        wt_lastcumulativehalfyear + wt_value
+                    )
+                cumulativeyear = (lastcumulativeyear * wt_lastcumulativeyear + value * wt_value) / (
+                    wt_lastcumulativeyear + wt_value
+                )
+        if target.cycletype == "13":
+            if date.month > 6:
+                cumulativeyear = (lastcumulativeyear * wt_lastcumulativeyear + value * wt_value) / (
+                    wt_lastcumulativeyear + wt_value
+                )
+        if target.cycletype == "14":
+            pass
     return {"cumulativemonth": cumulativemonth, "cumulativequarter": cumulativequarter,
             "cumulativehalfyear": cumulativehalfyear, "cumulativeyear": cumulativeyear}
 
@@ -4732,6 +4946,12 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                             # 即：当前指标由另一个公式中其他指标计算所得，'其他'指标值未计算出结果，先计算
                             #     A = B + 1 B未计算出，先计算出B
                             membertarget = newtarget
+                            # 指标为加权指标先计算
+                            cumulative = membertarget.cumulative
+                            if cumulative == '3':
+                                wt_membertarget = membertarget.weight_target
+                                getcalculatedata(wt_membertarget, date, guid, all_constant, all_target, tableList)
+
                             if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id \
                                     and membertarget.cycletype == target.cycletype and membertarget.work_id == target.work_id \
                                     and membertarget.calculateguid != guid:
@@ -4891,8 +5111,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                 query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(state="9")
                             if new_date:
                                 query_res = queryset.filter(datadate__range=new_date).filter(
-                                    target=membertarget).exclude(
-                                    state="9")
+                                    target=membertarget).exclude(state="9")
                             if len(query_res) <= 0:
                                 curvalue = 0
                             else:
@@ -4980,7 +5199,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
     calculatedata.curvalue = decimal.Decimal(str(calculatedata.curvalue)).quantize(decimal.Decimal(Digit(target.digit)),
                                                                                    rounding=decimal.ROUND_HALF_UP)
     # 累计值计算
-    if target.cumulative == "是":
+    if target.cumulative in ['1', '2', '3']:
         cumulative = getcumulative(tableList, target, date, decimal.Decimal(str(calculatedata.curvalue)))
         calculatedata.cumulativemonth = cumulative["cumulativemonth"]
         calculatedata.cumulativequarter = cumulative["cumulativequarter"]
@@ -4992,6 +5211,53 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
     # 保存该次计算guid，不再参与本次计算
     target.calculateguid = guid
     target.save()
+
+
+def ajax_cumulate(request):
+    if request.user.is_authenticated():
+        cur_value = request.POST.get('cur_value', '')
+        target_id = request.POST.get('target_id', '')
+        reporting_date = request.POST.get('reporting_date', '')
+        cycletype = request.POST.get('cycletype', '')
+        result = {}
+
+        try:
+            reporting_date = getreporting_date(reporting_date, cycletype)
+        except:
+            result['status'] = 0
+            result['data'] = "报表日期处理出错。"
+        else:
+            try:
+                target = Target.objects.get(id=int(target_id))
+            except:
+                result['status'] = 0
+                result['data'] = "当前指标不存在。"
+            else:
+                tableyear = str(reporting_date.year)
+                tableList = {
+                    "Entrydata": getmodels("Entrydata", tableyear),
+                    "Meterdata": getmodels("Meterdata", tableyear),
+                    "Extractdata": getmodels("Extractdata", tableyear),
+                    "Calculatedata": getmodels("Calculatedata", tableyear)
+                }
+
+                cumulative = getcumulative(tableList, target, reporting_date, decimal.Decimal(str(cur_value)))
+                cumulativemonth = cumulative["cumulativemonth"]
+                cumulativequarter = cumulative["cumulativequarter"]
+                cumulativehalfyear = cumulative["cumulativehalfyear"]
+                cumulativeyear = cumulative["cumulativeyear"]
+
+                result['status'] = 1
+                result['data'] = {
+                    "cumulativemonth": cumulativemonth,
+                    "cumulativequarter": cumulativequarter,
+                    "cumulativehalfyear": cumulativehalfyear,
+                    "cumulativeyear": cumulativeyear
+                }
+
+        return JsonResponse(result)
+    else:
+        return HttpResponseRedirect('/login')
 
 
 def reporting_formulacalculate(request):
@@ -5085,8 +5351,6 @@ def reporting_formulacalculate(request):
                                     value = "指标不存在"
                                 else:
                                     membertarget = membertarget[0]
-
-                                    # 判断计算指标数据来源是否为外部系统
 
                                     tableyear = str(date.year)
                                     queryset = getmodels("Entrydata", tableyear).objects
@@ -5477,7 +5741,7 @@ def reporting_reextract(request):
                                 extractdata.curvalue = round(extractdata.curvalue, target.digit)
                             except:
                                 pass
-                    if target.cumulative == "是":
+                    if target.cumulative in ['1', '2', '3']:
                         cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
                         extractdata.cumulativequarter = cumulative["cumulativequarter"]
@@ -5569,7 +5833,8 @@ def reporting_new(request):
                 meterdata.metervalue = decimal.Decimal(meterdata.twentyfourdata) - decimal.Decimal(meterdata.zerodata)
                 meterdata.curvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
                 meterdata.curvalue = round(meterdata.curvalue, target.digit)
-                if target.cumulative == "是":
+
+                if target.cumulative in ['1', '2', '3']:
                     cumulative = getcumulative(tableList, target, reporting_date, meterdata.curvalue)
                     meterdata.cumulativemonth = cumulative["cumulativemonth"]
                     meterdata.cumulativequarter = cumulative["cumulativequarter"]
@@ -5583,7 +5848,7 @@ def reporting_new(request):
                 entrydata.datadate = reporting_date
                 entrydata.curvalue = 0
                 entrydata.curvalue = round(entrydata.curvalue, target.digit)
-                if target.cumulative == "是":
+                if target.cumulative in ['1', '2', '3']:
                     cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
                     entrydata.cumulativemonth = cumulative["cumulativemonth"]
                     entrydata.cumulativequarter = cumulative["cumulativequarter"]
@@ -5633,7 +5898,8 @@ def reporting_new(request):
                             extractdata.curvalue = round(extractdata.curvalue, target.digit)
                         except:
                             pass
-                if target.cumulative == "是":
+
+                if target.cumulative in ['1', '2', '3']:
                     cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                     extractdata.cumulativemonth = cumulative["cumulativemonth"]
                     extractdata.cumulativequarter = cumulative["cumulativequarter"]

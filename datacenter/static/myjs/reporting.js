@@ -378,17 +378,39 @@ $(document).ready(function () {
     $('#sample_1 tbody').on('change', 'input[name="table1_curvalue"]', function () {
         var table = $('#sample_1').DataTable();
         var data = table.row($(this).parents('tr')).data();
-        if (data.target_cumulative == '是') {
-            $('#table1_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))));   // math.js精度计算
-            $('#table1_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))));
-            $('#table1_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))));
-            $('#table1_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table1_curvalue_' + data.id).val())))))
-        }
-        // 超过上限，低于下限标红
-        if ((data.target_upperlimit && Number($('#table1_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table1_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else {
-            $('td', $(this).parents('tr')).css("color", "#000000");
+
+        // 累计值 月、季、半年、年
+        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+            $.ajax({
+                type: "POST",
+                url: "../../../ajax_cumulate/",
+                data: {
+                    cur_value: $('#table1_curvalue_' + data.id).val(),
+                    target_id: data.target_id,
+                    reporting_date: $('#reporting_date').val(),
+                    cycletype: $('#cycletype').val(),
+                },
+                success: function (ajax_data) {
+                    if (ajax_data.status == 1) {
+                        $('#table1_cumulativemonth_' + data.id).val(ajax_data.data.cumulativemonth);   // math.js精度计算
+                        $('#table1_cumulativequarter_' + data.id).val(ajax_data.data.cumulativequarter);
+                        $('#table1_cumulativehalfyear_' + data.id).val(ajax_data.data.cumulativehalfyear);
+                        $('#table1_cumulativeyear_' + data.id).val(ajax_data.data.cumulativeyear)
+                    } else {
+                        alert(ajax_data.data);
+                    }
+
+                    // 超过上限，低于下限标红
+                    if ((data.target_upperlimit && Number($('#table1_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table1_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+                        $('td', $(this).parents('tr')).css("color", "#FF0000");
+                    } else {
+                        $('td', $(this).parents('tr')).css("color", "#000000");
+                    }
+                },
+                error: function (e) {
+                    alert("公式解析失败，请于管理员联系。");
+                }
+            });
         }
     });
 
@@ -529,16 +551,39 @@ $(document).ready(function () {
     $('#sample_2 tbody').on('change', 'input[name="table2_curvalue"]', function () {
         var table = $('#sample_2').DataTable();
         var data = table.row($(this).parents('tr')).data();
-        if (data.target_cumulative == '是') {
-            $('#table2_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))));   // math.js精度计算
-            $('#table2_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))));
-            $('#table2_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))));
-            $('#table2_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table2_curvalue_' + data.id).val())))))
-        }
-        if ((data.target_upperlimit && Number($('#table2_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table2_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else {
-            $('td', $(this).parents('tr')).css("color", "#000000");
+
+        // 累计值 月、季、半年、年
+        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+            $.ajax({
+                type: "POST",
+                url: "../../../ajax_cumulate/",
+                data: {
+                    cur_value: $('#table2_curvalue_' + data.id).val(),
+                    target_id: data.target_id,
+                    reporting_date: $('#reporting_date').val(),
+                    cycletype: $('#cycletype').val(),
+                },
+                success: function (ajax_data) {
+                    if (ajax_data.status == 1) {
+                        $('#table2_cumulativemonth_' + data.id).val(ajax_data.data.cumulativemonth);   // math.js精度计算
+                        $('#table2_cumulativequarter_' + data.id).val(ajax_data.data.cumulativequarter);
+                        $('#table2_cumulativehalfyear_' + data.id).val(ajax_data.data.cumulativehalfyear);
+                        $('#table2_cumulativeyear_' + data.id).val(ajax_data.data.cumulativeyear)
+                    } else {
+                        alert(ajax_data.data);
+                    }
+
+                    // 超过上限，低于下限标红
+                    if ((data.target_upperlimit && Number($('#table2_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table2_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+                        $('td', $(this).parents('tr')).css("color", "#FF0000");
+                    } else {
+                        $('td', $(this).parents('tr')).css("color", "#000000");
+                    }
+                },
+                error: function (e) {
+                    alert("公式解析失败，请于管理员联系。");
+                }
+            });
         }
     });
 
@@ -686,16 +731,39 @@ $(document).ready(function () {
     $('#sample_3 tbody').on('change', 'input[name="table3_curvalue"]', function () {
         var table = $('#sample_3').DataTable();
         var data = table.row($(this).parents('tr')).data();
-        if (data.target_cumulative == '是') {
-            $('#table3_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))));   // math.js精度计算
-            $('#table3_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))));
-            $('#table3_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))));
-            $('#table3_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table3_curvalue_' + data.id).val())))))
-        }
-        if ((data.target_upperlimit && Number($('#table3_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table3_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else {
-            $('td', $(this).parents('tr')).css("color", "#000000");
+
+        // 累计值 月、季、半年、年
+        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+            $.ajax({
+                type: "POST",
+                url: "../../../ajax_cumulate/",
+                data: {
+                    cur_value: $('#table3_curvalue_' + data.id).val(),
+                    target_id: data.target_id,
+                    reporting_date: $('#reporting_date').val(),
+                    cycletype: $('#cycletype').val(),
+                },
+                success: function (ajax_data) {
+                    if (ajax_data.status == 1) {
+                        $('#table3_cumulativemonth_' + data.id).val(ajax_data.data.cumulativemonth);   // math.js精度计算
+                        $('#table3_cumulativequarter_' + data.id).val(ajax_data.data.cumulativequarter);
+                        $('#table3_cumulativehalfyear_' + data.id).val(ajax_data.data.cumulativehalfyear);
+                        $('#table3_cumulativeyear_' + data.id).val(ajax_data.data.cumulativeyear)
+                    } else {
+                        alert(ajax_data.data);
+                    }
+
+                    // 超过上限，低于下限标红
+                    if ((data.target_upperlimit && Number($('#table3_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table3_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+                        $('td', $(this).parents('tr')).css("color", "#FF0000");
+                    } else {
+                        $('td', $(this).parents('tr')).css("color", "#000000");
+                    }
+                },
+                error: function (e) {
+                    alert("公式解析失败，请于管理员联系。");
+                }
+            });
         }
     });
     //

@@ -83,6 +83,7 @@ urlpatterns = [
     url(r'^target_formula_data/$', target_formula_data),
     url(r'^target_save/$', target_save),
     url(r'^target_del/$', target_del),
+    url(r'^load_weight_targets/$', load_weight_targets),
 
     # 应用指标管理
     url(r'^target_app/(?P<funid>\d+)/$', target_app_index),
@@ -120,6 +121,7 @@ urlpatterns = [
     url(r'^reporting_recalculate/$', reporting_recalculate),
     url(r'^reporting_reextract/$', reporting_reextract),
     url(r'^reporting_formulacalculate/$', reporting_formulacalculate),
+    url(r'^ajax_cumulate/$', ajax_cumulate),
 
     # 报表上报
     url(r'^report_submit/(?P<funid>\d+)/$', report_submit_index),

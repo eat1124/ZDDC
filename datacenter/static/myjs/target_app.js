@@ -165,15 +165,34 @@ $(document).ready(function () {
         });
     }
 
-    $('#sample_1 tbody').on('click', 'button#edit', function () {
+    $('#sample_1 tbody').on('click', 'button#edit, button#copy', function () {
 
         var table = $('#sample_1').DataTable();
         var data = table.row($(this).parents('tr')).data();
 
-        $("#id").val(data.id);
+        if ($(this).context.id == 'edit') {
+            $("#id").val(data.id);
+        } else {
+            $("#id").val('0');
+        }
         $("#name").val(data.name);
         $("#code").val(data.code);
         $("#operationtype").val(data.operationtype);
+        $('#cumulative').empty();
+        if (data.operationtype == '17') {
+            $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
+                '<option value="1">求和</option>\n' +
+                '<option value="2">算术平均</option>\n' +
+                '<option value="3">加权平均</option>'
+            );
+            $('#weight_target').val('').trigger('change').prop('disabled', true);
+        } else {
+            $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
+                '<option value="1">求和</option>\n' +
+                '<option value="2">算术平均</option>\n'
+            );
+        }
+
         $("#cycletype").val(data.cycletype);
         $("#businesstype").val(data.businesstype);
         $("#unit").val(data.unit);
@@ -183,7 +202,14 @@ $(document).ready(function () {
         $("#lowerlimit").val(data.lowerlimit);
         $("#datatype").val(data.datatype);
         $("#cumulative").val(data.cumulative);
-        $("#cumulate_type").val(data.cumulate_type);
+
+        if (data.cumulative == '3') {
+            $('#weight_target').val(data.weight_target).trigger('change').removeProp('disabled');
+        } else {
+            $('#weight_target').val('').trigger('change').prop('disabled', true);
+        }
+
+
         $("#sort").val(data.sort);
         $("#unity").val(data.unity);
         $("#formula").val(data.formula);
@@ -220,13 +246,12 @@ $(document).ready(function () {
         $('#calculate_analysis').hide();
         $('#extract').hide();
 
-        $('#data_from').parent().hide();
-        $('#data_from').parent().prev().hide();
+        $('#data_from_div').hide();
 
-        $('#is_digit').show();
-        $('#digit').show();
-        $('#magnification_digit').show();
+        // 数值类型
+        $('#cumulate_weight').show();
         $('#upperlimit_lowerlimit').show();
+        $('#magnification_digit').show();
 
         // 数据来源
         if (data.data_from == 'et') {
@@ -271,12 +296,6 @@ $(document).ready(function () {
             analysisFunction();
         });
 
-        // 累计类型
-        if (data.cumulative == '是') {
-            $('#cumulate_type_div').show();
-        } else {
-            $('#cumulate_type_div').hide();
-        }
     });
 
     $('#sample_1 tbody').on('click', 'button#copy', function () {
@@ -331,11 +350,9 @@ $(document).ready(function () {
         $('#calculate_analysis').hide();
         $('#extract').hide();
 
-        $('#is_digit').show();
-        $('#digit').show();
-        $('#magnification_digit').show();
+        $('#cumulate_weight').show();
         $('#upperlimit_lowerlimit').show();
-
+        $('#magnification_digit').show();
 
         // 操作类型：提取/电表走字 显示数据源配置
         var selected_operation_type = $('#operationtype option:selected').text();
@@ -355,16 +372,14 @@ $(document).ready(function () {
         }
 
         if ($('#datatype option:selected').text() == '日期' || $('#datatype option:selected').text() == '文本') {
-            $('#is_digit').hide();
-            $('#digit').hide();
-            $('#magnification_digit').hide();
+            $('#cumulate_weight').hide();
             $('#upperlimit_lowerlimit').hide();
+            $('#magnification_digit').hide();
         }
         if ($('#datatype option:selected').text() == '数值') {
-            $('#is_digit').show();
-            $('#digit').show();
-            $('#magnification_digit').show();
+            $('#cumulate_weight').show();
             $('#upperlimit_lowerlimit').show();
+            $('#magnification_digit').show();
         }
 
         ajaxFunction();
@@ -404,17 +419,25 @@ $(document).ready(function () {
         $('#extract').hide();
 
         $('#data_from_config').hide();
-        $('#data_from').parent().hide();
-        $('#data_from').parent().prev().hide();
+        $('#data_from_div').hide();
+
+        $('#cumulative').empty();
 
         var selected_operation_type = $('#operationtype option:selected').text();
         if (selected_operation_type == '计算') {
-            // $('#calculate').show();
-            // $('#calculate_analysis').show();
-
             $('#data_from').val('');
-            $('#data_from').parent().show();
-            $('#data_from').parent().prev().show();
+            $('#data_from_div').show();
+            $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
+                '<option value="1">求和</option>\n' +
+                '<option value="2">算术平均</option>\n' +
+                '<option value="3">加权平均</option>'
+            );
+            $('#weight_target').val('').trigger('change').prop('disabled', true);
+        } else {
+            $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
+                '<option value="1">求和</option>\n' +
+                '<option value="2">算术平均</option>\n'
+            );
         }
         if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
             $('#extract').show();
@@ -423,23 +446,19 @@ $(document).ready(function () {
 
     $('#datatype').change(function () {
         if ($('#datatype option:selected').text() == '日期' || $('#datatype option:selected').text() == '文本') {
-            $('#is_digit').hide();
-            $('#digit').hide();
             $('#magnification_digit').hide();
             $('#upperlimit_lowerlimit').hide();
+
             $('#calculate').hide();
             $('#calculate_analysis').hide();
 
-            $('#cumulate_type_div').hide();
             $('#data_from_config').hide();
-            $('#data_from').parent().hide();
-            $('#data_from').parent().prev().hide();
+            $('#data_from_div').hide();
         }
         if ($('#datatype option:selected').text() == '数值') {
-            $('#is_digit').show();
-            $('#digit').show();
-            $('#magnification_digit').show();
+            $('#cumulate_weight').show();
             $('#upperlimit_lowerlimit').show();
+            $('#magnification_digit').show();
 
             // 判断操作类型
             // 判断数据来源
@@ -466,16 +485,16 @@ $(document).ready(function () {
                 $('#data_from_config').hide();
             }
 
-            // 判断是否累计
-            if ($('#cumulative').val()=='是'){
-                $('#cumulate_type_div').show();
-            } else {
-                $('#cumulate_type_div').hide();
-            }
         }
     });
 
     $("#new").click(function () {
+        // 累计类型
+        $('#cumulative').empty();
+        $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
+            '<option value="1">求和</option>\n' +
+            '<option value="2">算术平均</option>\n'
+        );
 
         $('#calculate').hide();
         $('#calculate_analysis').hide();
@@ -493,7 +512,10 @@ $(document).ready(function () {
         $("#upperlimit").val("");
         $("#lowerlimit").val("");
         $("#datatype").val("numbervalue");
-        $("#cumulative").val("是");
+
+        $("#cumulative").val("0");
+        $('#weight_target').val('').trigger('change').prop('disabled', true);
+
         $("#sort").val("");
         $("#unity").val("");
         $("#formula").val("");
@@ -529,16 +551,9 @@ $(document).ready(function () {
         $('#data_from').val('');
         $('#calculate_source').val('');
         $('#calculate_content').val('');
-        $('#data_from').parent().hide();
-        $('#data_from').parent().prev().hide();
+        $('#data_from_div').hide();
         $('#data_from_config').hide();
 
-        // 累计类型
-        if ($('#cumulative').val() == '是') {
-            $('#cumulate_type_div').show();
-        } else {
-            $('#cumulate_type_div').hide();
-        }
     });
 
     $('#save').click(function () {
@@ -563,7 +578,7 @@ $(document).ready(function () {
                     adminapp: $("#adminapp").val(),
                     datatype: $("#datatype").val(),
                     cumulative: $("#cumulative").val(),
-                    cumulate_type: $('#cumulate_type').val(),
+                    weight_target: $('#weight_target').val(),
 
                     sort: $("#sort").val(),
                     unity: $("#unity").val(),
@@ -591,6 +606,8 @@ $(document).ready(function () {
                     $("#id").val(data["data"]);
                     $('#static').modal('hide');
                     table.ajax.reload();
+
+                    loadWeightTargets();
                 }
                 alert(myres);
             },
@@ -599,7 +616,7 @@ $(document).ready(function () {
             }
         });
 
-        ajaxFunction()
+        ajaxFunction();
     });
 
     $('#error').click(function () {
@@ -733,25 +750,37 @@ $(document).ready(function () {
                 {"data": null}
             ],
             "columnDefs": [{
+                "targets": -5,
+                "data": null,
+                "mRender": function (data, type, full) {
+                    var cumulative_info = {
+                        "0": "不累计",
+                        "1": "求和",
+                        "2": "算术平均",
+                        "3": "加权平均",
+                    };
+                    return cumulative_info[full.cumulative]
+                }
+            }, {
                 "targets": -3,
                 "data": null,
                 "mRender": function (data, type, full) {
-                    if (full.cumulative == "否") {
+                    if (full.cumulative == "0") {
                         return "<select style='width:100px'><option value='d'>当前值</option>"
                     }
-                    if (full.cumulative == "是" && full.cycletype_name == "日") {
+                    if (full.cumulative != "0" && full.cycletype_name == "日") {
                         return "<select style='width:100px'><option value='d'>当前值</option><option value='m'>月累计</option><option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
                     }
-                    if (full.cumulative == "是" && full.cycletype_name == "月") {
+                    if (full.cumulative != "0" && full.cycletype_name == "月") {
                         return "<select style='width:100px'><option value='d'>当前值</option><option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
                     }
-                    if (full.cumulative == "是" && full.cycletype_name == "季") {
+                    if (full.cumulative != "0" && full.cycletype_name == "季") {
                         return "<select style='width:100px'><option value='d'>当前值</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
                     }
-                    if (full.cumulative == "是" && full.cycletype_name == "半年") {
+                    if (full.cumulative != "0" && full.cycletype_name == "半年") {
                         return "<select style='width:100px'><option value='d'>当前值</option><option value='y'>年累计</option></select>";
                     }
-                    if (full.cumulative == "是" && full.cycletype_name == "年") {
+                    if (full.cumulative != "0" && full.cycletype_name == "年") {
                         return "<select style='width:100px'><option value='d'>当前值</option></select>";
                     }
                     if (full.cumulative == null || full.cumulative == '') {
@@ -974,8 +1003,6 @@ $(document).ready(function () {
     $('#storage').change(function () {
         var storage_id = $(this).val();
         var storage_type = $('#storage_' + storage_id).val();
-        console.log(storage_id)
-        console.log(storage_type)
         if (storage_type == '列') {
             $('#storagetag').parent().parent().show();
         } else {
@@ -1033,11 +1060,40 @@ $(document).ready(function () {
 
     // 累计类型
     $('#cumulative').change(function () {
-        if ($(this).val() == '是') {
-            $('#cumulate_type_div').show();
+        // 加权平均数=>展示，供选择
+        // 其他：disabled，val(-1)
+        if ($(this).val() == '3') {
+            $('#weight_target').removeProp('disabled');
         } else {
-            $('#cumulate_type_div').hide();
+            $('#weight_target').val('').trigger('change');
+            $('#weight_target').prop('disabled', true);
         }
     });
+
+    function loadWeightTargets() {
+        $('#weight_target').select2().empty();
+        // 加载加权指标
+        $.ajax({
+            type: "POST",
+            url: "../../load_weight_targets/",
+            data: {},
+            success: function (data) {
+                $("#weight_target").select2({
+                    data: eval(data.data),
+                    placeholder: {
+                        id: '', // the value of the option
+                        text: ''
+                    },
+                    width: null,
+                    dropdown: true
+                });
+            },
+            error: function (e) {
+                alert("加载加权指标，请于管理员联系。");
+            }
+        });
+    }
+
+    loadWeightTargets();
 });
 
