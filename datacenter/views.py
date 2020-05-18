@@ -768,6 +768,29 @@ def get_exception_data(request):
         return HttpResponseRedirect("/login")
 
 
+def exception_data_del(request):
+    if request.user.is_authenticated():
+        status = 1
+        data = ''
+        id = request.POST.get('id', '')
+        try:
+            id = int(id)
+            ex_data = ExceptionData.objects.get(id=id)
+        except:
+            status = 0
+            data = '该异常信息不存在。'
+        else:
+            ex_data.state = "9"
+            ex_data.save()
+            status = 1
+            data = '删除成功。'
+
+        return JsonResponse({
+            'status': status,
+            'data': data
+        })
+
+
 def get_log_info(request):
     if request.user.is_authenticated():
         result = []

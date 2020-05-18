@@ -317,9 +317,19 @@ $(document).ready(function () {
                     {"data": "extract_error_time"},
                     {"data": "supplement_times"},
                     {"data": "last_supplement_time"},
+                    {"data": null},
                 ],
 
-                "columnDefs": [],
+                "columnDefs": [{
+                    "targets": -1,
+                    "mRender": function (data, type, full) {
+                        if (full.supplement_times==10){
+                            return "<button title='删除' id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>"
+                        } else {
+                            return ""
+                        }
+                    }
+                }],  
                 "oLanguage": {
                     "sLengthMenu": "每页显示 _MENU_ 条记录",
                     "sZeroRecords": "没有检索到数据",
@@ -340,6 +350,34 @@ $(document).ready(function () {
             });
         }
     }
+    // 手动删除10次异常信息
+    $('#sample_3 tbody').on('click', 'button#delrow', function () {
+        if (confirm("确定要删除该条数据？")) {
+            var table = $('#sample_3').DataTable();
+            var data = table.row($(this).parents('tr')).data();
+            $.ajax({
+                type: "POST",
+                url: "../exception_data_del/",
+                data:
+                    {
+                        id: data.id,
+                    },
+                success: function (data) {
+                    if (data['status'] == 1) {
+                        table.ajax.reload();
+                    }
+                    alert(data['data'])
+                },
+                error: function (e) {
+                    alert("删除失败，请于管理员联系。");
+                }
+            });
+
+        }
+    });
+
+
+
 
     function tabCheck4() {
         if (sample_4_completed) {

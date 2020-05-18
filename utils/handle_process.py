@@ -279,10 +279,10 @@ class Extract(object):
             self.pm = ProcessMonitor.objects.exclude(state='9').get(app_admin_id=self.app_id, source_id=self.source_id,
                                                                     cycle_id=self.cycle_id)
         except ProcessMonitor.DoesNotExist as e:
-            take_notes(self.source_id, self.app_id, self.cycle_id, 'Extract >> __init__() >> %s' % e)
+            take_notes(self.source_id, self.app_id, self.cycle_id, '取数进程启动失败。')
         else:
             if not self.pm:
-                take_notes(self.source_id, self.app_id, self.cycle_id, 'Extract >> supplement() >> 该进程不存在，取数进程启动失败。')
+                take_notes(self.source_id, self.app_id, self.cycle_id, '取数进程启动失败。')
 
     def supplement(self):
         # 补取
@@ -299,7 +299,7 @@ class Extract(object):
                 if start_time > end_time:
                     break
         else:
-            take_notes(self.source_id, self.app_id, self.cycle_id, 'Extract >> supplement() >> 首次取数，不进行补取。')
+            take_notes(self.source_id, self.app_id, self.cycle_id, '首次取数，不进行补取。')
 
         # 补取过程也消耗时间，再次判断进行补取:先把秒数抹掉再比较
         aft_last_time = self.pm.last_time
@@ -308,12 +308,12 @@ class Extract(object):
             aft_last_time = datetime.datetime.strptime('{:%Y-%m-%d %H:%M}'.format(aft_last_time), '%Y-%m-%d %H:%M')
             now_time = datetime.datetime.strptime('{:%Y-%m-%d %H:%M}'.format(datetime.datetime.now()), '%Y-%m-%d %H:%M')
         except Exception as e:
-            take_notes(self.source_id, self.app_id, self.cycle_id, 'Extract >> supplement() >> %s' % e)
+            take_notes(self.source_id, self.app_id, self.cycle_id, '时间处理异常。')
         else:
             try:
                 delta_time = (now_time - aft_last_time).total_seconds()
             except Exception as e:
-                take_notes(self.source_id, self.app_id, self.cycle_id, 'Extract >> supplement() >> %s' % e)
+                take_notes(self.source_id, self.app_id, self.cycle_id, '时间处理异常。')
             else:
                 if delta_time > 60:
                     self.supplement()
@@ -404,8 +404,7 @@ class Extract(object):
                     copy_ordered_targets = copy_ordered_targets.exclude(storage=storage,
                                                                         storagetag=o_target.storagetag)
                 else:
-                    take_notes(self.source_id, self.app_id, self.cycle_id,
-                               'Extract >> _get_data() >> %s' % 'storage_storagetag为空。')
+                    take_notes(self.source_id, self.app_id, self.cycle_id, '指标{target}的存储标识为空。'.format(target=o_target.name))
 
     @staticmethod
     def getDataFromSource(target, time):
@@ -764,7 +763,7 @@ class Extract(object):
             exception_data.extract_error_time = datetime.datetime.now()
             exception_data.save()
         except Exception as e:
-            take_notes(self.source_id, self.app_id, self.cycle_id, '记录异常数据失败：%s' % e)
+            take_notes(self.source_id, self.app_id, self.cycle_id, '指标{target}记录异常数据失败：{e}'.format(target=target.name, e=str(e)))
 
     def supplement_exception_data(self):
         process_monitor = ProcessMonitor.objects.exclude(state='9')
@@ -795,8 +794,7 @@ class Extract(object):
                                     ed.state = '9'
                                     ed.save()
                             else:
-                                ed.state = '9'
-                                ed.save()
+                                pass
                         elif storage_type_name == '列':
                             col_ordered_data = copy_exception_data.filter(target__storage=storage,
                                                                           target__storagetag=ed.target.storagetag)
@@ -812,8 +810,7 @@ class Extract(object):
                                         cod.last_supplement_time = datetime.datetime.now()
                                         cod.save()
                                     else:
-                                        cod.state = '9'
-                                        cod.save()
+                                        pass
                             else:
                                 for cod in col_ordered_data:
                                     cod.state = '9'
@@ -822,8 +819,7 @@ class Extract(object):
                             copy_exception_data = copy_exception_data.exclude(target__storage=storage,
                                                                               target__storagetag=ed.target.storagetag)
                         else:
-                            take_notes(self.source_id, self.app_id, self.cycle_id,
-                                       'Extract >> supplement_exception_data() >> %s' % 'storage_storagetag为空。')
+                            take_notes(self.source_id, self.app_id, self.cycle_id, '指标{target}的存储标识为空。'.format(target=ed.target.name if ed.target else ''))
 
     def push_data(self, target, storage, result=True, error=""):
         """

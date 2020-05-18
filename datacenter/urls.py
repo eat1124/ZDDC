@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^get_process_monitor_tree/$', get_process_monitor_tree),
     url(r'^pm_target_data/$', pm_target_data),
     url(r'^get_exception_data/$', get_exception_data),
+    url(r'^exception_data_del/$', exception_data_del),
     url(r'^get_log_info/$', get_log_info),
     url(r'^target_test/$', target_test),
     url(r'^supplement_process/$', supplement_process),
