@@ -4995,7 +4995,8 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                             if cond == "LYS" or cond == "LYE" or (
                                     (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
                                     (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
-                                    (cond == "LMS" or cond == "LME") and int(date.month) < 2):
+                                    (cond == "LMS" or cond == "LME") and int(date.month) < 2) or (
+                                     cond == "SLME" and int(date.month) < 4):
                                 tableyear = str(int(date.year) - 1)
 
                                 if operationtype == "1":
@@ -5380,7 +5381,8 @@ def reporting_formulacalculate(request):
                                     if cond == "LYS" or cond == "LYE" or (
                                             (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
                                             (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
-                                            (cond == "LMS" or cond == "LME") and int(date.month) < 2):
+                                            (cond == "LMS" or cond == "LME") and int(date.month) < 2) or (
+                                             cond == "SLME" and int(date.month) < 4):
                                         tableyear = str(int(date.year) - 1)
                                     operationtype = membertarget.operationtype
                                     if operationtype == "1":
