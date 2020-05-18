@@ -399,18 +399,17 @@ $(document).ready(function () {
                     } else {
                         alert(ajax_data.data);
                     }
-
-                    // 超过上限，低于下限标红
-                    if ((data.target_upperlimit && Number($('#table1_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table1_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-                        $('td', $(this).parents('tr')).css("color", "#FF0000");
-                    } else {
-                        $('td', $(this).parents('tr')).css("color", "#000000");
-                    }
                 },
                 error: function (e) {
                     alert("公式解析失败，请于管理员联系。");
                 }
             });
+        }
+        // 超过上限，低于下限标红
+        if ((data.target_upperlimit && Number($('#table1_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table1_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+            $('td', $(this).parents('tr')).css("color", "#FF0000");
+        } else {
+            $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
 
@@ -572,18 +571,17 @@ $(document).ready(function () {
                     } else {
                         alert(ajax_data.data);
                     }
-
-                    // 超过上限，低于下限标红
-                    if ((data.target_upperlimit && Number($('#table2_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table2_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-                        $('td', $(this).parents('tr')).css("color", "#FF0000");
-                    } else {
-                        $('td', $(this).parents('tr')).css("color", "#000000");
-                    }
                 },
                 error: function (e) {
                     alert("公式解析失败，请于管理员联系。");
                 }
             });
+        }
+        // 超过上限，低于下限标红
+        if ((data.target_upperlimit && Number($('#table2_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table2_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+            $('td', $(this).parents('tr')).css("color", "#FF0000");
+        } else {
+            $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
 
@@ -752,18 +750,18 @@ $(document).ready(function () {
                     } else {
                         alert(ajax_data.data);
                     }
-
-                    // 超过上限，低于下限标红
-                    if ((data.target_upperlimit && Number($('#table3_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table3_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-                        $('td', $(this).parents('tr')).css("color", "#FF0000");
-                    } else {
-                        $('td', $(this).parents('tr')).css("color", "#000000");
-                    }
                 },
                 error: function (e) {
                     alert("公式解析失败，请于管理员联系。");
                 }
             });
+        }
+
+        // 超过上限，低于下限标红
+        if ((data.target_upperlimit && Number($('#table3_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table3_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+            $('td', $(this).parents('tr')).css("color", "#FF0000");
+        } else {
+            $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
     //
@@ -1057,20 +1055,19 @@ $(document).ready(function () {
                     } else {
                         alert(ajax_data.data);
                     }
-
-                    // 超过上限，低于下限标红
-                    if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
-                        $('td', $(this).parents('tr')).css("color", "#FF0000");
-                    } else if ((data.target_upperlimit && Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && dNumber($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-                        $('td', $(this).parents('tr')).css("color", "#FF0000");
-                    } else {
-                        $('td', $(this).parents('tr')).css("color", "#000000");
-                    }
                 },
                 error: function (e) {
                     alert("公式解析失败，请于管理员联系。");
                 }
             });
+        }
+        // 超过上限，低于下限标红
+        if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
+            $('td', $(this).parents('tr')).css("color", "#FF0000");
+        } else if ((data.target_upperlimit && Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && dNumber($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+            $('td', $(this).parents('tr')).css("color", "#FF0000");
+        } else {
+            $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
     $('#sample_5 tbody').on('change', 'input[name="table5_twentyfourdata"]', function () {
@@ -1100,20 +1097,19 @@ $(document).ready(function () {
                     } else {
                         alert(ajax_data.data);
                     }
-
-                    // 超过上限，低于下限标红
-                    if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
-                        $('td', $(this).parents('tr')).css("color", "#FF0000");
-                    } else if ((data.target_upperlimit && (Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit)) || (data.target_lowerlimit && Number($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-                        $('td', $(this).parents('tr')).css("color", "#FF0000");
-                    } else {
-                        $('td', $(this).parents('tr')).css("color", "#000000");
-                    }
                 },
                 error: function (e) {
                     alert("公式解析失败，请于管理员联系。");
                 }
             });
+        }
+        // 超过上限，低于下限标红
+        if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
+            $('td', $(this).parents('tr')).css("color", "#FF0000");
+        } else if ((data.target_upperlimit && (Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit)) || (data.target_lowerlimit && Number($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+            $('td', $(this).parents('tr')).css("color", "#FF0000");
+        } else {
+            $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
     $('#sample_5 tbody').on('change', 'input[name="table5_curvalue"]', function () {
