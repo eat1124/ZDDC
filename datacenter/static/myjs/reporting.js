@@ -1032,49 +1032,118 @@ $(document).ready(function () {
     $('#sample_5 tbody').on('change', 'input[name="table5_zerodata"]', function () {
         var table = $('#sample_5').DataTable();
         var data = table.row($(this).parents('tr')).data();
+
         $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())), math.bignumber(Number($('#table5_zerodata_' + data.id).val())))));
-        $('#table5_curvalue_' + data.id).val(math.number(math.multiply(math.bignumber(Number($('#table5_metervalue_' + data.id).val())), math.bignumber(Number(data.target_magnification)))))
-        if (data.target_cumulative == '是') {
-            $('#table5_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));   // math.js精度计算
-            $('#table5_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
-            $('#table5_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
-            $('#table5_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))))
-        }
-        if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else if ((data.target_upperlimit && Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && dNumber($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else {
-            $('td', $(this).parents('tr')).css("color", "#000000");
+        var curValue = math.number(math.multiply(math.bignumber(Number($('#table5_metervalue_' + data.id).val())), math.bignumber(Number(data.target_magnification))));
+        $('#table5_curvalue_' + data.id).val(curValue);
+
+        // 累计值 月、季、半年、年
+        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+            $.ajax({
+                type: "POST",
+                url: "../../../ajax_cumulate/",
+                data: {
+                    cur_value: curValue,
+                    target_id: data.target_id,
+                    reporting_date: $('#reporting_date').val(),
+                    cycletype: $('#cycletype').val(),
+                },
+                success: function (ajax_data) {
+                    if (ajax_data.status == 1) {
+                        $('#table5_cumulativemonth_' + data.id).val(ajax_data.data.cumulativemonth);   // math.js精度计算
+                        $('#table5_cumulativequarter_' + data.id).val(ajax_data.data.cumulativequarter);
+                        $('#table5_cumulativehalfyear_' + data.id).val(ajax_data.data.cumulativehalfyear);
+                        $('#table5_cumulativeyear_' + data.id).val(ajax_data.data.cumulativeyear)
+                    } else {
+                        alert(ajax_data.data);
+                    }
+
+                    // 超过上限，低于下限标红
+                    if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
+                        $('td', $(this).parents('tr')).css("color", "#FF0000");
+                    } else if ((data.target_upperlimit && Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && dNumber($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+                        $('td', $(this).parents('tr')).css("color", "#FF0000");
+                    } else {
+                        $('td', $(this).parents('tr')).css("color", "#000000");
+                    }
+                },
+                error: function (e) {
+                    alert("公式解析失败，请于管理员联系。");
+                }
+            });
         }
     });
     $('#sample_5 tbody').on('change', 'input[name="table5_twentyfourdata"]', function () {
         var table = $('#sample_5').DataTable();
         var data = table.row($(this).parents('tr')).data();
-        $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())), math.bignumber(Number($('#table5_zerodata_' + data.id).val())))))
-        $('#table5_curvalue_' + data.id).val(math.number(math.multiply(math.bignumber(Number($('#table5_metervalue_' + data.id).val())), math.bignumber(Number(data.target_magnification)))))
-        if (data.target_cumulative == '是') {
-            $('#table5_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
-            $('#table5_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
-            $('#table5_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
-            $('#table5_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))))
-        }
-        if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else if ((data.target_upperlimit && (Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit)) || (data.target_lowerlimit && Number($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
-        } else {
-            $('td', $(this).parents('tr')).css("color", "#000000");
+        $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())), math.bignumber(Number($('#table5_zerodata_' + data.id).val())))));
+        var curValue = math.number(math.multiply(math.bignumber(Number($('#table5_metervalue_' + data.id).val())), math.bignumber(Number(data.target_magnification))));
+        $('#table5_curvalue_' + data.id).val(curValue)
+
+        // 累计值 月、季、半年、年
+        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+            $.ajax({
+                type: "POST",
+                url: "../../../ajax_cumulate/",
+                data: {
+                    cur_value: curValue,
+                    target_id: data.target_id,
+                    reporting_date: $('#reporting_date').val(),
+                    cycletype: $('#cycletype').val(),
+                },
+                success: function (ajax_data) {
+                    if (ajax_data.status == 1) {
+                        $('#table5_cumulativemonth_' + data.id).val(ajax_data.data.cumulativemonth);   // math.js精度计算
+                        $('#table5_cumulativequarter_' + data.id).val(ajax_data.data.cumulativequarter);
+                        $('#table5_cumulativehalfyear_' + data.id).val(ajax_data.data.cumulativehalfyear);
+                        $('#table5_cumulativeyear_' + data.id).val(ajax_data.data.cumulativeyear)
+                    } else {
+                        alert(ajax_data.data);
+                    }
+
+                    // 超过上限，低于下限标红
+                    if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
+                        $('td', $(this).parents('tr')).css("color", "#FF0000");
+                    } else if ((data.target_upperlimit && (Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit)) || (data.target_lowerlimit && Number($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+                        $('td', $(this).parents('tr')).css("color", "#FF0000");
+                    } else {
+                        $('td', $(this).parents('tr')).css("color", "#000000");
+                    }
+                },
+                error: function (e) {
+                    alert("公式解析失败，请于管理员联系。");
+                }
+            });
         }
     });
     $('#sample_5 tbody').on('change', 'input[name="table5_curvalue"]', function () {
         var table = $('#sample_5').DataTable();
         var data = table.row($(this).parents('tr')).data();
-        if (data.target_cumulative == '是') {
-            $('#table5_cumulativemonth_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativemonth)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
-            $('#table5_cumulativequarter_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativequarter)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
-            $('#table5_cumulativehalfyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativehalfyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))));
-            $('#table5_cumulativeyear_' + data.id).val(math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(data.cumulativeyear)), math.bignumber(Number(data.curvalue))))), math.bignumber(Number($('#table5_curvalue_' + data.id).val())))))
+        // 累计值 月、季、半年、年
+        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+            $.ajax({
+                type: "POST",
+                url: "../../../ajax_cumulate/",
+                data: {
+                    cur_value: $('#table5_curvalue_' + data.id).val(),
+                    target_id: data.target_id,
+                    reporting_date: $('#reporting_date').val(),
+                    cycletype: $('#cycletype').val(),
+                },
+                success: function (ajax_data) {
+                    if (ajax_data.status == 1) {
+                        $('#table5_cumulativemonth_' + data.id).val(ajax_data.data.cumulativemonth);   // math.js精度计算
+                        $('#table5_cumulativequarter_' + data.id).val(ajax_data.data.cumulativequarter);
+                        $('#table5_cumulativehalfyear_' + data.id).val(ajax_data.data.cumulativehalfyear);
+                        $('#table5_cumulativeyear_' + data.id).val(ajax_data.data.cumulativeyear)
+                    } else {
+                        alert(ajax_data.data);
+                    }
+                },
+                error: function (e) {
+                    alert("公式解析失败，请于管理员联系。");
+                }
+            });
         }
     });
     // 电表走字换表
