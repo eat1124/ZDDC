@@ -6433,13 +6433,17 @@ def report_submit_data(request):
                 search_date = datetime.datetime.strptime(search_date, "%Y-%m-%d")
             elif search_report_type == "23":
                 search_date = datetime.datetime.strptime(search_date, "%Y-%m")
+                year = search_date.year
+                month = search_date.month
+                a, b = calendar.monthrange(year, month)
+                search_date = datetime.datetime(year=year, month=month, day=b)
             elif search_report_type == "24":
                 search_date = search_date
             elif search_report_type == "25":
                 search_date = search_date
             elif search_report_type == "26":
-                search_date = datetime.datetime.strptime(
-                    datetime.datetime.strptime(search_date, "%Y").strftime("%Y-%m-%d"), "%Y-%m-%d")
+                search_date = datetime.datetime.strptime(search_date, "%Y")
+                search_date = search_date.replace(month=12, day=31)
         else:
             pass
 
