@@ -5495,7 +5495,6 @@ def reporting_formulacalculate(request):
                                     query_res = []
                                     if condtions:
                                         newdate = condtions['datadate']
-                                        print(newdate, '123')
                                         query_res = queryset.filter(**condtions).filter(target=membertarget).exclude(
                                             state="9").select_related("target")
                                     if new_date:

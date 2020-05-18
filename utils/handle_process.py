@@ -795,7 +795,8 @@ class Extract(object):
                                     ed.state = '9'
                                     ed.save()
                             else:
-                                pass
+                                ed.state = '9'
+                                ed.save()
                         elif storage_type_name == '列':
                             col_ordered_data = copy_exception_data.filter(target__storage=storage,
                                                                           target__storagetag=ed.target.storagetag)
@@ -806,9 +807,13 @@ class Extract(object):
 
                             if not self.get_col_data(target_list, ed.extract_error_time):
                                 for cod in col_ordered_data:
-                                    cod.supplement_times += 1
-                                    cod.last_supplement_time = datetime.datetime.now()
-                                    cod.save()
+                                    if cod.supplement_times < 10:
+                                        cod.supplement_times += 1
+                                        cod.last_supplement_time = datetime.datetime.now()
+                                        cod.save()
+                                    else:
+                                        cod.state = '9'
+                                        cod.save()
                             else:
                                 for cod in col_ordered_data:
                                     cod.state = '9'
