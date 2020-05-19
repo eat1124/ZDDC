@@ -4980,7 +4980,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
 
                             if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id \
                                     and membertarget.cycletype == target.cycletype and membertarget.work_id == target.work_id \
-                                    and membertarget.calculateguid != guid and membertarget.code != target.code:
+                                    and membertarget.calculateguid != guid and not cond.startswith('L'):  # 判断指标公式非当前周期的数据:
                                 getcalculatedata(membertarget, date, guid, all_constant, all_target, tableList)
 
                             # 取当年表
