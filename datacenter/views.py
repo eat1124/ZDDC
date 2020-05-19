@@ -5138,7 +5138,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                 query_res = queryset.filter(datadate__range=new_date).filter(
                                     target=membertarget).exclude(state="9")
                             if len(query_res) <= 0:
-                                curvalue = 0
+                                value = 0
                             else:
                                 # 获取季累计、年累计等字段值
                                 value = 0
@@ -5383,7 +5383,7 @@ def reporting_formulacalculate(request):
                                     if cond == "LYS" or cond == "LYE" or (
                                             (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
                                             (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
-                                            (cond == "LMS" or cond == "LME" or "SLME") and int(date.month) < 2):
+                                            (cond == "LMS" or cond == "LME" or cond == "SLME") and int(date.month) < 2):
                                         tableyear = str(int(date.year) - 1)
                                     operationtype = membertarget.operationtype
                                     if operationtype == "1":
@@ -5527,7 +5527,10 @@ def reporting_formulacalculate(request):
                                             target=membertarget).exclude(state="9")
 
                                     if len(query_res) <= 0:
-                                        value = "数据不存在"
+                                        if cond == "SLME" and newdate.month == 12:
+                                            value = "0"
+                                        else:
+                                            value = "数据不存在"
                                     else:
                                         value = "0"
                                         if col == 'd':
