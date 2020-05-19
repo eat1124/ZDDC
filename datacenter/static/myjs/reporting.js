@@ -1822,11 +1822,10 @@ $(document).ready(function () {
                     funid: $('#funid').val(),
                 },
             success: function (data) {
-                if (data == 1) {
+                if (data['status'] == 1) {
                     table.ajax.reload();
-                    alert("计算成功！");
-                } else
-                    alert("计算失败，请于管理员联系。");
+                }
+                alert(data['data']);
                 // 隐藏滚动条
                 customModal.hide();
             },

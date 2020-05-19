@@ -4757,7 +4757,8 @@ def getcumulative(tableList, target, date, value):
                         cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (
                                 days_in_halfyear + 1)
                 # 4.当年到昨天的天数
-                days_in_year = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0), yestoday_date)
+                days_in_year = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
+                                        yestoday_date)
                 cumulativeyear = (lastcumulativeyear * days_in_year + value) / days_in_year + 1
             else:
                 pass
@@ -4817,6 +4818,8 @@ def getcumulative(tableList, target, date, value):
             # 年报均为当前值
             pass
     if cumulative == '3':  # 加权平均
+        if not weight_target:
+            raise Exception('未配置加权指标。')
         # 加权指标当前值
         wt_value = 0
         try:
@@ -4849,14 +4852,14 @@ def getcumulative(tableList, target, date, value):
                     )
                 if not (date.month % 3 == 1 and date.day == 1):  # 判断是否所在季度第一天
                     cumulativequarter = (lastcumulativequarter * wt_lastcumulativequarter + value * wt_value) / (
-                        wt_lastcumulativequarter + wt_value
+                            wt_lastcumulativequarter + wt_value
                     )
                 if not (date.month % 3 == 1 and date.day == 1):  # 判断是否所在季度第一天
                     cumulativehalfyear = (lastcumulativehalfyear * wt_lastcumulativehalfyear + value * wt_value) / (
-                        wt_lastcumulativehalfyear + wt_value
+                            wt_lastcumulativehalfyear + wt_value
                     )
                 cumulativeyear = (cumulativeyear * lastcumulativeyear + value * wt_value) / (
-                    wt_lastcumulativeyear + wt_value
+                        wt_lastcumulativeyear + wt_value
                 )
         if target.cycletype == "11":
             # 月报
@@ -4869,32 +4872,32 @@ def getcumulative(tableList, target, date, value):
                     last_month_on_quarter = last_month_date.month
                 if last_month_on_quarter > 0:  # 任何一季度首月季累计为当前值
                     cumulativequarter = (lastcumulativequarter * wt_lastcumulativequarter + value * wt_value) / (
-                        wt_lastcumulativequarter + wt_value
+                            wt_lastcumulativequarter + wt_value
                     )
                 if date.month != 7:  # 不是半年第一月
                     cumulativehalfyear = (lastcumulativehalfyear * wt_lastcumulativehalfyear + value * wt_value) / (
-                        wt_lastcumulativehalfyear + wt_value
+                            wt_lastcumulativehalfyear + wt_value
                     )
                 cumulativeyear = (lastcumulativeyear + wt_lastcumulativeyear + value * wt_value) / (
-                    wt_lastcumulativeyear + wt_value
+                        wt_lastcumulativeyear + wt_value
                 )
         if target.cycletype == "12":
             # 季报
             if date.month > 3:  # 非第一季度
                 cumulativequarter = (lastcumulativequarter * wt_lastcumulativequarter + value * wt_value) / (
-                    wt_lastcumulativequarter + wt_value
+                        wt_lastcumulativequarter + wt_value
                 )
                 if date.month in [4, 5, 6, 10, 11, 12]:  # 半年后季
                     cumulativehalfyear = (lastcumulativehalfyear * wt_lastcumulativehalfyear + value * wt_value) / (
-                        wt_lastcumulativehalfyear + wt_value
+                            wt_lastcumulativehalfyear + wt_value
                     )
                 cumulativeyear = (lastcumulativeyear * wt_lastcumulativeyear + value * wt_value) / (
-                    wt_lastcumulativeyear + wt_value
+                        wt_lastcumulativeyear + wt_value
                 )
         if target.cycletype == "13":
             if date.month > 6:
                 cumulativeyear = (lastcumulativeyear * wt_lastcumulativeyear + value * wt_value) / (
-                    wt_lastcumulativeyear + wt_value
+                        wt_lastcumulativeyear + wt_value
                 )
         if target.cycletype == "14":
             pass
@@ -5146,7 +5149,8 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                                         value = query_res.aggregate(Max('curvalue'))["curvalue__max"]
                                     elif cond == "MMIN" or cond == "SMIN" or cond == "HMIN" or cond == "YMIN":
                                         value = query_res.aggregate(Min('curvalue'))["curvalue__min"]
-                                    elif cond == "SLME" and newdate.month in [12, 3, 6, 9]:  # 时间为本季上月末且当是每一季度第一个月的时候，值为0
+                                    elif cond == "SLME" and newdate.month in [12, 3, 6,
+                                                                              9]:  # 时间为本季上月末且当是每一季度第一个月的时候，值为0
                                         value = 0
                                     else:
                                         value = query_res[0].curvalue
@@ -5648,6 +5652,8 @@ def reporting_recalculate(request):
         operationtype = request.POST.get('operationtype', '')
         funid = request.POST.get('funid', '')
         work = None
+        status = 1
+        data = ''
         try:
             funid = int(funid)
             fun = Fun.objects.get(id=funid)
@@ -5683,8 +5689,14 @@ def reporting_recalculate(request):
                         getcalculatedata(target, reporting_date, str(guid), all_constant, all_target, tableList)
                     except Exception as e:
                         print(e)
-                        HttpResponse(0)
-        return HttpResponse(1)
+                        status = 0
+                        data = '计算失败：{e}'.format(e=e)
+                        break
+
+        return JsonResponse({
+            'status': status,
+            'data': data
+        })
 
 
 def reporting_reextract(request):
