@@ -1825,9 +1825,9 @@ $(document).ready(function () {
                 if (data['status'] == 1) {
                     table.ajax.reload();
                 }
-                alert(data['data']);
                 // 隐藏滚动条
                 customModal.hide();
+                alert(data['data']);
             },
             error: function (e) {
                 alert("计算失败，请于管理员联系。");
