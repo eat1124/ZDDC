@@ -4980,7 +4980,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
 
                             if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id \
                                     and membertarget.cycletype == target.cycletype and membertarget.work_id == target.work_id \
-                                    and membertarget.calculateguid != guid:
+                                    and membertarget.calculateguid != guid and membertarget.code != target.code:
                                 getcalculatedata(membertarget, date, guid, all_constant, all_target, tableList)
 
                             # 取当年表
@@ -5656,7 +5656,7 @@ def reporting_recalculate(request):
         funid = request.POST.get('funid', '')
         work = None
         status = 1
-        data = ''
+        data = '计算成功。'
         try:
             funid = int(funid)
             fun = Fun.objects.get(id=funid)
@@ -5829,6 +5829,7 @@ def reporting_new(request):
             tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
                          "Calculatedata": CalculateTable}
 
+            print(len(cur_target))
             for target in cur_target:
                 # 电表走字
                 if operationtype == "1":
@@ -5956,6 +5957,8 @@ def reporting_new(request):
                             print(e)
                             status = 0
                             data = '计算失败：{e}'.format(e=e)
+                            import traceback
+                            traceback.print_exc()
                             break
 
         return JsonResponse({
