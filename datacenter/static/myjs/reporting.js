@@ -1395,15 +1395,14 @@ $(document).ready(function () {
 
                 },
             success: function (data) {
-                if (data == 1) {
+                if (data['status'] == 1) {
                     table.ajax.reload();
                     $("#new1").hide();
                     $("#save1").show();
                     $("#del1").show();
                     $("#release1").show();
-                    alert("新增成功！");
-                } else
-                    alert("新增失败，请于管理员联系。");
+                }
+                alert(data['data']);
             },
             error: function (e) {
                 alert("新增失败，请于管理员联系。");
@@ -1572,16 +1571,15 @@ $(document).ready(function () {
 
                 },
             success: function (data) {
-                if (data == 1) {
+                if (data['status'] == 1) {
                     table.ajax.reload();
                     $("#new2").hide();
                     $("#save2").show();
                     $("#del2").show();
                     $("#reset2").show();
                     $("#release2").show();
-                    alert("新增成功！");
-                } else
-                    alert("新增失败，请于管理员联系。");
+                }
+                alert(data['data']);
             },
             error: function (e) {
                 alert("新增失败，请于管理员联系。");
@@ -1734,18 +1732,17 @@ $(document).ready(function () {
 
                 },
             success: function (data) {
-                if (data == 1) {
+                if (data['status'] == 1) {
                     table.ajax.reload();
                     $("#new3").hide();
                     $("#save3").show();
                     $("#del3").show();
                     $("#reset3").show();
                     $("#release3").show();
-                    alert("新增成功！");
-                } else
-                    alert("新增失败，请于管理员联系。");
+                }
                 // 隐藏滚动条
                 customModal.hide();
+                alert(data['data'])
             },
             error: function (e) {
                 alert("新增失败，请于管理员联系。");
@@ -1896,9 +1893,8 @@ $(document).ready(function () {
                     $("#save5").show();
                     $("#del5").show();
                     $("#release5").show();
-                    alert("新增成功！");
-                } else
-                    alert("新增失败，请于管理员联系。");
+                }
+                alert(data['data'])
             },
             error: function (e) {
                 alert("新增失败，请于管理员联系。");

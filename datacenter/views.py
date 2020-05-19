@@ -5792,6 +5792,9 @@ def reporting_new(request):
         operationtype = request.POST.get('operationtype', '')
         funid = request.POST.get('funid', '')
         work = None
+        status = 1
+        data = '新增成功。'
+
         try:
             funid = int(funid)
             fun = Fun.objects.get(id=funid)
@@ -5803,152 +5806,159 @@ def reporting_new(request):
             app = int(app)
             reporting_date = getreporting_date(reporting_date, cycletype)
         except:
-            return HttpResponse(0)
+            status = 0
+            data = '应用不存在。'
+        else:
+            # 生成本次计算guid
+            # 数据库中与本次guid不同的指标才参数计算
+            guid = uuid.uuid1()
+            cur_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
+                                                                  operationtype=operationtype, work=work).order_by("sort")
+            # 所有常数
+            all_constant = Constant.objects.exclude(state="9").values()
+            all_target = Target.objects.exclude(state="9")
+            tableyear = str(reporting_date.year)
 
-        # 生成本次计算guid
-        # 数据库中与本次guid不同的指标才参数计算
-        guid = uuid.uuid1()
-        cur_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
-                                                              operationtype=operationtype, work=work).order_by("sort")
-        # 所有常数
-        all_constant = Constant.objects.exclude(state="9").values()
-        all_target = Target.objects.exclude(state="9")
-        tableyear = str(reporting_date.year)
+            EntryTable = getmodels("Entrydata", tableyear)
+            MeterTable = getmodels("Meterdata", tableyear)
+            ExtractTable = getmodels("Extractdata", tableyear)
+            CalculateTable = getmodels("Calculatedata", tableyear)
+            tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
+                         "Calculatedata": CalculateTable}
 
-        EntryTable = getmodels("Entrydata", tableyear)
-        MeterTable = getmodels("Meterdata", tableyear)
-        ExtractTable = getmodels("Extractdata", tableyear)
-        CalculateTable = getmodels("Calculatedata", tableyear)
-        tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
-                     "Calculatedata": CalculateTable}
+            for target in cur_target:
+                # 电表走字
+                if operationtype == "1":
 
-        for target in cur_target:
-            # 电表走字
-            if operationtype == "1":
+                    all_meterdata = getmodels("Meterdata", str((reporting_date + datetime.timedelta(
+                        days=-1)).year)).objects.exclude(state="9").filter(target=target,
+                                                                           datadate=reporting_date + datetime.timedelta(
+                                                                               days=-1))
+                    meterdata = getmodels("Meterdata", str(reporting_date.year))()
+                    if len(all_meterdata) > 0:
+                        meterdata.zerodata = all_meterdata[0].twentyfourdata
+                    else:
+                        meterdata.zerodata = 0
+                    meterdata.twentyfourdata = meterdata.zerodata
 
-                all_meterdata = getmodels("Meterdata", str((reporting_date + datetime.timedelta(
-                    days=-1)).year)).objects.exclude(state="9").filter(target=target,
-                                                                       datadate=reporting_date + datetime.timedelta(
-                                                                           days=-1))
-                meterdata = getmodels("Meterdata", str(reporting_date.year))()
-                if len(all_meterdata) > 0:
-                    meterdata.zerodata = all_meterdata[0].twentyfourdata
-                else:
-                    meterdata.zerodata = 0
-                meterdata.twentyfourdata = meterdata.zerodata
-
-                tablename = ""
-                try:
-                    tablename = target.storage.tablename
-                except:
-                    pass
-                if tablename != "":
-                    rows = []
+                    tablename = ""
                     try:
-                        with connection.cursor() as cursor:
-                            reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
-                            strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
-                                tablename=tablename, target_id=target.id, datadate=reporting_date_stf
-                            )
-                            cursor.execute(strsql)
-                            rows = cursor.fetchall()
-                    finally:
-                        connection.close()
-
-                    if len(rows) > 0:
-                        try:
-                            meterdata.twentyfourdata = rows[0][0]
-                        except:
-                            pass
-
-                meterdata.target = target
-                meterdata.datadate = reporting_date
-                meterdata.metervalue = decimal.Decimal(meterdata.twentyfourdata) - decimal.Decimal(meterdata.zerodata)
-                meterdata.curvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
-                meterdata.curvalue = round(meterdata.curvalue, target.digit)
-
-                if target.cumulative in ['1', '2', '3']:
-                    cumulative = getcumulative(tableList, target, reporting_date, meterdata.curvalue)
-                    meterdata.cumulativemonth = cumulative["cumulativemonth"]
-                    meterdata.cumulativequarter = cumulative["cumulativequarter"]
-                    meterdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
-                    meterdata.cumulativeyear = cumulative["cumulativeyear"]
-                meterdata.save()
-            # 录入
-            if operationtype == "15":
-                entrydata = getmodels("Entrydata", str(reporting_date.year))()
-                entrydata.target = target
-                entrydata.datadate = reporting_date
-                entrydata.curvalue = 0
-                entrydata.curvalue = round(entrydata.curvalue, target.digit)
-                if target.cumulative in ['1', '2', '3']:
-                    cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
-                    entrydata.cumulativemonth = cumulative["cumulativemonth"]
-                    entrydata.cumulativequarter = cumulative["cumulativequarter"]
-                    entrydata.cumulativehalfyear = cumulative["cumulativehalfyear"]
-                    entrydata.cumulativeyear = cumulative["cumulativeyear"]
-                entrydata.save()
-            # 提取
-            if operationtype == "16":
-                extractdata = getmodels("Extractdata", str(reporting_date.year))()
-                extractdata.target = target
-                extractdata.datadate = reporting_date
-                extractdata.curvalue = -9999
-
-                tablename = ""
-                try:
-                    tablename = target.storage.tablename
-                except:
-                    pass
-                if tablename != "":
-                    rows = []
-                    try:
-                        cursor = connection.cursor()
-                        with connection.cursor() as cursor:
-                            reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
-                            strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
-                                tablename=tablename, target_id=target.id, datadate=reporting_date_stf
-                            )
-                            cursor.execute(strsql)
-                            rows = cursor.fetchall()
-                        connection.close()
-                    except Exception as e:
+                        tablename = target.storage.tablename
+                    except:
                         pass
-                    if len(rows) > 0:
+                    if tablename != "":
+                        rows = []
                         try:
-                            if target.is_repeat == '2':
-                                rownum = 0
-                                rowvalue = 0
-                                for row in rows:
-                                    if row[0] is not None:
-                                        rowvalue += row[0]
-                                        rownum += 1
-                                extractdata.curvalue = rowvalue / rownum
-                            else:
-                                extractdata.curvalue = rows[0][0]
-                            extractdata.curvalue = decimal.Decimal(
-                                float(extractdata.curvalue) * float(target.magnification))
-                            extractdata.curvalue = round(extractdata.curvalue, target.digit)
-                        except:
-                            pass
+                            with connection.cursor() as cursor:
+                                reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
+                                strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
+                                    tablename=tablename, target_id=target.id, datadate=reporting_date_stf
+                                )
+                                cursor.execute(strsql)
+                                rows = cursor.fetchall()
+                        finally:
+                            connection.close()
 
-                if target.cumulative in ['1', '2', '3']:
-                    cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
-                    extractdata.cumulativemonth = cumulative["cumulativemonth"]
-                    extractdata.cumulativequarter = cumulative["cumulativequarter"]
-                    extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
-                    extractdata.cumulativeyear = cumulative["cumulativeyear"]
-                extractdata.save()
-            # 计算
-            if operationtype == "17":
-                # 为减少重复计算，判断指标calculate，如果指标calculate等于本次计算guid，则说明该指标在本次计算中以计算过
-                if target.calculateguid != str(guid):
+                        if len(rows) > 0:
+                            try:
+                                meterdata.twentyfourdata = rows[0][0]
+                            except:
+                                pass
+
+                    meterdata.target = target
+                    meterdata.datadate = reporting_date
+                    meterdata.metervalue = decimal.Decimal(meterdata.twentyfourdata) - decimal.Decimal(meterdata.zerodata)
+                    meterdata.curvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
+                    meterdata.curvalue = round(meterdata.curvalue, target.digit)
+
+                    if target.cumulative in ['1', '2', '3']:
+                        cumulative = getcumulative(tableList, target, reporting_date, meterdata.curvalue)
+                        meterdata.cumulativemonth = cumulative["cumulativemonth"]
+                        meterdata.cumulativequarter = cumulative["cumulativequarter"]
+                        meterdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                        meterdata.cumulativeyear = cumulative["cumulativeyear"]
+                    meterdata.save()
+                # 录入
+                if operationtype == "15":
+                    entrydata = getmodels("Entrydata", str(reporting_date.year))()
+                    entrydata.target = target
+                    entrydata.datadate = reporting_date
+                    entrydata.curvalue = 0
+                    entrydata.curvalue = round(entrydata.curvalue, target.digit)
+                    if target.cumulative in ['1', '2', '3']:
+                        cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
+                        entrydata.cumulativemonth = cumulative["cumulativemonth"]
+                        entrydata.cumulativequarter = cumulative["cumulativequarter"]
+                        entrydata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                        entrydata.cumulativeyear = cumulative["cumulativeyear"]
+                    entrydata.save()
+                # 提取
+                if operationtype == "16":
+                    extractdata = getmodels("Extractdata", str(reporting_date.year))()
+                    extractdata.target = target
+                    extractdata.datadate = reporting_date
+                    extractdata.curvalue = -9999
+
+                    tablename = ""
                     try:
-                        getcalculatedata(target, reporting_date, str(guid), all_constant, all_target, tableList)
-                    except Exception as e:
-                        print(e)
-                        HttpResponse(0)
-        return HttpResponse(1)
+                        tablename = target.storage.tablename
+                    except:
+                        pass
+                    if tablename != "":
+                        rows = []
+                        try:
+                            cursor = connection.cursor()
+                            with connection.cursor() as cursor:
+                                reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
+                                strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
+                                    tablename=tablename, target_id=target.id, datadate=reporting_date_stf
+                                )
+                                cursor.execute(strsql)
+                                rows = cursor.fetchall()
+                            connection.close()
+                        except Exception as e:
+                            pass
+                        if len(rows) > 0:
+                            try:
+                                if target.is_repeat == '2':
+                                    rownum = 0
+                                    rowvalue = 0
+                                    for row in rows:
+                                        if row[0] is not None:
+                                            rowvalue += row[0]
+                                            rownum += 1
+                                    extractdata.curvalue = rowvalue / rownum
+                                else:
+                                    extractdata.curvalue = rows[0][0]
+                                extractdata.curvalue = decimal.Decimal(
+                                    float(extractdata.curvalue) * float(target.magnification))
+                                extractdata.curvalue = round(extractdata.curvalue, target.digit)
+                            except:
+                                pass
+
+                    if target.cumulative in ['1', '2', '3']:
+                        cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
+                        extractdata.cumulativemonth = cumulative["cumulativemonth"]
+                        extractdata.cumulativequarter = cumulative["cumulativequarter"]
+                        extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                        extractdata.cumulativeyear = cumulative["cumulativeyear"]
+                    extractdata.save()
+                # 计算
+                if operationtype == "17":
+                    # 为减少重复计算，判断指标calculate，如果指标calculate等于本次计算guid，则说明该指标在本次计算中以计算过
+                    if target.calculateguid != str(guid):
+                        try:
+                            getcalculatedata(target, reporting_date, str(guid), all_constant, all_target, tableList)
+                        except Exception as e:
+                            print(e)
+                            status = 0
+                            data = '计算失败：{e}'.format(e=e)
+                            break
+
+        return JsonResponse({
+            'status': status,
+            'data': data
+        })
 
 
 def reporting_del(request):
