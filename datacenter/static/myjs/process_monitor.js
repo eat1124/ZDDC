@@ -250,7 +250,7 @@ $(document).ready(function () {
             // 指标信息
             $('#sample_2').dataTable({
                 "bAutoWidth": true,
-                "bSort": false,
+                "bSort": true,
                 "bProcessing": true,
                 "ajax": "../../pm_target_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&cycle_id=" + $('#cycle_id').val(),
                 "columns": [
@@ -308,7 +308,7 @@ $(document).ready(function () {
             // 指标信息
             $('#sample_3').dataTable({
                 "bAutoWidth": true,
-                "bSort": false,
+                "bSort": true,
                 "bProcessing": true,
                 "ajax": "../../get_exception_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&cycle_id=" + $('#cycle_id').val(),
                 "columns": [
@@ -387,7 +387,7 @@ $(document).ready(function () {
             // 指标信息
             $('#sample_4').dataTable({
                 "bAutoWidth": false,
-                "bSort": false,
+                "bSort": true,
                 "bProcessing": true,
                 "ajax": "../../get_log_info/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&cycle_id=" + $('#cycle_id').val(),
                 "columns": [
