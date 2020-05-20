@@ -47,7 +47,6 @@
                                 </div>
                             </div>
                             <div class="col-md-12">
-
                                 <div class="col-md-6">
                                     <div class="form-group ">
                                         <label class="col-md-3 control-label">业务类型</label>
@@ -71,6 +70,34 @@
                                                 {% for unit in unit_list %}
                                                     <option value="{{ unit.unit_id }}">{{ unit.unit_name }}</option>
                                                 {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="col-md-6">
+                                    <div class="form-group ">
+                                        <label class="col-md-3 control-label">所属应用</label>
+                                        <div class="col-md-7">
+                                            <input type="text" id="search_app_list" name="search_app_list"
+                                                   value="{{ search_app }}"
+                                                   hidden>
+                                            <select class="form-control" id="searchapp" name="searchapp">
+                                                <option selected value="">全部</option>
+                                                {% for app in search_app %}
+                                                    <option value="{{ app.id }}">{{ app.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group ">
+                                        <label class="col-md-3 control-label">所属业务</label>
+                                        <div class="col-md-7">
+                                            <select class="form-control" id="works" name="works">
+
                                             </select>
                                         </div>
                                     </div>
@@ -106,6 +133,7 @@
             <th> 业务类型</th>
             <th> 机组</th>
             <th> 所属应用</th>
+            <th> 所属业务</th>
             <th style="width:50px;"> 操作</th>
         </tr>
         </thead>
@@ -360,7 +388,7 @@
     </div>
 
     <div id="static1" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog" style="width:900px;">
+        <div class="modal-dialog" style="width:1100px;">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
@@ -414,7 +442,6 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-12">
-
                                                 <div class="col-md-6">
                                                     <div class="form-group ">
                                                         <label class="col-md-3 control-label">业务类型</label>
@@ -444,6 +471,32 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="col-md-12">
+                                                <div class="col-md-6">
+                                                    <div class="form-group ">
+                                                        <label class="col-md-3 control-label">所属应用</label>
+                                                        <div class="col-md-7">
+                                                            <select class="form-control" id="searchapp1"
+                                                                    name="searchapp1">
+                                                                <option selected value="">全部</option>
+                                                                {% for app in search_app %}
+                                                                    <option value="{{ app.id }}">{{ app.name }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group ">
+                                                        <label class="col-md-3 control-label">所属业务</label>
+                                                        <div class="col-md-7">
+                                                            <select class="form-control" id="works1" name="works1">
+
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -463,6 +516,8 @@
                             <th> 周期类型</th>
                             <th> 业务类型</th>
                             <th> 机组</th>
+                            <th> 所属应用</th>
+                            <th> 所属业务</th>
                         </tr>
                         </thead>
 

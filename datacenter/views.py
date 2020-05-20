@@ -2917,10 +2917,22 @@ def target_data(request):
             curadminapp = App.objects.get(id=int(search_app))
             curapp = App.objects.filter(id=int(search_app))
             all_target = all_target.exclude(adminapp=curadminapp).filter(app__in=curapp)
-        if search_app_noselect != "":
-            curadminapp = App.objects.get(id=int(search_app_noselect))
-            curapp = App.objects.filter(id=int(search_app_noselect))
-            all_target = all_target.exclude(adminapp=curadminapp).exclude(app__in=curapp)
+
+        try:
+            search_app_noselect = int(search_app_noselect)
+        except:
+            pass
+        else:
+            # 过滤查询指标
+            # curadminapp = App.objects.get(id=int(search_app_noselect))
+            # curapp = App.objects.filter(id=int(search_app_noselect))
+            # all_target = all_target.exclude(adminapp=curadminapp).exclude(app__in=curapp)
+
+            # 1.非当前应用，但查询应用为当前应用的指标
+            # 1.当前应用，非核心业务的指标
+            all_target = all_target.filter(
+                (Q(app__id=search_app_noselect) & ~Q(adminapp__id=search_app_noselect)) | (Q(adminapp__id=search_app_noselect) & ~Q(work__core='是'))
+            )
 
         if search_operationtype != "":
             all_target = all_target.filter(operationtype=search_operationtype)
@@ -2994,6 +3006,7 @@ def target_data(request):
 
             # 根据adminapp过滤出业务，并选中的业务
             work_selected = target.work.id if target.work else ''
+            work_selected_name = target.work.name if target.work else ''
             admin_app = target.adminapp
             if admin_app:
                 works = [work for work in all_works if work['app_id'] == admin_app.id]
@@ -3037,6 +3050,7 @@ def target_data(request):
                 "remark": target.remark,
 
                 'work_selected': work_selected,
+                'work_selected_name': work_selected_name,
                 'works': str(works),
                 "unity": target.unity,
                 "is_repeat": target.is_repeat,
@@ -3653,6 +3667,27 @@ def target_app_search_index(request, funid):
                 "storage_name": i.name,
                 "storage_id": i.id,
             })
+
+        # 所有业务 所有应用
+        all_works = Work.objects.exclude(state='9').values('app_id', 'id', 'name')
+        all_apps = App.objects.exclude(state='9').values('id', 'name')
+        search_app = []
+        for aa in all_apps:
+            works = []
+
+            for aw in all_works:
+                if aw['app_id'] == aa['id']:
+                    works.append({
+                        'id': aw['id'],
+                        'name': aw['name']
+                    })
+            if works:
+                search_app.append({
+                    'id': aa['id'],
+                    'name': aa['name'],
+                    "works": works
+                })
+
         return render(request, 'target_app_search.html',
                       {'username': request.user.userinfo.fullname,
                        "operation_type_list": operation_type_list,
@@ -3663,6 +3698,7 @@ def target_app_search_index(request, funid):
                        "cycle_list": cycle_list,
                        "storage_list": storage_list,
                        "adminapp": adminapp,
+                       "search_app": search_app,
                        "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
@@ -4022,7 +4058,7 @@ def reporting_index(request, cycletype, funid):
             # 只有该功能对应的业务为核心业务，才显示数据查询标签
             if work is not None and work.core == '是':
                 search_target = Target.objects.exclude(state='9').filter(cycletype=cycletype).filter(
-                    (Q(app__in=curapp) & ~Q(adminapp_id=app)) | (Q(adminapp_id=app) & ~Q(work__core='是'))
+                    (Q(app__in=curapp) & ~Q(adminapp__id=app)) | (Q(adminapp__id=app) & ~Q(work__core='是'))
                 ).values(
                     'adminapp__id', 'adminapp__name', 'work_id'
                 )
@@ -4980,7 +5016,8 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
 
                             if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id \
                                     and membertarget.cycletype == target.cycletype and membertarget.work_id == target.work_id \
-                                    and membertarget.calculateguid != guid and not cond.startswith('L'):  # 判断指标公式非当前周期的数据:
+                                    and membertarget.calculateguid != guid and not cond.startswith(
+                                'L'):  # 判断指标公式非当前周期的数据:
                                 getcalculatedata(membertarget, date, guid, all_constant, all_target, tableList)
 
                             # 取当年表
@@ -5816,7 +5853,8 @@ def reporting_new(request):
             # 数据库中与本次guid不同的指标才参数计算
             guid = uuid.uuid1()
             cur_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
-                                                                  operationtype=operationtype, work=work).order_by("sort")
+                                                                  operationtype=operationtype, work=work).order_by(
+                "sort")
             # 所有常数
             all_constant = Constant.objects.exclude(state="9").values()
             all_target = Target.objects.exclude(state="9")
@@ -5871,7 +5909,8 @@ def reporting_new(request):
 
                     meterdata.target = target
                     meterdata.datadate = reporting_date
-                    meterdata.metervalue = decimal.Decimal(meterdata.twentyfourdata) - decimal.Decimal(meterdata.zerodata)
+                    meterdata.metervalue = decimal.Decimal(meterdata.twentyfourdata) - decimal.Decimal(
+                        meterdata.zerodata)
                     meterdata.curvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
                     meterdata.curvalue = round(meterdata.curvalue, target.digit)
 

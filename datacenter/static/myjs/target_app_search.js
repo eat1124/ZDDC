@@ -13,6 +13,7 @@ $(document).ready(function () {
             {"data": "businesstype_name"},
             {"data": "unit_name"},
             {"data": "adminapp_name"},
+            {"data": "work_selected_name"},
             {"data": null}
         ],
 
@@ -122,60 +123,121 @@ $(document).ready(function () {
         }
     });
 
-    $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit').change(function () {
+    $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit, #searchapp, #works').change(function () {
+        var filterType = $(this).prop('id');
+        if (filterType == 'searchapp') {
+            var app_id = $(this).val();
+            if (app_id) {
+                $('#works').empty();
+                // 应用对应的works
+                var pre_work_option = '<option selected value="">全部</option>';
+                for (var i = 0; i < search_app_list.length; i++) {
+                    if (search_app_list[i].id == app_id) {
+                        for (var j = 0; j < search_app_list[i].works.length; j++) {
+                            pre_work_option += '<option value="' + search_app_list[i].works[j].id + '">' + search_app_list[i].works[j].name + '</option>';
+                        }
+                        break;
+                    }
+                }
+                $('#works').append(pre_work_option);
+            } else {
+                workSelectInit('filter');
+            }
+        }
         var table = $('#sample_1').DataTable();
-        table.ajax.url("../../target_data?search_app=" + $('#adminapp').val() + "&search_operationtype=" + $('#search_operationtype').val() + "&search_cycletype=" + $('#search_cycletype').val() + "&search_businesstype=" + $('#search_businesstype').val() + "&search_unit=" + $('#search_unit').val()).load();
-    })
+        table.ajax.url("../../target_data?search_app=" + $('#adminapp').val() + "&search_operationtype=" +
+            $('#search_operationtype').val() + "&search_cycletype=" + $('#search_cycletype').val() +
+            "&search_businesstype=" + $('#search_businesstype').val() + "&search_unit=" + $('#search_unit').val() +
+            "&works=" + $('#works').val() + "&search_adminapp=" + $('#searchapp').val()
+        ).load();
+    });
 
     $('#error').click(function () {
         $(this).hide()
-    })
-
-    $('#sample_2').dataTable({
-        "bAutoWidth": true,
-        "bSort": false,
-        "bProcessing": true,
-        "ajax": "../../target_data/?search_app_noselect=" + $('#adminapp').val(),
-        "columns": [
-            {"data": "id"},
-            {"data": "id"},
-            {"data": "name"},
-            {"data": "code"},
-            {"data": "operationtype_name"},
-            {"data": "cycletype_name"},
-            {"data": "businesstype_name"},
-            {"data": "unit_name"},
-        ],
-
-        "columnDefs": [{
-            "targets": 0,
-            "mRender": function (data, type, full) {
-                return "<input name='selecttarget' type='checkbox' class='checkboxes' value='" + data + "'/>"
-            }
-
-
-        }],
-        "oLanguage": {
-            "sLengthMenu": "每页显示 _MENU_ 条记录",
-            "sZeroRecords": "抱歉， 没有找到",
-            "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
-            "sInfoEmpty": "没有数据",
-            "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
-            "sSearch": "搜索",
-            "oPaginate": {
-                "sFirst": "首页",
-                "sPrevious": "前一页",
-                "sNext": "后一页",
-                "sLast": "尾页"
-            },
-            "sZeroRecords": "没有检索到数据",
-        }
     });
 
-    $('#search_operationtype1,#search_cycletype1,#search_businesstype1,#search_unit1').change(function () {
+    var sample_2_completed = false;
+    $('#static1').on('show.bs.modal', function () {
+        workSelectInit('import');
+        $('#search_operationtype1, #search_cycletype1, #search_businesstype1, #search_unit1, #searchapp1, #works1').val('');
+
+        if (sample_2_completed) {
+            $('#sample_2').DataTable().destroy();
+        }
+        $('#sample_2').dataTable({
+            "bAutoWidth": true,
+            "bSort": false,
+            "bProcessing": true,
+            "ajax": "../../target_data/?search_app_noselect=" + $('#adminapp').val(),
+            "columns": [
+                {"data": "id"},
+                {"data": "id"},
+                {"data": "name"},
+                {"data": "code"},
+                {"data": "operationtype_name"},
+                {"data": "cycletype_name"},
+                {"data": "businesstype_name"},
+                {"data": "unit_name"},
+                {"data": "adminapp_name"},
+                {"data": "work_selected_name"},
+            ],
+            "columnDefs": [{
+                "targets": 0,
+                "mRender": function (data, type, full) {
+                    return "<input name='selecttarget' type='checkbox' class='checkboxes' value='" + data + "'/>"
+                }
+
+
+            }],
+            "oLanguage": {
+                "sLengthMenu": "每页显示 _MENU_ 条记录",
+                "sZeroRecords": "抱歉， 没有找到",
+                "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                "sInfoEmpty": "没有数据",
+                "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                "sSearch": "搜索",
+                "oPaginate": {
+                    "sFirst": "首页",
+                    "sPrevious": "前一页",
+                    "sNext": "后一页",
+                    "sLast": "尾页"
+                },
+                "sZeroRecords": "没有检索到数据",
+            },
+            "initComplete": function () {
+                sample_2_completed = true;
+            }
+        });
+    });
+
+    $('#search_operationtype1, #search_cycletype1, #search_businesstype1, #search_unit1, #searchapp1, #works1').change(function () {
+        var filterType = $(this).prop('id');
+        if (filterType == 'searchapp1') {
+            var app_id = $(this).val();
+            if (app_id) {
+                $('#works1').empty();
+                // 应用对应的works
+                var pre_work_option = '<option selected value="">全部</option>';
+                for (var i = 0; i < search_app_list.length; i++) {
+                    if (search_app_list[i].id == app_id) {
+                        for (var j = 0; j < search_app_list[i].works.length; j++) {
+                            pre_work_option += '<option value="' + search_app_list[i].works[j].id + '">' + search_app_list[i].works[j].name + '</option>';
+                        }
+                        break;
+                    }
+                }
+                $('#works1').append(pre_work_option);
+            } else {
+                workSelectInit('import');
+            }
+        }
         var table = $('#sample_2').DataTable();
-        table.ajax.url("../../target_data?search_app_noselect=" + $('#adminapp').val() + "&search_operationtype=" + $('#search_operationtype1').val() + "&search_cycletype=" + $('#search_cycletype1').val() + "&search_businesstype=" + $('#search_businesstype1').val() + "&search_unit=" + $('#search_unit1').val()).load();
-    })
+        table.ajax.url("../../target_data?search_app_noselect=" + $('#adminapp').val() + "&search_operationtype=" + $('#search_operationtype1').val() +
+            "&search_cycletype=" + $('#search_cycletype1').val() + "&search_businesstype=" + $('#search_businesstype1').val() +
+            "&search_unit=" + $('#search_unit1').val() + "&works=" + $('#works').val() + "&search_adminapp=" + $('#searchapp').val() +
+            "&works=" + $('#works1').val() + "&search_adminapp=" + $('#searchapp1').val()
+        ).load();
+    });
 
     $('#addapp_save').click(function () {
         var table1 = $('#sample_1').DataTable();
@@ -210,5 +272,30 @@ $(document).ready(function () {
             });
         }
 
-    })
+    });
+    var search_app_list = eval($('#search_app_list').val());
+
+    // 业务下拉框
+    function workSelectInit(operate) {
+        var pre = '<option selected value="" >全部</option>';
+        for (var i = 0; i < search_app_list.length; i++) {
+            if (search_app_list[i].works.length > 0) {
+                pre += '<optgroup label="' + search_app_list[i].name + '" class="dropdown-header">';
+                for (var j = 0; j < search_app_list[i].works.length; j++) {
+                    pre += '<option value="' + search_app_list[i].works[j].id + '">' + search_app_list[i].works[j].name + '</option>';
+                }
+                pre += '</optgroup>';
+            }
+        }
+        if (operate == 'import'){
+            $('#works1').empty();
+            $('#works1').append(pre);
+        }
+        if (operate == 'filter'){
+            $('#works').empty();
+            $('#works').append(pre);
+        }
+    }
+
+    workSelectInit('filter');
 });

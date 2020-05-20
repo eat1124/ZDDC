@@ -167,7 +167,7 @@ class PIQuery(object):
     def __init__(self, connection):
         self.connection = connection
 
-    def get_data_from_pi(self, source_content, time):
+    def get_data_from_pi(self, source_content, time, target):
         """
         从PI中取数据
             type: avg, max, min, delta, real
@@ -218,7 +218,7 @@ class PIQuery(object):
             if type(curvalue) == dict:
                 if curvalue['success']:
                     if curvalue['success'] == "0":
-                        error = 'Extract >> get_row_data() >> PI数据获取失败：' + str(curvalue)
+                        error = '指标{target}，PI数据获取失败：{e}'.format(target=target.code, e=str(curvalue))
                     else:
                         # curvalue保留位数处理
                         if curvalue['value'] is not None and digit != "" and digit is not None:
@@ -231,13 +231,13 @@ class PIQuery(object):
                                 logger.info("PI取数小数处理异常: " + str(e))
                         result_list = [[curvalue['value']]]
                 else:
-                    error = 'Extract >> get_row_data() >> PI数据获取失败：' + str(curvalue)
+                    error = '指标{target}，PI数据获取失败：{e}'.format(target=target.code, e=str(curvalue))
             elif type(curvalue) == list:
-                error = 'Extract >> get_row_data() >> PI数据获取失败：' + str(curvalue)
+                error = '指标{target}，PI数据获取失败：{e}'.format(target=target.code, e=str(curvalue))
             else:
-                error = 'Extract >> get_row_data() >> PI数据获取失败：' + str(curvalue)
+                error = '指标{target}，PI数据获取失败：{e}'.format(target=target.code, e=str(curvalue))
         else:
-            error = 'Extract >> get_row_data() >> PI数据获取失败：' + str(curvalue)
+            error = '指标{target}，PI数据获取失败：{e}'.format(target=target.code, e=str(curvalue))
         logger.info(str({"result": result_list, "error": error}))
         return {"result": result_list, "error": error}
 
@@ -428,7 +428,7 @@ class Extract(object):
                 source_content = target.source_content
                 if source_type_name == 'PI':
                     pi_query = PIQuery(source_connection)
-                    result = pi_query.get_data_from_pi(source_content, time)
+                    result = pi_query.get_data_from_pi(source_content, time, target)
                     result_list = result["result"]
                     error = result["error"]
                 else:
