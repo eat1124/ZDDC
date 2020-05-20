@@ -2924,7 +2924,9 @@ def target_data(request):
             pass
         else:
             # 过滤查询指标
-            all_target = all_target.exclude(adminapp__id=search_app_noselect).exclude(app__id=search_app_noselect)
+            # 剔除当前核心业务的指标
+            all_target = all_target.filter((~Q(adminapp__id=search_app_noselect) & ~Q(app__id=search_app_noselect)) | (
+                (~Q(work__core='是') & ~Q(app__id=search_app_noselect) & Q(adminapp__id=search_app_noselect))))
 
         if search_operationtype != "":
             all_target = all_target.filter(operationtype=search_operationtype)
