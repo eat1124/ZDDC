@@ -667,16 +667,26 @@ $(document).ready(function () {
     $('#search_operationtype1,#search_cycletype1,#search_businesstype1,#search_unit1').change(function () {
         var table = $('#sample_2').DataTable();
         table.ajax.url("../../target_data?search_adminapp=null" + "&search_operationtype=" + $('#search_operationtype1').val() + "&search_cycletype=" + $('#search_cycletype1').val() + "&search_businesstype=" + $('#search_businesstype1').val() + "&search_unit=" + $('#search_unit1').val()).load();
-    })
+    });
+
+    var importData = [];
+    // 选中导入指标
+    $('#sample_2 tbody').on('click', 'input[name="selecttarget"]', function () {
+        if ($(this).prop('checked')) {
+            importData.push($(this).val());
+        } else {
+            for (var i = 0; i < importData.length; i++) {
+                if (importData[i] == $(this).val()) {
+                    importData.splice(i, 1);
+                }
+            }
+        }
+    });
 
     $('#addadminapp_save').click(function () {
         var table1 = $('#sample_1').DataTable();
         var table2 = $('#sample_2').DataTable();
-        var theArray = []
-        $("input[name=selecttarget]:checked").each(function () {
-            theArray.push($(this).val());
-        });
-        if (theArray.length < 1) {
+        if (importData.length < 1) {
             alert("请至少选择一个指标");
         } else {
             $.ajax({
@@ -686,7 +696,7 @@ $(document).ready(function () {
                 data:
                     {
                         adminapp: $("#adminapp").val(),
-                        selectedtarget: theArray,
+                        selectedtarget: JSON.stringify(importData),
                     },
                 success: function (data) {
                     var myres = data["res"];

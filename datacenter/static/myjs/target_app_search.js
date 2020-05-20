@@ -239,14 +239,25 @@ $(document).ready(function () {
         ).load();
     });
 
+    var importData = [];
+    // 选中导入指标
+    $('#sample_2 tbody').on('click', 'input[name="selecttarget"]', function () {
+        if ($(this).prop('checked')) {
+            importData.push($(this).val());
+        } else {
+            for (var i = 0; i < importData.length; i++) {
+                if (importData[i] == $(this).val()) {
+                    importData.splice(i, 1);
+                }
+            }
+        }
+    });
+
+
     $('#addapp_save').click(function () {
         var table1 = $('#sample_1').DataTable();
         var table2 = $('#sample_2').DataTable();
-        var theArray = []
-        $("input[name=selecttarget]:checked").each(function () {
-            theArray.push($(this).val());
-        });
-        if (theArray.length < 1) {
+        if (importData.length < 1) {
             alert("请至少选择一个指标");
         } else {
             $.ajax({
@@ -256,7 +267,7 @@ $(document).ready(function () {
                 data:
                     {
                         adminapp: $("#adminapp").val(),
-                        selectedtarget: theArray,
+                        selectedtarget: JSON.stringify(importData),
                     },
                 success: function (data) {
                     var myres = data["res"];
@@ -287,11 +298,11 @@ $(document).ready(function () {
                 pre += '</optgroup>';
             }
         }
-        if (operate == 'import'){
+        if (operate == 'import') {
             $('#works1').empty();
             $('#works1').append(pre);
         }
-        if (operate == 'filter'){
+        if (operate == 'filter') {
             $('#works').empty();
             $('#works').append(pre);
         }

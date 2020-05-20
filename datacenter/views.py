@@ -3555,7 +3555,7 @@ def target_app_index(request, funid):
 def target_importadminapp(request):
     if request.user.is_authenticated():
         adminapp = request.POST.get("adminapp", "")
-        selectedtarget = request.POST.getlist('selectedtarget[]')
+        selectedtarget = request.POST.get('selectedtarget', '[]')
 
         result = {}
         try:
@@ -3567,7 +3567,7 @@ def target_importadminapp(request):
             if len(my_app) > 0:
                 curapp = my_app[0]
 
-                Target.objects.exclude(state="9").filter(id__in=[int(target) for target in selectedtarget]).update(**{
+                Target.objects.exclude(state="9").filter(id__in=[int(target) for target in eval(selectedtarget)]).update(**{
                     'adminapp': curapp
                 })
 
@@ -3701,7 +3701,7 @@ def target_app_search_index(request, funid):
 def target_importapp(request):
     if request.user.is_authenticated():
         adminapp = request.POST.get("adminapp", "")
-        selectedtarget = request.POST.getlist('selectedtarget[]')
+        selectedtarget = request.POST.get('selectedtarget', '[]')
 
         result = {}
         try:
@@ -3711,12 +3711,12 @@ def target_importapp(request):
         my_app = App.objects.exclude(state="9").filter(id=app_id)
         if len(my_app) > 0:
             curapp = my_app[0]
-            for target in selectedtarget:
+            for target in eval(selectedtarget):
                 try:
                     my_target = Target.objects.exclude(state="9").get(id=int(target))
                     my_target.app.add(curapp)
-                except:
-                    pass
+                except Exception as e:
+                    print(e)
             result["res"] = '导入完成。'
         else:
             result["res"] = '当前应用不存在。'
