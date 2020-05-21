@@ -152,7 +152,7 @@
                              data-size="10px" data-railOpacity="0.2">
                             <!-- nav -->
                             <nav class="nav-primary hidden-xs ">
-                                <ul class="nav nav-main" data-ride="collapse">
+                                <ul class="nav nav-main" data-ride="collapse" style="overflow: auto">
                                     {% for fun in pagefuns.pagefuns %}
                                     <li style="font-size:16px" class="{% if fun.isselected %}active{% endif %} ">
                                         <a href="{{ fun.url }}" class="auto">
@@ -190,8 +190,25 @@
                                                                     <i class="i i-circle-sm text-active"></i>
                                                                 </span>
                                                             {% endif %}
-                                                            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ fun2.name }}</span>
+                                                            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ fun2.name }}</span>
                                                         </a>
+                                                        {% if fun2.child %}
+                                                        <ul class="nav dk">
+                                                            {% for fun3 in fun2.child %}
+                                                            <li class=" {% if fun3.isselected %}active{% endif %}">
+                                                                <a href="{{ fun3.url }}" class="auto">
+                                                                    {% if fun3.child %}
+                                                                    <span class="pull-right text-muted">
+                                                                            <i class="i i-circle-sm-o text"></i>
+                                                                            <i class="i i-circle-sm text-active"></i>
+                                                                        </span>
+                                                                    {% endif %}
+                                                                    <span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ fun3.name }}</span>
+                                                                </a>
+                                                            </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                        {% endif %}
                                                     </li>
                                                     {% endfor %}
                                                 </ul>
