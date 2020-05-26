@@ -4931,6 +4931,24 @@ def getcumulative(tableList, target, date, value):
                 )
         if target.cycletype == "14":
             pass
+    
+    # 处理保留位数
+    try:
+        cumulativemonth = round(cumulativemonth, target.digit)
+    except:
+        pass
+    try:
+        cumulativequarter = round(cumulativequarter, target.digit)
+    except:
+        pass
+    try:
+        cumulativehalfyear = round(cumulativehalfyear, target.digit)
+    except:
+        pass
+    try:
+        cumulativeyear = round(cumulativeyear, target.digit)
+    except:
+        pass
     return {"cumulativemonth": cumulativemonth, "cumulativequarter": cumulativequarter,
             "cumulativehalfyear": cumulativehalfyear, "cumulativeyear": cumulativeyear}
 
