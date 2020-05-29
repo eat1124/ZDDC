@@ -1475,7 +1475,7 @@ def report_app_index(request, funid):
                                 errors.append('报表编码不能为空。')
                             else:
                                 if report_type.strip() == '':
-                                    errors.append('报表类别不能为空。')
+                                    errors.append('报表类型不能为空。')
                                 else:
                                     if app.strip() == '':
                                         errors.append('关联应用不能为空。')
