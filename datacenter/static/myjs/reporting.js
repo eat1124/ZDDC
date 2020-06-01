@@ -1887,7 +1887,7 @@ $(document).ready(function () {
 
                 },
             success: function (data) {
-                if (data == 1) {
+                if (data['status'] == 1) {
                     table.ajax.reload();
                     $("#new5").hide();
                     $("#save5").show();
