@@ -247,7 +247,7 @@ $(document).ready(function () {
         "bPaginate": false,
         "bFilter": false,
         "ajax": "../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
-            "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15" + "&funid=" + $('#funid').val(),
+        "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15" + "&funid=" + $('#funid').val(),
         "columns": [
             {"data": "id"},
             {"data": "target_name"},
@@ -421,7 +421,7 @@ $(document).ready(function () {
         "bPaginate": false,
         "bFilter": false,
         "ajax": "../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" +
-            $('#reporting_date').val() + "&operationtype=16" + "&funid=" + $('#funid').val(),
+        $('#reporting_date').val() + "&operationtype=16" + "&funid=" + $('#funid').val(),
         "columns": [
             {"data": "id"},
             {"data": "target_name"},
@@ -593,7 +593,7 @@ $(document).ready(function () {
         "bPaginate": false,
         "bFilter": false,
         "ajax": "../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" +
-            $('#reporting_date').val() + "&operationtype=17" + "&funid=" + $('#funid').val(),
+        $('#reporting_date').val() + "&operationtype=17" + "&funid=" + $('#funid').val(),
         "columns": [
             {"data": "id"},
             {"data": "target_name"},
@@ -855,8 +855,8 @@ $(document).ready(function () {
         "bPaginate": false,
         "bFilter": false,
         "ajax": "../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
-            "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1" +
-            "&funid=" + $('#funid').val(),
+        "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1" +
+        "&funid=" + $('#funid').val(),
         "columns": [
             {"data": "id"},
             {"data": "target_name"},
@@ -1276,6 +1276,13 @@ $(document).ready(function () {
                                     data5[i].cumulativequarter = newcumulativequarter;
                                     data5[i].cumulativehalfyear = newcumulativehalfyear;
                                     data5[i].cumulativeyear = newcumulativeyear;
+                                    if (Number($('#table5_zerodata_' + id).val()) == Number($('#table5_twentyfourdata_' + id).val())) {
+                                        $('#table5_zerodata_' + id).parent().parent().children().css("color", "#FF0000")
+                                    } else if ((data5[i].target_upperlimit && (Number($('#table5_curvalue_' + id).val()) > data5[i].target_upperlimit)) || (data5[i].target_lowerlimit && Number($('#table5_curvalue_' + id).val()) < data5[i].target_lowerlimit)) {
+                                         $('#table5_zerodata_' + id).parent().parent().children().css("color", "#FF0000")
+                                    } else {
+                                         $('#table5_zerodata_' + id).parent().parent().children().css("color", "#000000")
+                                    }
                                     return false
                                 }
                             })
