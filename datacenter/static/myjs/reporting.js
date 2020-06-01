@@ -401,7 +401,7 @@ $(document).ready(function () {
                     }
                 },
                 error: function (e) {
-                    alert("公式解析失败，请于管理员联系。");
+                    alert("页面出现错误，请于管理员联系。");
                 }
             });
         }
@@ -573,7 +573,7 @@ $(document).ready(function () {
                     }
                 },
                 error: function (e) {
-                    alert("公式解析失败，请于管理员联系。");
+                    alert("页面出现错误，请于管理员联系。");
                 }
             });
         }
@@ -752,7 +752,7 @@ $(document).ready(function () {
                     }
                 },
                 error: function (e) {
-                    alert("公式解析失败，请于管理员联系。");
+                    alert("页面出现错误，请于管理员联系。");
                 }
             });
         }
@@ -1057,7 +1057,7 @@ $(document).ready(function () {
                     }
                 },
                 error: function (e) {
-                    alert("公式解析失败，请于管理员联系。");
+                    alert("页面出现错误，请于管理员联系。");
                 }
             });
         }
@@ -1099,7 +1099,7 @@ $(document).ready(function () {
                     }
                 },
                 error: function (e) {
-                    alert("公式解析失败，请于管理员联系。");
+                    alert("页面出现错误，请于管理员联系。");
                 }
             });
         }
@@ -1137,7 +1137,7 @@ $(document).ready(function () {
                     }
                 },
                 error: function (e) {
-                    alert("公式解析失败，请于管理员联系。");
+                    alert("页面出现错误，请于管理员联系。");
                 }
             });
         }
@@ -1291,7 +1291,7 @@ $(document).ready(function () {
                         }
                     },
                     error: function (e) {
-                        alert("公式解析失败，请于管理员联系。");
+                        alert("页面出现错误，请于管理员联系。");
                     }
                 });
             }
