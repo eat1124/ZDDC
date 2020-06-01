@@ -1154,6 +1154,7 @@ $(document).ready(function () {
             }
         })
         $("#id").val(data.id);
+        $("#target_id").val(data.target_id);
         $("#cumulative").val(data.target_cumulative);
         $("#curvalue").val(data.curvalue);
         $("#cumulativemonth").val(data.cumulativemonth);
@@ -1221,57 +1222,72 @@ $(document).ready(function () {
     $('#confirm').click(function () {
         if (confirm("换表后将新增换表记录，并修改此表计倍率，请谨慎操作！！！\r是否继续换表操作？")) {
             var id = $("#id").val();
+            var target_id = $("#target_id").val();
             var cumulative = $("#cumulative").val();
-            var curvalue = $("#curvalue").val();
-            var cumulativemonth = $("#cumulativemonth").val();
-            var cumulativequarter = $("#cumulativequarter").val();
-            var cumulativehalfyear = $("#cumulativehalfyear").val();
-            var cumulativeyear = $("#cumulativeyear").val();
+            var curvalue = $("#finalvalue").val()
+
             $("#table5_magnification_" + id).val($("#newtable_magnification").val());
-            $("#table5_curvalue_" + id).val($("#finalvalue").val());
+            $("#table5_curvalue_" + id).val(curvalue);
             $("#table5_zerodata_" + id).val($("#oldtable_zerodata").val());
             $("#table5_twentyfourdata_" + id).val($("#newtable_twentyfourdata").val());
             $("#table5_metervalue_" + id).val(math.number(math.subtract(math.bignumber(Number($("#table5_twentyfourdata_" + id).val())), math.bignumber(Number($("#table5_zerodata_" + id).val())))));
             $("#table5_curvalue_" + id).attr("disabled", "disabled");
             $("#table5_twentyfourdata_" + id).attr("disabled", "disabled");
             $("#table5_zerodata_" + id).attr("disabled", "disabled");
-            var newcumulativemonth = "";
-            var newcumulativequarter = "";
-            var newcumulativehalfyear = "";
-            var newcumulativeyear = "";
-            if (cumulative == '是') {
-                newcumulativemonth = math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativemonth)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val()))));
-                newcumulativequarter = math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativequarter)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val()))));
-                newcumulativehalfyear = math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativehalfyear)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val()))));
-                newcumulativeyear = math.number(math.add(math.bignumber(math.number(math.subtract(math.bignumber(Number(cumulativeyear)), math.bignumber(Number(curvalue))))), math.bignumber(Number($('#table5_curvalue_' + id).val()))));
 
-                $('#table5_cumulativemonth_' + id).val(newcumulativemonth);
-                $('#table5_cumulativequarter_' + id).val(newcumulativequarter);
-                $('#table5_cumulativehalfyear_' + id).val(newcumulativehalfyear);
-                $('#table5_cumulativeyear_' + id).val(newcumulativeyear);
+            // 累计值 月、季、半年、年
+            if (['1', '2', '3'].indexOf(cumulative) != -1) {
+                $.ajax({
+                    type: "POST",
+                    url: "../../../ajax_cumulate/",
+                    data: {
+                        cur_value: curvalue,
+                        target_id: target_id,
+                        reporting_date: $('#reporting_date').val(),
+                        cycletype: $('#cycletype').val(),
+                    },
+                    success: function (ajax_data) {
+                        if (ajax_data.status == 1) {
+                            var newcumulativemonth = ajax_data.data.cumulativemonth;
+                            var newcumulativequarter = ajax_data.data.cumulativequarter;
+                            var newcumulativehalfyear = ajax_data.data.cumulativehalfyear;
+                            var newcumulativeyear = ajax_data.data.cumulativeyear;
+                            $('#table5_cumulativemonth_' + id).val(newcumulativemonth);   // math.js精度计算
+                            $('#table5_cumulativequarter_' + id).val(newcumulativequarter);
+                            $('#table5_cumulativehalfyear_' + id).val(newcumulativehalfyear);
+                            $('#table5_cumulativeyear_' + id).val(newcumulativeyear);
+
+                            var data5 = $('#sample_5').DataTable().data();
+                            $.each(data5, function (i, item) {
+                                if (item.id == id) {
+                                    data5[i].meterchangedata_id = "0";
+                                    data5[i].oldtable_zerodata = $("#oldtable_zerodata").val();
+                                    data5[i].oldtable_twentyfourdata = $("#oldtable_twentyfourdata").val();
+                                    data5[i].oldtable_value = $("#oldtable_value").val();
+                                    data5[i].oldtable_magnification = $("#oldtable_magnification").val();
+                                    data5[i].oldtable_finalvalue = $("#oldtable_finalvalue").val();
+                                    data5[i].newtable_zerodata = $("#newtable_zerodata").val();
+                                    data5[i].newtable_twentyfourdata = $("#newtable_twentyfourdata").val();
+                                    data5[i].newtable_value = $("#newtable_value").val();
+                                    data5[i].newtable_magnification = $("#newtable_magnification").val();
+                                    data5[i].newtable_finalvalue = $("#newtable_finalvalue").val();
+                                    data5[i].finalvalue = $("#finalvalue").val();
+                                    data5[i].cumulativemonth = newcumulativequarter;
+                                    data5[i].cumulativequarter = newcumulativequarter;
+                                    data5[i].cumulativehalfyear = newcumulativehalfyear;
+                                    data5[i].cumulativeyear = newcumulativeyear;
+                                    return false
+                                }
+                            })
+                        } else {
+                            alert(ajax_data.data);
+                        }
+                    },
+                    error: function (e) {
+                        alert("公式解析失败，请于管理员联系。");
+                    }
+                });
             }
-            var data5 = $('#sample_5').DataTable().data();
-            $.each(data5, function (i, item) {
-                if (item.id == id) {
-                    data5[i].meterchangedata_id = "0";
-                    data5[i].oldtable_zerodata = $("#oldtable_zerodata").val();
-                    data5[i].oldtable_twentyfourdata = $("#oldtable_twentyfourdata").val();
-                    data5[i].oldtable_value = $("#oldtable_value").val();
-                    data5[i].oldtable_magnification = $("#oldtable_magnification").val();
-                    data5[i].oldtable_finalvalue = $("#oldtable_finalvalue").val();
-                    data5[i].newtable_zerodata = $("#newtable_zerodata").val();
-                    data5[i].newtable_twentyfourdata = $("#newtable_twentyfourdata").val();
-                    data5[i].newtable_value = $("#newtable_value").val();
-                    data5[i].newtable_magnification = $("#newtable_magnification").val();
-                    data5[i].newtable_finalvalue = $("#newtable_finalvalue").val();
-                    data5[i].finalvalue = $("#finalvalue").val();
-                    data5[i].cumulativemonth = newcumulativequarter;
-                    data5[i].cumulativequarter = newcumulativequarter;
-                    data5[i].cumulativehalfyear = newcumulativehalfyear;
-                    data5[i].cumulativeyear = newcumulativeyear;
-                    return false
-                }
-            })
 
             $('#static5').modal('hide');
         } else {

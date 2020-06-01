@@ -5879,6 +5879,7 @@ def reporting_new(request):
             tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
                          "Calculatedata": CalculateTable}
 
+            print(len(cur_target))
             for target in cur_target:
                 # 电表走字
                 if operationtype == "1":
