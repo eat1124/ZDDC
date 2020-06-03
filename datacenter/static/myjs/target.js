@@ -742,7 +742,7 @@ $(document).ready(function () {
         $("#search_unit3").val("");
 
         loadcycleData();
-        $('#myModal').modal('show');
+        $('#insert_target').modal('show');
     });
 
 
@@ -1015,7 +1015,7 @@ $(document).ready(function () {
         data = data.slice(0, seat) + select + data.slice(seat);
         $('#formula').val(data);
         analysisFunction();
-        $('#myModal').modal('hide');
+        $('#insert_target').modal('hide');
     });
 
     $('#storage').change(function () {
@@ -1073,7 +1073,7 @@ $(document).ready(function () {
         data = data.slice(0, seat) + select + data.slice(seat);
         $('#formula').val(data);
         analysisFunction();
-        $('#myModal').modal('hide');
+        $('#insert_target').modal('hide');
     });
 
     // 推送
