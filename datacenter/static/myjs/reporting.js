@@ -242,7 +242,7 @@ $(document).ready(function () {
     // 数据录入 operationtype 15
     $('#sample_1').dataTable({
         "bAutoWidth": true,
-        "bSort": true,
+        "bSort": false,
         "bProcessing": true,
         "bPaginate": false,
         "bFilter": false,
