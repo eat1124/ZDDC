@@ -3459,13 +3459,9 @@ def target_app_index(request, funid):
 
         applist = App.objects.all().exclude(state='9')
         for i in applist:
-            # 业务
-            works = i.work_set.exclude(state='9').values('id', 'name', 'core')
-
             app_list.append({
                 "app_name": i.name,
                 "app_id": i.id,
-                "works": works,
             })
 
         c_dict_index_1 = DictIndex.objects.filter(
