@@ -292,10 +292,11 @@ $(document).ready(function () {
 
         ajaxFunction();
         analysisFunction();
-        $("#formula").bind('input propertychange', function () {
-            analysisFunction();
-        });
 
+    });
+
+    $("#formula").bind('input propertychange', function () {
+            analysisFunction();
     });
 
     // 数据来源
@@ -453,9 +454,6 @@ $(document).ready(function () {
 
         ajaxFunction();
         analysisFunction();
-        $("#formula").bind('input propertychange', function () {
-            analysisFunction();
-        });
 
         $('#data_from').val('');
         $('#calculate_source').val('');

@@ -391,10 +391,12 @@ $(document).ready(function () {
 
         ajaxFunction();
         analysisFunction();
-        $("#formula").bind('input propertychange', function () {
+
+    });
+
+    $("#formula").bind('input propertychange', function () {
             analysisFunction();
         });
-    });
 
     // 数据来源
     $('#data_from').change(function () {
@@ -593,9 +595,6 @@ $(document).ready(function () {
 
         ajaxFunction();
         analysisFunction();
-        $("#formula").bind('input propertychange', function () {
-            analysisFunction();
-        });
 
         $('#data_from').val('');
         $('#calculate_source').val('');
