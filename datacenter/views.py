@@ -3449,12 +3449,24 @@ def target_app_index(request, funid):
         source_list = []
         cycle_list = []
         storage_list = []
+        app_list = []
         adminapp = ""
         try:
             cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
             adminapp = cur_fun[0].app
         except:
             return HttpResponseRedirect("/index")
+
+        applist = App.objects.all().exclude(state='9')
+        for i in applist:
+            # 业务
+            works = i.work_set.exclude(state='9').values('id', 'name', 'core')
+
+            app_list.append({
+                "app_name": i.name,
+                "app_id": i.id,
+                "works": works,
+            })
 
         c_dict_index_1 = DictIndex.objects.filter(
             id=1).exclude(state='9')
@@ -3538,6 +3550,7 @@ def target_app_index(request, funid):
 
         return render(request, 'target_app.html',
                       {'username': request.user.userinfo.fullname,
+                       "app_list":app_list,
                        "operation_type_list": operation_type_list,
                        "cycle_type_list": cycle_type_list,
                        "business_type_list": business_type_list,
