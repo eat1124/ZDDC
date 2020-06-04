@@ -3675,12 +3675,11 @@ def target_app_search_index(request, funid):
                         'id': aw['id'],
                         'name': aw['name']
                     })
-            if works:
-                search_app.append({
-                    'id': aa['id'],
-                    'name': aa['name'],
-                    "works": works
-                })
+            search_app.append({
+                'id': aa['id'],
+                'name': aa['name'],
+                "works": works
+            })
 
         return render(request, 'target_app_search.html',
                       {'username': request.user.userinfo.fullname,
@@ -5798,7 +5797,6 @@ def reporting_reextract(request):
                     if tablename != "":
                         rows = []
                         try:
-                            cursor = connection.cursor()
                             with connection.cursor() as cursor:
                                 reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
                                 strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(

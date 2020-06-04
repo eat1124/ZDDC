@@ -1295,7 +1295,6 @@ $(document).ready(function () {
                     }
                 });
             }
-
             $('#static5').modal('hide');
         } else {
             $('#static5').modal('hide');
