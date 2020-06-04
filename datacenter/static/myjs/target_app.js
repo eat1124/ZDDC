@@ -166,7 +166,6 @@ $(document).ready(function () {
     }
 
     $('#sample_1 tbody').on('click', 'button#edit, button#copy', function () {
-
         var table = $('#sample_1').DataTable();
         var data = table.row($(this).parents('tr')).data();
 
@@ -186,11 +185,14 @@ $(document).ready(function () {
                 '<option value="3">加权平均</option>'
             );
             $('#weight_target').val('').trigger('change').prop('disabled', true);
+
+            $('#data_from_div').show();  // 数据来源选项框
         } else {
             $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
                 '<option value="1">求和</option>\n' +
                 '<option value="2">算术平均</option>\n'
             );
+            $('#data_from_div').hide();
         }
 
         $("#cycletype").val(data.cycletype);
@@ -246,8 +248,6 @@ $(document).ready(function () {
         $('#calculate_analysis').hide();
         $('#extract').hide();
 
-        $('#data_from_div').hide();
-
         // 数值类型
         $('#cumulate_weight').show();
         $('#upperlimit_lowerlimit').show();
@@ -296,97 +296,6 @@ $(document).ready(function () {
             analysisFunction();
         });
 
-    });
-
-    $('#sample_1 tbody').on('click', 'button#copy', function () {
-
-        var table = $('#sample_1').DataTable();
-        var data = table.row($(this).parents('tr')).data();
-
-        $("#id").val("0");
-        $("#name").val(data.name);
-        $("#code").val(data.code);
-        $("#operationtype").val(data.operationtype);
-        $("#cycletype").val(data.cycletype);
-        $("#businesstype").val(data.businesstype);
-        $("#unit").val(data.unit);
-        $("#magnification").val(data.magnification);
-        $("#digit").val(data.digit);
-        $("#upperlimit").val(data.upperlimit);
-        $("#lowerlimit").val(data.lowerlimit);
-        $("#datatype").val(data.datatype);
-        $("#cumulative").val(data.cumulative);
-        $("#sort").val(data.sort);
-        $("#unity").val(data.unity);
-        $("#formula").val(data.formula);
-
-        $("#cycle").val(data.cycle);
-        $("#source").val(data.source);
-
-        $("#source_content").val(data.source_content);
-
-        $("#storage").val(data.storage);
-        $("#storagetag").val(data.storagetag);
-        $("#storagefields").val(data.storagefields);
-        $("#is_repeat").val(data.is_repeat);
-        // 过滤出所有works
-        $('#work_edit').empty();
-
-        var works_data = eval(data.works);
-        for (var i = 0; i < works_data.length; i++) {
-            $('#work_edit').append('<option value="' + works_data[i].id + '">' + works_data[i].name + '</option>');
-        }
-        $('#work_edit').val(data.work_selected);
-
-        // 判断是否展示存储标识
-        if (data.storage_type == '列') {
-            $('#storagetag').parent().parent().show();
-        } else {
-            $('#storagetag').parent().parent().hide();
-        }
-
-
-        $('#calculate').hide();
-        $('#calculate_analysis').hide();
-        $('#extract').hide();
-
-        $('#cumulate_weight').show();
-        $('#upperlimit_lowerlimit').show();
-        $('#magnification_digit').show();
-
-        // 操作类型：提取/电表走字 显示数据源配置
-        var selected_operation_type = $('#operationtype option:selected').text();
-        if (selected_operation_type == '计算') {
-            if (data.data_from == 'et') {
-                $('#calculate').hide();
-                $('#calculate_analysis').hide();
-            } else {
-                $('#calculate').show();
-                $('#calculate_analysis').show();
-            }
-            $('#data_from').parent().show();
-            $('#data_from').parent().prev().show();
-        }
-        if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
-            $('#extract').show();
-        }
-
-        if ($('#datatype option:selected').text() == '日期' || $('#datatype option:selected').text() == '文本') {
-            $('#cumulate_weight').hide();
-            $('#upperlimit_lowerlimit').hide();
-            $('#magnification_digit').hide();
-        }
-        if ($('#datatype option:selected').text() == '数值') {
-            $('#cumulate_weight').show();
-            $('#upperlimit_lowerlimit').show();
-            $('#magnification_digit').show();
-        }
-
-        ajaxFunction();
-        analysisFunction();
-        $("#formula").bind('input propertychange', function () {
-            analysisFunction();
-        });
     });
 
     // 数据来源

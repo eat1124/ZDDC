@@ -228,11 +228,14 @@ $(document).ready(function () {
                 '<option value="3">加权平均</option>'
             );
             $('#weight_target').val('').trigger('change').prop('disabled', true);
+
+            $('#data_from_div').show();  // 数据来源选项框
         } else {
             $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
                 '<option value="1">求和</option>\n' +
                 '<option value="2">算术平均</option>\n'
             );
+            $('#data_from_div').hide();
         }
 
         $("#cycletype").val(data.cycletype);
@@ -289,8 +292,6 @@ $(document).ready(function () {
         $('#calculate_analysis').hide();
         $('#extract').hide();
         $('#if_push_div').hide();
-
-        $('#data_from_div').hide();
 
         // 数值类型
         $('#cumulate_weight').show();
