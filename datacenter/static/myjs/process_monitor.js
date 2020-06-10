@@ -298,6 +298,8 @@ $(document).ready(function () {
             });
 
         }
+        // 清除测试与补取选中的对象
+        testData = [];
     }
 
     function tabCheck3() {
@@ -617,7 +619,6 @@ $(document).ready(function () {
                     tabCheck1(cp_id);
                 } else if (tab_id == 'tab_1_2') {
                     tabCheck2();
-
                 } else if (tab_id == 'tab_1_3') {
                     tabCheck3();
 
