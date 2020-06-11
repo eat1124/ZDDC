@@ -1090,13 +1090,10 @@ $(document).ready(function () {
         }
     });
 
-    var push_completed = false;
     var push_fields = [['暂无', '', '']];
 
     function loadFields() {
-        if (push_completed) {
-            $('#push_table').dataTable().fnDestroy();
-        }
+        $('#push_table').dataTable().fnDestroy();
         var table = $('#push_table').dataTable({
             "bAutoWidth": true,
             "bSort": false,
@@ -1143,9 +1140,6 @@ $(document).ready(function () {
                 },
                 "sZeroRecords": "没有检索到数据",
             },
-            initComplete: function (settings, json) {
-                push_completed = true;
-            }
         });
         renderRed();
     }
