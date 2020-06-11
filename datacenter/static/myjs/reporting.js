@@ -380,7 +380,7 @@ $(document).ready(function () {
         var data = table.row($(this).parents('tr')).data();
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -552,7 +552,7 @@ $(document).ready(function () {
         var data = table.row($(this).parents('tr')).data();
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -731,7 +731,7 @@ $(document).ready(function () {
         var data = table.row($(this).parents('tr')).data();
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -1036,7 +1036,7 @@ $(document).ready(function () {
         $('#table5_curvalue_' + data.id).val(curValue);
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -1078,7 +1078,7 @@ $(document).ready(function () {
         $('#table5_curvalue_' + data.id).val(curValue)
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -1116,7 +1116,7 @@ $(document).ready(function () {
         var table = $('#sample_5').DataTable();
         var data = table.row($(this).parents('tr')).data();
         // 累计值 月、季、半年、年
-        if (['1', '2', '3'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -1236,7 +1236,7 @@ $(document).ready(function () {
             $("#table5_zerodata_" + id).attr("disabled", "disabled");
 
             // 累计值 月、季、半年、年
-            if (['1', '2', '3'].indexOf(cumulative) != -1) {
+            if (['1', '2', '3', '4'].indexOf(cumulative) != -1) {
                 $.ajax({
                     type: "POST",
                     url: "../../../ajax_cumulate/",

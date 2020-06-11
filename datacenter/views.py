@@ -4294,7 +4294,7 @@ def reporting_data(request):
                     curvaluedate = data.curvaluedate.strftime('%Y-%m-%d %H:%M:%S') if data.curvaluedate else "",
                 except:
                     pass
-                if data.target.cumulative in ['1', '2', '3']:
+                if data.target.cumulative in ['1', '2', '3', '4']:
                     try:
                         cumulativemonth = round(data.cumulativemonth, data.target.digit)
                     except:
@@ -4373,7 +4373,7 @@ def reporting_data(request):
                         newtable_magnification = cur_meterchange['newtable_magnification']
                         newtable_finalvalue = cur_meterchange['newtable_finalvalue']
                         finalvalue = cur_meterchange['finalvalue']
-                        if data.target.cumulative in ['1', '2', '3']:
+                        if data.target.cumulative in ['1', '2', '3', '4']:
                             try:
                                 oldtable_zerodata = round(oldtable_zerodata, data.target.digit)
                             except:
@@ -4600,7 +4600,7 @@ def reporting_search_data(request):
                     pass
             elif data["target"].datatype == "text":
                 curvalue = data["curvaluetext"]
-            if data["target"].cumulative in ['1', '2', '3']:
+            if data["target"].cumulative in ['1', '2', '3', '4']:
                 try:
                     cumulativemonth = round(data["cumulativemonth"], data["target"].digit)
                 except:
@@ -4939,7 +4939,130 @@ def getcumulative(tableList, target, date, value):
                 )
         if target.cycletype == "14":
             pass
-    
+    if cumulative == '4':  # 非零算术平均
+        if target.cycletype == "10":
+            # 日报
+            yestoday_date = date + datetime.timedelta(days=-1)
+            if date.year == yestoday_date.year:
+                # 当月昨天天数、当季到昨天的天数、半年到昨天的天数、当年到昨天的天数
+                def get_days(start_time, end_time):
+                    return int(
+                        (end_time.replace(hour=0, minute=0, second=0, microsecond=0) - start_time.replace(
+                            day=1, hour=0, minute=0, second=0, microsecond=0
+                        )).total_seconds() / (60 * 60 * 24)
+                    ) + 1
+
+                now = datetime.datetime.now()
+
+                # 1.当月昨天的天数
+                if date.day > 1:  # 日报月初月累计为当前值
+                    if lastcumulativemonth:
+                        cumulativemonth = ((lastcumulativemonth * (date.day - 1)) + value) / date.day
+                # 2.当季到昨天的天数
+                # 判断当前月所在季度，第一季度/非第一季度
+                if date.month <= 3:
+                    days_in_quarter = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
+                                               yestoday_date)
+                    if lastcumulativequarter:
+                        cumulativequarter = (lastcumulativequarter * days_in_quarter + value) / (days_in_quarter + 1)
+                else:
+                    # 判断是否所在季度第一天
+                    if not (date.month % 3 == 1 and date.day == 1):
+                        # 当季到昨天的天数 = 昨天天数 - 上季度末天数
+                        m_month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
+                        m_newdate = datetime.datetime(date.year, m_month, 1)
+                        days_in_quarter = get_days(
+                            m_newdate.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
+                            yestoday_date)
+                        if lastcumulativequarter:
+                            cumulativequarter = (lastcumulativequarter * days_in_quarter + value) / (days_in_quarter + 1)
+                # 3.半年到昨天的天数(区分前/后半年)
+                if date.month - 6 < 0:
+                    days_in_halfyear = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
+                                                yestoday_date)
+                    if lastcumulativehalfyear:
+                        cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (days_in_halfyear + 1)
+                else:
+                    # 判断是否后半年的第一天
+                    if not (date.month == 7 and date.day == 1):
+                        # 半年到昨天的天数 = 昨天天数 - 上半年末天数
+                        h_month = (date.month - 1) - (date.month - 1) % 6 + 1  # 10
+                        h_newdate = datetime.datetime(date.year, h_month, 1)
+                        days_in_halfyear = get_days(
+                            h_newdate.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
+                            yestoday_date)
+                        if lastcumulativehalfyear:
+                            cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (
+                                days_in_halfyear + 1)
+                # 4.当年到昨天的天数
+                days_in_year = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
+                                        yestoday_date)
+                if lastcumulativeyear:
+                    cumulativeyear = (lastcumulativeyear * days_in_year + value) / days_in_year + 1
+            else:
+                pass
+        if target.cycletype == "11":
+            # 月报
+            if date.month > 1:
+                last_month_date = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + \
+                                  datetime.timedelta(days=-1)
+                # 1.上个月份
+                # last_months = last_month_date.month
+                # cumulativemonth = (lastcumulativemonth * last_months + value) / (last_months + 1)
+                # 2.当季上个月所在月份
+                if date.month > 3:  # 不是第一个季度
+                    last_month_on_quarter = last_month_date.month % 3
+                else:
+                    last_month_on_quarter = last_month_date.month
+                if last_month_on_quarter > 0:  # 任何一季度首月季累计为当前值
+                    if lastcumulativequarter:
+                        cumulativequarter = (lastcumulativequarter * last_month_on_quarter + value) / (
+                            last_month_on_quarter + 1)
+                # 3.半年上个月所在月份(区分前/后半年)
+                last_month_on_halfyear = -1
+                if date.month > 6:
+                    if date.month - 6 > 1:
+                        last_month_on_halfyear = last_month_date.month - 6
+                else:
+                    last_month_on_halfyear = last_month_date.month
+                if last_month_on_halfyear != -1:
+                    if lastcumulativehalfyear:
+                        cumulativehalfyear = (lastcumulativehalfyear * last_month_on_halfyear + value) / (
+                            last_month_on_halfyear + 1)
+                # 4.年上个月所在月份
+                last_month_on_year = last_month_date.month
+                if lastcumulativeyear:
+                    cumulativeyear = (lastcumulativeyear * last_month_on_year + value) / (last_month_on_year + 1)
+            else:
+                pass
+        if target.cycletype == "12":
+            # 季报
+            if date.month > 3:  # 非第一季度
+                q_month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
+                q_newdate = datetime.datetime(date.year, q_month, 1)
+                last_quarter_date = q_newdate + datetime.timedelta(days=-1)
+
+                # 1.上个季度
+                last_quarters = last_quarter_date.month // 3
+                if lastcumulativequarter:
+                    cumulativequarter = (lastcumulativequarter * last_quarters + value) / (last_quarters + 1)
+                # 2.半年所在季度(区分前/后半年)
+                if date.month in [4, 5, 6, 10, 11, 12]:
+                    quarter_on_halfyear = 1
+                    if lastcumulativehalfyear:
+                        cumulativehalfyear = (lastcumulativehalfyear * quarter_on_halfyear + value) / (
+                            quarter_on_halfyear + 1)
+                # 3.年所在季度
+                quarter_on_year = last_quarter_date.month // 3
+                if lastcumulativeyear:
+                    cumulativeyear = (lastcumulativeyear * quarter_on_year + value) / (quarter_on_year + 1)
+        if target.cycletype == "13":
+            if date.month > 6:
+                if lastcumulativeyear:
+                    cumulativeyear = (lastcumulativeyear + value) / 2
+        if target.cycletype == "14":
+            # 年报均为当前值
+            pass
     # 处理保留位数
     try:
         cumulativemonth = round(cumulativemonth, target.digit)
@@ -5282,7 +5405,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
     calculatedata.curvalue = decimal.Decimal(str(calculatedata.curvalue)).quantize(decimal.Decimal(Digit(target.digit)),
                                                                                    rounding=decimal.ROUND_HALF_UP)
     # 累计值计算
-    if target.cumulative in ['1', '2', '3']:
+    if target.cumulative in ['1', '2', '3', '4']:
         cumulative = getcumulative(tableList, target, date, decimal.Decimal(str(calculatedata.curvalue)))
         calculatedata.cumulativemonth = cumulative["cumulativemonth"]
         calculatedata.cumulativequarter = cumulative["cumulativequarter"]
@@ -5833,7 +5956,7 @@ def reporting_reextract(request):
                                 extractdata.curvalue = round(extractdata.curvalue, target.digit)
                             except:
                                 pass
-                    if target.cumulative in ['1', '2', '3']:
+                    if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
                         extractdata.cumulativequarter = cumulative["cumulativequarter"]
@@ -5933,7 +6056,7 @@ def reporting_new(request):
                     meterdata.curvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
                     meterdata.curvalue = round(meterdata.curvalue, target.digit)
 
-                    if target.cumulative in ['1', '2', '3']:
+                    if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, meterdata.curvalue)
                         meterdata.cumulativemonth = cumulative["cumulativemonth"]
                         meterdata.cumulativequarter = cumulative["cumulativequarter"]
@@ -5947,7 +6070,7 @@ def reporting_new(request):
                     entrydata.datadate = reporting_date
                     entrydata.curvalue = 0
                     entrydata.curvalue = round(entrydata.curvalue, target.digit)
-                    if target.cumulative in ['1', '2', '3']:
+                    if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
                         entrydata.cumulativemonth = cumulative["cumulativemonth"]
                         entrydata.cumulativequarter = cumulative["cumulativequarter"]
@@ -5998,7 +6121,7 @@ def reporting_new(request):
                             except:
                                 pass
 
-                    if target.cumulative in ['1', '2', '3']:
+                    if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
                         extractdata.cumulativequarter = cumulative["cumulativequarter"]

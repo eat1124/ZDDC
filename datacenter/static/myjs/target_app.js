@@ -182,7 +182,8 @@ $(document).ready(function () {
             $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
                 '<option value="1">求和</option>\n' +
                 '<option value="2">算术平均</option>\n' +
-                '<option value="3">加权平均</option>'
+                '<option value="3">加权平均</option>\n' +
+                '<option value="4">非零算术平均</option>'
             );
             $('#weight_target').val('').trigger('change').prop('disabled', true);
 
@@ -190,7 +191,8 @@ $(document).ready(function () {
         } else {
             $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
                 '<option value="1">求和</option>\n' +
-                '<option value="2">算术平均</option>\n'
+                '<option value="2">算术平均</option>\n' +
+                '<option value="4">非零算术平均</option>'
             );
             $('#data_from_div').hide();
         }
@@ -340,13 +342,15 @@ $(document).ready(function () {
             $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
                 '<option value="1">求和</option>\n' +
                 '<option value="2">算术平均</option>\n' +
-                '<option value="3">加权平均</option>'
+                '<option value="3">加权平均</option>\n' +
+                '<option value="4">非零算术平均</option>'
             );
             $('#weight_target').val('').trigger('change').prop('disabled', true);
         } else {
             $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
                 '<option value="1">求和</option>\n' +
-                '<option value="2">算术平均</option>\n'
+                '<option value="2">算术平均</option>\n' +
+                '<option value="4">非零算术平均</option>'
             );
         }
         if (['提取', '电表走字'].indexOf(selected_operation_type) != -1) {
@@ -403,7 +407,8 @@ $(document).ready(function () {
         $('#cumulative').empty();
         $('#cumulative').append('<option value="0" selected>不累计</option>\n' +
             '<option value="1">求和</option>\n' +
-            '<option value="2">算术平均</option>\n'
+            '<option value="2">算术平均</option>\n' +
+            '<option value="4">非零算术平均</option>'
         );
 
         $('#calculate').hide();
