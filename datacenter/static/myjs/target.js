@@ -781,6 +781,7 @@ $(document).ready(function () {
                         "1": "求和",
                         "2": "算术平均",
                         "3": "加权平均",
+                        "4": "非零算数平均"
                     };
                     return cumulative_info[full.cumulative]
                 }
