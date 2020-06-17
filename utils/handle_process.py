@@ -871,15 +871,6 @@ class Extract(object):
                     create_values = ''
                     for k, v in storage.items():
                         k = k.strip()
-                        # 约束字段
-                        if k in constraint_fields:
-                            if type(v) == str:
-                                condition += "{k}='{v}' AND ".format(k=k, v=v.strip())
-                            elif type(v) == datetime.datetime:
-                                condition += "{k}='{v}' AND ".format(k=k, v=str(v))
-                            else:
-                                condition += "{k}={v} AND ".format(k=k, v=str(v))
-
                         # 更新字段 
                         #     从获取到的字段对应推送字段，取得value值，重新构造目标字段与value的关系
                         # 推送字段索引
@@ -890,6 +881,16 @@ class Extract(object):
                         else:
                             dest_field = dest_fields[push_index]
                             create_fields += dest_field.strip() + ','
+                            
+                            # 约束字段
+                            if dest_field in constraint_fields:
+                                if type(v) == str:
+                                    condition += "{k}='{v}' AND ".format(k=dest_field, v=v.strip())
+                                elif type(v) == datetime.datetime:
+                                    condition += "{k}='{v}' AND ".format(k=dest_field, v=str(v))
+                                else:
+                                    condition += "{k}={v} AND ".format(k=dest_field, v=str(v))
+                            
                             if type(v) == str:
                                 set_value += "{k}='{v}' ,".format(k=dest_field, v=v.strip())
                                 create_values += '"%s"' % v.strip() + ','
