@@ -19,7 +19,7 @@ function getTxt1CursorPosition(id) {
 $(document).ready(function () {
     $('#sample_1').dataTable({
         "bAutoWidth": true,
-        "bSort": true,
+        "bSort": false,
         "iDisplayLength": 25,
         "bProcessing": true,
         "ajax": "../../target_data/?search_adminapp=" + $('#adminapp').val(),
