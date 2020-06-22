@@ -3546,7 +3546,7 @@ def target_app_index(request, funid):
 
         return render(request, 'target_app.html',
                       {'username': request.user.userinfo.fullname,
-                       "app_list":app_list,
+                       "app_list": app_list,
                        "operation_type_list": operation_type_list,
                        "cycle_type_list": cycle_type_list,
                        "business_type_list": business_type_list,
@@ -3576,7 +3576,8 @@ def target_importadminapp(request):
             if len(my_app) > 0:
                 curapp = my_app[0]
 
-                Target.objects.exclude(state="9").filter(id__in=[int(target) for target in eval(selectedtarget)]).update(**{
+                Target.objects.exclude(state="9").filter(
+                    id__in=[int(target) for target in eval(selectedtarget)]).update(**{
                     'adminapp': curapp
                 })
 
@@ -4975,13 +4976,15 @@ def getcumulative(tableList, target, date, value):
                             m_newdate.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
                             yestoday_date)
                         if lastcumulativequarter:
-                            cumulativequarter = (lastcumulativequarter * days_in_quarter + value) / (days_in_quarter + 1)
+                            cumulativequarter = (lastcumulativequarter * days_in_quarter + value) / (
+                                    days_in_quarter + 1)
                 # 3.半年到昨天的天数(区分前/后半年)
                 if date.month - 6 < 0:
                     days_in_halfyear = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
                                                 yestoday_date)
                     if lastcumulativehalfyear:
-                        cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (days_in_halfyear + 1)
+                        cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (
+                                days_in_halfyear + 1)
                 else:
                     # 判断是否后半年的第一天
                     if not (date.month == 7 and date.day == 1):
@@ -4993,7 +4996,7 @@ def getcumulative(tableList, target, date, value):
                             yestoday_date)
                         if lastcumulativehalfyear:
                             cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (
-                                days_in_halfyear + 1)
+                                    days_in_halfyear + 1)
                 # 4.当年到昨天的天数
                 days_in_year = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
                                         yestoday_date)
@@ -5017,7 +5020,7 @@ def getcumulative(tableList, target, date, value):
                 if last_month_on_quarter > 0:  # 任何一季度首月季累计为当前值
                     if lastcumulativequarter:
                         cumulativequarter = (lastcumulativequarter * last_month_on_quarter + value) / (
-                            last_month_on_quarter + 1)
+                                last_month_on_quarter + 1)
                 # 3.半年上个月所在月份(区分前/后半年)
                 last_month_on_halfyear = -1
                 if date.month > 6:
@@ -5028,7 +5031,7 @@ def getcumulative(tableList, target, date, value):
                 if last_month_on_halfyear != -1:
                     if lastcumulativehalfyear:
                         cumulativehalfyear = (lastcumulativehalfyear * last_month_on_halfyear + value) / (
-                            last_month_on_halfyear + 1)
+                                last_month_on_halfyear + 1)
                 # 4.年上个月所在月份
                 last_month_on_year = last_month_date.month
                 if lastcumulativeyear:
@@ -5051,7 +5054,7 @@ def getcumulative(tableList, target, date, value):
                     quarter_on_halfyear = 1
                     if lastcumulativehalfyear:
                         cumulativehalfyear = (lastcumulativehalfyear * quarter_on_halfyear + value) / (
-                            quarter_on_halfyear + 1)
+                                quarter_on_halfyear + 1)
                 # 3.年所在季度
                 quarter_on_year = last_quarter_date.month // 3
                 if lastcumulativeyear:
@@ -6209,20 +6212,14 @@ def reporting_del(request):
                             'data': '删除失败。'
                         })
                     else:
-                        try:
-                            ReportingLog.objects.exclude(state="9").filter(
-                                datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app,
-                                user_id=user_id
-                            ).update_or_create(**{
-                                'datadate': reporting_date,
-                                'cycletype': cycletype,
-                                'adminapp_id': app,
-                                'work': work,
-                                'user_id': user_id,
-                                'type': 'del',
-                            })
-                        except Exception as e:
-                            pass
+                        ReportingLog.objects.create(**{
+                            'datadate': datetime.datetime.now(),
+                            'cycletype': cycletype,
+                            'adminapp_id': app,
+                            'work': work,
+                            'user_id': user_id,
+                            'type': 'del',
+                        })
 
         return JsonResponse(result)
 
@@ -6293,19 +6290,14 @@ def reporting_release(request):
                     result['status'] = 0
 
                 if result['status']:
-                    try:
-                        ReportingLog.objects.exclude(state="9").filter(
-                            datadate=reporting_date, work=work, cycletype=cycletype, adminapp_id=app, user_id=user_id
-                        ).update_or_create(**{
-                            'datadate': reporting_date,
-                            'cycletype': cycletype,
-                            'adminapp_id': app,
-                            'work': work,
-                            'user_id': user_id,
-                            'type': 'release',
-                        })
-                    except Exception as e:
-                        pass
+                    ReportingLog.objects.create(**{
+                        'datadate': datetime.datetime.now(),
+                        'cycletype': cycletype,
+                        'adminapp_id': app,
+                        'work': work,
+                        'user_id': user_id,
+                        'type': 'release',
+                    })
                 else:
                     result['data'] = '{0}发布失败。'.format(error_info[:-1] if error_info.endswith(',') else error_info)
 
@@ -6526,8 +6518,12 @@ def reporting_save(request):
                         except:
                             pass
 
-                        Meterchangedata.objects.exclude(state="9").filter(
-                            meterdata=single_save_query_data['id']).update_or_create(**meterchange_result)
+                        mcd = Meterchangedata.objects.exclude(state="9").filter(meterdata=single_save_query_data['id'])
+                        if mcd.exists():
+                            mcd.update(**meterchange_result)
+                        else:
+                            mcd.create(**meterchange_result)
+
                 if operationtype == "15":
                     getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
                         id=single_save_query_data['id']).update(**result)
@@ -8196,3 +8192,54 @@ def groupsavefuntree(request):
                 except:
                     pass
         return HttpResponse("保存成功。")
+
+
+def get_reporting_log(request):
+    if request.user.is_authenticated():
+        reporting_log = ReportingLog.objects.exclude(state='9').order_by('-datadate').select_related('adminapp', 'work')
+        reporting_type_dict = {
+            'del': '删除',
+            'release': '发布',
+            'save': '保存'
+        }
+
+        dict_list = DictList.objects.exclude(state='9').values()
+        reporting_log_list = []
+        for num, rl in enumerate(reporting_log):
+            user = rl.user.userinfo.fullname if rl.user.userinfo else ''
+            app = rl.adminapp.name if rl.adminapp else ''
+            work = rl.work.name if rl.work else ''
+            cycletype = int(rl.cycletype)
+            for dl in dict_list:
+                if cycletype == dl['id']:
+                    cycletype = dl['name']
+                    break
+            reporting_type = ''
+            try:
+                reporting_type = reporting_type_dict[rl.type]
+            except:
+                pass
+            time = ''
+            try:
+                time = '{:%Y-%m-%d %H:%M:%S}'.format(rl.datadate)
+            except:
+                pass
+
+            log = '{user}在{app}{work}中{reporting_type}了{cycletype}报填报数据。'.format(**{
+                'user': user,
+                'app': app,
+                'work': "的{work}业务".format(work=work) if work else '',
+                'reporting_type': reporting_type,
+                'cycletype': cycletype,
+            })
+            reporting_log_list.append({
+                'time': time,
+                'log': log
+            })
+            if num > 50:
+                break
+        return JsonResponse({
+            'data': reporting_log_list
+        })
+    else:
+        return HttpResponseRedirect('/login')

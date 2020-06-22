@@ -137,4 +137,7 @@ urlpatterns = [
     # 报表服务器
     url(r'^report_server/$', report_server, {'funid': '60'}),
     url(r'^report_server_save/$', report_server_save),
+
+    # 首页
+    url(r'^get_reporting_log/$', get_reporting_log),
 ]
