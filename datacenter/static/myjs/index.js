@@ -22,8 +22,7 @@ $.ajax({
                 '    </div>\n' +
                 '    <div class="col-md-offset-2 col-md-10" aria-expanded="true" style="padding: 0">\n' +
                 '        <div class="panel-body" style="padding: 0">\n' +
-                '            <div class="col-md-7"></div>\n' +
-                '            <div class="col-md-5" style="font-style: italic;color: #c1cbd0">'+ data.data[i].time +'</div>\n' +
+                '            <div class="col-md-12" style="font-style: italic;color: #c1cbd0; text-align: right">'+ data.data[i].time +'</div>\n' +
                 '        </div>\n' +
                 '    </div>\n' +
                 '</li>')
