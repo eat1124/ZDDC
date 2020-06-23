@@ -3841,11 +3841,37 @@ def constant_save(request):
                             if (len(all_target) > 0):
                                 result["res"] = '指标库内已存在:' + code + '。'
                             else:
-                                all_constant = Constant.objects.filter(name=name).exclude(state="9")
-                                if (len(all_constant) > 0):
-                                    result["res"] = '常数名称:' + name + '已存在。'
-                                else:
-                                    constant_save = Constant()
+                                constant_save = Constant()
+                                constant_save.name = name
+                                constant_save.code = code
+                                constant_save.value = float(value)
+                                constant_save.unity = unity
+
+                                try:
+                                    app_id = int(adminapp)
+                                    my_app = all_app.get(id=app_id)
+                                    constant_save.adminapp = my_app
+                                except:
+                                    pass
+                                try:
+                                    constant_save.sort = int(sort)
+                                except:
+                                    pass
+                                constant_save.save()
+                                result["res"] = "保存成功。"
+                                result["data"] = constant_save.id
+
+                    else:
+                        all_constant = Constant.objects.filter(code=code).exclude(id=id).exclude(state="9")
+                        all_target = Target.objects.filter(code=code).exclude(state="9")
+                        if (len(all_constant) > 0):
+                            result["res"] = '常数代码:' + code + '已存在。'
+                        else:
+                            if (len(all_target) > 0):
+                                result["res"] = '指标库内已存在:' + code + '。'
+                            else:
+                                try:
+                                    constant_save = Constant.objects.get(id=id)
                                     constant_save.name = name
                                     constant_save.code = code
                                     constant_save.value = float(value)
@@ -3861,46 +3887,12 @@ def constant_save(request):
                                         constant_save.sort = int(sort)
                                     except:
                                         pass
+
                                     constant_save.save()
                                     result["res"] = "保存成功。"
                                     result["data"] = constant_save.id
-
-                    else:
-                        all_constant = Constant.objects.filter(code=code).exclude(id=id).exclude(state="9")
-                        all_target = Target.objects.filter(code=code).exclude(state="9")
-                        if (len(all_constant) > 0):
-                            result["res"] = '常数代码:' + code + '已存在。'
-                        else:
-                            if (len(all_target) > 0):
-                                result["res"] = '指标库内已存在:' + code + '。'
-                            else:
-                                all_constant = Constant.objects.filter(name=name).exclude(id=id).exclude(state="9")
-                                if (len(all_constant) > 0):
-                                    result["res"] = '常数名称:' + name + '已存在。'
-                                else:
-                                    try:
-                                        constant_save = Constant.objects.get(id=id)
-                                        constant_save.name = name
-                                        constant_save.code = code
-                                        constant_save.value = float(value)
-                                        constant_save.unity = unity
-
-                                        try:
-                                            app_id = int(adminapp)
-                                            my_app = all_app.get(id=app_id)
-                                            constant_save.adminapp = my_app
-                                        except:
-                                            pass
-                                        try:
-                                            constant_save.sort = int(sort)
-                                        except:
-                                            pass
-
-                                        constant_save.save()
-                                        result["res"] = "保存成功。"
-                                        result["data"] = constant_save.id
-                                    except Exception as e:
-                                        result["res"] = "修改失败。"
+                                except Exception as e:
+                                    result["res"] = "修改失败。"
 
         return JsonResponse(result)
 

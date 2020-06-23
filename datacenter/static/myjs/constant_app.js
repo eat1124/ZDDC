@@ -11,6 +11,7 @@ $(document).ready(function () {
     $('#sample_1').dataTable({
         "bAutoWidth": true,
         "bSort": false,
+        "iDisplayLength": 25,
         "bProcessing": true,
         "ajax": "../../constant_data/?search_adminapp=" + $('#adminapp').val(),
         "columns": [
