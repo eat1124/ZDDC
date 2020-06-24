@@ -1044,6 +1044,7 @@ $(document).ready(function () {
             {"data": "name"},
             {"data": "code"},
             {"data": "value"},
+            {"data": "adminapp_name"},
             {"data": null}
         ],
 
