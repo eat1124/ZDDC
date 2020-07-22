@@ -213,12 +213,10 @@ function setFDLChart(chart, data) {
 $('#navtabs a').click(function (e) {
     // 解决图标自适应大小问题
     var tab_id = $(this).prop('id');
-    console.log(tab_id)
     if (tab_id == "tabcheck1") {
         $("#xc_fdl").highcharts().reflow();
     }
     if (tab_id == "tabcheck2") {
-        console.log(1111)
         $("#dlzx_fdl").highcharts().reflow();
     }
     if (tab_id == "tabcheck3") {
