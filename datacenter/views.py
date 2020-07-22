@@ -8299,7 +8299,7 @@ def get_month_fdl(request):
         # 动力中心经营统计
         #   DLZX_JYTJ_01_FDL(计算)  DLZX_JYTJ_02_FDL(计算) DLZX_JYTJ_FDL(计算)
         today = datetime.datetime.now()
-        today = datetime.datetime.strptime("2020-01-31", "%Y-%m-%d")
+        # today = datetime.datetime.strptime("2020-01-31", "%Y-%m-%d")
 
         day30_before = today - datetime.timedelta(days=30)
         calculate_data = getmodels("Calculatedata", str(today.year)).objects.exclude(state="9").filter(
