@@ -6283,7 +6283,8 @@ def reporting_release(request):
 
                 if result['status']:
                     ReportingLog.objects.create(**{
-                        'datadate': datetime.datetime.now(),
+                        'write_time': datetime.datetime.now(),
+                        'datadate': reporting_date,
                         'cycletype': cycletype,
                         'adminapp_id': app,
                         'work': work,
@@ -8188,7 +8189,7 @@ def groupsavefuntree(request):
 
 def get_reporting_log(request):
     if request.user.is_authenticated():
-        reporting_log = ReportingLog.objects.exclude(state='9').order_by('-datadate').select_related('adminapp', 'work')
+        reporting_log = ReportingLog.objects.exclude(state='9').order_by('-write_time').select_related('adminapp', 'work')
         reporting_type_dict = {
             'del': '删除',
             'release': '发布',
@@ -8197,6 +8198,39 @@ def get_reporting_log(request):
 
         dict_list = DictList.objects.exclude(state='9').values()
         reporting_log_list = []
+        def get_format_date(pre_date, c_cycletype):
+            """格式化日期
+
+            Args:
+                pre_date (datetime): 格式化前日期
+                cycletype (int): 周期类型
+
+            Returns:
+                [datetime]: [格式化后日期]
+            """
+            format_date = ""
+            try:
+                if c_cycletype == "10":
+                    format_date = pre_date.strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
+                    print(format_date)
+                if c_cycletype == "11":
+                    print(pre_date.strftime('%Y{y}%m{m}').format(y='年', m='月'))
+                    format_date = pre_date.strftime('%Y{y}%m{m}').format(y='年', m='月')
+                    print(format_date)
+                if c_cycletype == "12":
+                    format_date = pre_date.strftime('%Y{y} {q}').format(y='年', q='第{0}季度'.format((pre_date.month-1) // 3 + 1))
+                if c_cycletype == "13":
+                    if pre_date.month <=6:
+                        p = "上"
+                    else:
+                        p = "下"
+                    format_date = pre_date.strftime('%Y{y} {p}').format(y='年', p='{0}半年'.format(p))
+                if c_cycletype == "14":
+                    format_date = pre_date.strftime('%Y{y}').format(y='年')
+            except Exception as e:
+                print(e)
+
+            return format_date
         for num, rl in enumerate(reporting_log):
             user = rl.user.userinfo.fullname if rl.user.userinfo else ''
             app = rl.adminapp.name if rl.adminapp else ''
@@ -8213,17 +8247,32 @@ def get_reporting_log(request):
                 pass
             time = ''
             try:
-                time = '{:%Y-%m-%d %H:%M:%S}'.format(rl.datadate)
+                time = '{:%Y-%m-%d %H:%M:%S}'.format(rl.write_time)
             except:
                 pass
 
-            log = '{user}在{app}{work}中{reporting_type}了{cycletype}报填报数据。'.format(**{
+            # 报表时间 
+            datadate = rl.datadate
+
+            # 日报 月报 季报 半年报 年报
+            #   2020年01月01日 日报
+            #   2020年01月 月报
+            #   2020年 第1季度 季报
+            #   2020年 上半年/下半年 半年报
+            #   2020年 年报
+
+            datadate = get_format_date(datadate, rl.cycletype)
+            user = '<span style="color:#3598DC">{0}</span>'.format(user)
+            datadate = '<span style="color:#F7CA18">{0}</span>'.format(datadate)
+            log = '{user}{reporting_type}{app}{work}{datadate}{cycletype}报数据。'.format(**{
                 'user': user,
                 'app': app,
-                'work': "的{work}业务".format(work=work) if work else '',
+                'work': work if work else '',
                 'reporting_type': reporting_type,
                 'cycletype': cycletype,
+                'datadate': datadate
             })
+            # 黄展翔 发布 动力中心经营统计计划部填报 2020-01-02日报数据
             reporting_log_list.append({
                 'time': time,
                 'log': log
