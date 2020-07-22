@@ -8189,7 +8189,8 @@ def groupsavefuntree(request):
 
 def get_reporting_log(request):
     if request.user.is_authenticated():
-        reporting_log = ReportingLog.objects.exclude(state='9').order_by('-write_time').select_related('adminapp', 'work')
+        reporting_log = ReportingLog.objects.exclude(state='9').order_by('-write_time').select_related('adminapp',
+                                                                                                       'work')
         reporting_type_dict = {
             'del': '删除',
             'release': '发布',
@@ -8198,6 +8199,7 @@ def get_reporting_log(request):
 
         dict_list = DictList.objects.exclude(state='9').values()
         reporting_log_list = []
+
         def get_format_date(pre_date, c_cycletype):
             """格式化日期
 
@@ -8212,15 +8214,13 @@ def get_reporting_log(request):
             try:
                 if c_cycletype == "10":
                     format_date = pre_date.strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
-                    print(format_date)
                 if c_cycletype == "11":
-                    print(pre_date.strftime('%Y{y}%m{m}').format(y='年', m='月'))
                     format_date = pre_date.strftime('%Y{y}%m{m}').format(y='年', m='月')
-                    print(format_date)
                 if c_cycletype == "12":
-                    format_date = pre_date.strftime('%Y{y} {q}').format(y='年', q='第{0}季度'.format((pre_date.month-1) // 3 + 1))
+                    format_date = pre_date.strftime('%Y{y} {q}').format(y='年', q='第{0}季度'.format(
+                        (pre_date.month - 1) // 3 + 1))
                 if c_cycletype == "13":
-                    if pre_date.month <=6:
+                    if pre_date.month <= 6:
                         p = "上"
                     else:
                         p = "下"
@@ -8231,6 +8231,7 @@ def get_reporting_log(request):
                 print(e)
 
             return format_date
+
         for num, rl in enumerate(reporting_log):
             user = rl.user.userinfo.fullname if rl.user.userinfo else ''
             app = rl.adminapp.name if rl.adminapp else ''
@@ -8284,3 +8285,79 @@ def get_reporting_log(request):
         })
     else:
         return HttpResponseRedirect('/login')
+
+
+def get_month_fdl(request):
+    """
+    一个月内 新厂、动力中心、老厂 所有机组：全场 分机组 的发电量曲线
+    :param request:
+    :return:
+    """
+    if request.user.is_authenticated():
+        # 老厂经营统计
+        #   FD_11_01(电表走字) FD_12_01(电表走字) FDL_9F(计算)
+        # 动力中心经营统计
+        #   DLZX_JYTJ_01_FDL(计算)  DLZX_JYTJ_02_FDL(计算) DLZX_JYTJ_FDL(计算)
+        today = datetime.datetime.now()
+        today = datetime.datetime.strptime("2020-01-31", "%Y-%m-%d")
+
+        day30_before = today - datetime.timedelta(days=30)
+        calculate_data = getmodels("Calculatedata", str(today.year)).objects.exclude(state="9").filter(
+            Q(datadate__gte=day30_before) & Q(datadate__lte=today)
+        ).filter(target__cycletype=10)
+
+        DLZX_JYTJ_01_FDL_list = []
+        DLZX_JYTJ_02_FDL_list = []
+        DLZX_JYTJ_FDL_list = []
+
+        FDL_9F_list = []
+
+        categories = []
+        for i in range(31):
+            # 所有机组
+            # 3个指标数据都获取 break
+            DLZX_JYTJ_01_FDL = calculate_data.filter(datadate=today.date()).filter(target__code="DLZX_JYTJ_01_FDL")
+            DLZX_JYTJ_02_FDL = calculate_data.filter(datadate=today.date()).filter(target__code="DLZX_JYTJ_02_FDL")
+            DLZX_JYTJ_FDL = calculate_data.filter(datadate=today.date()).filter(target__code="DLZX_JYTJ_FDL")
+            FDL_9F = calculate_data.filter(datadate=today.date()).filter(target__code="FDL_9F")
+
+            DLZX_JYTJ_01_FDL_list.append(float(DLZX_JYTJ_01_FDL[0].curvalue) if DLZX_JYTJ_01_FDL else 0)
+            DLZX_JYTJ_02_FDL_list.append(float(DLZX_JYTJ_02_FDL[0].curvalue) if DLZX_JYTJ_02_FDL else 0)
+            DLZX_JYTJ_FDL_list.append(float(DLZX_JYTJ_FDL[0].curvalue) if DLZX_JYTJ_FDL else 0)
+            FDL_9F_list.append(float(FDL_9F[0].curvalue) if FDL_9F else 0)
+
+            today -= datetime.timedelta(days=1)
+            c_time = "{0:%Y-%m-%d}".format(today)
+            categories.append(c_time)
+
+        DLZX_JYTJ_list = [{
+            "name": "#1发电量",
+            "color": "#3598dc",
+            "fdl": DLZX_JYTJ_01_FDL_list
+        }, {
+            "name": "#2发电量",
+            "color": "#e7505a",
+            "fdl": DLZX_JYTJ_02_FDL_list
+        }, {
+            "name": "全场发电量",
+            "color": "#32c5d2",
+            "fdl": DLZX_JYTJ_FDL_list
+        }]
+
+        LC_JYTJ_list = [{
+            "name": "9F发电量",
+            "color": "#3598dc",
+            "fdl": FDL_9F_list
+        }]
+        return JsonResponse({
+            "DLZX_JYTJ": {
+                "fld_list": DLZX_JYTJ_list,
+                "categories": categories
+            },
+            "LC_JYTJ": {
+                "fld_list": LC_JYTJ_list,
+                "categories": categories
+            }
+        })
+    else:
+        return HttpResponseRedirect("/login")
