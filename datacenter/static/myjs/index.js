@@ -457,3 +457,57 @@ function getImportantTargets() {
 }
 
 getImportantTargets();
+
+/*
+Demo Data
+{
+    "DLZX": {
+        "FDL": {
+            "FDL_LIST": [{"jz_name": "#1", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0},
+                         {"jz_name": "#2", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0}],
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        },
+        "ZH": {
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        },
+        "HB": {
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        },
+        "NH": {
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        }
+    },
+    "XC": {
+        "FDL": {
+            "FDL_LIST": [{"jz_name": "#11", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0},
+                         {"jz_name": "#12", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0}],
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        },
+        "ZH": {
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        },
+        "HB": {
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        },
+        "NH": {
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        }
+    },
+    "LC": {
+        "FDL": {
+            "FDL_LIST": [{"jz_name": "#21", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0},
+                         {"jz_name": "#22", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0}],
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        },
+        "ZH": {
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        },
+        "HB": {
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        },
+        "NH": {
+            "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+        }
+    }
+}
+ */

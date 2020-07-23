@@ -8363,15 +8363,94 @@ def get_month_fdl(request):
         return HttpResponseRedirect("/login")
 
 
+def get_appointed_time_data(code, appointed_time):
+    """
+    获取指标指定时间的数据对象
+    :param code:
+    :param appointed_time:
+    :return appointed_time_object:
+    """
+    data = {}
+    targets = Target.objects.exclude(state="9").filter(code=code)
+    if targets.exists():
+        target = targets[0]
+        # 操作类型: 计算、提取、录入、电表走字
+        operation_type = target.operationtype
+        if operation_type == "1":
+            appointed_time_object = getmodels("Meterdata", str(appointed_time.year)).objects.exclude(state="9").filter(
+                datadate=appointed_time.date()
+            )
+        if operation_type == "15":
+            appointed_time_object = getmodels("Entrydata", str(appointed_time.year)).objects.exclude(state="9").filter(
+                datadate=appointed_time.date()
+            )
+        if operation_type == "16":
+            appointed_time_object = getmodels("Extractdata", str(appointed_time.year)).objects.exclude(state="9").filter(
+                datadate=appointed_time.date()
+            )
+        if operation_type == "17":
+            appointed_time_object = getmodels("Calculatedata", str(appointed_time.year)).objects.exclude(state="9").filter(
+                datadate=appointed_time.date()
+            )
+
+        if appointed_time_object:
+            appointed_time_object = appointed_time_object[0]
+            data = {
+                "target_name": target.name,
+                "curvalue": appointed_time_object.curvalue,
+                "cumulativemonth": appointed_time_object.cumulativemonth,
+                "cumulativeyear": appointed_time_object.cumulativeyear
+            }
+        else:
+            data = {
+                "target_name": target.name,
+                "curvalue": 0,
+                "cumulativemonth": 0,
+                "cumulativeyear": 0
+            }
+
+    return data
+
+
 def get_important_targets(request):
+    """
+    获取动力中心、新厂、老厂重要指标数据
+    :param request:
+    :return:
+    """
     if request.user.is_authenticated():
         status = 1
+
+        # 动力中心
+        dlzx_fdl_target_codes = ["DLZX_JYTJ_01_SWDL", "DLZX_JYTJ_02_SWDL", "DLZX_JYTJ_SWDL"]
+        dlzx_fdl_jz_target_codes = ["DLZX_JYTJ_01_FDL", "DLZX_JYTJ_02_FDL", "DLZX_JYTJ_FDL"]
+
+        dlzx_fdl_list = []
+        dlzx_fdl_targets = []
+        now = datetime.datetime.now()
+        yestoday = now - datetime.timedelta(days=1)
+        for dlzx_fdl_jz_target_code in dlzx_fdl_jz_target_codes:
+            appointed_time_data = get_appointed_time_data(dlzx_fdl_jz_target_code, now)
+            appointed_time_data_y = get_appointed_time_data(dlzx_fdl_jz_target_code, yestoday)
+            dlzx_fdl_list.append({
+                "jz_name": appointed_time_data["target_name"],
+                "yest_value": appointed_time_data_y["curvalue"],
+                "cumulativemonth": appointed_time_data["cumulativemonth"],
+                "cumulativeyear": appointed_time_data["cumulativeyear"]
+            })
+
+        for dlzx_fdl_target_code in dlzx_fdl_target_codes:
+            appointed_time_data = get_appointed_time_data(dlzx_fdl_target_code, now)
+            dlzx_fdl_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
+
         data = {
             "DLZX": {
                 "FDL": {
-                    "FDL_LIST": [{"jz_name": "#1", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0},
-                                 {"jz_name": "#2", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0}],
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "FDL_LIST": dlzx_fdl_list,
+                    "TARGETS": dlzx_fdl_targets
                 },
                 "ZH": {
                     "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
