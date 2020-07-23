@@ -210,16 +210,9 @@ function setFDLChart(chart, data) {
     }
 }
 
-$('#navtabs a').click(function (e) {
-    // 解决图标自适应大小问题
-    var tab_id = $(this).prop('id');
-    if (tab_id == "tabcheck1") {
-        $("#xc_fdl").highcharts().reflow();
-    }
-    if (tab_id == "tabcheck2") {
-        $("#dlzx_fdl").highcharts().reflow();
-    }
-    if (tab_id == "tabcheck3") {
-        $("#lc_fdl").highcharts().reflow();
-    }
+// 解决图标自适应大小问题
+$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    $("#xc_fdl").highcharts().reflow();
+    $("#dlzx_fdl").highcharts().reflow();
+    $("#lc_fdl").highcharts().reflow();
 });
