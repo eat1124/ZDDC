@@ -242,11 +242,15 @@ function getImportantTargets() {
             dlzx_fdl_right.empty();
             for (var i = 0; i < dlzx.FDL.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    dlzx_fdl_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.FDL.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + dlzx.FDL.TARGETS[i].value + '</div>');
+                    dlzx_fdl_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.FDL.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + dlzx.FDL.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    dlzx_fdl_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.FDL.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + dlzx.FDL.TARGETS[i].value + '</div>')
+                    dlzx_fdl_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.FDL.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + dlzx.FDL.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
             var dlzx_fdl_today = $("#tab_1_5").find("tbody#fdl_today");
@@ -267,11 +271,15 @@ function getImportantTargets() {
             dlzx_zh_right.empty();
             for (var i = 0; i < dlzx.ZH.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    dlzx_zh_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.ZH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + dlzx.ZH.TARGETS[i].value + '</div>');
+                    dlzx_zh_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.ZH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + dlzx.ZH.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    dlzx_zh_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.ZH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + dlzx.ZH.TARGETS[i].value + '</div>')
+                    dlzx_zh_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.ZH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + dlzx.ZH.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
             //  环保
@@ -282,11 +290,15 @@ function getImportantTargets() {
             dlzx_hb_right.empty();
             for (var i = 0; i < dlzx.HB.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    dlzx_hb_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.HB.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + dlzx.HB.TARGETS[i].value + '</div>');
+                    dlzx_hb_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.HB.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + dlzx.HB.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    dlzx_hb_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.HB.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + dlzx.HB.TARGETS[i].value + '</div>')
+                    dlzx_hb_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.HB.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + dlzx.HB.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
             //  能耗
@@ -297,11 +309,15 @@ function getImportantTargets() {
             dlzx_nh_right.empty();
             for (var i = 0; i < dlzx.NH.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    dlzx_nh_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.NH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + dlzx.NH.TARGETS[i].value + '</div>');
+                    dlzx_nh_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.NH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + dlzx.NH.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    dlzx_nh_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.NH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + dlzx.NH.TARGETS[i].value + '</div>')
+                    dlzx_nh_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.NH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + dlzx.NH.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
 
@@ -316,11 +332,15 @@ function getImportantTargets() {
             xc_fdl_right.empty();
             for (var i = 0; i < xc.FDL.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    xc_fdl_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + xc.FDL.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + xc.FDL.TARGETS[i].value + '</div>');
+                    xc_fdl_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.FDL.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + xc.FDL.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    xc_fdl_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + xc.FDL.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + xc.FDL.TARGETS[i].value + '</div>')
+                    xc_fdl_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.FDL.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + xc.FDL.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
             var xc_fdl_today = $("#tab_1_4").find("tbody#fdl_today");
@@ -341,11 +361,15 @@ function getImportantTargets() {
             xc_zh_right.empty();
             for (var i = 0; i < xc.ZH.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    xc_zh_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + xc.ZH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + xc.ZH.TARGETS[i].value + '</div>');
+                    xc_zh_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.ZH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + xc.ZH.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    xc_zh_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + xc.ZH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + xc.ZH.TARGETS[i].value + '</div>')
+                    xc_zh_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.ZH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + xc.ZH.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
             //  环保
@@ -356,11 +380,15 @@ function getImportantTargets() {
             xc_hb_right.empty();
             for (var i = 0; i < xc.HB.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    xc_hb_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + xc.HB.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + xc.HB.TARGETS[i].value + '</div>');
+                    xc_hb_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.HB.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + xc.HB.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    xc_hb_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + xc.HB.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + xc.HB.TARGETS[i].value + '</div>')
+                    xc_hb_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.HB.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + xc.HB.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
             //  能耗
@@ -371,11 +399,15 @@ function getImportantTargets() {
             xc_nh_right.empty();
             for (var i = 0; i < xc.NH.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    xc_nh_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + xc.NH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + xc.NH.TARGETS[i].value + '</div>');
+                    xc_nh_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.NH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + xc.NH.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    xc_nh_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + xc.NH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + xc.NH.TARGETS[i].value + '</div>')
+                    xc_nh_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.NH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + xc.NH.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
 
@@ -390,11 +422,15 @@ function getImportantTargets() {
             lc_fdl_right.empty();
             for (var i = 0; i < lc.FDL.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    lc_fdl_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + lc.FDL.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + lc.FDL.TARGETS[i].value + '</div>');
+                    lc_fdl_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.FDL.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + lc.FDL.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    lc_fdl_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + lc.FDL.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + lc.FDL.TARGETS[i].value + '</div>')
+                    lc_fdl_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.FDL.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + lc.FDL.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
             var lc_fdl_today = $("#tab_1_6").find("tbody#fdl_today");
@@ -415,11 +451,15 @@ function getImportantTargets() {
             lc_zh_right.empty();
             for (var i = 0; i < lc.ZH.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    lc_zh_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + lc.ZH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + lc.ZH.TARGETS[i].value + '</div>');
+                    lc_zh_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.ZH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + lc.ZH.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    lc_zh_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + lc.ZH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + lc.ZH.TARGETS[i].value + '</div>')
+                    lc_zh_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.ZH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + lc.ZH.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
             //  环保
@@ -430,11 +470,15 @@ function getImportantTargets() {
             lc_hb_right.empty();
             for (var i = 0; i < lc.HB.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    lc_hb_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + lc.HB.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + lc.HB.TARGETS[i].value + '</div>');
+                    lc_hb_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.HB.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + lc.HB.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    lc_hb_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + lc.HB.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + lc.HB.TARGETS[i].value + '</div>')
+                    lc_hb_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.HB.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + lc.HB.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
             //  能耗
@@ -445,11 +489,15 @@ function getImportantTargets() {
             lc_nh_right.empty();
             for (var i = 0; i < lc.NH.TARGETS.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    lc_nh_right.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + lc.NH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + lc.NH.TARGETS[i].value + '</div>');
+                    lc_nh_right.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.NH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + lc.NH.TARGETS[i].value + '</div>\n' +
+                        '</div>');
                 } else {
-                    lc_nh_left.append('<div class="col-md-4 name"><span><i class="fa fa-caret-right"></i></span> ' + lc.NH.TARGETS[i].name + ':</div>\n' +
-                        '<div class="col-md-8 value"> ' + lc.NH.TARGETS[i].value + '</div>')
+                    lc_nh_left.append('<div class="col-md-12">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.NH.TARGETS[i].name + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0"> ' + lc.NH.TARGETS[i].value + '</div>\n' +
+                        '</div>')
                 }
             }
         }

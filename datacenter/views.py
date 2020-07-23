@@ -8385,11 +8385,13 @@ def get_appointed_time_data(code, appointed_time):
                 datadate=appointed_time.date()
             )
         if operation_type == "16":
-            appointed_time_object = getmodels("Extractdata", str(appointed_time.year)).objects.exclude(state="9").filter(
+            appointed_time_object = getmodels("Extractdata", str(appointed_time.year)).objects.exclude(
+                state="9").filter(
                 datadate=appointed_time.date()
             )
         if operation_type == "17":
-            appointed_time_object = getmodels("Calculatedata", str(appointed_time.year)).objects.exclude(state="9").filter(
+            appointed_time_object = getmodels("Calculatedata", str(appointed_time.year)).objects.exclude(
+                state="9").filter(
                 datadate=appointed_time.date()
             )
 
@@ -8421,9 +8423,12 @@ def get_important_targets(request):
     if request.user.is_authenticated():
         status = 1
 
-        # 动力中心
-        dlzx_fdl_target_codes = ["DLZX_JYTJ_01_SWDL", "DLZX_JYTJ_02_SWDL", "DLZX_JYTJ_SWDL"]
-        dlzx_fdl_jz_target_codes = ["DLZX_JYTJ_01_FDL", "DLZX_JYTJ_02_FDL", "DLZX_JYTJ_FDL"]
+        # **************
+        #   动力中心
+        # **************
+        #   发电量指标
+        dlzx_fdl_target_codes = ["DLZX_JYTJ_01_SWDL", "DLZX_JYTJ_02_SWDL", "DLZX_JYTJ_SWDL"]  # <<
+        dlzx_fdl_jz_target_codes = ["DLZX_JYTJ_01_FDL", "DLZX_JYTJ_02_FDL", "DLZX_JYTJ_FDL"]  # <<
 
         dlzx_fdl_list = []
         dlzx_fdl_targets = []
@@ -8445,7 +8450,152 @@ def get_important_targets(request):
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
             })
+        #   综合指标
+        dlzx_zh_target_codes = []  # <<
 
+        dlzx_zh_targets = []
+        for dlzx_zh_target_code in dlzx_zh_target_codes:
+            appointed_time_data = get_appointed_time_data(dlzx_zh_target_code, now)
+            dlzx_zh_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
+        #   环保指标
+        dlzx_hb_target_codes = []  # <<
+
+        dlzx_hb_targets = []
+        for dlzx_hb_target_code in dlzx_hb_target_codes:
+            appointed_time_data = get_appointed_time_data(dlzx_hb_target_code, now)
+            dlzx_hb_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
+        #   能耗指标
+        dlzx_nh_target_codes = ["DLZX_HB_01_RJ_SO2", "DLZX_HB_02_RJ_SO2", "DLZX_HB_01_RJ_NOx", "DLZX_HB_02_RJ_NOx",
+                                "DLZX_HB_01_RJPFND_SO2", "DLZX_HB_02_RJPFND_SO2", "DLZX_HB_01_RJPFND_NOx", "DLZX_HB_02_RJPFND_NOx"]  # <<
+        dlzx_nh_targets = []
+        for dlzx_nh_target_code in dlzx_nh_target_codes:
+            appointed_time_data = get_appointed_time_data(dlzx_nh_target_code, now)
+            dlzx_nh_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
+
+        # **************
+        #   新厂
+        # **************
+        #   发电量指标
+        xc_fdl_target_codes = []  # <<
+        xc_fdl_jz_target_codes = []  # <<
+
+        xc_fdl_list = []
+        xc_fdl_targets = []
+        now = datetime.datetime.now()
+        yestoday = now - datetime.timedelta(days=1)
+        for xc_fdl_jz_target_code in xc_fdl_jz_target_codes:
+            appointed_time_data = get_appointed_time_data(xc_fdl_jz_target_code, now)
+            appointed_time_data_y = get_appointed_time_data(xc_fdl_jz_target_code, yestoday)
+            xc_fdl_list.append({
+                "jz_name": appointed_time_data["target_name"],
+                "yest_value": appointed_time_data_y["curvalue"],
+                "cumulativemonth": appointed_time_data["cumulativemonth"],
+                "cumulativeyear": appointed_time_data["cumulativeyear"]
+            })
+
+        for xc_fdl_target_code in xc_fdl_target_codes:
+            appointed_time_data = get_appointed_time_data(xc_fdl_target_code, now)
+            xc_fdl_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
+        #   综合指标
+        xc_zh_target_codes = []  # <<
+
+        xc_zh_targets = []
+        for xc_zh_target_code in xc_zh_target_codes:
+            appointed_time_data = get_appointed_time_data(xc_zh_target_code, now)
+            xc_zh_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
+        #   环保指标
+        xc_hb_target_codes = []  # <<
+
+        xc_hb_targets = []
+        for xc_hb_target_code in xc_hb_target_codes:
+            appointed_time_data = get_appointed_time_data(xc_hb_target_code, now)
+            xc_hb_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
+        #   能耗指标
+        xc_nh_target_codes = []  # <<
+
+        xc_nh_targets = []
+        for xc_nh_target_code in xc_nh_target_codes:
+            appointed_time_data = get_appointed_time_data(xc_nh_target_code, now)
+            xc_nh_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
+
+        # **************
+        #   老厂
+        # **************
+        #   发电量指标
+        lc_fdl_target_codes = []  # <<
+        lc_fdl_jz_target_codes = ["FDL_9F"]  # <<
+
+        lc_fdl_list = []
+        lc_fdl_targets = []
+        now = datetime.datetime.now()
+        yestoday = now - datetime.timedelta(days=1)
+        for lc_fdl_jz_target_code in lc_fdl_jz_target_codes:
+            appointed_time_data = get_appointed_time_data(lc_fdl_jz_target_code, now)
+            appointed_time_data_y = get_appointed_time_data(lc_fdl_jz_target_code, yestoday)
+            lc_fdl_list.append({
+                "jz_name": appointed_time_data["target_name"],
+                "yest_value": appointed_time_data_y["curvalue"],
+                "cumulativemonth": appointed_time_data["cumulativemonth"],
+                "cumulativeyear": appointed_time_data["cumulativeyear"]
+            })
+
+        for lc_fdl_target_code in lc_fdl_target_codes:
+            appointed_time_data = get_appointed_time_data(lc_fdl_target_code, now)
+            lc_fdl_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
+        #   综合指标
+        lc_zh_target_codes = []  # <<
+
+        lc_zh_targets = []
+        for lc_zh_target_code in lc_zh_target_codes:
+            appointed_time_data = get_appointed_time_data(lc_zh_target_code, now)
+            lc_zh_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
+        #   环保指标
+        lc_hb_target_codes = []  # <<
+
+        lc_hb_targets = []
+        for lc_hb_target_code in lc_hb_target_codes:
+            appointed_time_data = get_appointed_time_data(lc_hb_target_code, now)
+            lc_hb_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
+        #   能耗指标
+        lc_nh_target_codes = []  # <<
+
+        lc_nh_targets = []
+        for lc_nh_target_code in lc_nh_target_codes:
+            appointed_time_data = get_appointed_time_data(lc_nh_target_code, now)
+            lc_nh_targets.append({
+                "name": appointed_time_data["target_name"],
+                "value": appointed_time_data["curvalue"],
+            })
         data = {
             "DLZX": {
                 "FDL": {
@@ -8453,45 +8603,43 @@ def get_important_targets(request):
                     "TARGETS": dlzx_fdl_targets
                 },
                 "ZH": {
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "TARGETS": dlzx_zh_targets
                 },
                 "HB": {
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "TARGETS": dlzx_hb_targets
                 },
                 "NH": {
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "TARGETS": dlzx_nh_targets
                 }
             },
             "XC": {
                 "FDL": {
-                    "FDL_LIST": [{"jz_name": "#11", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0},
-                                 {"jz_name": "#12", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0}],
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "FDL_LIST": xc_fdl_list,
+                    "TARGETS": xc_fdl_targets
                 },
                 "ZH": {
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "TARGETS": xc_zh_targets
                 },
                 "HB": {
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "TARGETS": xc_hb_targets
                 },
                 "NH": {
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "TARGETS": xc_nh_targets
                 }
             },
             "LC": {
                 "FDL": {
-                    "FDL_LIST": [{"jz_name": "#21", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0},
-                                 {"jz_name": "#22", "yest_value": 0, "cumulativemonth": 0, "cumulativeyear": 0}],
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "FDL_LIST": lc_fdl_list,
+                    "TARGETS": lc_fdl_targets
                 },
                 "ZH": {
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "TARGETS": lc_zh_targets
                 },
                 "HB": {
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "TARGETS": lc_hb_targets
                 },
                 "NH": {
-                    "TARGETS": [{"name": "target1", "value": "v1"}, {"name": "target2", "value": "v2"}]
+                    "TARGETS": lc_nh_targets
                 }
             }
         }
