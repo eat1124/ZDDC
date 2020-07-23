@@ -141,4 +141,5 @@ urlpatterns = [
     # 首页
     url(r'^get_reporting_log/$', get_reporting_log),
     url(r'^get_month_fdl/$', get_month_fdl),
+    url(r'^get_important_targets/$', get_important_targets),
 ]
