@@ -8437,21 +8437,22 @@ def get_important_targets(request):
         dlzx_fdl_list = []
         dlzx_fdl_targets = []
         now = datetime.datetime.now()
+        now = datetime.datetime.strptime("2020-07-21", "%Y-%m-%d")
         yestoday = now - datetime.timedelta(days=1)
         for dlzx_fdl_jz_target_code in dlzx_fdl_jz_target_codes:
             appointed_time_data = get_appointed_time_data(dlzx_fdl_jz_target_code, yestoday)
             dlzx_fdl_list.append({
                 "jz_name": appointed_time_data["target_name"],
-                "yest_value": appointed_time_data["curvalue"],
-                "cumulativemonth": appointed_time_data["cumulativemonth"],
-                "cumulativeyear": appointed_time_data["cumulativeyear"]
+                "yest_value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
+                "cumulativemonth": round(appointed_time_data["cumulativemonth"], 2) if appointed_time_data["cumulativemonth"] else 0,
+                "cumulativeyear": round(appointed_time_data["cumulativeyear"], 2) if appointed_time_data["cumulativeyear"] else 0
             })
 
         for dlzx_fdl_target_code in dlzx_fdl_target_codes:
             appointed_time_data = get_appointed_time_data(dlzx_fdl_target_code, yestoday)
             dlzx_fdl_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
         #   综合指标
         dlzx_zh_target_codes = ["DLZX_JYTJ_01_ZGRL_NEW", "DLZX_JYTJ_02_ZGRL_NEW", "DLZX_JYTJ_ZGRL_NEW"]  # <<
@@ -8461,18 +8462,17 @@ def get_important_targets(request):
             appointed_time_data = get_appointed_time_data(dlzx_zh_target_code, yestoday)
             dlzx_zh_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
         #   环保指标
-        dlzx_hb_target_codes = ["DLZX_HB_01_RJ_SO2", "DLZX_HB_02_RJ_SO2", "DLZX_HB_01_RJ_NOx", "DLZX_HB_02_RJ_NOx",
-                                "DLZX_HB_01_RJPFND_SO2", "DLZX_HB_02_RJPFND_SO2", "DLZX_HB_01_RJPFND_NOx", "DLZX_HB_02_RJPFND_NOx"]  # <<
+        dlzx_hb_target_codes = ["DLZX_JYTJ_WSPFL"]  # <<
 
         dlzx_hb_targets = []
         for dlzx_hb_target_code in dlzx_hb_target_codes:
             appointed_time_data = get_appointed_time_data(dlzx_hb_target_code, yestoday)
             dlzx_hb_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
         #   能耗指标
         dlzx_nh_target_codes = ["DLZX_JYTJ_DGYS#1", "DLZX_JYTJ_2DGYS#2", "DLZX_JYTJ_BHGYS"]  # <<
@@ -8481,7 +8481,7 @@ def get_important_targets(request):
             appointed_time_data = get_appointed_time_data(dlzx_nh_target_code, yestoday)
             dlzx_nh_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
 
         # **************
@@ -8497,16 +8497,16 @@ def get_important_targets(request):
             appointed_time_data = get_appointed_time_data(xc_fdl_jz_target_code, yestoday)
             xc_fdl_list.append({
                 "jz_name": appointed_time_data["target_name"],
-                "yest_value": appointed_time_data["curvalue"],
-                "cumulativemonth": appointed_time_data["cumulativemonth"],
-                "cumulativeyear": appointed_time_data["cumulativeyear"]
+                "yest_value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
+                "cumulativemonth": round(appointed_time_data["cumulativemonth"], 2) if appointed_time_data["cumulativemonth"] else 0,
+                "cumulativeyear": round(appointed_time_data["cumulativeyear"], 2) if appointed_time_data["cumulativeyear"] else 0
             })
 
         for xc_fdl_target_code in xc_fdl_target_codes:
             appointed_time_data = get_appointed_time_data(xc_fdl_target_code, yestoday)
             xc_fdl_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
         #   综合指标
         xc_zh_target_codes = []  # <<
@@ -8516,7 +8516,7 @@ def get_important_targets(request):
             appointed_time_data = get_appointed_time_data(xc_zh_target_code, yestoday)
             xc_zh_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
         #   环保指标
         xc_hb_target_codes = []  # <<
@@ -8526,7 +8526,7 @@ def get_important_targets(request):
             appointed_time_data = get_appointed_time_data(xc_hb_target_code, yestoday)
             xc_hb_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
         #   能耗指标
         xc_nh_target_codes = []  # <<
@@ -8536,7 +8536,7 @@ def get_important_targets(request):
             appointed_time_data = get_appointed_time_data(xc_nh_target_code, yestoday)
             xc_nh_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
 
         # **************
@@ -8552,16 +8552,16 @@ def get_important_targets(request):
             appointed_time_data = get_appointed_time_data(lc_fdl_jz_target_code, yestoday)
             lc_fdl_list.append({
                 "jz_name": appointed_time_data["target_name"],
-                "yest_value": appointed_time_data["curvalue"],
-                "cumulativemonth": appointed_time_data["cumulativemonth"],
-                "cumulativeyear": appointed_time_data["cumulativeyear"]
+                "yest_value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
+                "cumulativemonth": round(appointed_time_data["cumulativemonth"], 2) if appointed_time_data["cumulativemonth"] else 0,
+                "cumulativeyear": round(appointed_time_data["cumulativeyear"], 2) if appointed_time_data["cumulativeyear"] else 0
             })
 
         for lc_fdl_target_code in lc_fdl_target_codes:
             appointed_time_data = get_appointed_time_data(lc_fdl_target_code, yestoday)
             lc_fdl_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
         #   综合指标
         lc_zh_target_codes = ["GWRZ_TRQ"]  # <<
@@ -8571,7 +8571,7 @@ def get_important_targets(request):
             appointed_time_data = get_appointed_time_data(lc_zh_target_code, yestoday)
             lc_zh_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
         #   环保指标
         lc_hb_target_codes = []  # <<
@@ -8581,7 +8581,7 @@ def get_important_targets(request):
             appointed_time_data = get_appointed_time_data(lc_hb_target_code, yestoday)
             lc_hb_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
         #   能耗指标
         lc_nh_target_codes = ["HML_BML_9F", "FDBZMHLV_9F", "GDBZMHLV_9F", "ZHGDBZMHL_9F"]  # <<
@@ -8591,7 +8591,7 @@ def get_important_targets(request):
             appointed_time_data = get_appointed_time_data(lc_nh_target_code, yestoday)
             lc_nh_targets.append({
                 "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"],
+                "value": round(appointed_time_data["curvalue"], 2) if appointed_time_data["curvalue"] else 0,
             })
         data = {
             "DLZX": {
