@@ -8676,7 +8676,7 @@ def get_report_search_data(request):
         # 报表记录 ReportSubmit ReportModel
         apps = App.objects.exclude(state="9").values()
         cycles = DictList.objects.exclude(state="9").filter(dictindex_id=12).values()
-        report_submits = ReportSubmit.objects.filter(state="1").select_related("report_model__name").values(
+        report_submits = ReportSubmit.objects.filter(state="1").order_by("-id").values(
             "id", "app_id", "report_model_id", "report_model__name", "state", "person", "write_time", "report_time",
             "report_model__report_type", "report_model__code"
         )

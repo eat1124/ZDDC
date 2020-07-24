@@ -56,7 +56,7 @@ $(document).ready(function () {
         $("#report_table").dataTable().fnDestroy();
         $('#report_table').dataTable({
             "bAutoWidth": false,
-            "bSort": true,
+            "bSort": false,
             "bProcessing": true,
             "data": data,
             "columns": [
