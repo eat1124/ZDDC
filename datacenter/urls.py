@@ -142,4 +142,8 @@ urlpatterns = [
     url(r'^get_reporting_log/$', get_reporting_log),
     url(r'^get_month_fdl/$', get_month_fdl),
     url(r'^get_important_targets/$', get_important_targets),
+
+    # 报表查询
+    url(r'^report_search/$', report_search, {'funid': '140'}),
+    url(r'^get_report_search_data/$', get_report_search_data),
 ]

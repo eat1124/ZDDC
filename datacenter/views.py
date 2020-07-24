@@ -8187,6 +8187,39 @@ def groupsavefuntree(request):
         return HttpResponse("保存成功。")
 
 
+def get_format_date(pre_date, c_cycletype):
+    """格式化日期
+
+    Args:
+        pre_date (datetime): 格式化前日期
+        cycletype (int): 周期类型
+
+    Returns:
+        [datetime]: [格式化后日期]
+    """
+    format_date = ""
+    try:
+        if c_cycletype == "10":
+            format_date = pre_date.strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
+        if c_cycletype == "11":
+            format_date = pre_date.strftime('%Y{y}%m{m}').format(y='年', m='月')
+        if c_cycletype == "12":
+            format_date = pre_date.strftime('%Y{y} {q}').format(y='年', q='第{0}季度'.format(
+                (pre_date.month - 1) // 3 + 1))
+        if c_cycletype == "13":
+            if pre_date.month <= 6:
+                p = "上"
+            else:
+                p = "下"
+            format_date = pre_date.strftime('%Y{y} {p}').format(y='年', p='{0}半年'.format(p))
+        if c_cycletype == "14":
+            format_date = pre_date.strftime('%Y{y}').format(y='年')
+    except Exception as e:
+        print(e)
+
+    return format_date
+
+
 def get_reporting_log(request):
     if request.user.is_authenticated():
         reporting_log = ReportingLog.objects.exclude(state='9').order_by('-id').select_related('adminapp', 'work')
@@ -8198,38 +8231,6 @@ def get_reporting_log(request):
 
         dict_list = DictList.objects.exclude(state='9').values()
         reporting_log_list = []
-
-        def get_format_date(pre_date, c_cycletype):
-            """格式化日期
-
-            Args:
-                pre_date (datetime): 格式化前日期
-                cycletype (int): 周期类型
-
-            Returns:
-                [datetime]: [格式化后日期]
-            """
-            format_date = ""
-            try:
-                if c_cycletype == "10":
-                    format_date = pre_date.strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
-                if c_cycletype == "11":
-                    format_date = pre_date.strftime('%Y{y}%m{m}').format(y='年', m='月')
-                if c_cycletype == "12":
-                    format_date = pre_date.strftime('%Y{y} {q}').format(y='年', q='第{0}季度'.format(
-                        (pre_date.month - 1) // 3 + 1))
-                if c_cycletype == "13":
-                    if pre_date.month <= 6:
-                        p = "上"
-                    else:
-                        p = "下"
-                    format_date = pre_date.strftime('%Y{y} {p}').format(y='年', p='{0}半年'.format(p))
-                if c_cycletype == "14":
-                    format_date = pre_date.strftime('%Y{y}').format(y='年')
-            except Exception as e:
-                print(e)
-
-            return format_date
 
         for num, rl in enumerate(reporting_log):
             user = rl.user.userinfo.fullname if rl.user.userinfo else ''
@@ -8378,6 +8379,7 @@ def get_appointed_time_data(code, appointed_time):
     targets = Target.objects.exclude(state="9").filter(code=code)
     if targets.exists():
         target = targets[0]
+        appointed_time_object = []
         # 操作类型: 计算、提取、录入、电表走字
         operation_type = target.operationtype
         if operation_type == "1":
@@ -8646,3 +8648,116 @@ def get_important_targets(request):
         })
     else:
         return HttpResponseRedirect("/login")
+
+
+def report_search(request, funid):
+    if request.user.is_authenticated():
+        return render(request, 'report_search.html', {
+            'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request)
+        })
+    else:
+        return HttpResponseRedirect('/login')
+
+
+def get_report_search_data(request):
+    """获取已发布报表时间等信息，以树的形式展示
+    镇海电厂
+        > 应用
+            > 周期
+                > 报表名称
+                    时间 状态 
+    """
+    if request.user.is_authenticated():
+        status = 1
+        info = ""
+
+        # 应用 App
+        # 报表类型 DictList DictIndex=7
+        # 报表记录 ReportSubmit ReportModel
+        apps = App.objects.exclude(state="9").values()
+        cycles = DictList.objects.exclude(state="9").filter(dictindex_id=12).values()
+        report_submits = ReportSubmit.objects.filter(state="1").select_related("report_model__name").values(
+            "id", "app_id", "report_model_id", "report_model__name", "state", "person", "write_time", "report_time",
+            "report_model__report_type", "report_model__code"
+        )
+        report_models = ReportModel.objects.exclude(state="9").values()
+
+        # 周期 报表类型对应字典
+        #   根据周期匹配报表类型
+        compile_dict = {
+            10: 22,
+            11: 23,
+            12: 24,
+            13: 25,
+            14: 26
+        }
+
+        root_info = {}
+        root_info["text"] = "镇海电厂"
+        root_info["type"] = "node"
+        root_info["state"] = {'opened': True}
+
+        app_list = []
+        for app in apps:
+            app_info = {}
+            app_info["text"] = app["name"]
+            app_info["type"] = "node"
+            app_info["data"] = {
+                "name": app["name"],
+                "code": app["code"]
+            }
+
+            cycle_list = []
+            for cycle in cycles:
+                cycle_info = {}
+                cycle_info["text"] = cycle['name']
+                cycle_info["type"] = "node"
+                cycle_info["data"] = {
+                    "id": cycle["id"],
+                    "name": cycle["name"]
+                }
+
+                report_model_list = []
+                for report_model in report_models:
+                    report_model_info = {}
+
+                    report_type = ""
+                    try:
+                        report_type = compile_dict[cycle["id"]]
+                    except Exception:
+                        pass
+                    if report_model["app_id"] == app["id"] and report_model["report_type"] == str(report_type):
+                        report_model_info["text"] = report_model["name"]
+                        report_model_info["type"] = "file"
+
+                        # 报表数据
+                        report_submit_list = []
+
+                        for report_submit in report_submits:
+                            if report_submit["report_model_id"] == report_model["id"]:
+                                report_submit_list.append({
+                                    "name": report_submit["report_model__name"],
+                                    "write_time": "{0:%Y-%m-%d %H:%M:%S}".format(report_submit["write_time"]) if report_submit["write_time"] else "",
+                                    "report_time": get_format_date(report_submit["report_time"], str(cycle["id"])) if report_submit["report_time"] else "",
+                                    "person": report_submit["person"],
+                                    "code": report_submit["report_model__code"]
+                                })
+                        report_model_info["data"] = report_submit_list
+                        report_model_list.append(report_model_info)
+
+                if not report_model_list:
+                    continue
+                cycle_info["children"] = report_model_list
+                cycle_list.append(cycle_info)
+
+            app_info["children"] = cycle_list
+            app_list.append(app_info)
+        root_info["children"] = app_list
+
+        return JsonResponse({
+            "status": status,
+            "info": info,
+            "data": root_info
+        })
+    else:
+        return HttpResponseRedirect('/login')
