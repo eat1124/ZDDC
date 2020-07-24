@@ -8370,7 +8370,12 @@ def get_appointed_time_data(code, appointed_time):
     :param appointed_time:
     :return appointed_time_object:
     """
-    data = {}
+    data = {
+        "target_name": "",
+        "curvalue": 0,
+        "cumulativemonth": 0,
+        "cumulativeyear": 0
+    }
     targets = Target.objects.exclude(state="9").filter(code=code)
     if targets.exists():
         target = targets[0]
@@ -8451,7 +8456,7 @@ def get_important_targets(request):
                 "value": appointed_time_data["curvalue"],
             })
         #   综合指标
-        dlzx_zh_target_codes = []  # <<
+        dlzx_zh_target_codes = ["DLZX_JYTJ_01_ZGRL_NEW", "DLZX_JYTJ_02_ZGRL_NEW", "DLZX_JYTJ_ZGRL_NEW"]  # <<
 
         dlzx_zh_targets = []
         for dlzx_zh_target_code in dlzx_zh_target_codes:
@@ -8461,7 +8466,8 @@ def get_important_targets(request):
                 "value": appointed_time_data["curvalue"],
             })
         #   环保指标
-        dlzx_hb_target_codes = []  # <<
+        dlzx_hb_target_codes = ["DLZX_HB_01_RJ_SO2", "DLZX_HB_02_RJ_SO2", "DLZX_HB_01_RJ_NOx", "DLZX_HB_02_RJ_NOx",
+                                "DLZX_HB_01_RJPFND_SO2", "DLZX_HB_02_RJPFND_SO2", "DLZX_HB_01_RJPFND_NOx", "DLZX_HB_02_RJPFND_NOx"]  # <<
 
         dlzx_hb_targets = []
         for dlzx_hb_target_code in dlzx_hb_target_codes:
@@ -8471,8 +8477,7 @@ def get_important_targets(request):
                 "value": appointed_time_data["curvalue"],
             })
         #   能耗指标
-        dlzx_nh_target_codes = ["DLZX_HB_01_RJ_SO2", "DLZX_HB_02_RJ_SO2", "DLZX_HB_01_RJ_NOx", "DLZX_HB_02_RJ_NOx",
-                                "DLZX_HB_01_RJPFND_SO2", "DLZX_HB_02_RJPFND_SO2", "DLZX_HB_01_RJPFND_NOx", "DLZX_HB_02_RJPFND_NOx"]  # <<
+        dlzx_nh_target_codes = ["DLZX_JYTJ_DGYS#1", "DLZX_JYTJ_2DGYS#2", "DLZX_JYTJ_BHGYS"]  # <<
         dlzx_nh_targets = []
         for dlzx_nh_target_code in dlzx_nh_target_codes:
             appointed_time_data = get_appointed_time_data(dlzx_nh_target_code, now)
@@ -8543,8 +8548,8 @@ def get_important_targets(request):
         #   老厂
         # **************
         #   发电量指标
-        lc_fdl_target_codes = []  # <<
-        lc_fdl_jz_target_codes = ["FDL_9F"]  # <<
+        lc_fdl_target_codes = ["CYDL_FD_M_9F"]  # <<
+        lc_fdl_jz_target_codes = ["FDL_9F", "FD_11_01", "FD_12_01"]  # <<
 
         lc_fdl_list = []
         lc_fdl_targets = []
@@ -8567,7 +8572,7 @@ def get_important_targets(request):
                 "value": appointed_time_data["curvalue"],
             })
         #   综合指标
-        lc_zh_target_codes = []  # <<
+        lc_zh_target_codes = ["GWRZ_TRQ"]  # <<
 
         lc_zh_targets = []
         for lc_zh_target_code in lc_zh_target_codes:
@@ -8587,7 +8592,7 @@ def get_important_targets(request):
                 "value": appointed_time_data["curvalue"],
             })
         #   能耗指标
-        lc_nh_target_codes = []  # <<
+        lc_nh_target_codes = ["HML_BML_9F", "FDBZMHLV_9F", "GDBZMHLV_9F", "ZHGDBZMHL_9F"]  # <<
 
         lc_nh_targets = []
         for lc_nh_target_code in lc_nh_target_codes:
