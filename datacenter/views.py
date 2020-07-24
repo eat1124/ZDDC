@@ -8439,17 +8439,16 @@ def get_important_targets(request):
         now = datetime.datetime.now()
         yestoday = now - datetime.timedelta(days=1)
         for dlzx_fdl_jz_target_code in dlzx_fdl_jz_target_codes:
-            appointed_time_data = get_appointed_time_data(dlzx_fdl_jz_target_code, now)
-            appointed_time_data_y = get_appointed_time_data(dlzx_fdl_jz_target_code, yestoday)
+            appointed_time_data = get_appointed_time_data(dlzx_fdl_jz_target_code, yestoday)
             dlzx_fdl_list.append({
                 "jz_name": appointed_time_data["target_name"],
-                "yest_value": appointed_time_data_y["curvalue"],
+                "yest_value": appointed_time_data["curvalue"],
                 "cumulativemonth": appointed_time_data["cumulativemonth"],
                 "cumulativeyear": appointed_time_data["cumulativeyear"]
             })
 
         for dlzx_fdl_target_code in dlzx_fdl_target_codes:
-            appointed_time_data = get_appointed_time_data(dlzx_fdl_target_code, now)
+            appointed_time_data = get_appointed_time_data(dlzx_fdl_target_code, yestoday)
             dlzx_fdl_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
@@ -8459,7 +8458,7 @@ def get_important_targets(request):
 
         dlzx_zh_targets = []
         for dlzx_zh_target_code in dlzx_zh_target_codes:
-            appointed_time_data = get_appointed_time_data(dlzx_zh_target_code, now)
+            appointed_time_data = get_appointed_time_data(dlzx_zh_target_code, yestoday)
             dlzx_zh_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
@@ -8470,7 +8469,7 @@ def get_important_targets(request):
 
         dlzx_hb_targets = []
         for dlzx_hb_target_code in dlzx_hb_target_codes:
-            appointed_time_data = get_appointed_time_data(dlzx_hb_target_code, now)
+            appointed_time_data = get_appointed_time_data(dlzx_hb_target_code, yestoday)
             dlzx_hb_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
@@ -8479,7 +8478,7 @@ def get_important_targets(request):
         dlzx_nh_target_codes = ["DLZX_JYTJ_DGYS#1", "DLZX_JYTJ_2DGYS#2", "DLZX_JYTJ_BHGYS"]  # <<
         dlzx_nh_targets = []
         for dlzx_nh_target_code in dlzx_nh_target_codes:
-            appointed_time_data = get_appointed_time_data(dlzx_nh_target_code, now)
+            appointed_time_data = get_appointed_time_data(dlzx_nh_target_code, yestoday)
             dlzx_nh_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
@@ -8494,20 +8493,17 @@ def get_important_targets(request):
 
         xc_fdl_list = []
         xc_fdl_targets = []
-        now = datetime.datetime.now()
-        yestoday = now - datetime.timedelta(days=1)
         for xc_fdl_jz_target_code in xc_fdl_jz_target_codes:
-            appointed_time_data = get_appointed_time_data(xc_fdl_jz_target_code, now)
-            appointed_time_data_y = get_appointed_time_data(xc_fdl_jz_target_code, yestoday)
+            appointed_time_data = get_appointed_time_data(xc_fdl_jz_target_code, yestoday)
             xc_fdl_list.append({
                 "jz_name": appointed_time_data["target_name"],
-                "yest_value": appointed_time_data_y["curvalue"],
+                "yest_value": appointed_time_data["curvalue"],
                 "cumulativemonth": appointed_time_data["cumulativemonth"],
                 "cumulativeyear": appointed_time_data["cumulativeyear"]
             })
 
         for xc_fdl_target_code in xc_fdl_target_codes:
-            appointed_time_data = get_appointed_time_data(xc_fdl_target_code, now)
+            appointed_time_data = get_appointed_time_data(xc_fdl_target_code, yestoday)
             xc_fdl_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
@@ -8517,7 +8513,7 @@ def get_important_targets(request):
 
         xc_zh_targets = []
         for xc_zh_target_code in xc_zh_target_codes:
-            appointed_time_data = get_appointed_time_data(xc_zh_target_code, now)
+            appointed_time_data = get_appointed_time_data(xc_zh_target_code, yestoday)
             xc_zh_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
@@ -8527,7 +8523,7 @@ def get_important_targets(request):
 
         xc_hb_targets = []
         for xc_hb_target_code in xc_hb_target_codes:
-            appointed_time_data = get_appointed_time_data(xc_hb_target_code, now)
+            appointed_time_data = get_appointed_time_data(xc_hb_target_code, yestoday)
             xc_hb_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
@@ -8537,7 +8533,7 @@ def get_important_targets(request):
 
         xc_nh_targets = []
         for xc_nh_target_code in xc_nh_target_codes:
-            appointed_time_data = get_appointed_time_data(xc_nh_target_code, now)
+            appointed_time_data = get_appointed_time_data(xc_nh_target_code, yestoday)
             xc_nh_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
@@ -8552,20 +8548,17 @@ def get_important_targets(request):
 
         lc_fdl_list = []
         lc_fdl_targets = []
-        now = datetime.datetime.now()
-        yestoday = now - datetime.timedelta(days=1)
         for lc_fdl_jz_target_code in lc_fdl_jz_target_codes:
-            appointed_time_data = get_appointed_time_data(lc_fdl_jz_target_code, now)
-            appointed_time_data_y = get_appointed_time_data(lc_fdl_jz_target_code, yestoday)
+            appointed_time_data = get_appointed_time_data(lc_fdl_jz_target_code, yestoday)
             lc_fdl_list.append({
                 "jz_name": appointed_time_data["target_name"],
-                "yest_value": appointed_time_data_y["curvalue"],
+                "yest_value": appointed_time_data["curvalue"],
                 "cumulativemonth": appointed_time_data["cumulativemonth"],
                 "cumulativeyear": appointed_time_data["cumulativeyear"]
             })
 
         for lc_fdl_target_code in lc_fdl_target_codes:
-            appointed_time_data = get_appointed_time_data(lc_fdl_target_code, now)
+            appointed_time_data = get_appointed_time_data(lc_fdl_target_code, yestoday)
             lc_fdl_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
@@ -8575,7 +8568,7 @@ def get_important_targets(request):
 
         lc_zh_targets = []
         for lc_zh_target_code in lc_zh_target_codes:
-            appointed_time_data = get_appointed_time_data(lc_zh_target_code, now)
+            appointed_time_data = get_appointed_time_data(lc_zh_target_code, yestoday)
             lc_zh_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
@@ -8585,7 +8578,7 @@ def get_important_targets(request):
 
         lc_hb_targets = []
         for lc_hb_target_code in lc_hb_target_codes:
-            appointed_time_data = get_appointed_time_data(lc_hb_target_code, now)
+            appointed_time_data = get_appointed_time_data(lc_hb_target_code, yestoday)
             lc_hb_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
@@ -8595,7 +8588,7 @@ def get_important_targets(request):
 
         lc_nh_targets = []
         for lc_nh_target_code in lc_nh_target_codes:
-            appointed_time_data = get_appointed_time_data(lc_nh_target_code, now)
+            appointed_time_data = get_appointed_time_data(lc_nh_target_code, yestoday)
             lc_nh_targets.append({
                 "name": appointed_time_data["target_name"],
                 "value": appointed_time_data["curvalue"],
