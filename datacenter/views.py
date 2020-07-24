@@ -8189,8 +8189,7 @@ def groupsavefuntree(request):
 
 def get_reporting_log(request):
     if request.user.is_authenticated():
-        reporting_log = ReportingLog.objects.exclude(state='9').order_by('-write_time').select_related('adminapp',
-                                                                                                       'work')
+        reporting_log = ReportingLog.objects.exclude(state='9').order_by('-id').select_related('adminapp', 'work')
         reporting_type_dict = {
             'del': '删除',
             'release': '发布',
