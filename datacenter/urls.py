@@ -146,4 +146,8 @@ urlpatterns = [
     # 报表查询
     url(r'^report_search/$', report_search, {'funid': '140'}),
     url(r'^get_report_search_data/$', get_report_search_data),
+
+    # 指标数据查询
+    url(r'^target_value_search/$', target_value_search, {'funid': '142'}),
+    url(r'^get_target_search_data/$', get_target_search_data),
 ]

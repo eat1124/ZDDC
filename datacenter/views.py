@@ -8761,3 +8761,155 @@ def get_report_search_data(request):
         })
     else:
         return HttpResponseRedirect('/login')
+
+
+def target_value_search(request, funid):
+    if request.user.is_authenticated():
+        return render(request, 'target_value_search.html', {
+            'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request)
+        })
+    else:
+        return HttpResponseRedirect('/login')
+
+
+def get_target_value(c_target, start_date, end_date):
+    """
+    start_date与end_date必须在同一年
+    :param operation_type:
+    :param start_date:
+    :param end_date:
+    :return:
+    """
+    data = []
+    if c_target:
+        operation_type = c_target.operationtype
+        target_id = c_target.id
+        appointed_time_object = None
+        if not start_date and end_date:
+            if operation_type == "1":
+                appointed_time_object = getmodels("Meterdata", str(end_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__lte=end_date.date())
+            if operation_type == "15":
+                appointed_time_object = getmodels("Entrydata", str(end_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__lte=end_date.date())
+            if operation_type == "16":
+                appointed_time_object = getmodels("Extractdata", str(end_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__lte=end_date.date())
+            if operation_type == "17":
+                appointed_time_object = getmodels("Calculatedata", str(end_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__lte=end_date.date())
+        if start_date and not end_date:
+            if operation_type == "1":
+                appointed_time_object = getmodels("Meterdata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__gte=start_date.date())
+            if operation_type == "15":
+                appointed_time_object = getmodels("Entrydata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__gte=start_date.date())
+            if operation_type == "16":
+                appointed_time_object = getmodels("Extractdata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__gte=start_date.date())
+            if operation_type == "17":
+                appointed_time_object = getmodels("Calculatedata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__gte=start_date.date())
+        if all([start_date, end_date]):
+            if operation_type == "1":
+                appointed_time_object = getmodels("Meterdata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
+                    Q(datadate__gte=start_date.date()) & Q(datadate__lte=end_date.date())
+                )
+            if operation_type == "15":
+                appointed_time_object = getmodels("Entrydata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
+                    Q(datadate__gte=start_date.date()) & Q(datadate__lte=end_date.date())
+                )
+            if operation_type == "16":
+                appointed_time_object = getmodels("Extractdata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
+                    Q(datadate__gte=start_date.date()) & Q(datadate__lte=end_date.date())
+                )
+            if operation_type == "17":
+                appointed_time_object = getmodels("Calculatedata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
+                    Q(datadate__gte=start_date.date()) & Q(datadate__lte=end_date.date())
+                )
+        # 对值的处理
+        for ato in appointed_time_object.values("curvalue", "target__name", "target__code", "datadate", "target__digit"):
+            data.append({
+                "name": ato["target__name"],
+                "code": ato["target__code"],
+                "curvalue": round(ato["curvalue"], ato["target__digit"]),
+                "datadate": ato["datadate"]
+            })
+
+    return data
+
+
+def get_target_search_data(request):
+    """
+    查询指标数据
+        start_date end_date 可能不在同一年
+    :param request:
+    :return:
+    """
+    if request.user.is_authenticated():
+        status = 1
+        info = ""
+        data = []
+
+        target = request.POST.get("target", "")
+        start_date = request.POST.get("start_date", "")
+        end_date = request.POST.get("end_date", "")
+
+        c_targets = Target.objects.exclude(state="9").filter(Q(name=target) | Q(code=target))
+        if c_targets.exists():
+            c_target = c_targets[0]
+
+            if not start_date:
+                status = 0
+                info = "开始时间未选择。"
+            elif not end_date:
+                status = 0
+                info = "结束时间未选择。"
+            else:
+
+                # 判断开始时间与结束时间是否在同一年
+                start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+                end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+
+                if start_date > end_date:
+                    status = 0
+                    info = "开始时间不得迟于结束时间。"
+                else:
+                    start_date_year = start_date.year
+                    end_date_year = end_date.year
+                    delta_year = end_date_year - start_date_year
+                    if delta_year == 0:  # 同一年
+                        target_values = get_target_value(c_target, start_date, end_date)
+                        data = [{
+                            "name": tv["name"],
+                            "code": tv["code"],
+                            "curvalue": tv["curvalue"],
+                            "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
+                        } for tv in target_values]
+                    else:
+                        # 开始时间到年底
+                        s_target_values = get_target_value(c_target, start_date, None)
+
+                        # 结束时间到年初
+                        e_target_values = get_target_value(c_target, None, end_date)
+
+                        m_target_values = []
+                        # 2017 2019 2
+                        if delta_year > 1:
+                            for i in range(0, delta_year):
+                                start_date = datetime.datetime(start_date_year, 1, 1)
+                                target_values = get_target_value(c_target, start_date, None)
+                                m_data = [{
+                                    "name": tv["name"],
+                                    "code": tv["code"],
+                                    "curvalue": tv["curvalue"],
+                                    "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
+                                } for tv in target_values]
+                                if m_data:
+                                    m_target_values.extend(m_data)
+
+                        data = s_target_values + m_target_values + e_target_values
+        else:
+            status = 0
+            info = "指标代码或者指标名称未填写。"
+
+        return JsonResponse({
+            "status": status,
+            "info": info,
+            "data": sorted(data,key = lambda e:e.__getitem__('time'), reverse=True)
+        })
+    else:
+        return HttpResponseRedirect('/login')
