@@ -185,8 +185,10 @@ function getMonthFDL() {
             $('#navtabs_1').find('a').eq(0).tab('show');
             var DLZX_JYTJ = data.DLZX_JYTJ;
             var LC_JYTJ = data.LC_JYTJ;
-            setFDLChart(dlzx_fdl_chart, DLZX_JYTJ)
-            setFDLChart(lc_fdl_chart, LC_JYTJ)
+            var XC_JYTJ = data.XC_JYTJ;
+            setFDLChart(dlzx_fdl_chart, DLZX_JYTJ);
+            setFDLChart(lc_fdl_chart, LC_JYTJ);
+            setFDLChart(xc_fdl_chart, XC_JYTJ);
         },
     })
 }

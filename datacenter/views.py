@@ -8294,68 +8294,141 @@ def get_month_fdl(request):
     :return:
     """
     if request.user.is_authenticated():
+        def get_target_30days_value_queryset(date, target):
+            """
+            处理隔年问题
+            :param date:
+            :param target:
+            :return:
+            """
+            target_30days_values = []
+            operation_type = target.operationtype
+            date_year = date.year
+            target_values = []
+            if operation_type == "1":
+                target_values = getmodels("Meterdata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values("curvalue", "datadate")
+            if operation_type == "15":
+                target_values = getmodels("Entrydata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values("curvalue", "datadate")
+            if operation_type == "16":
+                target_values = getmodels("Extractdata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values("curvalue", "datadate")
+            if operation_type == "17":
+                target_values = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values("curvalue", "datadate")
+
+            for i in range(31):
+                # 并非同一年，重新取数
+                if date.year != date_year:
+                    if operation_type == "1":
+                        target_values = getmodels("Meterdata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values(
+                            "curvalue", "datadate"
+                        )
+                    if operation_type == "15":
+                        target_values = getmodels("Entrydata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values(
+                            "curvalue", "datadate"
+                        )
+                    if operation_type == "16":
+                        target_values = getmodels("Extractdata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values(
+                            "curvalue", "datadate"
+                        )
+                    if operation_type == "17":
+                        target_values = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values(
+                            "curvalue", "datadate"
+                        )
+
+                target_value = 0
+                for tv in target_values:
+                    if tv["datadate"] == date:
+                        target_value = float(tv["curvalue"]) if tv["curvalue"] else 0
+                        break
+                target_30days_values.append(target_value)
+                date -= datetime.timedelta(days=1)
+            return target_30days_values
+
+        def get_categories(date):
+            categories = []
+            for i in range(31):
+                date -= datetime.timedelta(days=1)
+                categories.append("{0:%Y-%m-%d}".format(date))
+            return categories
+
         # 老厂经营统计
         #   FD_11_01(电表走字) FD_12_01(电表走字) FDL_9F(计算)
         # 动力中心经营统计
         #   DLZX_JYTJ_01_FDL(计算)  DLZX_JYTJ_02_FDL(计算) DLZX_JYTJ_FDL(计算)
+        # 新厂经营统计
+        #   NEW_JYTJ_01_FDL NEW_JYTJ_02_FDL NEW_JYTJ_FDL
         today = datetime.datetime.now()
         # today = datetime.datetime.strptime("2020-01-31", "%Y-%m-%d")
 
-        day30_before = today - datetime.timedelta(days=30)
-        calculate_data = getmodels("Calculatedata", str(today.year)).objects.exclude(state="9").filter(
-            Q(datadate__gte=day30_before) & Q(datadate__lte=today)
-        ).filter(target__cycletype=10)
+        dlzx_fdl_code_list = ["DLZX_JYTJ_01_FDL", "DLZX_JYTJ_02_FDL", "DLZX_JYTJ_FDL"]
+        lc_fdl_code_list = ["FD_11_01", "FD_12_01", "FDL_9F"]
+        xc_fdl_code_list = ["NEW_JYTJ_01_FDL", "NEW_JYTJ_02_FDL", "NEW_JYTJ_FDL"]
+        colors = ["#3598dc", "#e7505a", "#32c5d2", "#67809F", "#f3c200"]
 
-        DLZX_JYTJ_01_FDL_list = []
-        DLZX_JYTJ_02_FDL_list = []
-        DLZX_JYTJ_FDL_list = []
+        dlzx = []
+        lc = []
+        xc = []
 
-        FDL_9F_list = []
+        for num, fdl_code in enumerate(dlzx_fdl_code_list):
+            targets = Target.objects.exclude(state="9").filter(code=fdl_code)
+            if targets.exists:
+                target = targets[0]
+                target_30days_values = get_target_30days_value_queryset(today, target)
+                color = "#3598dc"
+                try:
+                    color = colors[num]
+                except Exception:
+                    pass
 
-        categories = []
-        for i in range(31):
-            # 所有机组
-            # 3个指标数据都获取 break
-            DLZX_JYTJ_01_FDL = calculate_data.filter(datadate=today.date()).filter(target__code="DLZX_JYTJ_01_FDL")
-            DLZX_JYTJ_02_FDL = calculate_data.filter(datadate=today.date()).filter(target__code="DLZX_JYTJ_02_FDL")
-            DLZX_JYTJ_FDL = calculate_data.filter(datadate=today.date()).filter(target__code="DLZX_JYTJ_FDL")
-            FDL_9F = calculate_data.filter(datadate=today.date()).filter(target__code="FDL_9F")
+                dlzx.append({
+                    "name": target.name,
+                    "color": color,
+                    "fdl": target_30days_values
+                })
+        for num, fdl_code in enumerate(lc_fdl_code_list):
+            targets = Target.objects.exclude(state="9").filter(code=fdl_code)
+            if targets.exists:
+                target = targets[0]
+                target_30days_values = get_target_30days_value_queryset(today, target)
+                color = "#3598dc"
+                try:
+                    color = colors[num]
+                except Exception:
+                    pass
 
-            DLZX_JYTJ_01_FDL_list.append(float(DLZX_JYTJ_01_FDL[0].curvalue) if DLZX_JYTJ_01_FDL else 0)
-            DLZX_JYTJ_02_FDL_list.append(float(DLZX_JYTJ_02_FDL[0].curvalue) if DLZX_JYTJ_02_FDL else 0)
-            DLZX_JYTJ_FDL_list.append(float(DLZX_JYTJ_FDL[0].curvalue) if DLZX_JYTJ_FDL else 0)
-            FDL_9F_list.append(float(FDL_9F[0].curvalue) if FDL_9F else 0)
+                lc.append({
+                    "name": target.name,
+                    "color": color,
+                    "fdl": target_30days_values
+                })
+        for num, fdl_code in enumerate(xc_fdl_code_list):
+            targets = Target.objects.exclude(state="9").filter(code=fdl_code)
+            if targets.exists:
+                target = targets[0]
+                target_30days_values = get_target_30days_value_queryset(today, target)
+                color = "#3598dc"
+                try:
+                    color = colors[num]
+                except Exception:
+                    pass
 
-            today -= datetime.timedelta(days=1)
-            c_time = "{0:%Y-%m-%d}".format(today)
-            categories.append(c_time)
+                xc.append({
+                    "name": target.name,
+                    "color": color,
+                    "fdl": target_30days_values
+                })
 
-        DLZX_JYTJ_list = [{
-            "name": "#1发电量",
-            "color": "#3598dc",
-            "fdl": DLZX_JYTJ_01_FDL_list
-        }, {
-            "name": "#2发电量",
-            "color": "#e7505a",
-            "fdl": DLZX_JYTJ_02_FDL_list
-        }, {
-            "name": "全场发电量",
-            "color": "#32c5d2",
-            "fdl": DLZX_JYTJ_FDL_list
-        }]
-
-        LC_JYTJ_list = [{
-            "name": "9F发电量",
-            "color": "#3598dc",
-            "fdl": FDL_9F_list
-        }]
+        categories = get_categories(today)
         return JsonResponse({
             "DLZX_JYTJ": {
-                "fld_list": DLZX_JYTJ_list,
+                "fld_list": dlzx,
                 "categories": categories
             },
             "LC_JYTJ": {
-                "fld_list": LC_JYTJ_list,
+                "fld_list": lc,
+                "categories": categories
+            },
+            "XC_JYTJ" : {
+                "fld_list": xc,
                 "categories": categories
             }
         })
@@ -8800,9 +8873,11 @@ def get_target_value(c_target, start_date, end_date):
             if operation_type == "15":
                 appointed_time_object = getmodels("Entrydata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__gte=start_date.date())
             if operation_type == "16":
-                appointed_time_object = getmodels("Extractdata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__gte=start_date.date())
+                appointed_time_object = getmodels("Extractdata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
+                    datadate__gte=start_date.date())
             if operation_type == "17":
-                appointed_time_object = getmodels("Calculatedata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__gte=start_date.date())
+                appointed_time_object = getmodels("Calculatedata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
+                    datadate__gte=start_date.date())
         if all([start_date, end_date]):
             if operation_type == "1":
                 appointed_time_object = getmodels("Meterdata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
@@ -8909,7 +8984,7 @@ def get_target_search_data(request):
         return JsonResponse({
             "status": status,
             "info": info,
-            "data": sorted(data,key = lambda e:e.__getitem__('time'), reverse=True)
+            "data": sorted(data, key=lambda e: e.__getitem__('time'), reverse=True)
         })
     else:
         return HttpResponseRedirect('/login')
