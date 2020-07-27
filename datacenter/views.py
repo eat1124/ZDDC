@@ -8997,9 +8997,11 @@ def target_statistic(request, funid):
         # 周期类型
         cycle_list = DictList.objects.exclude(state="9").filter(dictindex_id=12)
 
+        targets = Target.objects.exclude(state="9").values("id", "name", "cycletype")
+
         return render(request, 'target_statistic.html', {
             'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request),
-            "cycle_list": cycle_list,
+            "cycle_list": cycle_list, "targets": targets
         })
     else:
         return HttpResponseRedirect('/login')

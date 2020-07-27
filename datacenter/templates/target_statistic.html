@@ -138,9 +138,38 @@
                     <form class="bs-example form-horizontal activate-form">{% csrf_token %}
                         <div class="form-body">
                             <div class="form-group">
-                                <label class="col-md-2 control-label" for="form_control_1">指标</label>
+                                <label class="col-md-2 control-label"><span
+                                        style="color:red; ">*</span>列名</label>
                                 <div class="col-md-10">
-                                    <select id="targets" name="targets" class="form-control select2" multiple>
+                                    <input id="col_name" type="text" name="col_name" class="form-control">
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label" for="form_control_1"><span
+                                        style="color:red; ">*</span>是否分组</label>
+                                <div class="col-md-10">
+                                    <select id="if_group" name="if_group" class="form-control">
+                                        <option value="是">是</option>
+                                        <option value="否">否</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" id="single_div" hidden>
+                                <label class="col-md-2 control-label" for="form_control_1"><span
+                                        style="color:red; ">*</span>指标</label>
+                                <div class="col-md-10">
+                                    <select id="single_target" name="single_target" class="form-control">
+                                        <option value="1">指标1</option>
+                                        <option value="2">指标2</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" id="multiple_div">
+                                <label class="col-md-2 control-label" for="form_control_1"><span
+                                        style="color:red; ">*</span>指标</label>
+                                <div class="col-md-10">
+                                    <select id="multiple_targets" name="multiple_targets" class="form-control select2" multiple>
                                         <option value="1">指标1</option>
                                         <option value="2">指标2</option>
                                     </select>
@@ -153,25 +182,27 @@
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <div class="col-md-2 control-label"><b>重命名</b></div>
-                                <div class="col-md-10">
-                                    <hr style="height:1px;border:none;border-top:1px solid #87cefa;">
+                            <div id="rename_div">
+                                <div class="form-group">
+                                    <div class="col-md-2 control-label"><b>重命名</b></div>
+                                    <div class="col-md-10">
+                                        <hr style="height:1px;border:none;border-top:1px solid #87cefa;">
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="form-group" id="new_target_div">
-                                <div class="row col-md-2" style="margin: 0">
-                                </div>
-                                <div class="row col-md-10" style="margin: 0" id="new_target">
-                                    <div class="form-group" style="margin-left: 0; margin-right: 0" target_id="">
-                                        <div class="col-md-5" style="padding: 0">
-                                            <input type="text" readonly class="form-control">
-                                        </div>
-                                        <div class="col-md-2" style="padding: 0 40px; margin-top:5px">
-                                            <span style="text-align: center; vertical-align: middle;"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>
-                                        </div>
-                                        <div class="col-md-5" style="padding: 0">
-                                            <input type="text" class="form-control">
+                                <div class="form-group">
+                                    <div class="row col-md-2" style="margin: 0">
+                                    </div>
+                                    <div class="row col-md-10" style="margin: 0" id="new_target">
+                                        <div class="form-group" style="margin-left: 0; margin-right: 0" target_id="">
+                                            <div class="col-md-5" style="padding: 0">
+                                                <input type="text" readonly class="form-control">
+                                            </div>
+                                            <div class="col-md-2" style="padding: 0 40px; margin-top:5px">
+                                                <span style="text-align: center; vertical-align: middle;"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>
+                                            </div>
+                                            <div class="col-md-5" style="padding: 0">
+                                                <input type="text" class="form-control">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -196,6 +227,7 @@
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
+        var all_targets = {{ targets|safe }}
     </script>
 
     <link href="/static/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css"/>

@@ -119,13 +119,28 @@ $('#search_new').click(function () {
 });
 
 $('#col_new').click(function () {
+    $('#if_group').val('是');
     $('#targets').val(null).trigger('change');
     $('#new_target').empty();
     $('#static02').modal('show');
 });
 
+$('#if_group').change(function () {
+    var if_group = $(this).val();
+    console.log(if_group)
+    if (if_group == "是"){
+        $('#single_div').hide();
+        $('#multiple_div').show();
+        $('#rename_div').show();
+    } else {
+        $('#single_div').show();
+        $('#multiple_div').hide();
+        $('#rename_div').hide();
+    }
+})
+
 // 新增
-$("#targets").on("select2:select",function(e){
+$("#multiple_targets").on("select2:select",function(e){
     var target = e.params.data;
     $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target.id + '">\n' +
         '    <div class="col-md-5" style="padding: 0">\n' +
@@ -140,14 +155,25 @@ $("#targets").on("select2:select",function(e){
         '</div>')
 });
 // 删除
-$("#targets").on("select2:unselect",function(e){
+$("#multiple_targets").on("select2:unselect",function(e){
     // 将指定id的div删除
     var target = e.params.data;
     var target_id = target.id;
-
     $('#new_target').find('div[target_id="' + target_id + '"]').remove();
 });
 
 $('#col_load').click(function(){
     // 新增行 修改行
 });
+
+$('#static02').on("show.bs.modal", function () {
+    $('#single_target').empty();
+    $('#multiple_targets').empty();
+    var search_type = $('#search_type').val();
+    for (var i=1; i< all_targets.length; i++){
+        if (all_targets[i].cycletype == search_type){
+            $('#single_target').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
+            $('#multiple_targets').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
+        }
+    }
+})
