@@ -8310,9 +8310,11 @@ def get_month_fdl(request):
             if operation_type == "15":
                 target_values = getmodels("Entrydata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values("curvalue", "datadate")
             if operation_type == "16":
-                target_values = getmodels("Extractdata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values("curvalue", "datadate")
+                target_values = getmodels("Extractdata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values("curvalue",
+                                                                                                                                                              "datadate")
             if operation_type == "17":
-                target_values = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values("curvalue", "datadate")
+                target_values = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values("curvalue",
+                                                                                                                                                                "datadate")
 
             for i in range(31):
                 # 并非同一年，重新取数
@@ -8427,7 +8429,7 @@ def get_month_fdl(request):
                 "fld_list": lc,
                 "categories": categories
             },
-            "XC_JYTJ" : {
+            "XC_JYTJ": {
                 "fld_list": xc,
                 "categories": categories
             }
@@ -8985,6 +8987,60 @@ def get_target_search_data(request):
             "status": status,
             "info": info,
             "data": sorted(data, key=lambda e: e.__getitem__('time'), reverse=True)
+        })
+    else:
+        return HttpResponseRedirect('/login')
+
+
+def target_statistic(request, funid):
+    if request.user.is_authenticated():
+        # 周期类型
+        cycle_list = DictList.objects.exclude(state="9").filter(dictindex_id=12)
+
+        return render(request, 'target_statistic.html', {
+            'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request),
+            "cycle_list": cycle_list,
+        })
+    else:
+        return HttpResponseRedirect('/login')
+
+
+def target_statistic_data(request):
+    if request.user.is_authenticated():
+        status = 1
+        info = ""
+        data = []
+
+        data = [{
+            "id": 1,
+            "name": "查询1",
+            "type": "10",
+            "type_name": "日",
+            "remark": "说明1",
+            "target_col": [{
+                "id": 1,
+                "name": "第一列",
+                "targets": [{"target_id": 1, "new_target_name": "新指标名1"}, {"target_id": 2, "new_target_name": "新指标名2"}],
+                "remark": "指标列说明"
+            }, {
+                "id": 2,
+                "name": "第二列",
+                "targets": [{"target_id": 3, "new_target_name": "新指标名3"}],
+                "remark": "指标列说明"
+            }]
+        }, {
+            "id": 2,
+            "name": "查询2",
+            "type": "11",
+            "type_name": "月",
+            "remark": "说明2",
+            "target_col": []
+        }]
+
+        return JsonResponse({
+            "status": status,
+            "info": info,
+            "data": data
         })
     else:
         return HttpResponseRedirect('/login')
