@@ -462,3 +462,11 @@ class SupplementProcess(models.Model):
     state = models.CharField('状态', max_length=10, null=True, blank=True)
 
 
+class TargetStatistic(models.Model):
+    """
+    指标统计查询
+    """
+    name = models.CharField("查询名", max_length=256, null=True, default="")
+    type = models.CharField("查询周期类型", max_length=20, null=True, default="")
+    remark = models.TextField("查询说明", null=True, default="")
+    col_data = models.TextField("指标列JSON信息", null=True, default="")
