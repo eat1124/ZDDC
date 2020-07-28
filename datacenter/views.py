@@ -9001,7 +9001,7 @@ def target_statistic(request, funid):
 
         return render(request, 'target_statistic.html', {
             'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request),
-            "cycle_list": cycle_list, "targets": targets
+            "cycle_list": cycle_list, "targets": list(targets)  # 解决 remaining elements truncated
         })
     else:
         return HttpResponseRedirect('/login')
@@ -9020,15 +9020,15 @@ def target_statistic_data(request):
             "type_name": "日",
             "remark": "说明1",
             "target_col": [{
-                "id": 1,
                 "name": "第一列",
-                "targets": [{"target_id": 1, "new_target_name": "新指标名1"}, {"target_id": 2, "new_target_name": "新指标名2"}],
-                "remark": "指标列说明"
+                "targets": [{"target_id": 35, "new_target_name": "新指标名1", "target_name": "指标1"}, {"target_id": 36, "new_target_name": "新指标名2","target_name": "指标2"}],
+                "remark": "指标列说明",
+                "if_group": "是"
             }, {
-                "id": 2,
                 "name": "第二列",
-                "targets": [{"target_id": 3, "new_target_name": "新指标名3"}],
-                "remark": "指标列说明"
+                "targets": [{"target_id": 37, "new_target_name": "新指标名3"}],
+                "remark": "指标列说明",
+                "if_group": "否"
             }]
         }, {
             "id": 2,
@@ -9036,7 +9036,7 @@ def target_statistic_data(request):
             "type": "11",
             "type_name": "月",
             "remark": "说明2",
-            "target_col": []
+            "target_col": [],
         }]
 
         return JsonResponse({

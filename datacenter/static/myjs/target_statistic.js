@@ -12,11 +12,8 @@ function getSearchStatistic() {
                 renderStatisticDataTable(table_data);
             }
         }
-    })
-
+    });
 }
-
-getSearchStatistic();
 
 function renderStatisticDataTable(table_data) {
     $('#search_table').dataTable().fnDestroy();
@@ -73,8 +70,8 @@ function renderTargetColDataTable(table_data) {
         "bProcessing": true,
         "data": table_data,
         "columns": [
-            {"data": "id"},
             {"data": "name"},
+            {"data": "if_group"},
             {"data": null},
             {"data": "remark"},
             {"data": null}
@@ -111,36 +108,123 @@ function renderTargetColDataTable(table_data) {
             "sZeroRecords": "没有检索到数据",
         }
     });
+    $('#col_table tbody').on('click', 'button#edit', function () {
+        var table = $('#col_table').DataTable();
+        var data = table.row($(this).parents('tr')).data();
+        $("#col_id").val("1");
+        $("#col_name").val(data.name);
+        $("#col_remark").val(data.remark);
+        $("#if_group").val(data.if_group);
+
+        var targets = []
+        for (var i = 0; i < data.targets.length; i++) {
+            targets.push(data.targets[i].target_id);
+        }
+        // 选中指标
+        if (data.if_group == "是") {
+            $('#multiple_targets').select2('val', targets);
+            // 重命名加载
+            $('#new_target').empty();
+            for (var j = 0; j < data.targets.length; j++) {
+                var target = data.targets[j];
+                $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target.id + '">\n' +
+                    '    <div class="col-md-5" style="padding: 0">\n' +
+                    '        <input type="text" readonly class="form-control" value="' + target.target_name + '">\n' +
+                    '    </div>\n' +
+                    '    <div class="col-md-2" style="padding: 0 40px; margin-top:5px">\n' +
+                    '        <span style="text-align: center; vertical-align: middle;"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
+                    '    </div>\n' +
+                    '    <div class="col-md-5" style="padding: 0">\n' +
+                    '        <input type="text" class="form-control" value="' + target.new_target_name + '">\n' +
+                    '    </div>\n' +
+                    '</div>');
+            }
+
+            $('#single_div').hide();
+            $('#multiple_div').show();
+            $('#rename_div').show();
+        } else {
+            $('#single_target').select2('val', targets[0]);
+            $('#single_div').show();
+            $('#multiple_div').hide();
+            $('#rename_div').hide();
+        }
+    });
+    $('#col_table tbody').on('click', 'button#delrow', function () {
+        var table = $('#col_table').DataTable();
+        table.rows($(this).parents('tr')).remove().draw();
+    });
 }
 
+function addOrEdit() {
+    // 新增行 修改行
+    var table = $('#col_table').DataTable();
+    var col_id = $('#col_id').val();
+    if (col_id == 0) {  // 新增
+        // new_target下的target_id target_name new_target_name
+        var targets = []
+        $('#new_target').children().each(function () {
+            var target_id = $(this).attr("target_id");
+            var target_name = $(this).children().eq(0).find('input').val();
+            var new_target_name = $(this).children().eq(2).find('input').val();
+            targets.push({
+                'target_id': target_id,
+                'target_name': target_name,
+                'new_target_name': new_target_name
+            })
+        });
+        // 当前多少列
+        var rows = table.rows().data().length;
+
+        table.row.add({
+            "id": rows + 1,
+            "name": $('#col_name').val(),
+            "targets": targets,
+            "remark": $('#search_name').val(),
+            "if_group": $('#if_group').val()
+        }).draw();
+    } else {
+        // 修改
+    }
+    $('#static02').hide();
+}
+
+function displayTargets() {
+    $('#single_target').empty();
+    $('#multiple_targets').empty();
+
+    var search_type = $('#search_type').val();
+    for (var i = 1; i < all_targets.length; i++) {
+        if (all_targets[i].cycletype == search_type) {
+            $('#single_target').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
+            $('#multiple_targets').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
+        }
+    }
+}
+
+getSearchStatistic();
 
 $('#search_new').click(function () {
+    $('#search_name').val('');
+    $('#search_type').val('');
+    $('#search_remark').val('');
+
     $('#static01').modal('show');
+    renderTargetColDataTable([]);
 });
 
 $('#col_new').click(function () {
+    $('#col_id').val(0);
     $('#if_group').val('是');
-    $('#targets').val(null).trigger('change');
+    $('#multiple_targets').select2('val', []);
+    $('#single_target').select2('val', "");
     $('#new_target').empty();
+    $('#rename_div').show();
     $('#static02').modal('show');
 });
 
-$('#if_group').change(function () {
-    var if_group = $(this).val();
-    console.log(if_group)
-    if (if_group == "是"){
-        $('#single_div').hide();
-        $('#multiple_div').show();
-        $('#rename_div').show();
-    } else {
-        $('#single_div').show();
-        $('#multiple_div').hide();
-        $('#rename_div').hide();
-    }
-})
-
-// 新增
-$("#multiple_targets").on("select2:select",function(e){
+$("#multiple_targets")
+    .on("select2:select", function (e) {
     var target = e.params.data;
     $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target.id + '">\n' +
         '    <div class="col-md-5" style="padding: 0">\n' +
@@ -152,28 +236,62 @@ $("#multiple_targets").on("select2:select",function(e){
         '    <div class="col-md-5" style="padding: 0">\n' +
         '        <input type="text" class="form-control">\n' +
         '    </div>\n' +
-        '</div>')
-});
-// 删除
-$("#multiple_targets").on("select2:unselect",function(e){
+        '</div>');
+})  // 新增
+    .on("select2:unselect", function (e) {
     // 将指定id的div删除
     var target = e.params.data;
     var target_id = target.id;
     $('#new_target').find('div[target_id="' + target_id + '"]').remove();
-});
+});  // 删除
 
-$('#col_load').click(function(){
-    // 新增行 修改行
-});
-
-$('#static02').on("show.bs.modal", function () {
-    $('#single_target').empty();
-    $('#multiple_targets').empty();
-    var search_type = $('#search_type').val();
-    for (var i=1; i< all_targets.length; i++){
-        if (all_targets[i].cycletype == search_type){
-            $('#single_target').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
-            $('#multiple_targets').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
+$('#col_load').click(function () {
+    // 非空条件
+    if ($('#col_name').val()) {
+        if ($('#if_group').val() == '是') {
+            if ($('#multiple_targets').val()) {
+                addOrEdit();
+            } else {
+                alert('未选择指标。')
+            }
+        } else if ($('#if_group').val() == '否') {
+            if ($('#single_target').val()) {
+                addOrEdit();
+            } else {
+                alert('未选择指标。')
+            }
+        } else {
+            alert('是否分组未选择。')
         }
+    } else {
+        alert("列名未填写。")
     }
+});
+
+$('#static01')
+    .on("show.bs.modal", function () {
+    displayTargets();
 })
+    .on("hide.bs.modal", function () {
+    // 解决2层modal导致的遮蔽层未关闭问题，第一层关闭时直接清除所有遮蔽层
+    $('.modal-backdrop').remove();
+});
+
+$('#if_group').change(function () {
+    var if_group = $(this).val();
+
+    if (if_group == "是") {
+        $('#single_div').hide();
+        $('#multiple_div').show();
+        $('#rename_div').show();
+    } else {
+        $('#single_div').show();
+        $('#multiple_div').hide();
+        $('#rename_div').hide();
+    }
+});
+
+$('#search_type').change(function () {
+    displayTargets();
+});
+

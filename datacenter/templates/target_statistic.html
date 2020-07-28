@@ -36,7 +36,7 @@
     </table>
 
     <!-- 新增查询 -->
-    <div id="static01" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+    <div id="static01" class="modal fade" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog" style="width: 800px">
             <div class="modal-content">
                 <div class="modal-header">
@@ -98,8 +98,8 @@
                                 <table class="table table-striped table-bordered table-hover table-checkable order-column" id="col_table">
                                     <thead>
                                     <tr>
-                                        <th> ID</th>
                                         <th> 列名</th>
+                                        <th> 是否分组</th>
                                         <th> 指标集</th>
                                         <th> 说明</th>
                                         <th style="width:50px;"> 操作</th>
@@ -125,9 +125,9 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div >
     <!-- 新建指标列 -->
-    <div id="static02" class="modal fade" data-backdrop="static" data-keyboard="false">
+    <div id="static02" class="modal fade" data-backdrop="static" data-keyboard="false" data-dismiss="modal">
         <div class="modal-dialog" style="width: 780px; margin-top: 100px;">
             <div class="modal-content">
                 <div class="modal-header">
@@ -136,6 +136,7 @@
                 </div>
                 <div class="panel-body">
                     <form class="bs-example form-horizontal activate-form">{% csrf_token %}
+                        <input type="text" id="col_id" name="col_id" hidden>
                         <div class="form-body">
                             <div class="form-group">
                                 <label class="col-md-2 control-label"><span
@@ -159,7 +160,7 @@
                                 <label class="col-md-2 control-label" for="form_control_1"><span
                                         style="color:red; ">*</span>指标</label>
                                 <div class="col-md-10">
-                                    <select id="single_target" name="single_target" class="form-control">
+                                    <select id="single_target" name="single_target" class="form-control select2">
                                         <option value="1">指标1</option>
                                         <option value="2">指标2</option>
                                     </select>
@@ -178,7 +179,7 @@
                             <div class="form-group">
                                 <label class="col-md-2 control-label">说明</label>
                                 <div class="col-md-10">
-                                    <textarea id="search_name" type="text" name="search_name" class="form-control"></textarea>
+                                    <textarea id="col_remark" type="text" name="col_remark" class="form-control"></textarea>
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>
@@ -212,7 +213,7 @@
                             <div class="modal-footer">
                                 <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭
                                 </button>
-                                <button type="button" id="col_load" name="col_load" class="btn green">载入</button>
+                                <button type="button" id="col_load" name="col_load" class="btn green" data-dismiss="modal">载入</button>
                             </div>
                         </div>
                     </form>
