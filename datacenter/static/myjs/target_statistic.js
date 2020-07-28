@@ -18,6 +18,7 @@ function getSearchStatistic() {
 function renderStatisticDataTable(table_data) {
     $('#search_table').dataTable().fnDestroy();
     $('#search_table').dataTable({
+        "ordering": true,
         "bAutoWidth": true,
         "bSort": false,
         "bProcessing": true,
@@ -33,7 +34,9 @@ function renderStatisticDataTable(table_data) {
             "targets": -1,
             "data": null,
             "width": "80px",
-            "defaultContent": "<button id='edit' title='编辑' data-toggle='modal'  data-target='#static01'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button><button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>",
+            "defaultContent": "<button id='edit' title='编辑' data-toggle='modal'  data-target='#static01'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>" +
+                "<button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>" +
+                "<a href='/' title='查看报表' target='_blank' class='btn btn-xs btn-primary' type='button'><i class='fa fa-external-link'></i></a>",
         }],
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",
@@ -60,14 +63,42 @@ function renderStatisticDataTable(table_data) {
         // 指标列dataTable
         renderTargetColDataTable(data.target_col);
     });
+    $('#search_table tbody').on('click', 'button#delrow', function () {
+        if (confirm("确定要删除该条发布数据？")) {
+            var table = $('#search_table').DataTable();
+            var data = table.row($(this).parents('tr')).data();
+            $.ajax({
+                type: "POST",
+                url: "../../target_statistic_del/",
+                data: {
+                    id: data.id,
+                },
+                success: function (data) {
+                    if (data.status == 1) {
+                        table.ajax.url("../target_statistic_data/").load();
+                        alert("删除成功！");
+                    }
+                },
+                error: function (e) {
+                    alert("删除失败，请于管理员联系。");
+                }
+            });
+
+        }
+    });
 }
 
 function renderTargetColDataTable(table_data) {
     $('#col_table').dataTable().fnDestroy();
     $('#col_table').dataTable({
+        "ordering": false,
         "bAutoWidth": true,
         "bSort": false,
         "bProcessing": true,
+        "searching": false,
+        "bLengthChange": false,
+        "info": false, //去左下角
+        "paging": false,  //去右下角
         "data": table_data,
         "columns": [
             {"data": "name"},
@@ -79,13 +110,19 @@ function renderTargetColDataTable(table_data) {
         "columnDefs": [{
             "targets": -3,
             "mRender": function (data, type, full) {
+                var if_group = full.if_group;
                 var targets = full.targets;
                 var targets_td = "";
-                for (var i = 0; i < targets.length; i++) {
-                    targets_td += targets[i].new_target_name + ",";
+                if (if_group == "是") {
+                    for (var i = 0; i < targets.length; i++) {
+                        targets_td += targets[i].new_target_name + ",";
+                    }
+                    targets_td = targets_td.endsWith(",") ? targets_td.slice(0, -1) : targets_td;
+                } else {
+                    targets_td = "无"
                 }
 
-                return targets_td.endsWith(",") ? targets_td.slice(0, -1) : targets_td;
+                return targets_td;
             }
         }, {
             "targets": -1,
@@ -111,20 +148,24 @@ function renderTargetColDataTable(table_data) {
     $('#col_table tbody').on('click', 'button#edit', function () {
         var table = $('#col_table').DataTable();
         var data = table.row($(this).parents('tr')).data();
-        $("#col_id").val("1");
+        // 预先清空
+        $('#new_target').empty();
+
+        $("#col_id").val(table.row($(this).parents('tr')).index() + 1);
         $("#col_name").val(data.name);
         $("#col_remark").val(data.remark);
         $("#if_group").val(data.if_group);
 
         var targets = []
+        console.log(data.targets)
         for (var i = 0; i < data.targets.length; i++) {
             targets.push(data.targets[i].target_id);
         }
         // 选中指标
         if (data.if_group == "是") {
+            console.log(targets)
             $('#multiple_targets').select2('val', targets);
             // 重命名加载
-            $('#new_target').empty();
             for (var j = 0; j < data.targets.length; j++) {
                 var target = data.targets[j];
                 $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target.id + '">\n' +
@@ -163,29 +204,75 @@ function addOrEdit() {
     if (col_id == 0) {  // 新增
         // new_target下的target_id target_name new_target_name
         var targets = []
-        $('#new_target').children().each(function () {
-            var target_id = $(this).attr("target_id");
-            var target_name = $(this).children().eq(0).find('input').val();
-            var new_target_name = $(this).children().eq(2).find('input').val();
+        if ($('#if_group').val() == "是") {
+            $('#new_target').children().each(function () {
+                var target_id = $(this).attr("target_id");
+                var target_name = $(this).children().eq(0).find('input').val();
+                var new_target_name = $(this).children().eq(2).find('input').val();
+                targets.push({
+                    'target_id': target_id,
+                    'target_name': target_name,
+                    'new_target_name': new_target_name
+                });
+            });
+            table.row.add({
+                "name": $('#col_name').val(),
+                "targets": targets,
+                "remark": $('#col_remark').val(),
+                "if_group": $('#if_group').val()
+            }).draw();
+        } else {
+            var target_id = $('#single_target').val();
+            var target_name = $("#single_target").find("option:selected").text();
             targets.push({
                 'target_id': target_id,
                 'target_name': target_name,
-                'new_target_name': new_target_name
-            })
-        });
-        // 当前多少列
-        var rows = table.rows().data().length;
-
-        table.row.add({
-            "id": rows + 1,
-            "name": $('#col_name').val(),
-            "targets": targets,
-            "remark": $('#search_name').val(),
-            "if_group": $('#if_group').val()
-        }).draw();
+            });
+            table.row.add({
+                "name": $('#col_name').val(),
+                "targets": targets,
+                "remark": $('#col_remark').val(),
+                "if_group": $('#if_group').val()
+            }).draw();
+        }
     } else {
         // 修改
+        var targets = []
+        var index = col_id - 1;
+        var c_row = table.row(index);
+        if ($('#if_group').val() == "是") {
+            $('#new_target').children().each(function () {
+                var target_id = $(this).attr("target_id");
+                var target_name = $(this).children().eq(0).find('input').val();
+                var new_target_name = $(this).children().eq(2).find('input').val();
+                targets.push({
+                    'target_id': target_id,
+                    'target_name': target_name,
+                    'new_target_name': new_target_name
+                });
+            });
+            c_row.data({
+                "name": $('#col_name').val(),
+                "targets": targets,
+                "remark": $('#col_remark').val(),
+                "if_group": $('#if_group').val()
+            }).draw();
+        } else {
+            var target_id = $('#single_target').val();
+            var target_name = $("#single_target").find("option:selected").text();
+            targets.push({
+                'target_id': target_id,
+                'target_name': target_name,
+            });
+            c_row.data({
+                "name": $('#col_name').val(),
+                "targets": targets,
+                "remark": $('#col_remark').val(),
+                "if_group": $('#if_group').val()
+            }).draw();
+        }
     }
+
     $('#static02').hide();
 }
 
@@ -194,8 +281,15 @@ function displayTargets() {
     $('#multiple_targets').empty();
 
     var search_type = $('#search_type').val();
-    for (var i = 1; i < all_targets.length; i++) {
-        if (all_targets[i].cycletype == search_type) {
+    if (search_type) {
+        for (var i = 1; i < all_targets.length; i++) {
+            if (all_targets[i].cycletype == search_type) {
+                $('#single_target').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
+                $('#multiple_targets').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
+            }
+        }
+    } else {
+        for (var i = 1; i < all_targets.length; i++) {
             $('#single_target').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
             $('#multiple_targets').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
         }
@@ -205,6 +299,7 @@ function displayTargets() {
 getSearchStatistic();
 
 $('#search_new').click(function () {
+    $('#search_statistic_id').val(0);
     $('#search_name').val('');
     $('#search_type').val('');
     $('#search_remark').val('');
@@ -215,6 +310,8 @@ $('#search_new').click(function () {
 
 $('#col_new').click(function () {
     $('#col_id').val(0);
+    $('#col_name').val('');
+    $('#col_remark').val('');
     $('#if_group').val('是');
     $('#multiple_targets').select2('val', []);
     $('#single_target').select2('val', "");
@@ -225,25 +322,25 @@ $('#col_new').click(function () {
 
 $("#multiple_targets")
     .on("select2:select", function (e) {
-    var target = e.params.data;
-    $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target.id + '">\n' +
-        '    <div class="col-md-5" style="padding: 0">\n' +
-        '        <input type="text" readonly class="form-control" value="' + target.text + '">\n' +
-        '    </div>\n' +
-        '    <div class="col-md-2" style="padding: 0 40px; margin-top:5px">\n' +
-        '        <span style="text-align: center; vertical-align: middle;"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
-        '    </div>\n' +
-        '    <div class="col-md-5" style="padding: 0">\n' +
-        '        <input type="text" class="form-control">\n' +
-        '    </div>\n' +
-        '</div>');
-})  // 新增
+        var target = e.params.data;
+        $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target.id + '">\n' +
+            '    <div class="col-md-5" style="padding: 0">\n' +
+            '        <input type="text" readonly class="form-control" value="' + target.text + '">\n' +
+            '    </div>\n' +
+            '    <div class="col-md-2" style="padding: 0 40px; margin-top:5px">\n' +
+            '        <span style="text-align: center; vertical-align: middle;"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
+            '    </div>\n' +
+            '    <div class="col-md-5" style="padding: 0">\n' +
+            '        <input type="text" class="form-control">\n' +
+            '    </div>\n' +
+            '</div>');
+    })  // 新增
     .on("select2:unselect", function (e) {
-    // 将指定id的div删除
-    var target = e.params.data;
-    var target_id = target.id;
-    $('#new_target').find('div[target_id="' + target_id + '"]').remove();
-});  // 删除
+        // 将指定id的div删除
+        var target = e.params.data;
+        var target_id = target.id;
+        $('#new_target').find('div[target_id="' + target_id + '"]').remove();
+    });  // 删除
 
 $('#col_load').click(function () {
     // 非空条件
@@ -268,14 +365,13 @@ $('#col_load').click(function () {
     }
 });
 
-$('#static01')
-    .on("show.bs.modal", function () {
+$('#static01').on("show.bs.modal", function () {
     displayTargets();
-})
-    .on("hide.bs.modal", function () {
-    // 解决2层modal导致的遮蔽层未关闭问题，第一层关闭时直接清除所有遮蔽层
-    $('.modal-backdrop').remove();
 });
+// .on("hide.bs.modal", function () {
+//     // 解决2层modal导致的遮蔽层未关闭问题，第一层关闭时直接清除所有遮蔽层
+//     $('.modal-backdrop').remove();
+// });
 
 $('#if_group').change(function () {
     var if_group = $(this).val();
@@ -295,3 +391,35 @@ $('#search_type').change(function () {
     displayTargets();
 });
 
+$('#statistic_save').click(function () {
+    var search_table = $('#search_table').DataTable();
+    var col_table = $('#col_table').DataTable();
+    var col_table_data = col_table.rows().data();
+
+    var col_data = [];
+    for (var i = 0; i < col_table_data.length; i++) {
+        col_data.push(col_table_data[i]);
+    }
+
+    $.ajax({
+        type: "POST",
+        dataType: "JSON",
+        url: "../target_statistic_save/",
+        data: {
+            "id": $('#search_statistic_id').val(),
+            "name": $('#search_name').val(),
+            "type": $('#search_type').val(),
+            "remark": $('#search_remark').val(),
+            "col_data": JSON.stringify(col_data)
+        },
+        success: function (data) {
+            if (data.status == 1) {
+                $('#static01').hide();
+                $('.modal-backdrop').remove();
+                search_table.ajax.url("../target_statistic_data/").load();
+            } else {
+                alert(data.info);
+            }
+        }
+    });
+});

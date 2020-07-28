@@ -154,4 +154,6 @@ urlpatterns = [
     # 指标统计查询
     url(r'^target_statistic/$', target_statistic, {'funid': '143'}),
     url(r'^target_statistic_data/$', target_statistic_data),
+    url(r'^target_statistic_save/$', target_statistic_save),
+    url(r'^target_statistic_del/$', target_statistic_del),
 ]

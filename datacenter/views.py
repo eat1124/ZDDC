@@ -9008,36 +9008,58 @@ def target_statistic(request, funid):
 
 
 def target_statistic_data(request):
+    """
+    data = [{
+        "id": 1,
+        "name": "查询1",
+        "type": "10",
+        "type_name": "日",
+        "remark": "说明1",
+        "target_col": [{
+            "name": "第一列",
+            "targets": [{"target_id": 35, "new_target_name": "新指标名1", "target_name": "指标1"}, {"target_id": 36, "new_target_name": "新指标名2", "target_name": "指标2"}],
+            "remark": "指标列说明",
+            "if_group": "是"
+        }, {
+            "name": "第二列",
+            "targets": [{"target_id": 37, "new_target_name": "新指标名3"}],
+            "remark": "指标列说明",
+            "if_group": "否"
+        }]
+    }, {
+        "id": 2,
+        "name": "查询2",
+        "type": "11",
+        "type_name": "月",
+        "remark": "说明2",
+        "target_col": [],
+    }]
+    :param request:
+    :return:
+    """
     if request.user.is_authenticated():
         status = 1
         info = ""
         data = []
 
-        data = [{
-            "id": 1,
-            "name": "查询1",
-            "type": "10",
-            "type_name": "日",
-            "remark": "说明1",
-            "target_col": [{
-                "name": "第一列",
-                "targets": [{"target_id": 35, "new_target_name": "新指标名1", "target_name": "指标1"}, {"target_id": 36, "new_target_name": "新指标名2","target_name": "指标2"}],
-                "remark": "指标列说明",
-                "if_group": "是"
-            }, {
-                "name": "第二列",
-                "targets": [{"target_id": 37, "new_target_name": "新指标名3"}],
-                "remark": "指标列说明",
-                "if_group": "否"
-            }]
-        }, {
-            "id": 2,
-            "name": "查询2",
-            "type": "11",
-            "type_name": "月",
-            "remark": "说明2",
-            "target_col": [],
-        }]
+        target_statistics = TargetStatistic.objects.exclude(state="9")
+        type_list = DictList.objects.filter(dictindex_id=12).values()
+
+        for target_statistic in target_statistics:
+            type_name = ""
+            for tl in type_list:
+                if str(tl['id']) == target_statistic.type:
+                    type_name = tl['name']
+
+            target_col = eval(target_statistic.col_data)
+            data.append({
+                "id": target_statistic.id,
+                "name": target_statistic.name,
+                "type": target_statistic.type,
+                "type_name": type_name,
+                "remark": target_statistic.remark,
+                "target_col": target_col
+            })
 
         return JsonResponse({
             "status": status,
@@ -9046,3 +9068,83 @@ def target_statistic_data(request):
         })
     else:
         return HttpResponseRedirect('/login')
+
+
+def target_statistic_save(request):
+    if request.user.is_authenticated():
+        status = 1
+        info = ""
+
+        id = request.POST.get("id", "")
+        col_data = request.POST.get("col_data", "")
+        name = request.POST.get("name", "")
+        type = request.POST.get("type", "")
+        remark = request.POST.get("remark", "")
+
+        try:
+            id = int(id)
+        except Exception:
+            status = 0
+            info = "网络异常。"
+        else:
+            if not name:
+                status = 0
+                info = "查询名不能为空。"
+            elif not type:
+                status = 0
+                info = "查询类型不能为空。"
+            else:
+                try:
+                    col_data = json.loads(col_data)
+                except Exception:
+                    pass
+
+                if id == 0:
+                    try:
+                        TargetStatistic.objects.create(**{
+                            "name": name,
+                            "type": type,
+                            "remark": remark,
+                            "col_data": col_data
+                        })
+                    except Exception:
+                        stauts = 0
+                        info = "新增查询失败。"
+                else:
+                    try:
+                        TargetStatistic.objects.filter(id=id).update(**{
+                            "name": name,
+                            "type": type,
+                            "remark": remark,
+                            "col_data": col_data
+                        })
+                    except Exception:
+                        status = 0
+                        info = "修改查询失败。"
+        return JsonResponse({
+            "status": status,
+            "info": info
+        })
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def target_statistic_del(request):
+    if request.user.is_authenticated():
+        status = 1
+        info = "删除成功。"
+
+        id = request.POST.get("id", "")
+
+        try:
+            TargetStatistic.objects.filter(id=int(id)).update(**{"state": "9"})
+        except Exception:
+            status = 0
+            info = "删除失败。"
+
+        return JsonResponse({
+            "status": status,
+            "info": info
+        })
+    else:
+        return HttpResponseRedirect("/login")
