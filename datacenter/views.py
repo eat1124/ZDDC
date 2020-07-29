@@ -9315,7 +9315,7 @@ def get_statistic_report(request):
                         })
 
                     # body_data
-                    for i in range(1, delta_days + 1):
+                    for i in range(1, delta_days + 2):
                         target_values = []
                         for cd in col_data:
                             targets = cd["targets"]
