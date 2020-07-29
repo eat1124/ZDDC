@@ -324,6 +324,10 @@ $('#col_new').click(function () {
     $('#new_target').empty();
     $('#rename_div').show();
     $('#static02').modal('show');
+
+    $('#multiple_div').show();
+    $('#single_div').hide();
+
 });
 
 $("#multiple_targets")
