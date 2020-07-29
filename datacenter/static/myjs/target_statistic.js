@@ -36,9 +36,9 @@ function renderStatisticDataTable(table_data) {
             "data": null,
             "mRender": function (data, type, full) {
                 var date = new Date();
-                var today = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDay();
+                var today = date.getFullYear()+"-" + (date.getMonth()+1) + "-" + date.getDate();
                 var day30beforedate = new Date(date - 1000 * 60 * 60 * 24 * 30);
-                var day30before = day30beforedate.getFullYear() + '-' + day30beforedate.getMonth() + '-' + day30beforedate.getDay();
+                var day30before = day30beforedate.getFullYear()+"-" + (day30beforedate.getMonth()+1) + "-" + day30beforedate.getDate();
                 var search_id = full.id;
                 var href = '/statistic_report/?search_id=' + search_id + "&start_date=" + day30before + "&end_date=" + today;
                 return "<button id='edit' title='编辑' data-toggle='modal'  data-target='#static01'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>" +

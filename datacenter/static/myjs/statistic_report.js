@@ -44,7 +44,7 @@ function getStatisticReport(start_date, end_date, search_id) {
 
                     if (targets.length > 1) {
                         for (var j = 0; j < targets.length; j++) {
-                            second_head_tr += '<th style="text-align: center;vertical-align: middle;font-weight: bold;">' + targets[j]['target_name'] + '</th>';
+                            second_head_tr += '<th style="text-align: center;vertical-align: middle;font-weight: bold;">' + targets[j]['new_target_name'] + '</th>';
                         }
                     }
                 }
