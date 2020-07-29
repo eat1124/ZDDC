@@ -8856,45 +8856,30 @@ def get_target_value(c_target, start_date, end_date):
     :return:
     """
     data = []
+    model_map = {
+        "1": "Meterdata",
+        "15": "Entrydata",
+        "16": "Extractdata",
+        "17": "Calculatedata",
+    }
     if c_target:
         operation_type = c_target.operationtype
         target_id = c_target.id
+        model_name = ""
+        try:
+            model_name = model_map[operation_type]
+        except Exception:
+            pass
+
         appointed_time_object = None
-        if not start_date and end_date:
-            if operation_type == "1":
-                appointed_time_object = getmodels("Meterdata", str(end_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__lte=end_date.date())
-            if operation_type == "15":
-                appointed_time_object = getmodels("Entrydata", str(end_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__lte=end_date.date())
-            if operation_type == "16":
-                appointed_time_object = getmodels("Extractdata", str(end_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__lte=end_date.date())
-            if operation_type == "17":
-                appointed_time_object = getmodels("Calculatedata", str(end_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__lte=end_date.date())
-        if start_date and not end_date:
-            if operation_type == "1":
-                appointed_time_object = getmodels("Meterdata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__gte=start_date.date())
-            if operation_type == "15":
-                appointed_time_object = getmodels("Entrydata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__gte=start_date.date())
-            if operation_type == "16":
-                appointed_time_object = getmodels("Extractdata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
-                    datadate__gte=start_date.date())
-            if operation_type == "17":
-                appointed_time_object = getmodels("Calculatedata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
-                    datadate__gte=start_date.date())
-        if all([start_date, end_date]):
-            if operation_type == "1":
-                appointed_time_object = getmodels("Meterdata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
-                    Q(datadate__gte=start_date.date()) & Q(datadate__lte=end_date.date())
-                )
-            if operation_type == "15":
-                appointed_time_object = getmodels("Entrydata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
-                    Q(datadate__gte=start_date.date()) & Q(datadate__lte=end_date.date())
-                )
-            if operation_type == "16":
-                appointed_time_object = getmodels("Extractdata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
-                    Q(datadate__gte=start_date.date()) & Q(datadate__lte=end_date.date())
-                )
-            if operation_type == "17":
-                appointed_time_object = getmodels("Calculatedata", str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
+
+        if model_name:
+            if not start_date and end_date:
+                appointed_time_object = getmodels(model_name, str(end_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__lte=end_date.date())
+            if start_date and not end_date:
+                appointed_time_object = getmodels(model_name, str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(datadate__gte=start_date.date())
+            if all([start_date, end_date]):
+                appointed_time_object = getmodels(model_name, str(start_date.year)).objects.exclude(state="9").filter(target_id=target_id).filter(
                     Q(datadate__gte=start_date.date()) & Q(datadate__lte=end_date.date())
                 )
         # 对值的处理
@@ -8936,7 +8921,6 @@ def get_target_search_data(request):
                 status = 0
                 info = "结束时间未选择。"
             else:
-
                 # 判断开始时间与结束时间是否在同一年
                 start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
                 end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
@@ -8964,9 +8948,10 @@ def get_target_search_data(request):
                         e_target_values = get_target_value(c_target, None, end_date)
 
                         m_target_values = []
-                        # 2017 2019 2
+                        # 2017 2019 2  >>> 2018
                         if delta_year > 1:
                             for i in range(0, delta_year):
+                                start_date_year += 1
                                 start_date = datetime.datetime(start_date_year, 1, 1)
                                 target_values = get_target_value(c_target, start_date, None)
                                 m_data = [{
@@ -9145,6 +9130,236 @@ def target_statistic_del(request):
         return JsonResponse({
             "status": status,
             "info": info
+        })
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def statistic_report(request):
+    if request.user.is_authenticated():
+        start_date = request.GET.get("start_date", "")
+        end_date = request.GET.get("end_date", "")
+        search_id = request.GET.get("search_id", "")
+
+        search_name = ""
+        try:
+            search_name = TargetStatistic.objects.get(id=int(search_id)).name
+        except Exception:
+            pass
+
+        return render(request, "statistic_report.html", locals())
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def get_statistic_report(request):
+    """
+    rowspan if_group 为 是 =2 否 = 1
+
+    colspan	分组指标数
+
+    [{"col_name": "", "rowspan": "", "colspan": "",  "targets": [{"name": ""}, {"name": ""}]}]
+    # 同一时间点 所有指标的当前值
+    [{"date": "2020-01-31", "target_values": []}, {"date": "2020-01-30", "target_values": []}]
+    """
+    if request.user.is_authenticated():
+        start_date = request.GET.get("start_date", "")
+        end_date = request.GET.get("end_date", "")
+        search_id = request.GET.get("search_id", "")
+
+        # start_date = "2020-01-01"
+        # end_date = "2020-01-31"
+        # search_id = "1"
+
+        data = {}
+        status = 1
+        info = ""
+
+        head_data = [{
+            "col_name": "时间",
+            "rowspan": 2,
+            "colspan": 1,
+            "targets": []
+        }]
+        body_data = []
+
+        if not start_date:
+            status = 0
+            info = "开始时间未选择。"
+        elif not end_date:
+            status = 0
+            info = "结束时间未选择。"
+        elif not search_id:
+            status = 0
+            info = "当前页面已失效，请重新访问。"
+        else:
+            try:
+                start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+                end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+                target_statistic = TargetStatistic.objects.get(id=int(search_id))
+                col_data = target_statistic.col_data
+
+                try:
+                    col_data = eval(col_data)
+                except Exception:
+                    pass
+                else:
+                    """
+                    [{'name': '列二', 'if_group': '否', 'remark': '列二的说明', 
+                    'targets': [{'target_id': '21', 'target_name': '热力结算-日报-录入-002'}]}, 
+                    
+                    {'name': '列一', 'if_group': '是', 'remark': '列一的说明', 
+                    'targets': [{'target_id': '21', 'new_target_name': '#1机组', 'target_name': '热力结算-日报-录入-002'}, 
+                                {'target_id': '22', 'new_target_name': '#2机组', 'target_name': '热力结算-日报-录入-003'}]}]
+                    """
+
+                    # 指定时间段内 Calculatedata Extractdata Entrydata Meterdata所有数据
+                    def get_target_values(operation_type, start_date, end_date):
+                        """
+                        获取指定时间内，不同操作类型的所有数据，包括隔年、跨年
+                        :param operation_type:
+                        :param start_date:
+                        :param end_date:
+                        :return:
+                        """
+                        data = []
+                        model_map = {
+                            "1": "Meterdata",
+                            "15": "Entrydata",
+                            "16": "Extractdata",
+                            "17": "Calculatedata",
+                        }
+
+                        model_name = ""
+                        try:
+                            model_name = model_map[operation_type]
+                        except Exception:
+                            pass
+                        if model_name:
+                            target_val = []
+                            # 判断开始时间与结束时间是否在同一年
+                            start_date_year = start_date.year
+                            end_date_year = end_date.year
+                            delta_year = end_date_year - start_date_year
+                            if delta_year == 0:  # 同一年
+                                target_val = getmodels(model_name, str(start_date_year)).objects.exclude(state="9").filter(
+                                    Q(datadate__gte=start_date.date()) & Q(datadate__lte=end_date.date())
+                                ).values("curvalue", "target_id", "datadate", "target__digit")
+
+                            else:
+                                # 开始时间到年底
+                                start_target_val = getmodels(model_name, str(start_date_year)).objects.exclude(state="9").filter(datadate__gte=start_date.date()).values(
+                                    "curvalue", "target_id", "datadate", "target__digit"
+                                )
+
+                                # 结束时间到年初
+                                end_target_val = getmodels(model_name, str(end_date_year)).objects.exclude(state="9").filter(datadate__lte=end_date.date()).values(
+                                    "curvalue", "target_id", "datadate", "target__digit"
+                                )
+                                target_val.extend(start_target_val)
+                                target_val.extend(end_target_val)
+                                # 2017 2019 2
+                                if delta_year > 1:  # 隔年
+                                    for i in range(0, delta_year):
+                                        start_date_year += 1
+                                        start_date = datetime.datetime(start_date_year, 1, 1)
+                                        middle_target_val = getmodels(model_name, str(start_date_year)).objects.exclude(state="9").filter(datadate__gte=start_date.date()).values(
+                                            "curvalue", "target_id", "datadate", "target__digit"
+                                        )
+                                        if middle_target_val:
+                                            target_val.extend(middle_target_val)
+                                else:  # 跨年
+                                    pass
+                            data = [{
+                                "id": tv["target_id"],
+                                "curvalue": float(round(tv["curvalue"], tv["target__digit"])),
+                                "date": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
+                            } for tv in target_val]
+                        return sorted(data, key=lambda e: e.__getitem__('date'), reverse=True)
+
+                    meter_data = get_target_values('1', start_date, end_date)
+                    entry_data = get_target_values('15', start_date, end_date)
+                    extract_data = get_target_values('16', start_date, end_date)
+                    calculate_data = get_target_values('17', start_date, end_date)
+
+                    all_data = {
+                        "1": meter_data,
+                        "15": entry_data,
+                        "16": extract_data,
+                        "17": calculate_data,
+                    }
+
+                    # 间隔时间
+                    delta_time = end_date - start_date
+                    delta_days = delta_time.days
+
+                    # head_data
+                    for cd in col_data:
+                        head_targets = []
+                        col_name = cd["name"]
+                        targets = cd["targets"]
+                        if_group = cd["if_group"]
+                        colspan = len(targets)
+                        if if_group == "是":
+                            rowspan = 1
+                        else:
+                            rowspan = 2
+                        for target in targets:
+                            head_targets.append(target)
+
+                        head_data.append({
+                            "col_name": col_name,
+                            "rowspan": rowspan,
+                            "colspan": colspan,
+                            "targets": head_targets
+                        })
+
+                    # body_data
+                    for i in range(1, delta_days + 1):
+                        target_values = []
+                        for cd in col_data:
+                            targets = cd["targets"]
+                            for target in targets:
+                                target_id = target["target_id"]
+                                try:
+                                    target_id = int(target_id)
+                                    cur_target = Target.objects.get(id=target_id)
+                                except Exception:
+                                    pass
+                                else:
+                                    operation_type = cur_target.operationtype
+                                    try:
+                                        cur_data = all_data[operation_type]
+                                    except Exception:
+                                        pass
+                                    else:
+                                        has_value = False
+                                        for d in cur_data:
+                                            if d["id"] == target_id and d["date"] == "{:%Y-%m-%d}".format(start_date):
+                                                target_values.append(d["curvalue"])
+                                                has_value = True
+                                                break
+                                        if not has_value:
+                                            target_values.append(0)
+
+                        if target_values:
+                            body_data.append({
+                                "date": "{:%Y-%m-%d}".format(start_date),
+                                "target_values": target_values
+                            })
+
+                        start_date += datetime.timedelta(days=1)
+            except Exception as e:
+                status = 0
+                info = "获取报表数据失败{0}".format(e)
+
+        return JsonResponse({
+            "status": status,
+            "info": info,
+            "data": {
+                "head_data": head_data,
+                "body_data": body_data
+            }
         })
     else:
         return HttpResponseRedirect("/login")

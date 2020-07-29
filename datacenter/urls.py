@@ -156,4 +156,6 @@ urlpatterns = [
     url(r'^target_statistic_data/$', target_statistic_data),
     url(r'^target_statistic_save/$', target_statistic_save),
     url(r'^target_statistic_del/$', target_statistic_del),
+    url(r'^statistic_report/$', statistic_report),
+    url(r'^get_statistic_report/$', get_statistic_report),
 ]

@@ -32,11 +32,19 @@ function renderStatisticDataTable(table_data) {
         ],
         "columnDefs": [{
             "targets": -1,
-            "data": null,
             "width": "80px",
-            "defaultContent": "<button id='edit' title='编辑' data-toggle='modal'  data-target='#static01'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>" +
-                "<button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>" +
-                "<a href='/' title='查看报表' target='_blank' class='btn btn-xs btn-primary' type='button'><i class='fa fa-external-link'></i></a>",
+            "data": null,
+            "mRender": function (data, type, full) {
+                var date = new Date();
+                var today = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDay();
+                var day30beforedate = new Date(date - 1000 * 60 * 60 * 24 * 30);
+                var day30before = day30beforedate.getFullYear() + '-' + day30beforedate.getMonth() + '-' + day30beforedate.getDay();
+                var search_id = full.id;
+                var href = '/statistic_report/?search_id=' + search_id + "&start_date=" + day30before + "&end_date=" + today;
+                return "<button id='edit' title='编辑' data-toggle='modal'  data-target='#static01'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>" +
+                    "<button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>" +
+                    "<a href='" + href + "' title='查看报表' target='_blank' class='btn btn-xs btn-primary' type='button'><i class='fa fa-external-link'></i></a>";
+            }
         }],
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",
@@ -157,18 +165,16 @@ function renderTargetColDataTable(table_data) {
         $("#if_group").val(data.if_group);
 
         var targets = []
-        console.log(data.targets)
         for (var i = 0; i < data.targets.length; i++) {
             targets.push(data.targets[i].target_id);
         }
         // 选中指标
         if (data.if_group == "是") {
-            console.log(targets)
             $('#multiple_targets').select2('val', targets);
             // 重命名加载
             for (var j = 0; j < data.targets.length; j++) {
                 var target = data.targets[j];
-                $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target.id + '">\n' +
+                $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target.target_id + '">\n' +
                     '    <div class="col-md-5" style="padding: 0">\n' +
                     '        <input type="text" readonly class="form-control" value="' + target.target_name + '">\n' +
                     '    </div>\n' +
