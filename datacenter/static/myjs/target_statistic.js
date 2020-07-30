@@ -36,9 +36,9 @@ function renderStatisticDataTable(table_data) {
             "data": null,
             "mRender": function (data, type, full) {
                 var date = new Date();
-                var today = date.getFullYear()+"-" + (date.getMonth()+1) + "-" + date.getDate();
+                var today = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
                 var day30beforedate = new Date(date - 1000 * 60 * 60 * 24 * 30);
-                var day30before = day30beforedate.getFullYear()+"-" + (day30beforedate.getMonth()+1) + "-" + day30beforedate.getDate();
+                var day30before = day30beforedate.getFullYear() + "-" + (day30beforedate.getMonth() + 1) + "-" + day30beforedate.getDate();
                 var search_id = full.id;
                 var href = '/statistic_report/?search_id=' + search_id + "&start_date=" + day30before + "&end_date=" + today;
                 return "<button id='edit' title='编辑' data-toggle='modal'  data-target='#static01'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>" +
@@ -357,7 +357,12 @@ $('#col_load').click(function () {
     if ($('#col_name').val()) {
         if ($('#if_group').val() == '是') {
             if ($('#multiple_targets').val()) {
-                addOrEdit();
+                // 至少两个分组
+                if ($('#multiple_targets').val().length < 2) {
+                    alert('至少选择两个分组。')
+                } else {
+                    addOrEdit();
+                }
             } else {
                 alert('未选择指标。')
             }
@@ -427,9 +432,8 @@ $('#statistic_save').click(function () {
                 $('#static01').hide();
                 $('.modal-backdrop').remove();
                 search_table.ajax.url("../target_statistic_data/").load();
-            } else {
-                alert(data.info);
             }
+            alert(data.info);
         }
     });
 });

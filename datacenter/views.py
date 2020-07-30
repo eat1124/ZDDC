@@ -9092,6 +9092,7 @@ def target_statistic_save(request):
                             "remark": remark,
                             "col_data": col_data
                         })
+                        info = "新增成功。"
                     except Exception:
                         stauts = 0
                         info = "新增查询失败。"
@@ -9103,6 +9104,7 @@ def target_statistic_save(request):
                             "remark": remark,
                             "col_data": col_data
                         })
+                        info = "修改成功。"
                     except Exception:
                         status = 0
                         info = "修改查询失败。"
