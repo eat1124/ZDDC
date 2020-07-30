@@ -8316,7 +8316,7 @@ def get_month_fdl(request):
                 target_values = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values("curvalue",
                                                                                                                                                                 "datadate")
 
-            for i in range(31):
+            for i in range(1, 31):
                 # 并非同一年，重新取数
                 if date.year != date_year:
                     if operation_type == "1":
@@ -8335,21 +8335,22 @@ def get_month_fdl(request):
                         target_values = getmodels("Calculatedata", str(date.year)).objects.exclude(state="9").filter(target__cycletype=10).filter(target=target).values(
                             "curvalue", "datadate"
                         )
-
                 target_value = 0
                 for tv in target_values:
-                    if tv["datadate"] == date:
+                    if "{0:%Y-%m-%d}".format(tv["datadate"]) == "{0:%Y-%m-%d}".format(date):
                         target_value = float(tv["curvalue"]) if tv["curvalue"] else 0
                         break
                 target_30days_values.append(target_value)
                 date -= datetime.timedelta(days=1)
+
             return target_30days_values
 
         def get_categories(date):
             categories = []
-            for i in range(31):
-                date -= datetime.timedelta(days=1)
+            for i in range(1, 31):
                 categories.append("{0:%Y-%m-%d}".format(date))
+                date -= datetime.timedelta(days=1)
+
             return categories
 
         # 老厂经营统计
@@ -8514,7 +8515,7 @@ def get_important_targets(request):
         dlzx_fdl_list = []
         dlzx_fdl_targets = []
         now = datetime.datetime.now()
-        now = datetime.datetime.strptime("2020-07-21", "%Y-%m-%d")
+        # now = datetime.datetime.strptime("2020-07-21", "%Y-%m-%d")
         yestoday = now - datetime.timedelta(days=1)
         for dlzx_fdl_jz_target_code in dlzx_fdl_jz_target_codes:
             appointed_time_data = get_appointed_time_data(dlzx_fdl_jz_target_code, yestoday)
