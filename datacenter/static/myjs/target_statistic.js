@@ -151,6 +151,9 @@ function renderTargetColDataTable(table_data) {
                 "sLast": "尾页"
             },
             "sZeroRecords": "没有检索到数据",
+        },
+        "fnDrawCallback": function (oSettings) {  // 移除首列默认的排序图标
+            $("#col_table thead th:first").removeClass("sorting_asc");
         }
     });
     $('#col_table tbody').on('click', 'button#edit', function () {
