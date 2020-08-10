@@ -70,6 +70,7 @@ MIDDLEWARE_CLASSES = [
     # 'django.middleware.cache.FetchFromCacheMiddleware',
     # 查看sql执行情况的中间件,优化时取消注释
     # 'datacenter.middleware.SQLCountMiddleware',
+    #'datacenter.middleware.SQLCountMiddleware',
 ]
 
 ROOT_URLCONF = 'ZDDC.urls'
@@ -99,11 +100,11 @@ WSGI_APPLICATION = 'ZDDC.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
-
+#
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'datacenter_1',
+#         'NAME': 'datacenter',
 #         'USER': 'root',
 #         'PASSWORD': 'password',
 #         # 'HOST': '192.168.1.66',
@@ -118,12 +119,13 @@ DATABASES = {
         'NAME': 'datacenter',
         'USER': 'sa',
 
-        'PASSWORD': '1',
-        'HOST': 'localhost',
-        # 'PASSWORD': 'tesunet@2020',
-        # 'HOST': '10.150.99.185\SQLEXPRESS',
-        # 'PASSWORD': 'Passw0rD',
+        # 'PASSWORD': '1',
+        # 'HOST': 'localhost',
         # 'HOST': '127.0.0.1',
+        # 'PASSWORD': 'Passw0rD',
+        'HOST': '10.150.99.185\SQLEXPRESS',
+        'PASSWORD': 'tesunet@2020',
+
         'PORT': '1433',
         'OPTIONS': {
             'driver': 'SQL Server Native Client 11.0',  # Windows管理工具>>ODBC源数据>>点击添加即可查看驱动
@@ -152,7 +154,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-hans'
 
 TIME_ZONE = 'UTC'
 
