@@ -337,7 +337,6 @@ $(document).ready(function () {
                         dest_table = push_config.dest_table,
                         dest_fields = push_config.dest_fields,
                         constraint_fields = push_config.constraint_fields;
-                    console.log(dest_fields)
                     $('#push_source').val(origin_source);
                     $('#dest_table').val(dest_table);
                     // 约束字段

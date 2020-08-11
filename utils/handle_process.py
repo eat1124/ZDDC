@@ -145,9 +145,15 @@ class SeveralDBQuery(object):
 
     def update(self, update_sql):
         try:
-            with self.connection.cursor() as cursor:
-                cursor.execute(update_sql)
+            if self.db_type == 'ORACLE':
+                curs = self.connection.cursor()
+                curs.execute(update_sql)
                 self.connection.commit()
+                curs.close()
+            else:
+                with self.connection.cursor() as cursor:
+                    cursor.execute(update_sql)
+                    self.connection.commit()
         except Exception as e:
             self.error = "数据插入失败：%s" % e
             return False
@@ -823,6 +829,23 @@ class Extract(object):
                         else:
                             take_notes(self.source_id, self.app_id, self.cycle_id, '指标{target}的存储标识为空。'.format(target=ed.target.name if ed.target else ''))
 
+    def get_format_date(self, db_type, date_str):
+        """
+        Oracle TO_DATE('{v}', 'YYYY-MM-DD HH24:MI:SS')
+        :param db_type:
+        :param date_str:
+        :return:
+        """
+        db_type = db_type.upper()
+        format_date = date_str
+        if db_type == "MYSQL":
+            pass
+        if db_type == "ORACLE":
+            format_date = "TO_DATE('{date}', 'YYYY-MM-DD HH24:MI:SS')".format(date=date_str)
+        if db_type == "SQLSERVER":
+            pass
+        return format_date
+
     def push_data(self, target, storage, result=True, error=""):
         """
         推送数据至其他数据库
@@ -851,7 +874,8 @@ class Extract(object):
                     error = '推送数据源不存在: {0}。'.format(e)
                 else:
                     push_source_connection = push_source.connection
-                    push_source_name = push_source.name
+                    push_source_type = push_source.sourcetype
+                    push_source_name = get_dict_name(push_source_type)
                     push_source_db_name = ''
                     try:
                         push_source_connection = eval(push_source_connection)
@@ -880,22 +904,26 @@ class Extract(object):
 
                                 # 目标字段 `""` 符号包裹?? 无需操作
                                 create_fields += dest_field.strip() + ','
-
+                                logger.info("value:{0}  type: {1}".format(str(v), type(v)))
                                 # 约束字段
                                 if dest_field in constraint_fields:
                                     if type(v) == str:
                                         condition += "{k}='{v}' AND ".format(k=dest_field, v=v.strip())
                                     elif type(v) == datetime.datetime:
-                                        condition += "{k}='{v}' AND ".format(k=dest_field, v=str(v))
+                                        cur_date = self.get_format_date(push_source_name, str(v))
+                                        condition += "{k}={date} AND ".format(k=dest_field, date=cur_date)
                                     else:
                                         condition += "{k}={v} AND ".format(k=dest_field, v=str(v))
-
                                 if type(v) == str:
                                     set_value += "{k}='{v}' ,".format(k=dest_field, v=v.strip())
                                     create_values += '"%s"' % v.strip() + ','
                                 elif type(v) == datetime.datetime:
-                                    set_value += "{k}='{v}' ,".format(k=dest_field, v=str(v))
-                                    create_values += "'%s'" % str(v) + ','
+                                    logger.info("push_source_name: "+ push_source_name)
+                                    cur_date = self.get_format_date(push_source_name, str(v))
+                                    logger.info("cur_date: "+ cur_date)
+
+                                    set_value += "{k}={date} ,".format(k=dest_field, date=cur_date)
+                                    create_values += cur_date + ','
                                 else:
                                     set_value += "{k}='{v}' ,".format(k=dest_field, v=str(v))
                                     create_values += str(v) + ','
@@ -905,26 +933,26 @@ class Extract(object):
                             # 推送字段`##`符号开头
                             if origin_field.startswith("##"):  #  ## 开头的值为固定推送值
                                 cur_v = origin_field.split("##")[1]
+
+                                try:
+                                    cur_v = int(cur_v)
+                                except Exception:
+                                    pass
+                                logger.info("##开头的推送字段****：{0}".format(cur_v))
                                 dest_field = dest_fields[index]
                                 create_fields += dest_field.strip() + ','
-
                                 # 约束字段
                                 if dest_field in constraint_fields:
-                                    if type(cur_v) == str:
-                                        condition += "{k}='{v}' AND ".format(k=dest_field, v=cur_v.strip())
-                                    elif type(cur_v) == datetime.datetime:
-                                        condition += "{k}='{v}' AND ".format(k=dest_field, v=str(cur_v))
+                                    if type(cur_v) == int:
+                                        condition += "{k}='{v}' AND ".format(k=dest_field, v=cur_v)
                                     else:
-                                        condition += "{k}={v} AND ".format(k=dest_field, v=str(cur_v))
+                                        condition += "{k}={v} AND ".format(k=dest_field, v=cur_v)
 
-                                if type(cur_v) == str:
-                                    set_value += "{k}='{v}' ,".format(k=dest_field, v=cur_v.strip())
-                                    create_values += '"%s"' % cur_v.strip() + ','
-                                elif type(cur_v) == datetime.datetime:
-                                    set_value += "{k}='{v}' ,".format(k=dest_field, v=str(cur_v))
-                                    create_values += "'%s'" % str(cur_v) + ','
+                                if type(cur_v) == int:
+                                    set_value += "{k}='{v}' ,".format(k=dest_field, v=cur_v)
+                                    create_values += str(cur_v) + ','
                                 else:
-                                    set_value += "{k}='{v}' ,".format(k=dest_field, v=str(cur_v))
+                                    set_value += "{k}={v} ,".format(k=dest_field, v=cur_v)
                                     create_values += str(cur_v) + ','
 
                     if condition.endswith(' AND '):
