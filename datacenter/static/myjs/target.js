@@ -331,13 +331,13 @@ $(document).ready(function () {
 
                     // 加载数据
                     var push_config = data.push_config;
-                    var push_config = eval(JSON.parse(push_config));
+                    var push_config = JSON.parse(push_config);
                     var origin_fields = push_config.origin_fields,
                         origin_source = push_config.origin_source,
                         dest_table = push_config.dest_table,
                         dest_fields = push_config.dest_fields,
                         constraint_fields = push_config.constraint_fields;
-
+                    console.log(dest_fields)
                     $('#push_source').val(origin_source);
                     $('#dest_table').val(dest_table);
                     // 约束字段
@@ -355,8 +355,11 @@ $(document).ready(function () {
                     // 推送/目标字段
                     push_fields = []
                     for (var j = 0; j < origin_fields.length; j++) {
-                        push_fields.push([j + 1, origin_fields[j], dest_fields[j]])
+                        console.log(dest_fields[j])
+                        var dest_field = dest_fields[j].replace(/"/g, '\"');  // 解决插件直接处理双引号问题
+                        push_fields.push([j + 1, origin_fields[j], dest_field])
                     }
+                    console.log(push_fields)
                     if (!push_fields) {
                         push_fields = [["暂无", '', '']]
                     }
@@ -632,7 +635,9 @@ $(document).ready(function () {
         // }
         var constraint_fields = []
         $('#constraint_field').find('input').each(function () {
-            constraint_fields.push($(this).val().trim());
+            if ($(this).val().trim()){
+                constraint_fields.push($(this).val().trim());
+            }
         });
 
         var push_table = $('#push_table').DataTable();
@@ -1114,12 +1119,12 @@ $(document).ready(function () {
             "columnDefs": [{
                 "targets": -3,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[1] + "></input>"
+                    return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[1].replace(/"/g,"&#34;") + "></input>"
                 }
             }, {
                 "targets": -2,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[2] + "></input>"
+                    return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[2].replace(/"/g,"&#34;") + "></input>";  // 双引号自动转义
                 }
             }, {
                 "targets": -1,

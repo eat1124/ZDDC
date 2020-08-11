@@ -67,13 +67,85 @@
                                 <label class="col-md-2 control-label"><span style="color:red; ">*</span>周期类型</label>
                                 <div class="col-md-10">
                                     <select name="schedule_type" id="schedule_type" class="form-control select2">
-                                        <option value="1">每日</option>
+                                        <option value="1" selected>每日</option>
                                         <option value="2">每周</option>
                                         <option value="3">每月</option>
                                     </select>
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label"><span
+                                        style="color:red; "></span>排序</label>
+                                <div class="col-md-10">
+                                    <input id="sort" type="number" name="sort" class="form-control"
+                                           placeholder="">
+                                    <div class="form-control-focus"></div>
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label"><b>时间点</b></label>
+                                <hr>
+                                <div class="row" style="margin-left: 1px;">
+                                    <div class="col-md-6">
+                                        <div>
+                                            <button id="cycle_point_new" type="button" data-toggle="modal"
+                                                    data-target="#static1"
+                                                    class="btn green">
+                                                新增
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 control-label">
+                                    <table class="table table-striped table-bordered table-hover table-checkable order-column"
+                                           id="cycle_point_table">
+                                        <thead>
+                                        <tr>
+                                            <th style="width:40px;"> 序号</th>
+                                            <th> 时间点</th>
+                                            <th> 时</th>
+                                            <th> 分</th>
+                                            <th> 周</th>
+                                            <th> 月</th>
+                                            <th style="width:50px;"> 操作</th>
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="form-actions ">
+                            <div class="modal-footer">
+                                <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭
+                                </button>
+                                <button type="button" id="save" name="save" class="btn green">保存</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="static1" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog" style="width:580px;margin-top: 100px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">新增业务</h4>
+                    <input hidden id="sub_cycle_id" type="text" name="sub_cycle_id">
+                    <input hidden id="edit_row" type="text" name="edit_row">
+                </div>
+                <div class="panel-body">
+                    <form class="bs-example form-horizontal activate-form">{% csrf_token %}
+                        <div class="form-body">
                             <div class="form-group" id="per_week_div" hidden>
                                 <label class="col-md-2 control-label"><span style="color:red; ">*</span>周几</label>
                                 <div class="col-md-10">
@@ -111,22 +183,11 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label class="col-md-2 control-label"><span
-                                        style="color:red; "></span>排序</label>
-                                <div class="col-md-10">
-                                    <input id="sort" type="number" name="sort" class="form-control"
-                                           placeholder="">
-                                    <div class="form-control-focus"></div>
-
-                                </div>
-                            </div>
                         </div>
                         <div class="form-actions ">
                             <div class="modal-footer">
-                                <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭
-                                </button>
-                                <button type="button" id="save" name="save" class="btn green">保存</button>
+                                <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭</button>
+                                <button type="button" id="load" name="load" class="btn green">载入</button>
                             </div>
                         </div>
                     </form>
@@ -134,7 +195,6 @@
             </div>
         </div>
     </div>
-
 {% endblock %}
 
 {% block script %}

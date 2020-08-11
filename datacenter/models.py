@@ -84,16 +84,21 @@ class Cycle(models.Model):
     name = models.CharField("周期名称", max_length=100)
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
-    minute = models.CharField('分钟', max_length=64, default='', blank=True)
-    hour = models.CharField('小时', max_length=64, default='', blank=True)
-    day_of_week = models.CharField('周中日', max_length=64, default='', blank=True)
-    day_of_month = models.CharField('月中日', max_length=64, default='', blank=True)
     schedule_type_choices = (
         (1, "每日"),
         (2, "每周"),
         (3, "每月"),
     )
     schedule_type = models.IntegerField(choices=schedule_type_choices, default=1, null=True)
+
+
+class SubCycle(models.Model):
+    cycle = models.ForeignKey(Cycle, null=True, verbose_name='周期')
+    minute = models.CharField('分钟', max_length=64, default='', blank=True)
+    hour = models.CharField('小时', max_length=64, default='', blank=True)
+    day_of_week = models.CharField('周中日', max_length=64, default='', blank=True)
+    day_of_month = models.CharField('月中日', max_length=64, default='', blank=True)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
 
 
 class Storage(models.Model):

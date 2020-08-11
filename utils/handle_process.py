@@ -287,7 +287,6 @@ class Extract(object):
     def supplement(self):
         # 补取
         start_time = self.pm.last_time
-
         if start_time:
             end_time = datetime.datetime.now()
 
@@ -332,42 +331,45 @@ class Extract(object):
         cycle_rule = self.pm.cycle
         if cycle_rule:
             schedule_type = cycle_rule.schedule_type
-            minute, hour, day_of_week, day_of_month = None, None, None, None
-            try:
-                minute = int(cycle_rule.minute)
-            except:
-                pass
-            try:
-                hour = int(cycle_rule.hour)
-            except:
-                pass
-            try:
-                day_of_week = int(cycle_rule.day_of_week)
-            except:
-                pass
-            try:
-                day_of_month = int(cycle_rule.day_of_month)
-            except:
-                pass
+            # 时间点 子周期
+            sub_cycles = cycle_rule.subcycle_set.exclude(state="9")
+            for sub_cycle in sub_cycles:
+                minute, hour, day_of_week, day_of_month = None, None, None, None
+                try:
+                    minute = int(sub_cycle.minute)
+                except:
+                    pass
+                try:
+                    hour = int(sub_cycle.hour)
+                except:
+                    pass
+                try:
+                    day_of_week = int(sub_cycle.day_of_week)
+                except:
+                    pass
+                try:
+                    day_of_month = int(sub_cycle.day_of_month)
+                except:
+                    pass
 
-            # 当前时间
-            now_minute = now_time.minute
-            now_hour = now_time.hour
-            now_weekday = now_time.weekday()
-            now_day = now_time.day
+                # 当前时间
+                now_minute = now_time.minute
+                now_hour = now_time.hour
+                now_weekday = now_time.weekday()
+                now_day = now_time.day
 
-            if now_hour == hour and now_minute == minute:
-                # 每日/每周/每月
-                if schedule_type == 1:
-                    self._get_data(now_time)
-                if schedule_type == 2:
-                    # 判断一周第几天
-                    if now_weekday == day_of_week:
+                if now_hour == hour and now_minute == minute:
+                    # 每日/每周/每月
+                    if schedule_type == 1:
                         self._get_data(now_time)
-                if schedule_type == 3:
-                    # 判断一月第几天
-                    if now_day == day_of_month:
-                        self._get_data(now_time)
+                    if schedule_type == 2:
+                        # 判断一周第几天
+                        if now_weekday == day_of_week:
+                            self._get_data(now_time)
+                    if schedule_type == 3:
+                        # 判断一月第几天
+                        if now_day == day_of_month:
+                            self._get_data(now_time)
         self.pm.last_time = now_time
         self.pm.save()
 
@@ -869,37 +871,61 @@ class Extract(object):
                     set_value = ''
                     create_fields = ''
                     create_values = ''
-                    for k, v in storage.items():
-                        k = k.strip()
-                        # 更新字段 
-                        #     从获取到的字段对应推送字段，取得value值，重新构造目标字段与value的关系
-                        # 推送字段索引
-                        try:
-                            push_index = origin_fields.index(k)
-                        except Exception as e:
-                            pass
-                        else:
-                            dest_field = dest_fields[push_index]
-                            create_fields += dest_field.strip() + ','
-                            
-                            # 约束字段
-                            if dest_field in constraint_fields:
+
+                    matched = False
+                    for index, origin_field in enumerate(origin_fields):
+                        for k, v in storage.items():
+                            if origin_field == k.strip():
+                                dest_field = dest_fields[index]
+
+                                # 目标字段 `""` 符号包裹?? 无需操作
+                                create_fields += dest_field.strip() + ','
+
+                                # 约束字段
+                                if dest_field in constraint_fields:
+                                    if type(v) == str:
+                                        condition += "{k}='{v}' AND ".format(k=dest_field, v=v.strip())
+                                    elif type(v) == datetime.datetime:
+                                        condition += "{k}='{v}' AND ".format(k=dest_field, v=str(v))
+                                    else:
+                                        condition += "{k}={v} AND ".format(k=dest_field, v=str(v))
+
                                 if type(v) == str:
-                                    condition += "{k}='{v}' AND ".format(k=dest_field, v=v.strip())
+                                    set_value += "{k}='{v}' ,".format(k=dest_field, v=v.strip())
+                                    create_values += '"%s"' % v.strip() + ','
                                 elif type(v) == datetime.datetime:
-                                    condition += "{k}='{v}' AND ".format(k=dest_field, v=str(v))
+                                    set_value += "{k}='{v}' ,".format(k=dest_field, v=str(v))
+                                    create_values += "'%s'" % str(v) + ','
                                 else:
-                                    condition += "{k}={v} AND ".format(k=dest_field, v=str(v))
-                            
-                            if type(v) == str:
-                                set_value += "{k}='{v}' ,".format(k=dest_field, v=v.strip())
-                                create_values += '"%s"' % v.strip() + ','
-                            elif type(v) == datetime.datetime:
-                                set_value += "{k}='{v}' ,".format(k=dest_field, v=str(v))
-                                create_values += "'%s'" % str(v) + ','
-                            else:
-                                set_value += "{k}='{v}' ,".format(k=dest_field, v=str(v))
-                                create_values += str(v) + ','
+                                    set_value += "{k}='{v}' ,".format(k=dest_field, v=str(v))
+                                    create_values += str(v) + ','
+                                matched = True
+                                break
+                        if not matched:
+                            # 推送字段`##`符号开头
+                            if origin_field.startswith("##"):  #  ## 开头的值为固定推送值
+                                cur_v = origin_field.split("##")[1]
+                                dest_field = dest_fields[index]
+                                create_fields += dest_field.strip() + ','
+
+                                # 约束字段
+                                if dest_field in constraint_fields:
+                                    if type(cur_v) == str:
+                                        condition += "{k}='{v}' AND ".format(k=dest_field, v=cur_v.strip())
+                                    elif type(cur_v) == datetime.datetime:
+                                        condition += "{k}='{v}' AND ".format(k=dest_field, v=str(cur_v))
+                                    else:
+                                        condition += "{k}={v} AND ".format(k=dest_field, v=str(cur_v))
+
+                                if type(cur_v) == str:
+                                    set_value += "{k}='{v}' ,".format(k=dest_field, v=cur_v.strip())
+                                    create_values += '"%s"' % cur_v.strip() + ','
+                                elif type(cur_v) == datetime.datetime:
+                                    set_value += "{k}='{v}' ,".format(k=dest_field, v=str(cur_v))
+                                    create_values += "'%s'" % str(cur_v) + ','
+                                else:
+                                    set_value += "{k}='{v}' ,".format(k=dest_field, v=str(cur_v))
+                                    create_values += str(cur_v) + ','
 
                     if condition.endswith(' AND '):
                         condition = condition[:-5]
@@ -1010,7 +1036,6 @@ def run_process(process_id, targets=None):
     logger.info('此次进程pid: %d ' % pid)
     if process_id:
         process_id = int(process_id)
-
         # 实际
         try:
             update_pm = ProcessMonitor.objects.get(id=process_id)
@@ -1052,42 +1077,46 @@ def run_process(process_id, targets=None):
                         cycle_rule = update_pm.cycle
                         if cycle_rule:
                             schedule_type = cycle_rule.schedule_type
-                            minute, hour, day_of_week, day_of_month = None, None, None, None
-                            try:
-                                minute = int(cycle_rule.minute)
-                            except:
-                                pass
-                            try:
-                                hour = int(cycle_rule.hour)
-                            except:
-                                pass
-                            try:
-                                day_of_week = int(cycle_rule.day_of_week)
-                            except:
-                                pass
-                            try:
-                                day_of_month = int(cycle_rule.day_of_month)
-                            except:
-                                pass
 
-                            # 当前时间
-                            now_minute = start_time.minute
-                            now_hour = start_time.hour
-                            now_weekday = start_time.weekday()
-                            now_day = start_time.day
+                            # 时间点 子周期
+                            sub_cycles = cycle_rule.subcycle_set.exclude(state="9")
+                            for sub_cycle in sub_cycles:
+                                minute, hour, day_of_week, day_of_month = None, None, None, None
+                                try:
+                                    minute = int(sub_cycle.minute)
+                                except:
+                                    pass
+                                try:
+                                    hour = int(sub_cycle.hour)
+                                except:
+                                    pass
+                                try:
+                                    day_of_week = int(sub_cycle.day_of_week)
+                                except:
+                                    pass
+                                try:
+                                    day_of_month = int(sub_cycle.day_of_month)
+                                except:
+                                    pass
 
-                            if now_hour == hour and now_minute == minute:
-                                # 每日/每周/每月
-                                if schedule_type == 1:
-                                    extract._get_data(start_time, targets)
-                                if schedule_type == 2:
-                                    # 判断一周第几天
-                                    if now_weekday == day_of_week:
+                                # 当前时间
+                                now_minute = start_time.minute
+                                now_hour = start_time.hour
+                                now_weekday = start_time.weekday()
+                                now_day = start_time.day
+
+                                if now_hour == hour and now_minute == minute:
+                                    # 每日/每周/每月
+                                    if schedule_type == 1:
                                         extract._get_data(start_time, targets)
-                                if schedule_type == 3:
-                                    # 判断一月第几天
-                                    if now_day == day_of_month:
-                                        extract._get_data(start_time, targets)
+                                    if schedule_type == 2:
+                                        # 判断一周第几天
+                                        if now_weekday == day_of_week:
+                                            extract._get_data(start_time, targets)
+                                    if schedule_type == 3:
+                                        # 判断一月第几天
+                                        if now_day == day_of_month:
+                                            extract._get_data(start_time, targets)
 
                         if start_time > end_time:
                             time.sleep(2)
@@ -1123,7 +1152,6 @@ def run_process(process_id, targets=None):
                 app_id = update_pm.app_admin_id
                 source_id = update_pm.source_id
                 cycle_id = update_pm.cycle_id
-
                 # 根据数据源类型来判断进程
                 try:
                     source = Source.objects.get(id=source_id)

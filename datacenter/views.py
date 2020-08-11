@@ -45,6 +45,7 @@ from django.core.mail import send_mail
 from django.forms.models import model_to_dict
 from django.template.response import TemplateResponse
 from django.views.generic import View
+from django.db import transaction
 
 from datacenter.tasks import *
 from .models import *
@@ -2297,24 +2298,27 @@ def cycle_data(request):
 
         all_cycle = Cycle.objects.exclude(state="9").order_by("sort")
         for cycle in all_cycle:
-            minutes = cycle.minute
-            hours = cycle.hour
-            per_week = cycle.day_of_week
-            per_month = cycle.day_of_month
             schedule_type = cycle.schedule_type
             schedule_type_display = cycle.get_schedule_type_display()
+
+            sub_cycles = cycle.subcycle_set.exclude(state="9")
+            sub_cycle_data = []
+            for sc in sub_cycles:
+                sub_cycle_data.append({
+                    "sub_cycle_id": sc.id,
+                    "minutes": sc.minute,
+                    "hours": sc.hour,
+                    "per_week": sc.day_of_week,
+                    "per_month": sc.day_of_month,
+                })
 
             result.append({
                 "id": cycle.id,
                 "name": cycle.name,
                 "sort": cycle.sort,
-
-                "minutes": minutes,
-                "hours": hours,
-                "per_week": per_week,
-                "per_month": per_month,
                 "schedule_type": schedule_type,
                 "schedule_type_display": schedule_type_display,
+                "sub_cycle_data": sub_cycle_data
             })
 
         return JsonResponse({"data": result})
@@ -2327,10 +2331,9 @@ def cycle_save(request):
         sort = request.POST.get("sort", "")
 
         schedule_type = request.POST.get('schedule_type', '')
-
-        per_time = request.POST.get('per_time', '')
-        per_month = request.POST.get('per_month', '')
-        per_week = request.POST.get('per_week', '')
+        
+        sub_cycle = eval(request.POST.get('sub_cycle', '[]'))
+        # [{'hours': '0', 'minutes': '00', 'per_month': '324', 'per_week': '', 'sub_cycle_id': '暂无'}]
         try:
             id = int(id)
         except:
@@ -2347,37 +2350,32 @@ def cycle_save(request):
                 return JsonResponse({
                     "res": "周期类型未选择。"
                 })
-            else:
-                if schedule_type == 2:
-                    if not per_week:
-                        return JsonResponse({
-                            "res": "周几未选择。"
-                        })
-
-                if schedule_type == 3:
-                    if not per_month:
-                        return JsonResponse({
-                            "res": "每月第几天未选择。"
-                        })
-
-            hour, minute = per_time.split(':')
             if id == 0:
                 all_cycle = Cycle.objects.filter(
                     name=cycle_name).exclude(state="9")
                 if (len(all_cycle) > 0):
                     result["res"] = '存储代码:' + cycle_name + '已存在。'
                 else:
-                    cycle_save = Cycle()
-                    cycle_save.name = cycle_name
-                    cycle_save.hour = hour
-                    cycle_save.minute = minute
-                    cycle_save.day_of_week = per_week
-                    cycle_save.day_of_month = per_month
-                    cycle_save.schedule_type = schedule_type
-                    cycle_save.sort = int(sort) if sort else None
-                    cycle_save.save()
-                    result["res"] = "保存成功。"
-                    result["data"] = cycle_save.id
+                    try:
+                        with transaction.atomic():
+                            cycle_save = Cycle()
+                            cycle_save.name = cycle_name
+                            cycle_save.schedule_type = schedule_type
+                            cycle_save.sort = int(sort) if sort else None
+                            cycle_save.save()
+                            for sc in sub_cycle:
+                                sc_data = {
+                                    "hour": sc["hours"],
+                                    "minute": sc["minutes"],
+                                    "day_of_week": sc["per_week"],
+                                    "day_of_month": sc["per_month"],
+                                }
+                                cycle_save.subcycle_set.create(**sc_data)
+                    except Exception as e:
+                        result["res"] = "保存失败：{0}".format(e)
+                    else:
+                        result["res"] = "保存成功。"
+                        result["data"] = cycle_save.id
             else:
                 all_cycle = Cycle.objects.filter(name=cycle_name).exclude(
                     id=id).exclude(state="9")
@@ -2385,22 +2383,42 @@ def cycle_save(request):
                     result["res"] = '存储名称:' + cycle_name + '已存在。'
                 else:
                     try:
-                        # 保存定时任务
-                        cycle_save = Cycle.objects.get(id=id)
-                        cycle_save.name = cycle_name
-                        cycle_save.hour = hour
-                        cycle_save.minute = minute
-                        cycle_save.day_of_week = per_week
-                        cycle_save.day_of_month = per_month
-                        cycle_save.schedule_type = schedule_type
-                        cycle_save.sort = int(
-                            sort) if sort else None
-                        cycle_save.save()
-                        result["res"] = "保存成功。"
-                        result["data"] = cycle_save.id
+                        with transaction.atomic():
+                            cycle_save = Cycle.objects.get(id=id)
+                            cycle_save.name = cycle_name
+                            cycle_save.schedule_type = schedule_type
+                            cycle_save.sort = int(
+                                sort) if sort else None
+                            cycle_save.save()
+
+                            # 删除原有而后不存在的
+                            # 原有的ID与现在的ID校对 ID不存在的删除
+                            sc_id_list = [int(sc["sub_cycle_id"]) for sc in sub_cycle if sc["sub_cycle_id"] != "暂无"]
+                            existed_sub_cycles = cycle_save.subcycle_set.exclude(state="9")
+                            for esc in existed_sub_cycles:
+                                if esc.id not in sc_id_list:
+                                    esc.state = "9"
+                                    esc.save()
+
+                            for sc in sub_cycle:
+                                sc_data = {
+                                    "hour": sc["hours"],
+                                    "minute": sc["minutes"],
+                                    "day_of_week": sc["per_week"],
+                                    "day_of_month": sc["per_month"],
+                                }
+                                # add/edit
+                                if sc["sub_cycle_id"] == "暂无":
+                                    cycle_save.subcycle_set.create(**sc_data)
+                                else:
+                                    sub_cycle_id = int(sc["sub_cycle_id"])
+                                    SubCycle.objects.exclude(state="9").filter(id=sub_cycle_id).update(**sc_data)
                     except Exception as e:
                         print(e)
-                        result["res"] = "修改失败。"
+                        result["res"] = "修改失败:{0}".format(e)
+                    else:
+                        result["res"] = "保存成功。"
+                        result["data"] = cycle_save.id
         return JsonResponse(result)
 
 
@@ -3051,7 +3069,9 @@ def target_data(request):
                 "data_from": target.data_from,
 
                 "if_push": target.if_push,
-                "push_config": target.push_config.replace("'", '"') if target.push_config else ""
+                # "push_config": json.dumps(target.push_config if target.push_config else {}),
+                "push_config": target.push_config.replace('"', '\\\"').replace("\'", '"') if target.push_config else "",
+                # "push_config": target.push_config.replace('"', '\"') if target.push_config else "",
             })
         return JsonResponse({"data": result})
 
