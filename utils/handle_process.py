@@ -840,11 +840,11 @@ class Extract(object):
         db_type = db_type.upper()
         format_date = date_str
         if db_type == "MYSQL":
-            format_date = "STR_TO_DATE(SUBSTR('{date}',1,10),'%Y-%m-%d %H:%i:%s')".format(date=date_str)
+            format_date = "STR_TO_DATE(SUBSTR('{date}',1,19),'%Y-%m-%d %H:%i:%s')".format(date=date_str)
         if db_type == "ORACLE":
-            format_date = "TO_DATE(SUBSTR('{date}',1,10), 'YYYY-MM-DD HH24:MI:SS')".format(date=date_str)
+            format_date = "TO_DATE(SUBSTR('{date}',1,19), 'YYYY-MM-DD HH24:MI:SS')".format(date=date_str)
         if db_type == "SQLSERVER":
-            format_date = "CONVERT(datetime,SUBSTRING('{date}', 1, 10),120)".format(date=date_str)
+            format_date = "CONVERT(datetime,SUBSTRING('{date}', 1, 19),120)".format(date=date_str)
         return format_date
 
     def push_data(self, target, storage, result=True, error=""):
