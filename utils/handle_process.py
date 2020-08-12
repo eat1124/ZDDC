@@ -831,7 +831,8 @@ class Extract(object):
 
     def get_format_date(self, db_type, date_str):
         """
-        Oracle TO_DATE('{v}', 'YYYY-MM-DD HH24:MI:SS')
+        Oracle TO_DATE(SUBSTR('{date}',1,10), 'YYYY-MM-DD HH24:MI:SS')
+        MYSQL STR_TO_DATE(SUBSTR('{date}',1,10),'%Y-%m-%d %H:%i:%s')
         :param db_type:
         :param date_str:
         :return:
@@ -839,11 +840,11 @@ class Extract(object):
         db_type = db_type.upper()
         format_date = date_str
         if db_type == "MYSQL":
-            pass
+            format_date = "STR_TO_DATE(SUBSTR('{date}',1,10),'%Y-%m-%d %H:%i:%s')".format(date=date_str)
         if db_type == "ORACLE":
-            format_date = "TO_DATE('{date}', 'YYYY-MM-DD HH24:MI:SS')".format(date=date_str)
+            format_date = "TO_DATE(SUBSTR('{date}',1,10), 'YYYY-MM-DD HH24:MI:SS')".format(date=date_str)
         if db_type == "SQLSERVER":
-            pass
+            format_date = "CONVERT(datetime,SUBSTRING('{date}', 1, 10),120)".format(date=date_str)
         return format_date
 
     def push_data(self, target, storage, result=True, error=""):
@@ -904,7 +905,6 @@ class Extract(object):
 
                                 # 目标字段 `""` 符号包裹?? 无需操作
                                 create_fields += dest_field.strip() + ','
-                                logger.info("value:{0}  type: {1}".format(str(v), type(v)))
                                 # 约束字段
                                 if dest_field in constraint_fields:
                                     if type(v) == str:
@@ -918,9 +918,7 @@ class Extract(object):
                                     set_value += "{k}='{v}' ,".format(k=dest_field, v=v.strip())
                                     create_values += '"%s"' % v.strip() + ','
                                 elif type(v) == datetime.datetime:
-                                    logger.info("push_source_name: "+ push_source_name)
                                     cur_date = self.get_format_date(push_source_name, str(v))
-                                    logger.info("cur_date: "+ cur_date)
 
                                     set_value += "{k}={date} ,".format(k=dest_field, date=cur_date)
                                     create_values += cur_date + ','
@@ -938,7 +936,6 @@ class Extract(object):
                                     cur_v = int(cur_v)
                                 except Exception:
                                     pass
-                                logger.info("##开头的推送字段****：{0}".format(cur_v))
                                 dest_field = dest_fields[index]
                                 create_fields += dest_field.strip() + ','
                                 # 约束字段
