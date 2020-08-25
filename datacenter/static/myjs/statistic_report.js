@@ -55,9 +55,9 @@ function getStatisticReport(start_date, end_date, search_id) {
                 // tbody
                 for (var k = 0; k < body_data.length; k++) {
                     var tbody_tr = '<tr>';
-                    tbody_tr += '<td style="text-align: center;">' + body_data[k]['date'] + '</td>';
+                    tbody_tr += '<td style="text-align: center; width:180px">' + body_data[k]['date'] + '</td>';
                     for (var l = 0; l < body_data[k]['target_values'].length; l++) {
-                        tbody_tr += '<td style="text-align: right;">' + body_data[k]['target_values'][l] + '</td>';
+                        tbody_tr += '<td style="text-align: right; width:180px">' + body_data[k]['target_values'][l] + '</td>';
                     }
                     tbody_tr += '</td>';
                     $('#statistic_report_dt').find('tbody').append(tbody_tr);

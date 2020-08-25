@@ -100,7 +100,7 @@ function renderTargetColDataTable(table_data) {
     $('#col_table').dataTable().fnDestroy();
     $('#col_table').dataTable({
         "ordering": false,
-        "bAutoWidth": true,
+        "bAutoWidth": false,
         "bSort": false,
         "bProcessing": true,
         "searching": false,
@@ -112,11 +112,17 @@ function renderTargetColDataTable(table_data) {
             {"data": "name"},
             {"data": "if_group"},
             {"data": null},
-            {"data": "remark"},
             {"data": null}
         ],
         "columnDefs": [{
+            "targets": -4,
+            "width": "20%",
+        }, {
             "targets": -3,
+            "width": "10%",
+        }, {
+            "targets": -2,
+            "width": "55%",
             "mRender": function (data, type, full) {
                 var if_group = full.if_group;
                 var targets = full.targets;
@@ -135,7 +141,7 @@ function renderTargetColDataTable(table_data) {
         }, {
             "targets": -1,
             "data": null,
-            "width": "80px",
+            "width": "15%",
             "defaultContent": "<button id='edit' title='编辑' data-toggle='modal'  data-target='#static02'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button><button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>",
         }],
         "oLanguage": {
