@@ -9215,7 +9215,7 @@ def get_statistic_report(request):
         info = ""
 
         head_data = [{
-            "col_name": "时间",
+            "col_name": "指标数据时间",
             "rowspan": 2,
             "colspan": 1,
             "targets": []
