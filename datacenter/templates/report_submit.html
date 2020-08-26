@@ -7,6 +7,7 @@
         <div class="col-md-9">
             <label class="col-md-1 control-label" style="padding-top:4px;padding-right:0">报表类型：</label>
             <div class="col-md-2" style="padding-left:0">
+                <input type="text" id="selected_report_type" value="{{ selected_report_type }}" hidden>
                 <select style="width:150px; " class="form-control" id="search_report_type" name="search_report_type">
                     {% for report_type in report_type_list %}
                     <option value="{{report_type.report_type_id}}">{{report_type.report_name}}</option>

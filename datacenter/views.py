@@ -6560,6 +6560,10 @@ def report_submit_index(request, funid):
         errors = []
         id = ""
         report_type_list = []
+
+        report_type = request.GET.get("report_type", "")
+        report_time = request.GET.get("report_time", "")
+
         adminapp = ""
         try:
             cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
@@ -6642,8 +6646,12 @@ def report_submit_index(request, funid):
             "25": date4,
             "26": date5.strftime("%Y"),
         }
+
+        if report_type in temp_dict.keys() and report_time:
+            temp_dict[report_type] = report_time
         return render(request, 'report_submit.html',
                       {'username': request.user.userinfo.fullname,
+                       "selected_report_type": report_type,
                        "report_type_list": report_type_list,
                        "all_app_list": all_app_list,
                        "errors": errors,
@@ -8207,33 +8215,42 @@ def groupsavefuntree(request):
         return HttpResponse("保存成功。")
 
 
-def get_format_date(pre_date, c_cycletype):
+def get_format_date(pre_date, c_cycletype, type="C"):
     """格式化日期
 
     Args:
         pre_date (datetime): 格式化前日期
         cycletype (int): 周期类型
+        type (string): 响应类型：C中文 E英文
 
     Returns:
         [datetime]: [格式化后日期]
     """
     format_date = ""
     try:
-        if c_cycletype == "10":
-            format_date = pre_date.strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
-        if c_cycletype == "11":
-            format_date = pre_date.strftime('%Y{y}%m{m}').format(y='年', m='月')
-        if c_cycletype == "12":
-            format_date = pre_date.strftime('%Y{y} {q}').format(y='年', q='第{0}季度'.format(
-                (pre_date.month - 1) // 3 + 1))
-        if c_cycletype == "13":
-            if pre_date.month <= 6:
-                p = "上"
-            else:
-                p = "下"
-            format_date = pre_date.strftime('%Y{y} {p}').format(y='年', p='{0}半年'.format(p))
-        if c_cycletype == "14":
-            format_date = pre_date.strftime('%Y{y}').format(y='年')
+        if type == "C":
+            if c_cycletype == "10":
+                format_date = pre_date.strftime('%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日')
+            if c_cycletype == "11":
+                format_date = pre_date.strftime('%Y{y}%m{m}').format(y='年', m='月')
+            if c_cycletype == "12":
+                format_date = pre_date.strftime('%Y{y} {q}').format(y='年', q='第{0}季度'.format(
+                    (pre_date.month - 1) // 3 + 1))
+            if c_cycletype == "13":
+                if pre_date.month <= 6:
+                    p = "上"
+                else:
+                    p = "下"
+                format_date = pre_date.strftime('%Y{y} {p}').format(y='年', p='{0}半年'.format(p))
+            if c_cycletype == "14":
+                format_date = pre_date.strftime('%Y{y}').format(y='年')
+        else:
+            if c_cycletype in ["10", "12", "13"]:  # 日 季 半年
+                format_date = "{:%Y-%m-%d}".format(pre_date)
+            if c_cycletype == "11":  # 月
+                format_date = "{:%Y-%m}".format(pre_date)
+            if c_cycletype == "14":  # 年
+                format_date = "{:%Y}".format(pre_date)
     except Exception as e:
         print(e)
 
@@ -8786,7 +8803,7 @@ def get_report_search_data(request):
         # 应用 App
         # 报表类型 DictList DictIndex=7
         # 报表记录 ReportSubmit ReportModel
-        apps = App.objects.exclude(state="9").values()
+        apps = App.objects.exclude(state="9")
         cycles = DictList.objects.exclude(state="9").filter(dictindex_id=12).values()
         report_submits = ReportSubmit.objects.filter(state="1").order_by("-id").values(
             "id", "app_id", "report_model_id", "report_model__name", "state", "person", "write_time", "report_time",
@@ -8812,12 +8829,15 @@ def get_report_search_data(request):
         app_list = []
         for app in apps:
             app_info = {}
-            app_info["text"] = app["name"]
+            app_info["text"] = app.name
             app_info["type"] = "node"
             app_info["data"] = {
-                "name": app["name"],
-                "code": app["code"]
+                "name": app.name,
+                "code": app.code
             }
+            funs = app.fun_set.exclude(state="9").filter(url__contains="report_submit")
+            fun_id = funs[0].id if funs else ""
+            cur_url = funs[0].url if funs else ""
 
             cycle_list = []
             for cycle in cycles:
@@ -8838,7 +8858,7 @@ def get_report_search_data(request):
                         report_type = compile_dict[cycle["id"]]
                     except Exception:
                         pass
-                    if report_model["app_id"] == app["id"] and report_model["report_type"] == str(report_type):
+                    if report_model["app_id"] == app.id and report_model["report_type"] == str(report_type):
                         report_model_info["text"] = report_model["name"]
                         report_model_info["type"] = "file"
 
@@ -8847,12 +8867,25 @@ def get_report_search_data(request):
 
                         for report_submit in report_submits:
                             if report_submit["report_model_id"] == report_model["id"]:
+                                # 周期类型 + 时间
+                                params = "?report_type={report_type}&report_time={report_time}".format(**{
+                                    "report_type": report_type,
+                                    "report_time": get_format_date(report_submit["report_time"], str(cycle["id"]), type="E") if report_submit["report_time"] else "",
+                                })
+
+                                if fun_id:
+                                    url = "{0}/{1}{2}".format(cur_url, fun_id, params) if not cur_url.endswith("/") else "{0}{1}{2}".format(cur_url, fun_id, params)
+                                else:
+                                    url = "/index"
+
                                 report_submit_list.append({
                                     "name": report_submit["report_model__name"],
                                     "write_time": "{0:%Y-%m-%d %H:%M:%S}".format(report_submit["write_time"]) if report_submit["write_time"] else "",
                                     "report_time": get_format_date(report_submit["report_time"], str(cycle["id"])) if report_submit["report_time"] else "",
                                     "person": report_submit["person"],
-                                    "code": report_submit["report_model__code"]
+                                    "code": report_submit["report_model__code"],
+
+                                    "url": url,
                                 })
                         report_model_info["data"] = report_submit_list
                         report_model_list.append(report_model_info)

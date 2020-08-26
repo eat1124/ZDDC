@@ -129,6 +129,121 @@ $(document).ready(function() {
             }
         }
     }
+    var temp_date = $("#temp_date").val();
+    var temp_json_date = JSON.parse(temp_date);
+    function customTimePicker(report_type){
+        $('#reporting_date').val(temp_json_date[report_type]);
+
+        if (report_type == "22") {
+            $('#year').hide();
+            $('#season').hide();
+            $('#reporting_date').show();
+            $('#reporting_date').datetimepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                startView: 2,
+                minView: 2,
+            });
+            $('#report_time').datetimepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                startView: 2,
+                minView: 2,
+            });
+        }
+        if (report_type == "23") {
+            $('#year').hide();
+            $('#season').hide();
+            $('#reporting_date').show();
+            $('#reporting_date').datetimepicker({
+                format: 'yyyy-mm',
+                autoclose: true,
+                startView: 3,
+                minView: 3,
+            });
+            $('#reoprt_time').datetimepicker({
+                format: 'yyyy-mm',
+                autoclose: true,
+                startView: 3,
+                minView: 3,
+            });
+        }
+        if (report_type == "24") {
+            seasonFunction();
+            $('#reporting_date').hide();
+            $('#year').hide();
+
+            var reporting_date = $('#reporting_date').val();
+            var value = reporting_date.split('-');
+            var year = value[0];
+            var month = value[1];
+            var finaltime = '';
+            if (month == '12'){
+                var timeend = '第4季度';
+                finaltime = year + '-' + timeend
+            }
+            if (month == '09'){
+                var timeend = '第3季度';
+                finaltime = year + '-' + timeend
+            }
+            if (month == '06'){
+                var timeend = '第2季度';
+                finaltime = year + '-' + timeend
+            }
+            if (month == '03'){
+                var timeend = '第1季度';
+                finaltime = year + '-' + timeend
+            }
+            $('#season').val(finaltime);
+            $('#season').show();
+        }
+        if (report_type == "25") {
+            yearFunction();
+            $('#reporting_date').hide();
+            $('#season').hide();
+
+            var reporting_date = $('#reporting_date').val();
+            var value = reporting_date.split('-');
+            var year = value[0];
+            var month = value[1];
+            var finaltime = '';
+            if (month == '12'){
+                var timeend = '下半年';
+                finaltime = year + '-' + timeend
+            }
+            if (month == '06'){
+                var timeend = '上半年';
+                finaltime = year + '-' + timeend
+            }
+            $('#year').val(finaltime);
+            $('#year').show();
+        }
+        if (report_type == "26") {
+            console.log('eeee')
+            $('#year').hide();
+            $('#season').hide();
+            $('#reporting_date').show();
+            $('#reporting_date').datetimepicker({
+                format: 'yyyy',
+                autoclose: true,
+                startView: 4,
+                minView: 4,
+            });
+            $('#report_time').datetimepicker({
+                format: 'yyyy',
+                autoclose: true,
+                startView: 4,
+                minView: 4,
+            });
+        }
+    }
+    var selected_report_type = $("#selected_report_type").val();
+    try {
+        if (selected_report_type){
+            $('#search_report_type').val(selected_report_type);
+            customTimePicker(selected_report_type);
+        }
+    } catch(e){}
 
     $('#sample_1').dataTable({
         "bAutoWidth": true,
@@ -278,8 +393,6 @@ $(document).ready(function() {
         }
     });
     // 默认
-    var temp_date = $("#temp_date").val();
-    var temp_json_date = JSON.parse(temp_date);
     $('#reporting_date').datetimepicker({
         format: 'yyyy-mm-dd',
         autoclose: true,
@@ -287,113 +400,14 @@ $(document).ready(function() {
         minView: 2,
     });
 
-    // 根据报表类型change
+    /**
+     *  根据报表类型change
+     *      seleced_report_type：
+     */
     $("#search_report_type").change(function() {
         $('#reporting_date').datetimepicker("remove");
         var report_type = $("#search_report_type").val();
-        $('#reporting_date').val(temp_json_date[report_type]);
-
-        if (report_type == "22") {
-            $('#year').hide();
-            $('#season').hide();
-            $('#reporting_date').show();
-            $('#reporting_date').datetimepicker({
-                format: 'yyyy-mm-dd',
-                autoclose: true,
-                startView: 2,
-                minView: 2,
-            });
-            $('#report_time').datetimepicker({
-                format: 'yyyy-mm-dd',
-                autoclose: true,
-                startView: 2,
-                minView: 2,
-            });
-        }
-        if (report_type == "23") {
-            $('#year').hide();
-            $('#season').hide();
-            $('#reporting_date').show();
-            $('#reporting_date').datetimepicker({
-                format: 'yyyy-mm',
-                autoclose: true,
-                startView: 3,
-                minView: 3,
-            });
-            $('#reoprt_time').datetimepicker({
-                format: 'yyyy-mm',
-                autoclose: true,
-                startView: 3,
-                minView: 3,
-            });
-        }
-        if (report_type == "24") {
-            seasonFunction();
-            $('#reporting_date').hide();
-            $('#year').hide();
-
-            var reporting_date = $('#reporting_date').val();
-            var value = reporting_date.split('-');
-            var year = value[0];
-            var month = value[1];
-            var finaltime = '';
-            if (month == '12'){
-                var timeend = '第4季度';
-                finaltime = year + '-' + timeend
-            }
-            if (month == '09'){
-                var timeend = '第3季度';
-                finaltime = year + '-' + timeend
-            }
-            if (month == '06'){
-                var timeend = '第2季度';
-                finaltime = year + '-' + timeend
-            }
-            if (month == '03'){
-                var timeend = '第1季度';
-                finaltime = year + '-' + timeend
-            }
-            $('#season').val(finaltime);
-            $('#season').show();
-        }
-        if (report_type == "25") {
-            yearFunction();
-            $('#reporting_date').hide();
-            $('#season').hide();
-
-            var reporting_date = $('#reporting_date').val();
-            var value = reporting_date.split('-');
-            var year = value[0];
-            var month = value[1];
-            var finaltime = '';
-            if (month == '12'){
-                var timeend = '下半年';
-                finaltime = year + '-' + timeend
-            }
-            if (month == '06'){
-                var timeend = '上半年';
-                finaltime = year + '-' + timeend
-            }
-            $('#year').val(finaltime);
-            $('#year').show();
-        }
-        if (report_type == "26") {
-            $('#year').hide();
-            $('#season').hide();
-            $('#reporting_date').show();
-            $('#reporting_date').datetimepicker({
-                format: 'yyyy',
-                autoclose: true,
-                startView: 4,
-                minView: 4,
-            });
-            $('#report_time').datetimepicker({
-                format: 'yyyy',
-                autoclose: true,
-                startView: 4,
-                minView: 4,
-            });
-        }
+        customTimePicker(report_type);
         var table01 = $('#sample_1').DataTable();
         table01.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
 
@@ -454,6 +468,5 @@ $(document).ready(function() {
 
     $('#error').click(function() {
         $(this).hide()
-    })
-
+    });
 });

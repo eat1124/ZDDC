@@ -61,12 +61,20 @@ $(document).ready(function () {
             "data": data,
             "columns": [
                 {"data": "write_time"},
-                {"data": "name"},
+                {"data": null},
                 {"data": "code"},
                 {"data": "person"},
                 {"data": "report_time"},
             ],
-            "columnDefs": [],
+            "columnDefs": [{
+                "data": null,
+                "targets": -4,
+                "render": function (data, type, full) {
+                    var name = full.name,
+                        url = full.url;
+                    return "<td><a href='" + url + "' target='_blank'>" + name + "</a></td>"
+                },
+            }],
             "oLanguage": {
                 "sLengthMenu": "每页显示 _MENU_ 条记录",
                 "sZeroRecords": "没有检索到数据",
