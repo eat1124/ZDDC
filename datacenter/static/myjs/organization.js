@@ -201,6 +201,17 @@ $(function () {
                 $("#email").val(data.node.data.email)
                 $("#username").prop("readonly", true)
 
+                // AD域
+                var if_ad_login = data.node.data.if_ad_login,
+                    ad_user = data.node.data.ad_user;
+                $('#if_ad_login').val(if_ad_login);
+                if (if_ad_login){
+                    $('#ad_user').val(ad_user);
+                    $('#ad_user_div').show();
+                } else {
+                    $('#ad_user_div').hide();
+                }
+
                 $("#user").show()
                 $("#org").hide()
             }
@@ -261,5 +272,11 @@ $(function () {
         }
     });
 
-
+    $('#if_ad_login').change(function(){
+       if ($(this).val() == 1){
+           $('#ad_user_div').show();
+       } else {
+           $('#ad_user_div').hide();
+       }
+    });
 });

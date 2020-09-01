@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 import djcelery
 
+# 重写认证方法
+AUTHENTICATION_BACKENDS = ['datacenter.ADAuth.ADModelBackend']
+
 # AD域管理源账户配置
 AD_SERVER = "192.168.225.100"
 AD_USER = r"kela\administrator"

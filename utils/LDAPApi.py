@@ -18,8 +18,8 @@ class ActiveDomain(object):
         初始化
         @param IP {string}: 域服务器地址
         @param PORT {int}: 域服务器端口
-        @param USER {string}: 域服务器用户
-        @param PASSWORD {string}: 域服务器密码
+        @param USER {string}: 域服务器管理员用户
+        @param PASSWORD {string}: 域服务器管理员密码
         """
         self.error = ""
         self.conn = None
@@ -34,7 +34,7 @@ class ActiveDomain(object):
             )
         except Exception as e:
             self.error = "连接AD域服务器失败：{0}。".format(e)
-        self.active_user_dn = 'CN=Users,DC={0},DC=com'.format(AD_DOMAIN)  # 【User】节点域
+        self.active_user_dn = 'DC={0},DC=com'.format(AD_DOMAIN)  # 【User】节点域
         self.user_filter = '(objectclass=user)'  # 只获取【用户】对象
 
     @property
@@ -56,6 +56,27 @@ class ActiveDomain(object):
                 name = attributes.get("name", "")
                 if name:
                     users.append(name)
+
         return users
 
+    def close(self):
+        if self.conn.closed:
+            self.conn.unbind()
 
+    @staticmethod
+    def check_ad_user(username, password):
+        """
+        AD域用户认证
+        @param username{string}: 域用户名
+        @param password{string}: 域密码
+        """
+        server = Server(AD_SERVER)
+        ldap_user = '\\{0}@{1}.com'.format(username, AD_DOMAIN)
+        conn = Connection(server, user=ldap_user, password=password, authentication=NTLM)
+        try:
+            return conn.bind()
+        except Exception as e:
+            return False
+        finally:
+            if conn.closed:
+                conn.unbind()

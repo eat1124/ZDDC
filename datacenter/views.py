@@ -54,6 +54,7 @@ from ZDDC import settings
 from .funcs import *
 from .ftp_file_handler import *
 from utils.handle_process import Extract
+from utils.LDAPApi import ActiveDomain
 
 funlist = []
 
@@ -7098,7 +7099,9 @@ def userlogin(request):
         result = ""
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
-        user = auth.authenticate(username=username, password=password)
+        if_ad_login = request.POST.get("if_ad_login", "")
+        # 加入AD认证
+        user = auth.authenticate(username=username, password=password, if_ad_login=if_ad_login)
         if user is not None and user.is_active:
             auth.login(request, user)
             myuserinfo = user.userinfo
@@ -7112,13 +7115,13 @@ def userlogin(request):
                     result = "success"
                 if (request.POST.get('remember', '') != '1'):
                     request.session.set_expiry(0)
-                myuser = User.objects.get(username=username)
-                usertype = myuser.userinfo.usertype
+                # myuser = User.objects.get(username=username)
+                usertype = user.userinfo.usertype
                 if usertype == '1':
                     request.session['ispuser'] = True
                 else:
                     request.session['ispuser'] = False
-                request.session['isadmin'] = myuser.is_superuser
+                request.session['isadmin'] = user.is_superuser
             else:
                 result = "登录失败，请于客服联系。"
         else:
@@ -7618,7 +7621,7 @@ def get_org_tree(parent, selectid, allgroup):
                         {"groupname": group.name, "id": group.id})
             node["data"] = {"pname": parent.fullname, "username": child.user.username, "fullname": child.fullname,
                             "phone": child.phone, "email": child.user.email, "noselectgroup": noselectgroup,
-                            "selectgroup": selectgroup}
+                            "selectgroup": selectgroup, "if_ad_login": child.if_ad_login, "ad_user": child.ad_user}
         node["children"] = get_org_tree(child, selectid, allgroup)
         try:
             if int(selectid) == child.id:
@@ -7653,6 +7656,15 @@ def organization(request, funid):
             hiddenorg = "hidden"
             newpassword = "hidden"
             editpassword = ""
+
+            # AD域所有用户
+            if_ad_login = 0
+            ad_user = ""
+            ad_user_div = "hidden"
+            ad = ActiveDomain()
+            ad_users = ad.users
+            ad.close()
+
             allgroup = Group.objects.exclude(state="9")
             if request.method == 'POST':
                 hiddendiv = ""
@@ -7687,6 +7699,14 @@ def organization(request, funid):
                     phone = request.POST.get('phone', '')
                     email = request.POST.get('email', '')
                     password = request.POST.get('password', '')
+                    if_ad_login = request.POST.get('if_ad_login', '')
+
+                    try:
+                        if_ad_login = int(if_ad_login)
+                    except ValueError:
+                        if_ad_login = 0
+                    ad_user_div = "" if if_ad_login else "hidden"
+                    ad_user = request.POST.get('ad_user', '')
                     newpassword = ""
                     editpassword = "hidden"
 
@@ -7720,6 +7740,10 @@ def organization(request, funid):
                                             profile.user_id = newuser.id
                                             profile.phone = phone
                                             profile.fullname = fullname
+
+                                            # AD
+                                            profile.if_ad_login = if_ad_login
+                                            profile.ad_user = ad_user if if_ad_login else ""
                                             try:
                                                 porg = UserInfo.objects.get(
                                                     id=pid)
@@ -7777,6 +7801,11 @@ def organization(request, funid):
                                         # 用户扩展信息 profile
                                         alluserinfo.phone = phone
                                         alluserinfo.fullname = fullname
+
+                                        # AD
+                                        alluserinfo.if_ad_login = if_ad_login
+                                        alluserinfo.ad_user = ad_user if if_ad_login else ""
+
                                         alluserinfo.save()
                                         alluserinfo.group.clear()
                                         for group in grouplist:
@@ -7902,6 +7931,7 @@ def organization(request, funid):
                            "selectgroup": selectgroup, "remark": remark, "title": title, "mytype": mytype,
                            "hiddenuser": hiddenuser, "hiddenorg": hiddenorg, "newpassword": newpassword,
                            "editpassword": editpassword, "hiddendiv": hiddendiv, "treedata": treedata,
+                           "ad_users": ad_users, "ad_user_div": ad_user_div, "if_ad_login": if_ad_login,
                            "pagefuns": getpagefuns(funid, request=request)})
 
         except Exception as e:
