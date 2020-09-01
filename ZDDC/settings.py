@@ -13,6 +13,13 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 import djcelery
 
+# AD域管理源账户配置
+AD_SERVER = "192.168.225.100"
+AD_USER = r"kela\administrator"
+AD_DOMAIN = "kela"
+AD_PASSWORD = "Passw0rD"
+AD_PORT = 389
+
 djcelery.setup_loader()
 # BROKER_URL = 'django://'
 # CELERY_RESULT_BACKEND = 'djcelery.backends.database:DatabaseBackend'
@@ -121,10 +128,10 @@ DATABASES = {
 
         # 'PASSWORD': '1',
         # 'HOST': 'localhost',
-        # 'HOST': '127.0.0.1',
-        # 'PASSWORD': 'Passw0rD',
-        'HOST': '10.150.99.185\SQLEXPRESS',
-        'PASSWORD': 'tesunet@2020',
+        'HOST': '127.0.0.1',
+        'PASSWORD': 'Passw0rD',
+        # 'HOST': '10.150.99.185\SQLEXPRESS',
+        # 'PASSWORD': 'tesunet@2020',
 
         'PORT': '1433',
         'OPTIONS': {
