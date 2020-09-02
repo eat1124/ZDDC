@@ -34,7 +34,9 @@ class ActiveDomain(object):
             )
         except Exception as e:
             self.error = "连接AD域服务器失败：{0}。".format(e)
-        self.active_user_dn = 'DC={0},DC=com'.format(AD_DOMAIN)  # 【User】节点域
+            print(self.error)
+        ad_domain_split = ["DC={0}".format(x.strip()) for x in AD_DOMAIN.split(".")]
+        self.active_user_dn = ",".join(ad_domain_split)  # 【User】节点域
         self.user_filter = '(objectclass=user)'  # 只获取【用户】对象
 
     @property
@@ -71,7 +73,7 @@ class ActiveDomain(object):
         @param password{string}: 域密码
         """
         server = Server(AD_SERVER)
-        ldap_user = '\\{0}@{1}.com'.format(username, AD_DOMAIN)
+        ldap_user = '\\{0}@{1}'.format(username, AD_DOMAIN)
         conn = Connection(server, user=ldap_user, password=password, authentication=NTLM)
         try:
             return conn.bind()

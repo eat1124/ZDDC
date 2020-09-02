@@ -17,10 +17,10 @@ import djcelery
 AUTHENTICATION_BACKENDS = ['datacenter.ADAuth.ADModelBackend']
 
 # AD域管理源账户配置
-AD_SERVER = "192.168.225.100"
-AD_USER = r"kela\administrator"
-AD_DOMAIN = "kela"
-AD_PASSWORD = "Passw0rD"
+AD_SERVER = "192.168.225.137"   # 域服务器主机IP
+AD_USER = r"kela123\administrator"  # 域服务器主机用户
+AD_PASSWORD = "!zxcvbn123"  # 域服务器主机密码
+AD_DOMAIN = "kela.com.cn"      # 根域名
 AD_PORT = 389
 
 djcelery.setup_loader()

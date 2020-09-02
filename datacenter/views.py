@@ -7931,7 +7931,7 @@ def organization(request, funid):
                            "selectgroup": selectgroup, "remark": remark, "title": title, "mytype": mytype,
                            "hiddenuser": hiddenuser, "hiddenorg": hiddenorg, "newpassword": newpassword,
                            "editpassword": editpassword, "hiddendiv": hiddendiv, "treedata": treedata,
-                           "ad_users": ad_users, "ad_user_div": ad_user_div, "if_ad_login": if_ad_login,
+                           "ad_users": ad_users, "ad_user_div": ad_user_div, "if_ad_login": if_ad_login, "ad_user": ad_user,
                            "pagefuns": getpagefuns(funid, request=request)})
 
         except Exception as e:
