@@ -48,11 +48,6 @@ class UserInfo(models.Model):
     company = models.CharField("公司", blank=True, null=True, max_length=100)
     tell = models.CharField("电话", blank=True, null=True, max_length=50)
     forgetpassword = models.CharField("修改密码地址", blank=True, null=True, max_length=50)
-    if_ad_login = models.IntegerField("是否可通过域用户登录", null=True, default=0, choices=(
-        (0, "否"),
-        (1, "是"),
-    ))
-    ad_user = models.CharField("AD域 用户", default="", null=True, max_length=128)
 
 
 class DictIndex(models.Model):

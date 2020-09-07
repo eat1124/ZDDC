@@ -13,15 +13,6 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 import djcelery
 
-# 重写认证方法
-AUTHENTICATION_BACKENDS = ['datacenter.ADAuth.ADModelBackend']
-
-# AD域管理源账户配置
-AD_SERVER = "192.168.225.137"   # 域服务器主机IP
-AD_USER = r"kela123\administrator"  # 域服务器主机用户
-AD_PASSWORD = "!zxcvbn123"  # 域服务器主机密码
-AD_DOMAIN = "kela.com.cn"      # 根域名
-AD_PORT = 389
 
 djcelery.setup_loader()
 # BROKER_URL = 'django://'

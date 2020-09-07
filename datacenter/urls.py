@@ -8,6 +8,7 @@ urlpatterns = [
 
     # 用户登录
     url(r'^login/$', login),
+    url(r'^ad_login/$', ad_login),
     url(r'^userlogin/$', userlogin),
     url(r'^forgetPassword/$', forgetPassword),
     url(r'^resetpassword/([0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12})/$',
