@@ -66,27 +66,6 @@
 
                                             </div>
                                         </div>
-                                        <div class="form-group">
-                                            <label class="col-md-2 control-label" for="form_control_1"><span style="color:red;">*</span>可通过AD域登录</label>
-                                            <div class="col-md-10">
-                                                <select name="if_ad_login" id="if_ad_login" class="form-control">
-                                                    <option value="1" {% if if_ad_login == 1 %} selected {% endif %}>是</option>
-                                                    <option value="0" {% if if_ad_login == 0 %} selected {% endif %}>否</option>
-                                                </select>
-                                                <div class="form-control-focus"> </div>
-                                            </div>
-                                        </div>
-                                         <div class="form-group" id="ad_user_div" {{ ad_user_div }}>
-                                            <label class="col-md-2 control-label" for="form_control_1">关联AD域用户</label>
-                                            <div class="col-md-10">
-                                                <select name="ad_user" id="ad_user" class="form-control">
-                                                    {% for au in ad_users %}
-                                                    <option value="{{ au }}" {% if ad_user == au %} selected {% endif %}>{{ au }}</option>
-                                                    {% endfor %}
-                                                </select>
-                                                <div class="form-control-focus"> </div>
-                                            </div>
-                                        </div>
                                         <div class="form-group ">
                                             <label class="col-md-2 control-label" for="form_control_1">电话</label>
                                             <div class="col-md-10">
