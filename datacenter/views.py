@@ -6226,7 +6226,8 @@ def reporting_del(request):
                         })
                     else:
                         ReportingLog.objects.create(**{
-                            'datadate': datetime.datetime.now(),
+                            'write_time': datetime.datetime.now(),
+                            'datadate': reporting_date,
                             'cycletype': cycletype,
                             'adminapp_id': app,
                             'work': work,
