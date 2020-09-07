@@ -7085,18 +7085,40 @@ def index(request, funid):
 
 
 def login(request):
+    """
+    @param login?error=n
+        n=1 用户不存在
+        n=2 用户认证失败
+    """
+    error_tag = request.GET.get("error", "")
+    error = ""
+    try:
+        error_tag = int(error_tag)
+    except Exception:
+        pass
+
+    if error_tag == 1:
+        error = "用户登录失败。"
+    if error_tag == 2:
+        error = "用户认证失败。"
+
     auth.logout(request)
     try:
         del request.session['ispuser']
         del request.session['isadmin']
     except KeyError:
         pass
-    return render(request, 'login.html')
+    return render(request, 'login.html', locals())
 
 
 def ad_login(request):
-    username = request.POST.get('username', '')
-    password = request.POST.get('password', '')
+    """
+    @return login?error=n
+        n=1 用户不存在
+        n=2 用户认证失败
+    """
+    username = request.GET.get('username', '')
+    password = request.GET.get('password', '')
     user = auth.authenticate(username=username, password=password)
     if user is not None and user.is_active:
         auth.login(request, user)
@@ -7110,9 +7132,9 @@ def ad_login(request):
             request.session['isadmin'] = user.is_superuser
             return HttpResponseRedirect("/index")
         else:
-            return HttpResponseRedirect('/login')
+            return HttpResponseRedirect('/login?error=2')
     else:
-        return HttpResponseRedirect('/login')
+        return HttpResponseRedirect('/login?error=1')
 
 
 def userlogin(request):

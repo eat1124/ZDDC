@@ -196,3 +196,7 @@ $('body').keydown(function(event){
 		$('#loginbtn').addClass('active')
 	}
 });
+
+$('#error').click(function(){
+	$(this).empty().hide();
+});
