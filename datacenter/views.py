@@ -1245,48 +1245,50 @@ def report_index(request, funid):
                                                             # 判断报表路径是否存在
                                                             # 若不存在，提示不存在，报表上传失败
                                                             # 获取app_code
-                                                            try:
-                                                                cur_app = App.objects.get(id=int(app))
-                                                            except:
-                                                                write_tag = False
-                                                                errors.append('应用不存在。')
+                                                            app_code = "TMP"
+                                                            if if_template:  # 模板
+                                                                app_code = "DATACENTER_TEMPLATE"
                                                             else:
-                                                                app_code = cur_app.code
-                                                                aft_report_file_path = os.path.join(rs.report_file_path,
-                                                                                                    str(app_code))
-                                                                report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
-                                                                    report_file_path=aft_report_file_path)
-                                                                rc = ServerByPara(report_check_cmd, remote_ip,
-                                                                                  remote_user,
-                                                                                  remote_password, remote_platform)
-                                                                rc_result = rc.run("")
+                                                                try:
+                                                                    cur_app = App.objects.get(id=int(app))
+                                                                    app_code = cur_app.code
+                                                                except:
+                                                                    pass
 
-                                                                if rc_result['exec_tag'] == 1:
-                                                                    errors.append(rc_result['log'])
+                                                            aft_report_file_path = os.path.join(rs.report_file_path, str(app_code))
+                                                            report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
+                                                                report_file_path=aft_report_file_path)
+                                                            rc = ServerByPara(report_check_cmd, remote_ip,
+                                                                                remote_user,
+                                                                                remote_password, remote_platform)
+                                                            rc_result = rc.run("")
+
+                                                            if rc_result['exec_tag'] == 1:
+                                                                errors.append(rc_result['log'])
+                                                            else:
+                                                                # 获取本地IP
+                                                                try:
+                                                                    web_server = socket.gethostbyname(
+                                                                        socket.gethostname())
+                                                                except Exception as e:
+                                                                    errors.append("获取服务器IP失败：%s" % e)
                                                                 else:
-                                                                    # 获取本地IP
-                                                                    try:
-                                                                        web_server = socket.gethostbyname(
-                                                                            socket.gethostname())
-                                                                    except Exception as e:
-                                                                        errors.append("获取服务器IP失败：%s" % e)
-                                                                    else:
-                                                                        url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
-                                                                            web_server=web_server, file_name=file_name)
-                                                                        remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                            ps_script_path,
-                                                                            os.path.join(aft_report_file_path,
-                                                                                         file_name), url_visited)
+                                                                    url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
+                                                                        web_server=web_server, file_name=file_name)
+                                                                    remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                                        ps_script_path,
+                                                                        os.path.join(aft_report_file_path,
+                                                                                        file_name), url_visited)
 
-                                                                        server_obj = ServerByPara(remote_cmd, remote_ip,
-                                                                                                  remote_user,
-                                                                                                  remote_password,
-                                                                                                  remote_platform)
-                                                                        result = server_obj.run("")
-                                                                        if result["exec_tag"] == 0:
-                                                                            write_tag = True
-                                                                        else:
-                                                                            errors.append(result['log'])
+                                                                    server_obj = ServerByPara(remote_cmd, remote_ip,
+                                                                                                remote_user,
+                                                                                                remote_password,
+                                                                                                remote_platform)
+                                                                    result = server_obj.run("")
+                                                                    if result["exec_tag"] == 0:
+                                                                        write_tag = True
+                                                                    else:
+                                                                        errors.append(result['log'])
 
                                         if id != 0 and not my_file:
                                             write_tag = True
@@ -1727,7 +1729,7 @@ def report_data(request):
         except Exception:
             pass
 
-        all_report = ReportModel.objects.exclude(state="9").order_by("sort")
+        all_report = ReportModel.objects.exclude(state="9").order_by("-if_template", "sort")
 
         # 当前应用下的所有报表+系统模板报表
         if search_app:

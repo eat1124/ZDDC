@@ -123,6 +123,9 @@ $(document).ready(function () {
     });
     $("#new").click(function () {
         $('#if_template').val(0);
+        $('#app_div').show();
+        $('#report_div').show();
+
         $("span.fileinput-filename").empty();
         $("#file_status").attr("class", "fileinput fileinput-new");
 
