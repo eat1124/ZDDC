@@ -95,6 +95,16 @@
                             </div>
                         </div>
                         <div class="form-group">
+                            <label class="col-md-2 control-label"><span style="color:red; ">*</span>是否模板</label>
+                            <div class="col-md-10">
+                                <select class="form-control" id="if_template" name="if_template">
+                                    <option value="1">是</option>
+                                    <option value="0">否</option>
+                                </select>
+                                <div class="form-control-focus"></div>
+                            </div>
+                        </div>
+                        <div class="form-group" id="app_div">
                             <label class="col-md-2 control-label"><span style="color:red; ">*</span>应用</label>
                             <div class="col-md-10">
                                 <select class="form-control" id="app" name="app">
@@ -112,43 +122,45 @@
                                 <div class="form-control-focus"></div>
                             </div>
                         </div>
-                        <!-- 报表所需信息 -->
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label class="col-md-2 control-label" for="form_control_1"
-                                   style="vertical-align: inherit;font-weight:bold;">报表信息
-                            </label>
-                            <div class="col-md-10">
-                                <hr>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-md-2 control-label row" style="padding-top:0;margin-left:0;">
-                                <a href="javascript:;" class="btn btn-circle default blue-stripe btn-sm col-md-12"
-                                   style="vertical-align: inherit;" id="node_new">添加
-                                </a>
-                                <a href="javascript:;" class="btn btn-circle default red-stripe btn-sm col-md-12"
-                                   style="vertical-align: inherit;margin-top:11px;visibility:hidden;" id="node_del">删除
-                                </a>
-                            </label>
-                            <div class="col-md-10 row" id="report_info_div">
-                                <div class="col-md-12" style="margin-bottom:9px;">
-                                    <label class="col-md-2 control-label"><span style="color:red; "></span>名称:</label>
-                                    <div class="col-md-4">
-                                        <input type="text" class="form-control" name="report_info_name_1"
-                                               placeholder="">
-                                        <div class="form-control-focus"></div>
-                                    </div>
-                                    <label class="col-md-2 control-label"><span style="color:red; "></span>值:</label>
-                                    <div class="col-md-4">
-                                        <input type="text" class="form-control" name="report_info_value_1"
-                                               placeholder="">
-                                        <div class="form-control-focus"></div>
-                                    </div>
-                                    <span hidden>
-                                        <input type="text" class="form-control" name="report_info_id_1" placeholder="">
-                                    </span>
+                        <div id="report_div">
+                            <!-- 报表所需信息 -->
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="col-md-2 control-label" for="form_control_1"
+                                    style="vertical-align: inherit;font-weight:bold;">报表信息
+                                </label>
+                                <div class="col-md-10">
+                                    <hr>
                                 </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label row" style="padding-top:0;margin-left:0;">
+                                    <a href="javascript:;" class="btn btn-circle default blue-stripe btn-sm col-md-12"
+                                    style="vertical-align: inherit;" id="node_new">添加
+                                    </a>
+                                    <a href="javascript:;" class="btn btn-circle default red-stripe btn-sm col-md-12"
+                                    style="vertical-align: inherit;margin-top:11px;visibility:hidden;" id="node_del">删除
+                                    </a>
+                                </label>
+                                <div class="col-md-10 row" id="report_info_div">
+                                    <div class="col-md-12" style="margin-bottom:9px;">
+                                        <label class="col-md-2 control-label"><span style="color:red; "></span>名称:</label>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" name="report_info_name_1"
+                                                placeholder="">
+                                            <div class="form-control-focus"></div>
+                                        </div>
+                                        <label class="col-md-2 control-label"><span style="color:red; "></span>值:</label>
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" name="report_info_value_1"
+                                                placeholder="">
+                                            <div class="form-control-focus"></div>
+                                        </div>
+                                        <span hidden>
+                                            <input type="text" class="form-control" name="report_info_id_1" placeholder="">
+                                        </span>
+                                    </div>
 
+                                </div>
                             </div>
                         </div>
                     </div>

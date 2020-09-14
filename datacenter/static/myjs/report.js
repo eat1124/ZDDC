@@ -16,6 +16,16 @@ $(document).ready(function () {
         ],
 
         "columnDefs": [{
+            "targets": 1,
+            "data": null,
+            "render": function (data, type, full) {
+                if (full.if_template){
+                    return "<span title='模板'><i class='fa fa-bookmark' style='color: #36D7B7'></i></span> " +  full.name;
+                } else {
+                    return full.name;
+                }
+            },
+        } ,{
             "targets": -1,
             "data": null,
             "width": "100px",
@@ -77,34 +87,42 @@ $(document).ready(function () {
         $("span.fileinput-filename").text(data.file_name);
         $("#file_status").attr("class", "fileinput fileinput-exists");
 
-        // 报表信息加载
-        $("#report_info_div").empty();
-        for (i = 0; i < data.report_info_list.length; i++) {
-            $("#report_info_div").append('<div class="col-md-12" style="margin-bottom:9px;">\n' +
-                '    <label class="col-md-2 control-label"><span style="color:red;"></span>名称:</label>\n' +
-                '    <div class="col-md-4">\n' +
-                '        <input type="text" class="form-control" name="report_info_name_' + (i + 1) + '" value="' + data.report_info_list[i].report_info_name + '" placeholder="">\n' +
-                '        <div class="form-control-focus"></div>\n' +
-                '    </div>\n' +
-                '    <label class="col-md-2 control-label"><span style="color:red;"></span>值:</label>\n' +
-                '    <div class="col-md-4">\n' +
-                '        <input type="text" class="form-control" name="report_info_value_' + (i + 1) + '" value="' + data.report_info_list[i].report_info_value + '" placeholder="">\n' +
-                '        <div class="form-control-focus"></div>\n' +
-                '<span hidden>\n' +
-                '    <input type="text" class="form-control" name="report_info_id_' + (i + 1) + '" value="' + data.report_info_list[i].report_info_id + '" placeholder="">\n' +
-                '</span>' +
-                '    </div>\n'
-            );
-        }
-        if ($("#report_info_div").children("div").length > 1) {
-            $("#node_del").css("visibility", "visible");
+        var if_template = data.if_template;
+        $('#if_template').val(if_template);
+        if (if_template){
+            $('#app_div').hide();
+            $('#report_div').hide();
         } else {
-            $("#node_del").css("visibility", "hidden");
+            $('#app_div').show();
+            $('#report_div').show();
+            // 报表信息加载
+            $("#report_info_div").empty();
+            for (i = 0; i < data.report_info_list.length; i++) {
+                $("#report_info_div").append('<div class="col-md-12" style="margin-bottom:9px;">\n' +
+                    '    <label class="col-md-2 control-label"><span style="color:red;"></span>名称:</label>\n' +
+                    '    <div class="col-md-4">\n' +
+                    '        <input type="text" class="form-control" name="report_info_name_' + (i + 1) + '" value="' + data.report_info_list[i].report_info_name + '" placeholder="">\n' +
+                    '        <div class="form-control-focus"></div>\n' +
+                    '    </div>\n' +
+                    '    <label class="col-md-2 control-label"><span style="color:red;"></span>值:</label>\n' +
+                    '    <div class="col-md-4">\n' +
+                    '        <input type="text" class="form-control" name="report_info_value_' + (i + 1) + '" value="' + data.report_info_list[i].report_info_value + '" placeholder="">\n' +
+                    '        <div class="form-control-focus"></div>\n' +
+                    '<span hidden>\n' +
+                    '    <input type="text" class="form-control" name="report_info_id_' + (i + 1) + '" value="' + data.report_info_list[i].report_info_id + '" placeholder="">\n' +
+                    '</span>' +
+                    '    </div>\n'
+                );
+            }
+            if ($("#report_info_div").children("div").length > 1) {
+                $("#node_del").css("visibility", "visible");
+            } else {
+                $("#node_del").css("visibility", "hidden");
+            }
         }
-        // 请求文件,展示
-        // ...
     });
     $("#new").click(function () {
+        $('#if_template').val(0);
         $("span.fileinput-filename").empty();
         $("#file_status").attr("class", "fileinput fileinput-new");
 
@@ -175,4 +193,15 @@ $(document).ready(function () {
     $('#error').click(function () {
         $(this).hide()
     })
+
+    $('#if_template').change(function(){
+        var if_template = $(this).val();
+        if (if_template == "1"){
+            $('#app_div').hide();
+            $('#report_div').hide();
+        } else {
+            $('#app_div').show();
+            $('#report_div').show();
+        }
+    });
 });

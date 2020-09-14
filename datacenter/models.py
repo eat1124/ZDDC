@@ -177,11 +177,15 @@ class ReportModel(models.Model):
     """
     报表模板
     """
-    app = models.ForeignKey(App)
+    app = models.ForeignKey(App, null=True)
     name = models.CharField("报表名称", max_length=100)
     code = models.CharField("报表编码", blank=True, max_length=50)
     file_name = models.CharField("文件名称", blank=True, null=True, max_length=50)
     report_type = models.CharField("报表类型", blank=True, null=True, max_length=20)
+    if_template = models.IntegerField("是否公共报表模板", null=True, default=0, choices=(
+        (1, "是"),
+        (0, "否")
+    ))
     sort = models.IntegerField("排序", blank=True, null=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
