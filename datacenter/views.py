@@ -7158,20 +7158,11 @@ def ad_login(request):
             else:
                 request.session['ispuser'] = False
             request.session['isadmin'] = user.is_superuser
-            return JsonResponse({
-                "status": 1,
-                "url": "/index"
-            })
+            return HttpResponseRedirect("/index")
         else:
-            return JsonResponse({
-                "status": 0,
-                "url": '/login?error=2'
-            })
+            return HttpResponseRedirect('/login?error=2')
     else:
-        return JsonResponse({
-            "status": 0,
-            "url": '/login?error=1'
-        })
+        return HttpResponseRedirect('/login?error=1')
 
 
 def userlogin(request):
