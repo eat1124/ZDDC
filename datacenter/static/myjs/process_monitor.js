@@ -310,7 +310,7 @@ $(document).ready(function () {
             // 指标信息
             $('#sample_3').dataTable({
                 "bAutoWidth": true,
-                "bSort": true,
+                "bSort": false,
                 "bProcessing": true,
                 "ajax": "../../get_exception_data/?app_id=" + $('#app_id').val() + "&source_id=" + $('#source_id').val() + "&cycle_id=" + $('#cycle_id').val(),
                 "columns": [

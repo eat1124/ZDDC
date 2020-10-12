@@ -752,8 +752,14 @@ def get_exception_data(request):
         except ValueError as e:
             print(e)
         else:
-            exceptions = ExceptionData.objects.filter(app_id=app_id, source_id=source_id, cycle_id=cycle_id).exclude(
-                state=9)
+            t_now = datetime.datetime.now()
+
+            t_before = t_now - datetime.timedelta(days=90)
+            t_after = t_now + datetime.timedelta(days=90)
+
+            exceptions = ExceptionData.objects.filter(
+                app_id=app_id, source_id=source_id, cycle_id=cycle_id
+            ).filter(extract_error_time__range=[t_before, t_after]).exclude(state=9).order_by('-id')
             for exception in exceptions:
                 result.append({
                     'id': exception.id,
@@ -806,9 +812,15 @@ def get_log_info(request):
         except ValueError as e:
             print(e)
         else:
-            log_infos = LogInfo.objects.filter(
-                Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=cycle_id)).order_by('-create_time')
+            t_now = datetime.datetime.now()
 
+            t_before = t_now - datetime.timedelta(days=90)
+            t_after = t_now + datetime.timedelta(days=90)
+
+            log_infos = LogInfo.objects.filter(
+                Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=cycle_id)
+            ).filter(create_time__range=[t_before, t_after]).order_by('-create_time')
+            
             for num, log_info in enumerate(log_infos):
                 result.append({
                     'id': num + 1,
