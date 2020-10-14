@@ -123,7 +123,7 @@ DATABASES = {
         # 'PASSWORD': '1',
         # 'HOST': 'localhost',
         'HOST': '127.0.0.1',
-        'PASSWORD': 'Passw0rD',
+        'PASSWORD': 'tesunet@2020',
         # 'HOST': '10.150.99.185\SQLEXPRESS',
         # 'PASSWORD': 'tesunet@2020',
 

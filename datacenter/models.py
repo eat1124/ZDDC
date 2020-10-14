@@ -112,7 +112,7 @@ class Storage(models.Model):
 
 class Target(models.Model):
     name = models.CharField("指标名称", max_length=100)
-    code = models.CharField("指标代码", blank=True, max_length=50)
+    code = models.CharField("指标代码", db_index=True, blank=True, max_length=50)
     operationtype = models.CharField("操作类型", blank=True, max_length=20)
     cycletype = models.CharField("周期类型", blank=True, max_length=20)
     businesstype = models.CharField("业务类型", blank=True, max_length=20)
@@ -228,7 +228,7 @@ def get_meterdata_model(prefix):
 
     class Meterdata(models.Model):
         __metaclass__ = MeterdataMetaclass
-        target = models.ForeignKey(Target)
+        target = models.ForeignKey(Target,db_index = True)
         datadate = models.DateTimeField("开始时间", blank=True, null=True)
         zerodata = models.CharField("零点走字", null=True, max_length=20)
         twentyfourdata = models.CharField("二十四点走字", null=True, max_length=20)
@@ -263,7 +263,7 @@ def get_entrydata_model(prefix):
 
     class Entrydata(models.Model):
         __metaclass__ = EntrydataMetaclass
-        target = models.ForeignKey(Target)
+        target = models.ForeignKey(Target,db_index = True)
         datadate = models.DateTimeField("开始时间", blank=True, null=True)
         curvalue = models.DecimalField("当前值", null=True, max_digits=22, decimal_places=7)
         curvaluedate = models.DateTimeField("当前值", null=True)
@@ -295,7 +295,7 @@ def get_extractdata_model(prefix):
 
     class Extractdata(models.Model):
         __metaclass__ = ExtractdataMetaclass
-        target = models.ForeignKey(Target)
+        target = models.ForeignKey(Target,db_index = True)
         datadate = models.DateTimeField("开始时间", blank=True, null=True)
         curvalue = models.DecimalField("当前值", null=True, max_digits=22, decimal_places=7)
         curvaluedate = models.DateTimeField("当前值", null=True)
@@ -327,7 +327,7 @@ def get_calculatedata_model(prefix):
 
     class Calculatedata(models.Model):
         __metaclass__ = CalculatedataMetaclass
-        target = models.ForeignKey(Target)
+        target = models.ForeignKey(Target,db_index = True)
         datadate = models.DateTimeField("开始时间", blank=True, null=True)
         curvalue = models.DecimalField("当前值", null=True, max_digits=22, decimal_places=7)
         curvaluedate = models.DateTimeField("当前值", null=True)
