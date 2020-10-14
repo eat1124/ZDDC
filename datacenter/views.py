@@ -9071,65 +9071,64 @@ def get_target_search_data(request):
 
         if not target:
             status = 0
-            info = '指标代码未填写。'
+            info = '指标代码或者指标名称未填写。'
+        elif not start_date:
+            status = 0
+            info = "开始时间未选择。"
+        elif not end_date:
+            status = 0
+            info = "结束时间未选择。"
         else:
             c_targets = Target.objects.exclude(state="9").filter(Q(name=target) | Q(code=target))
             if c_targets.exists():
                 c_target = c_targets[0]
 
-                if not start_date:
+                # 判断开始时间与结束时间是否在同一年
+                start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+                end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+
+                if start_date > end_date:
                     status = 0
-                    info = "开始时间未选择。"
-                elif not end_date:
-                    status = 0
-                    info = "结束时间未选择。"
+                    info = "开始时间不得迟于结束时间。"
                 else:
-                    # 判断开始时间与结束时间是否在同一年
-                    start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-                    end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-
-                    if start_date > end_date:
-                        status = 0
-                        info = "开始时间不得迟于结束时间。"
+                    start_date_year = start_date.year
+                    end_date_year = end_date.year
+                    delta_year = end_date_year - start_date_year
+                    if delta_year == 0:  # 同一年
+                        target_values = get_target_value(c_target, start_date, end_date)
+                        data = [{
+                            "name": tv["name"],
+                            "code": tv["code"],
+                            "curvalue": tv["curvalue"],
+                            "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
+                        } for tv in target_values]
                     else:
-                        start_date_year = start_date.year
-                        end_date_year = end_date.year
-                        delta_year = end_date_year - start_date_year
-                        if delta_year == 0:  # 同一年
-                            target_values = get_target_value(c_target, start_date, end_date)
-                            data = [{
-                                "name": tv["name"],
-                                "code": tv["code"],
-                                "curvalue": tv["curvalue"],
-                                "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
-                            } for tv in target_values]
-                        else:
-                            # 开始时间到年底
-                            s_target_values = get_target_value(c_target, start_date, None)
+                        # 开始时间到年底
+                        s_target_values = get_target_value(c_target, start_date, None)
 
-                            # 结束时间到年初
-                            e_target_values = get_target_value(c_target, None, end_date)
+                        # 结束时间到年初
+                        e_target_values = get_target_value(c_target, None, end_date)
 
-                            m_target_values = []
-                            # 2017 2019 2  >>> 2018
-                            if delta_year > 1:
-                                for i in range(0, delta_year):
-                                    start_date_year += 1
-                                    start_date = datetime.datetime(start_date_year, 1, 1)
-                                    target_values = get_target_value(c_target, start_date, None)
-                                    m_data = [{
-                                        "name": tv["name"],
-                                        "code": tv["code"],
-                                        "curvalue": tv["curvalue"],
-                                        "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
-                                    } for tv in target_values]
-                                    if m_data:
-                                        m_target_values.extend(m_data)
+                        m_target_values = []
+                        # 2017 2019 2  >>> 2018
+                        if delta_year > 1:
+                            for i in range(0, delta_year):
+                                start_date_year += 1
+                                start_date = datetime.datetime(start_date_year, 1, 1)
+                                target_values = get_target_value(c_target, start_date, None)
+                                m_data = [{
+                                    "name": tv["name"],
+                                    "code": tv["code"],
+                                    "curvalue": tv["curvalue"],
+                                    "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
+                                } for tv in target_values]
+                                if m_data:
+                                    m_target_values.extend(m_data)
 
-                            data = s_target_values + m_target_values + e_target_values
+                        data = s_target_values + m_target_values + e_target_values
             else:
                 status = 0
-                info = "指标代码或者指标名称不存在。"
+                info = "指标不存在。"
 
         return JsonResponse({
             "status": status,
