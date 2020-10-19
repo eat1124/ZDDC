@@ -480,3 +480,14 @@ class TargetStatistic(models.Model):
     remark = models.TextField("查询说明", null=True, default="")
     col_data = models.TextField("指标列JSON信息", null=True, default="")
     state = models.CharField('状态', max_length=10, null=True, default="")
+
+
+class ElectricEnergy(models.Model):
+    """
+    上网电量
+    """
+    f_electric_energy = models.DecimalField("#1上网电量", null=True, max_digits=22, decimal_places=7)
+    s_electric_energy = models.DecimalField("#2上网电量", null=True, max_digits=22, decimal_places=7)
+    a_electric_energy = models.DecimalField("总上网电量", null=True, max_digits=22, decimal_places=7)
+    extract_time = models.DateTimeField("取数时间", null=True)
+    state = models.CharField('状态', max_length=10, null=True, blank=True)

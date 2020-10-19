@@ -13,6 +13,13 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 import djcelery
 
+# 发电量固定指标
+F_ELERTRIC_ENERGY = "GYB_01"  # #1发电量指标
+S_ELERTRIC_ENERGY = "GYB_02"  # #2发电量指标
+
+PI_SERVER = '[{"host":"10.150.99.30"}]'
+F_TAG = "DCS11.01BHT01GX001P01.AV"
+S_TAG = "DCS12.01BHT02GX001P01.AV"
 
 djcelery.setup_loader()
 # BROKER_URL = 'django://'
@@ -123,7 +130,7 @@ DATABASES = {
         # 'PASSWORD': '1',
         # 'HOST': 'localhost',
         'HOST': '127.0.0.1',
-        'PASSWORD': 'tesunet@2020',
+        'PASSWORD': 'Passw0rD',
         # 'HOST': '10.150.99.185\SQLEXPRESS',
         # 'PASSWORD': 'tesunet@2020',
 

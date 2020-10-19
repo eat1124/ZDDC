@@ -117,31 +117,34 @@ class SeveralDBQuery(object):
 
     def fetch_all(self, fetch_sql):
         self.result = []
-        try:
-            if self.db_type == 'ORACLE':
-                curs = self.connection.cursor()
-                curs.execute(fetch_sql)
-                self.result = curs.fetchall()
-                curs.close()
-            else:
-                with self.connection.cursor() as cursor:
-                    cursor.execute(fetch_sql)
-                    if self.db_type == "MYSQL":
-                        fixed_key = []
-                        for cd in cursor.description:
-                            fixed_key.append(cd[0])
+        if self.connection:
+            try:
+                if self.db_type == 'ORACLE':
+                    curs = self.connection.cursor()
+                    curs.execute(fetch_sql)
+                    self.result = curs.fetchall()
+                    curs.close()
+                else:
+                    with self.connection.cursor() as cursor:
+                        cursor.execute(fetch_sql)
+                        if self.db_type == "MYSQL":
+                            fixed_key = []
+                            for cd in cursor.description:
+                                fixed_key.append(cd[0])
 
-                        for i in range(cursor.rowcount):
-                            single_ret = cursor.fetchone()
-                            tmp_result = []
-                            for key in fixed_key:
-                                tmp_result.append(single_ret[key])
-                            self.result.append(tmp_result)
+                            for i in range(cursor.rowcount):
+                                single_ret = cursor.fetchone()
+                                tmp_result = []
+                                for key in fixed_key:
+                                    tmp_result.append(single_ret[key])
+                                self.result.append(tmp_result)
 
-                    else:
-                        self.result = cursor.fetchall()
-        except Exception as e:
-            self.error = fetch_sql + " 数据查询失败：%s" % e
+                        else:
+                            self.result = cursor.fetchall()
+            except Exception as e:
+                self.error = fetch_sql + " 数据查询失败：%s" % e
+        else:
+            self.error = "执行查询 {0} 时，数据库连接失败。".format(fetch_sql)
 
     def update(self, update_sql):
         try:
@@ -246,6 +249,47 @@ class PIQuery(object):
             error = '指标{target}，PI数据获取失败：{e}'.format(target=target.code, e=str(curvalue))
         logger.info(str({"result": result_list, "error": error}))
         return {"result": result_list, "error": error}
+
+    def get_delta_time_data(self, start_time, end_time, target, tag):
+        result_list = []
+        error = ""
+
+        digit = target.digit
+
+        status = 1
+        conn = self.connection['host']
+        try:
+            curvalue = json.loads(ManagePI.ReadCzValueFromPI(conn, tag, start_time, end_time))
+        except Exception as e:
+            status = 0
+            curvalue = e
+
+        # 构造result_list
+        if status:
+            if type(curvalue) == dict:
+                if curvalue['success']:
+                    if curvalue['success'] == "0":
+                        error = '指标{target}，PI数据获取失败：{e}'.format(target=target.code, e=str(curvalue))
+                    else:
+                        # curvalue保留位数处理
+                        if curvalue['value'] is not None and digit != "" and digit is not None:
+                            try:
+                                digit = int(digit)
+                                curvalue['value'] = decimal.Decimal(str(curvalue['value'])).quantize(
+                                    decimal.Decimal(PIQuery.quantize_digit(digit)), rounding=decimal.ROUND_HALF_UP)
+
+                            except Exception as e:
+                                logger.info("PI取数小数处理异常: " + str(e))
+                        result_list = [[curvalue['value']]]
+                else:
+                    error = '指标{target}，PI数据获取失败：{e}'.format(target=target.code, e=str(curvalue))
+            elif type(curvalue) == list:
+                error = '指标{target}，PI数据获取失败：{e}'.format(target=target.code, e=str(curvalue))
+            else:
+                error = '指标{target}，PI数据获取失败：{e}'.format(target=target.code, e=str(curvalue))
+        else:
+            error = '指标{target}，PI数据获取失败：{e}'.format(target=target.code, e=str(curvalue))
+        return result_list, error
 
     @staticmethod
     def quantize_digit(digit):

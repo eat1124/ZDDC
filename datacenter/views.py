@@ -53,7 +53,7 @@ from .remote import ServerByPara
 from ZDDC import settings
 from .funcs import *
 from .ftp_file_handler import *
-from utils.handle_process import Extract
+from utils.handle_process import Extract, PIQuery, get_dict_name
 
 funlist = []
 
@@ -820,7 +820,7 @@ def get_log_info(request):
             log_infos = LogInfo.objects.filter(
                 Q(app_id=app_id) & Q(source_id=source_id) & Q(cycle_id=cycle_id)
             ).filter(create_time__range=[t_before, t_after]).order_by('-create_time')
-            
+
             for num, log_info in enumerate(log_infos):
                 result.append({
                     'id': num + 1,
@@ -1271,8 +1271,8 @@ def report_index(request, funid):
                                                             report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
                                                                 report_file_path=aft_report_file_path)
                                                             rc = ServerByPara(report_check_cmd, remote_ip,
-                                                                                remote_user,
-                                                                                remote_password, remote_platform)
+                                                                              remote_user,
+                                                                              remote_password, remote_platform)
                                                             rc_result = rc.run("")
 
                                                             if rc_result['exec_tag'] == 1:
@@ -1290,12 +1290,12 @@ def report_index(request, funid):
                                                                     remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
                                                                         ps_script_path,
                                                                         os.path.join(aft_report_file_path,
-                                                                                        file_name), url_visited)
+                                                                                     file_name), url_visited)
 
                                                                     server_obj = ServerByPara(remote_cmd, remote_ip,
-                                                                                                remote_user,
-                                                                                                remote_password,
-                                                                                                remote_platform)
+                                                                                              remote_user,
+                                                                                              remote_password,
+                                                                                              remote_platform)
                                                                     result = server_obj.run("")
                                                                     if result["exec_tag"] == 0:
                                                                         write_tag = True
@@ -1748,7 +1748,7 @@ def report_data(request):
             template_report = all_report.filter(if_template=1)
             app_report = all_report.filter(app_id=search_app)
 
-            all_report = template_report|app_report
+            all_report = template_report | app_report
 
         # if search_app != "":
         #     curadminapp = App.objects.get(id=int(search_app))
@@ -2370,7 +2370,7 @@ def cycle_save(request):
         sort = request.POST.get("sort", "")
 
         schedule_type = request.POST.get('schedule_type', '')
-        
+
         sub_cycle = eval(request.POST.get('sub_cycle', '[]'))
         # [{'hours': '0', 'minutes': '00', 'per_month': '324', 'per_week': '', 'sub_cycle_id': '暂无'}]
         try:
@@ -9524,6 +9524,326 @@ def get_statistic_report(request):
                 "head_data": head_data,
                 "body_data": body_data
             }
+        })
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def electric_energy(request, funid):
+    if request.user.is_authenticated():
+        yestoday = "{:%Y-%m-%d}".format(datetime.datetime.now() - datetime.timedelta(days=1))
+
+        return render(request, "electric_energy.html", {
+            "yestoday": yestoday,
+            "username": request.user.userinfo.fullname,
+            "pagefuns": getpagefuns(funid, request)
+        })
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def get_electric_energy_target_info():
+    """
+    获取发电量指标的相关信息，如保留位数
+    :return:
+    """
+    f_info = {
+        "digit": 2,
+    }
+    s_info = {
+        "digit": 2,
+    }
+    F_ELERTRIC_ENERGY = settings.F_ELERTRIC_ENERGY
+    S_ELERTRIC_ENERGY = settings.S_ELERTRIC_ENERGY
+
+    f_targets = Target.objects.exclude(state="9").filter(code=F_ELERTRIC_ENERGY)
+
+    if f_targets.exists():
+        f_target = f_targets[0]
+        f_info["digit"] = f_target.digit
+
+    s_targets = Target.objects.exclude(state="9").filter(code=S_ELERTRIC_ENERGY)
+    if s_targets:
+        s_target = s_targets[0]
+        s_info["digit"] = s_target.digit
+
+    return f_info, s_info
+
+
+def get_electric_energy(request):
+    if request.user.is_authenticated():
+        result = []
+
+        # #1发电量 #2发电量 保留位数
+        f_info, s_info = get_electric_energy_target_info()
+        f_digit = f_info.get('digit', 2)
+        s_digit = s_info.get('digit', 2)
+        electric_energys = ElectricEnergy.objects.exclude(state="9").order_by("-extract_time")
+        for electric_energy in electric_energys:
+            f_electric_energy = float(round(electric_energy.f_electric_energy, f_digit)) if electric_energy.f_electric_energy else 0
+            s_electric_energy = float(round(electric_energy.s_electric_energy, s_digit)) if electric_energy.s_electric_energy else 0
+            result.append({
+                "id": electric_energy.id,
+                "extract_time": "{0:%Y-%m-%d}".format(electric_energy.extract_time) if electric_energy.extract_time else "",
+                "f_electric_energy": f_electric_energy,
+                "s_electric_energy": s_electric_energy,
+                "a_electric_energy": round(f_electric_energy + s_electric_energy, f_digit),
+            })
+        return JsonResponse({
+            "data": result
+        })
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def save_electric_energy(request):
+    if request.user.is_authenticated():
+        status = 1
+        info = "保存成功。"
+        f_electric_energy = request.POST.get("f_electric_energy", "")
+        s_electric_energy = request.POST.get("s_electric_energy", "")
+        extract_time = request.POST.get("extract_time", "")
+        f_is_open = request.POST.get("f_is_open", "")
+        s_is_open = request.POST.get("s_is_open", "")
+
+        f_electric_energy = decimal.Decimal(f_electric_energy if f_electric_energy else "0")
+        s_electric_energy = decimal.Decimal(s_electric_energy if s_electric_energy else "0")
+
+        # 未启动
+        if f_is_open == "0":
+            f_electric_energy = decimal.Decimal("0")
+        if s_is_open == "0":
+            s_electric_energy = decimal.Decimal("0")
+
+        a_electric_energy = f_electric_energy + s_electric_energy
+
+        try:
+            extract_time = datetime.datetime.strptime(extract_time, "%Y-%m-%d")
+        except ValueError as e:
+            print(e)
+            info = "网络异常。"
+            status = 0
+        else:
+            with transaction.atomic():
+                # 删除该天其他数据
+                ElectricEnergy.objects.filter(extract_time=extract_time).update(**{
+                    "state": "9"
+                })
+
+                ElectricEnergy.objects.create(**{
+                    "f_electric_energy": f_electric_energy,
+                    "s_electric_energy": s_electric_energy,
+                    "a_electric_energy": a_electric_energy,
+                    "extract_time": extract_time,
+                })
+
+        return JsonResponse({
+            "status": status,
+            "info": info,
+        })
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def electric_energy_del(request):
+    if request.user.is_authenticated():
+        status = 1
+        info = '删除成功。'
+        id = request.POST.get('id', '')
+        try:
+            ElectricEnergy.objects.filter(id=int(id)).update(**{
+                "state": "9"
+            })
+        except:
+            status = 0
+            info = '删除失败。'
+
+        return JsonResponse({
+            'status': status,
+            'info': info
+        })
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def extract_electric_energy(request):
+    """
+    手动提取指定时间段的发电量
+    @param request:
+    @return:
+    """
+    if request.user.is_authenticated():
+        status = 1
+        info = '提取成功。'
+        data = {}
+
+        def check_time(start_time, end_time):
+            """
+            检测时间
+            @param start_time:
+            @param end_time:
+            @return is_fine:
+            """
+            is_fine = True
+            err = ''
+            if not start_time:
+                is_fine = False
+                err = "开始时间未选择"
+            elif not end_time:
+                is_fine = False
+                err = "结束时间未选择"
+            else:
+                start_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S")
+                if start_time > end_time:
+                    is_fine = False
+                    err = "开始时间不得晚于结束时间"
+            return is_fine, err
+
+        def do_extract(start_time, end_time, f=True):
+            """
+            #1机组 #2机组 发电量取数
+            @param start_time:
+            @param end_time:
+            @param f: f表示#1机组 s表示#2机组
+            @return: electric_energy_value
+            """
+            electric_energy_value = 0
+
+            if f:   # #1
+                t_code = settings.F_ELERTRIC_ENERGY
+                t_tag = settings.F_TAG
+            else:   # #2
+                t_code = settings.S_ELERTRIC_ENERGY
+                t_tag = settings.S_TAG
+
+            ts = Target.objects.exclude(state="9").filter(code=t_code)
+            if ts.exists():
+                t = ts[0]
+
+                s_con = settings.PI_SERVER
+
+                if s_con:
+                    try:
+                        s_con = eval(s_con)
+                        if type(s_con) == list:
+                            s_con = s_con[0]
+                    except Exception as e:
+                        pass
+                    else:
+                        pi_query = PIQuery(s_con)
+                        result, err = pi_query.get_delta_time_data(start_time, end_time, t, t_tag)
+                        if not err and result:
+                            electric_energy_value = result[0][0]
+            return electric_energy_value
+
+        f_checkbox = request.POST.get('f_checkbox', '')
+        s_checkbox = request.POST.get('s_checkbox', '')
+
+        f_start_time1 = request.POST.get('f_start_time1', '')
+        f_start_time2 = request.POST.get('f_start_time2', '')
+        f_start_time3 = request.POST.get('f_start_time3', '')
+        f_start_time4 = request.POST.get('f_start_time4', '')
+
+        f_end_time1 = request.POST.get('f_end_time1', '')
+        f_end_time2 = request.POST.get('f_end_time2', '')
+        f_end_time3 = request.POST.get('f_end_time3', '')
+        f_end_time4 = request.POST.get('f_end_time4', '')
+
+        s_start_time1 = request.POST.get('s_start_time1', '')
+        s_start_time2 = request.POST.get('s_start_time2', '')
+        s_start_time3 = request.POST.get('s_start_time3', '')
+        s_start_time4 = request.POST.get('s_start_time4', '')
+
+        s_end_time1 = request.POST.get('s_end_time1', '')
+        s_end_time2 = request.POST.get('s_end_time2', '')
+        s_end_time3 = request.POST.get('s_end_time3', '')
+        s_end_time4 = request.POST.get('s_end_time4', '')
+
+        f_electric_energy = decimal.Decimal("0")
+        s_electric_energy = decimal.Decimal("0")
+        if f_checkbox == "on":
+            if any([f_start_time1, f_end_time1]):
+                is_fine, err = check_time(f_start_time1, f_end_time1)
+                if not is_fine:
+                    return JsonResponse({
+                        'status': 0,
+                        'info': '提取失败，#1机组入网时间1{0}。'.format(err),
+                    })
+                else:
+                    f_electric_energy += do_extract(f_start_time1, f_end_time1, f=True)
+            if any([f_start_time2, f_end_time2]):
+                is_fine, err = check_time(f_start_time2, f_end_time2)
+                if not is_fine:
+                    return JsonResponse({
+                        'status': 0,
+                        'info': '提取失败，#1机组入网时间2{0}。'.format(err),
+                    })
+                else:
+                    f_electric_energy += do_extract(f_start_time2, f_end_time2, f=True)
+            if any([f_start_time3, f_end_time3]):
+                is_fine, err = check_time(f_start_time3, f_end_time3)
+                if not is_fine:
+                    return JsonResponse({
+                        'status': 0,
+                        'info': '提取失败，#1机组入网时间3{0}。'.format(err),
+                    })
+                else:
+                    f_electric_energy += do_extract(f_start_time3, f_end_time3, f=True)
+            if any([f_start_time4, f_end_time4]):
+                is_fine, err = check_time(f_start_time4, f_end_time4)
+                if not is_fine:
+                    return JsonResponse({
+                        'status': 0,
+                        'info': '提取失败，#1机组入网时间4{0}。'.format(err),
+                    })
+                else:
+                    f_electric_energy += do_extract(f_start_time4, f_end_time4, f=True)
+        if s_checkbox == "on":
+            if any([s_start_time1, s_end_time1]):
+                is_fine, err = check_time(s_start_time1, s_end_time1)
+                if not is_fine:
+                    return JsonResponse({
+                        'status': 0,
+                        'info': '提取失败，#2机组入网时间1{0}。'.format(err),
+                    })
+                else:
+                    s_electric_energy += do_extract(s_start_time1, s_end_time1, f=False)
+            if any([s_start_time2, s_end_time2]):
+                is_fine, err = check_time(s_start_time2, s_end_time2)
+                if not is_fine:
+                    return JsonResponse({
+                        'status': 0,
+                        'info': '提取失败，#2机组入网时间2{0}。'.format(err),
+                    })
+                else:
+                    s_electric_energy += do_extract(s_start_time2, s_end_time2, f=False)
+            if any([s_start_time3, s_end_time3]):
+                is_fine, err = check_time(s_start_time3, s_end_time3)
+                if not is_fine:
+                    return JsonResponse({
+                        'status': 0,
+                        'info': '提取失败，#2机组入网时间3{0}。'.format(err),
+                    })
+                else:
+                    s_electric_energy += do_extract(s_start_time3, s_end_time3, f=False)
+            if any([s_start_time4, s_end_time4]):
+                is_fine, err = check_time(s_start_time4, s_end_time4)
+                if not is_fine:
+                    return JsonResponse({
+                        'status': 0,
+                        'info': '提取失败，#2机组入网时间4{0}。'.format(err),
+                    })
+                else:
+                    s_electric_energy += do_extract(s_start_time4, s_end_time4, f=False)
+
+        return JsonResponse({
+            'status': status,
+            'info': info,
+            'data': {
+                'f_electric_energy': float(f_electric_energy),
+                's_electric_energy': float(s_electric_energy)
+            },
         })
     else:
         return HttpResponseRedirect("/login")
