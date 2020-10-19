@@ -14,8 +14,8 @@ import os
 import djcelery
 
 # 发电量固定指标
-F_ELERTRIC_ENERGY = "GYB_01"  # #1发电量指标
-S_ELERTRIC_ENERGY = "GYB_02"  # #2发电量指标
+F_ELERTRIC_ENERGY = "NEW_JYTJ_01_FDL"  # #1发电量指标
+S_ELERTRIC_ENERGY = "NEW_JYTJ_02_FDL"  # #2发电量指标
 
 PI_SERVER = '[{"host":"10.150.99.30"}]'
 F_TAG = "DCS11.01BHT01GX001P01.AV"
