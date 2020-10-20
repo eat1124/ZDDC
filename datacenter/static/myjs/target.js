@@ -136,64 +136,68 @@ $(document).ready(function () {
 
     //公式解析函数
     function analysisFunction() {
-        var formula_data = ($("#formula").val()).replace(/\s*/g, "");
-        var formula_analysis_data_str = $("#formula_analysis_data").val();
-        var formula_analysis_data = JSON.parse(formula_analysis_data_str);
-        var data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积", 'c': '常数'};
-        var data_time = {
-            "D": "当天", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
-            "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
-            "YE": "年末", "LYS": "去年初", "LYE": "去年末", "MAVG": "月平均值", "SAVG": "季平均值", "HAVG": "半年平均值", "YAVG": "年均值",
-            "MMAX": "月最大值", "MMIN": "月最小值", "SMAX": "季最大值", "SMIN": "季最小值", "HMAX": "半年最大值", "HMIN": "半年最小值",
-            "YMAX": "年最大值", "YMIN": "年最小值", "SLME": "本季上月末"
-        };
+        try {
+            var formula_data = ($("#formula").val()).replace(/\s*/g, "");
+            var formula_analysis_data_str = $("#formula_analysis_data").val();
+            var formula_analysis_data = JSON.parse(formula_analysis_data_str);
+            var data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积", 'c': '常数'};
+            var data_time = {
+                "D": "当天", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "SS": "季初", "SE": "季末",
+                "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末", "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初",
+                "YE": "年末", "LYS": "去年初", "LYE": "去年末", "MAVG": "月平均值", "SAVG": "季平均值", "HAVG": "半年平均值", "YAVG": "年均值",
+                "MMAX": "月最大值", "MMIN": "月最小值", "SMAX": "季最大值", "SMIN": "季最小值", "HMAX": "半年最大值", "HMIN": "半年最小值",
+                "YMAX": "年最大值", "YMIN": "年最小值", "SLME": "本季上月末"
+            };
 
-        var formula_data_list = formula_data.split(/[<>]/);
-        var pre_data = '';
-        var formula_data_pre1 = '';
-        var formula_data_pre2 = '';
-        var formula_data_pre3 = '';
-        for (var i = 0; i < formula_data_list.length; i++) {
-            var formula_data_pre = formula_data_list[i].split(':');
-            var formula_data_pre_list = formula_data_pre;
+            var formula_data_list = formula_data.split(/[<>]/);
+            var pre_data = '';
+            var formula_data_pre1 = '';
+            var formula_data_pre2 = '';
+            var formula_data_pre3 = '';
+            for (var i = 0; i < formula_data_list.length; i++) {
+                var formula_data_pre = formula_data_list[i].split(':');
+                var formula_data_pre_list = formula_data_pre;
 
-            if (formula_data_pre[0] in formula_analysis_data) {
-                formula_data_pre1 = formula_analysis_data[formula_data_pre[0]];
-                formula_data_pre_list[0] = formula_data_pre1
-            } else {
-                formula_data_pre1 = formula_data_pre[0]
-            }
-            if (formula_data_pre[1]) {
-                if (formula_data_pre[1] in data_field) {
-                    formula_data_pre2 = data_field[formula_data_pre[1]];
-                    formula_data_pre_list[1] = formula_data_pre2
+                if (formula_data_pre[0] in formula_analysis_data) {
+                    formula_data_pre1 = formula_analysis_data[formula_data_pre[0]];
+                    formula_data_pre_list[0] = formula_data_pre1
                 } else {
-                    formula_data_pre2 = formula_data_pre[1]
+                    formula_data_pre1 = formula_data_pre[0]
+                }
+                if (formula_data_pre[1]) {
+                    if (formula_data_pre[1] in data_field) {
+                        formula_data_pre2 = data_field[formula_data_pre[1]];
+                        formula_data_pre_list[1] = formula_data_pre2
+                    } else {
+                        formula_data_pre2 = formula_data_pre[1]
+                    }
+                }
+                if (formula_data_pre[2]) {
+                    if (formula_data_pre[2] in data_time) {
+                        formula_data_pre3 = data_time[formula_data_pre[2]];
+                        formula_data_pre_list[2] = formula_data_pre3
+                    } else {
+                        formula_data_pre3 = formula_data_pre[2];
+                    }
+                }
+                formula_data_pre_list = formula_data_pre_list.join(':');
+                formula_data_pre_list = '<' + formula_data_pre_list + '>';
+                if (pre_data) {
+                    pre_data = pre_data.replace('<' + formula_data_list[i] + '>', formula_data_pre_list)
+                } else {
+                    pre_data = formula_data.replace('<' + formula_data_list[i] + '>', formula_data_pre_list)
                 }
             }
-            if (formula_data_pre[2]) {
-                if (formula_data_pre[2] in data_time) {
-                    formula_data_pre3 = data_time[formula_data_pre[2]];
-                    formula_data_pre_list[2] = formula_data_pre3
-                } else {
-                    formula_data_pre3 = formula_data_pre[2];
-                }
-            }
-            formula_data_pre_list = formula_data_pre_list.join(':');
-            formula_data_pre_list = '<' + formula_data_pre_list + '>';
-            if (pre_data) {
-                pre_data = pre_data.replace('<' + formula_data_list[i] + '>', formula_data_pre_list)
+
+            if (pre_data != "") {
+                $("#formula_analysis").val(pre_data);
             } else {
-                pre_data = formula_data.replace('<' + formula_data_list[i] + '>', formula_data_pre_list)
+                $("#formula_analysis").val(formula_data);
             }
-        }
 
-        if (pre_data != "") {
-            $("#formula_analysis").val(pre_data);
-        } else {
-            $("#formula_analysis").val(formula_data);
-        }
+        } catch (e) {
 
+        }
     }
 
     function ajaxFunction() {
@@ -313,6 +317,8 @@ $(document).ready(function () {
             if (data.data_from == 'et') {
                 $('#calculate').hide();
                 $('#calculate_analysis').hide();
+                $('#calculate_source').val(data.source);
+                $('#calculate_content').val(data.source_content);
             } else {
                 $('#calculate').show();
                 $('#calculate_analysis').show();
@@ -399,8 +405,8 @@ $(document).ready(function () {
     });
 
     $("#formula").bind('input propertychange', function () {
-            analysisFunction();
-        });
+        analysisFunction();
+    });
 
     // 数据来源
     $('#data_from').change(function () {
@@ -634,7 +640,7 @@ $(document).ready(function () {
         // }
         var constraint_fields = []
         $('#constraint_field').find('input').each(function () {
-            if ($(this).val().trim()){
+            if ($(this).val().trim()) {
                 constraint_fields.push($(this).val().trim());
             }
         });
@@ -1118,12 +1124,12 @@ $(document).ready(function () {
             "columnDefs": [{
                 "targets": -3,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[1].replace(/"/g,"&#34;") + "></input>"
+                    return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[1].replace(/"/g, "&#34;") + "></input>"
                 }
             }, {
                 "targets": -2,
                 "mRender": function (data, type, full) {
-                    return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[2].replace(/"/g,"&#34;") + "></input>";  // 双引号自动转义
+                    return "<input style='margin-top:-5px;width:260px;height:24px;' type='text'" + " value=" + full[2].replace(/"/g, "&#34;") + "></input>";  // 双引号自动转义
                 }
             }, {
                 "targets": -1,
