@@ -9763,6 +9763,13 @@ def extract_electric_energy(request):
         f_electric_energy = decimal.Decimal("0")
         s_electric_energy = decimal.Decimal("0")
         if f_checkbox == "on":
+            if not any([f_start_time1, f_start_time2, f_start_time3, f_start_time4, 
+                        f_end_time1, f_end_time2, f_end_time3, f_end_time4]):
+                return JsonResponse({
+                    'status': 0,
+                    'info': '开机状态时，#1机组入网时间至少要选择一组。'
+                })
+
             if any([f_start_time1, f_end_time1]):
                 is_fine, err = check_time(f_start_time1, f_end_time1)
                 if not is_fine:
@@ -9800,6 +9807,12 @@ def extract_electric_energy(request):
                 else:
                     f_electric_energy += do_extract(f_start_time4, f_end_time4, f=True)
         if s_checkbox == "on":
+            if not any([s_start_time1, s_start_time2, s_start_time3, s_start_time4, 
+                        s_end_time1, s_end_time2, s_end_time3, s_end_time4]):
+                return JsonResponse({
+                    'status': 0,
+                    'info': '开机状态时，#2机组入网时间至少要选择一组。'
+                })
             if any([s_start_time1, s_end_time1]):
                 is_fine, err = check_time(s_start_time1, s_end_time1)
                 if not is_fine:
