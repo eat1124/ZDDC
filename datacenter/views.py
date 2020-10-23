@@ -5146,17 +5146,17 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
     if target.data_from == 'et':
         # 外部系统，直接取数
         # 从数据库中获取，取第一个值，其他情况抛错
-        ret = Extract.getDataFromSource(target, datetime.datetime.now())
+        ret = Extract.getDataFromSource(target, date)
         if ret['result']:
             try:
                 curvalue = float(ret['result'][0][0])
             except Exception as e:
                 print(e)
-                raise Exception('获取外部系统数据失败。')
+                # raise Exception('获取外部系统数据失败。')
             else:
                 pass
-        else:
-            raise Exception('获取外部系统数据失败。')
+        # else:
+            # raise Exception('获取外部系统数据失败。')
     else:
         formula = ""
 
