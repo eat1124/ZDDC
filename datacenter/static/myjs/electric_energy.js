@@ -68,7 +68,7 @@ $('#electric_energy_dt tbody').on('click', 'button#delrow', function () {
 
 loadElectricDT();
 
-$('#reporting_date').datetimepicker({
+$('#extract_time').datetimepicker({
     format: 'yyyy-mm-dd',
     autoclose: true,
     startView: 2,
