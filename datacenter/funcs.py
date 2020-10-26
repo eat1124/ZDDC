@@ -2,8 +2,73 @@ import datetime
 
 from django.db import connection
 from django.http import Http404
+from django.db import transaction
 
 from .models import *
+
+
+def map_operation(operation_type):
+    # operation_map 
+    OPERATION_MAP = {
+        "1": "Meterdata",
+        "15": "Entrydata",
+        "16": "Extractdata",
+        "17": "Calculatedata",
+    }
+    return OPERATION_MAP.get(operation_type, "")
+
+
+def migrate_data_before_target_changed(target, new_type):
+    """
+    指标修改保存前，查看指标类型与本次类型是否相同，若不同：将该指标所有表curvalue迁移至新的表中
+    @param target{object}: 指标对象
+    @param new_type{object}: 新的指标类型
+    @return status{int}: 1 迁移成功 0 迁移失败 2 无需迁移
+    @return info{bool}: 处理结果错误信息
+    """
+    status = 1
+    info = "迁移成功"
+
+    pre_type = target.operationtype
+
+    if new_type != pre_type:
+        new_op_type = map_operation(new_type)
+        pre_op_type = map_operation(pre_type)
+
+        if all([new_op_type, pre_op_type]):
+            from .views import getmodels
+            # 往前倒 20年，不存在则break
+            n_time = datetime.datetime.now()
+            n_year = n_time.year
+
+            try:
+                with transaction.atomic():
+                    for _ in range(1, 21):
+                        # 旧表
+                        PreModel = getmodels(pre_op_type, str(n_year))
+                        NewModel = getmodels(new_op_type, str(n_year))
+                        pre_data = PreModel.objects.exclude(state="9").filter(target=target).values(
+                            "datadate", "curvalue", "curvaluedate", "curvaluetext", "cumulativemonth", 
+                            "cumulativequarter", "cumulativehalfyear", "cumulativeyear", "releasestate",
+                            "target_id"
+                        )
+                        # 新表
+                        if pre_data.exists():
+                            bulk_list = [NewModel(**t_data) for t_data in pre_data]
+                            NewModel.objects.bulk_create(bulk_list)
+                        else:
+                            break
+                        n_year -= 1
+            except Exception as e:
+                status = 0
+                info = "数据迁移失败:{0}".format(e)
+        else:
+            status = 0
+            info = "该操作类型不存在，迁移数据失败"
+    else:
+        status = 2
+        info = "指标类型未变动，无需迁移"
+    return status, info
 
 
 def file_iterator(file_name, chunk_size=512):
