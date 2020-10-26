@@ -335,12 +335,24 @@ $(document).ready(function () {
         },
         // 加载结束回调函数
         "fnDrawCallback": function (data) {
-            $('.table1_curvaluedate').datetimepicker({
-                format: 'yyyy-mm-dd hh:ii:ss',
-                autoclose: true,
-                minView: 0,
-                minuteStep: 1
+            layui.use('laydate', function () {
+                var laydate = layui.laydate;
+                
+                $('input[id^="table1_curvaluedate_"]').each(function(){
+                    var d_ele = $(this).prop("id");
+                    laydate.render({
+                        elem: '#' + d_ele, 
+                        type: 'datetime',
+                        theme: '#428bca'
+                    });
+                });
             });
+            // $('.table1_curvaluedate').datetimepicker({
+            //     format: 'yyyy-mm-dd hh:ii:ss',
+            //     autoclose: true,
+            //     minView: 0,
+            //     minuteStep: 1
+            // });
             if (data.aoData.length > 0) {
                 $("#new1").hide();
                 $("#save1").show();

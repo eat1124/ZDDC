@@ -9,12 +9,12 @@ function loadElectricDT() {
         "destroy": true,
         "ajax": "/get_electric_energy/",
         "columns": [
-            {"data": "id"},
-            {"data": "extract_time"},
-            {"data": "f_electric_energy"},
-            {"data": "s_electric_energy"},
-            {"data": "a_electric_energy"},
-            {"data": null}
+            { "data": "id" },
+            { "data": "extract_time" },
+            { "data": "f_electric_energy" },
+            { "data": "s_electric_energy" },
+            { "data": "a_electric_energy" },
+            { "data": null }
         ],
         "columnDefs": [{
             "targets": 0,
@@ -49,9 +49,9 @@ $('#electric_energy_dt tbody').on('click', 'button#delrow', function () {
             type: "POST",
             url: "../../electric_energy_del/",
             data:
-                {
-                    id: data.id,
-                },
+            {
+                id: data.id,
+            },
             success: function (data) {
                 if (data['status'] == 1) {
                     table.ajax.reload();
@@ -75,14 +75,104 @@ $('#extract_time').datetimepicker({
     minView: 2,
 });
 
-$('input[id^="f_start_time"],input[id^="f_end_time"],input[id^="s_start_time"],input[id^="s_end_time"]').datetimepicker({
-    format: 'yyyy-mm-dd hh:ii:ss',
-    autoclose: true,
+layui.use('laydate', function () {
+    var laydate = layui.laydate;
+    laydate.render({
+        elem: '#f_start_time1', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+    laydate.render({
+        elem: '#f_end_time1', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+
+    laydate.render({
+        elem: '#f_start_time2', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+    laydate.render({
+        elem: '#f_end_time2', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+
+    laydate.render({
+        elem: '#f_start_time3', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+    laydate.render({
+        elem: '#f_end_time3', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+    laydate.render({
+        elem: '#f_start_time4', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+    laydate.render({
+        elem: '#f_end_time4', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+
+    laydate.render({
+        elem: '#s_start_time1', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+    laydate.render({
+        elem: '#s_end_time1', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+
+    laydate.render({
+        elem: '#s_start_time2', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+    laydate.render({
+        elem: '#s_end_time2', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+
+    laydate.render({
+        elem: '#s_start_time3', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+    laydate.render({
+        elem: '#s_end_time3', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+    laydate.render({
+        elem: '#s_start_time4', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
+    laydate.render({
+        elem: '#s_end_time4', 
+        type: 'datetime',
+        theme: '#428bca'
+    });
 });
+// $('input[id^="f_start_time"],input[id^="f_end_time"],input[id^="s_start_time"],input[id^="s_end_time"]').datetimepicker({
+//     format: 'yyyy-mm-dd hh:ii:ss',
+//     autoclose: true,
+//     minView: 0,
+//     minuteStep: 1,
+// });
 
 $('#f_checkbox').bootstrapSwitch({
-    onText: "启动",
-    offText: "停止",
+    onText: "开机",
+    offText: "停机",
     size: "small",
     onSwitchChange: function (event, state) {
         if (state == true) {
@@ -94,8 +184,8 @@ $('#f_checkbox').bootstrapSwitch({
 });
 
 $('#s_checkbox').bootstrapSwitch({
-    onText: "启动",
-    offText: "停止",
+    onText: "开机",
+    offText: "停机",
     size: "small",
     onSwitchChange: function (event, state) {
         if (state == true) {
@@ -120,7 +210,7 @@ $('#extract').click(function () {
             var status = data.status,
                 info = data.info,
                 electric_energy = data.data;
-            if (status){
+            if (status) {
                 $('#f_electric_energy').val(electric_energy["f_electric_energy"]);
                 $('#s_electric_energy').val(electric_energy["s_electric_energy"]);
             } else {
@@ -182,8 +272,8 @@ $('#save').click(function () {
             break;
         }
     }
-    if (is_existed){
-        if (confirm("今天已保存过一次，是否再次保存？")){
+    if (is_existed) {
+        if (confirm("今天已保存过一次，是否再次保存？")) {
             saveElectricEnergy(f_is_open, s_is_open, f_electric_energy, s_electric_energy, extract_time, table)
         }
     } else {
