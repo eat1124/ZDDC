@@ -261,7 +261,7 @@ $(document).ready(function() {
         "columnDefs": [{
             "targets": -4,
             "mRender": function(data, type, full) {
-                return "<a href='http://" + full.report_server + "/webroot/decision/view/report?viewlet=" + full.relative_file_name + "&curdate=" + $('#reporting_date').val() + "' target='_blank'>" + full.name + "</a>"
+                return "<a href='http://" + full.report_server + "/webroot/decision/view/report?viewlet=" + full.relative_file_name + "&curdate=" + $('#reporting_date').val()  + "&op=write" + "' target='_blank'>" + full.name + "</a>"
             }
         }, {
             "targets": -2,
