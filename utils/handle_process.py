@@ -599,6 +599,7 @@ class Extract(object):
         error = ""
 
         storage["savedate"] = time
+        storage["storagetag"] = target.storagetag
         date_com = re.compile('<#.*?#>')
         storagefields = target.storagefields
         pre_datadate_format_list = date_com.findall(storagefields)
