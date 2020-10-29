@@ -9108,10 +9108,19 @@ def get_target_search_data(request):
                         } for tv in target_values]
                     else:
                         # 开始时间到年底
-                        s_target_values = get_target_value(c_target, start_date, None)
-
+                        s_target_values = [{
+                            "name": tv["name"],
+                            "code": tv["code"],
+                            "curvalue": tv["curvalue"],
+                            "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
+                        } for tv in get_target_value(c_target, start_date, None)]
                         # 结束时间到年初
-                        e_target_values = get_target_value(c_target, None, end_date)
+                        e_target_values = [{
+                            "name": tv["name"],
+                            "code": tv["code"],
+                            "curvalue": tv["curvalue"],
+                            "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
+                        } for tv in get_target_value(c_target, None, end_date)]
 
                         m_target_values = []
                         # 2017 2019 2  >>> 2018
@@ -9137,7 +9146,7 @@ def get_target_search_data(request):
         return JsonResponse({
             "status": status,
             "info": info,
-            "data": sorted(data, key=lambda e: e.__getitem__('time'), reverse=True)
+            "data": sorted(data, key=lambda e: e.__getitem__('time'), reverse=True) if data else []
         })
     else:
         return HttpResponseRedirect('/login')
@@ -9197,20 +9206,21 @@ def target_statistic_data(request):
         type_list = DictList.objects.filter(dictindex_id=12).values()
 
         for target_statistic in target_statistics:
-            type_name = ""
-            for tl in type_list:
-                if str(tl['id']) == target_statistic.type:
-                    type_name = tl['name']
+            if request.user.userinfo == target_statistic.user or request.user.is_superuser:
+                type_name = ""
+                for tl in type_list:
+                    if str(tl['id']) == target_statistic.type:
+                        type_name = tl['name']
 
-            target_col = eval(target_statistic.col_data)
-            data.append({
-                "id": target_statistic.id,
-                "name": target_statistic.name,
-                "type": target_statistic.type,
-                "type_name": type_name,
-                "remark": target_statistic.remark,
-                "target_col": target_col
-            })
+                target_col = eval(target_statistic.col_data)
+                data.append({
+                    "id": target_statistic.id,
+                    "name": target_statistic.name,
+                    "type": target_statistic.type,
+                    "type_name": type_name,
+                    "remark": target_statistic.remark,
+                    "target_col": target_col
+                })
 
         return JsonResponse({
             "status": status,
@@ -9249,17 +9259,17 @@ def target_statistic_save(request):
                     col_data = json.loads(col_data)
                 except Exception:
                     pass
-
                 if id == 0:
                     try:
                         TargetStatistic.objects.create(**{
                             "name": name,
                             "type": type,
                             "remark": remark,
-                            "col_data": col_data
+                            "col_data": col_data,
+                            "user": request.user.userinfo,
                         })
                         info = "新增成功。"
-                    except Exception:
+                    except Exception as e:
                         stauts = 0
                         info = "新增查询失败。"
                 else:
@@ -9268,10 +9278,11 @@ def target_statistic_save(request):
                             "name": name,
                             "type": type,
                             "remark": remark,
-                            "col_data": col_data
+                            "col_data": col_data,
+                            "user": request.user.userinfo,
                         })
                         info = "修改成功。"
-                    except Exception:
+                    except Exception as e:
                         status = 0
                         info = "修改查询失败。"
         return JsonResponse({

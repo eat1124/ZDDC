@@ -27,47 +27,63 @@
 
 <section class="vbox">
     <section class="scrollable wrapper">
-        <div class="col-md-3" style="padding:0">
-            <section class="panel panel-default" style="padding:0 15px 0 15px; height:900px">
-                <h3 class="event-form-title margin-bottom-20">统计查询 {% if search_name %}({{ search_name }}) {% endif %}</h3>
+        <div class="col-md-12" style="padding:0">
+            <section class="panel panel-default" style="padding:0 15px 0 15px;">
+                <h3 class="event-form-title margin-bottom-20"><center>统计查询 {% if search_name %}({{ search_name }}) {% endif %}</center></h3>
                 <div id="external-events">
                     <form class="inline-form">
                         <input type="text" id="search_id" name="search_id" value="{{ search_id }}" hidden>
                         <br>
-                        <div class="col-md-12 form-group" style="padding: 0">
-                            <label class="col-md-4 control-label">开始时间：</label>
-                            <div class="col-md-8" style="padding: 0">
-                                <input type="text" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="panel-body">
+                                    <div class="bs-example form-horizontal activate-form">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="col-md-6" >
+                                                    <div class="form-group" >
+                                                        <label class="col-md-4 control-label">开始时间</label>
+                                                        <div class="col-md-6">
+                                                            <input type="text" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6" >
+                                                    <div class="form-group">
+                                                        <label class="col-md-4 control-label">结束时间</label>
+                                                        <div class="col-md-6">
+                                                            <input type="text" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <center>
+                                                    <button class="btn btn-sm btn-default" id="search">查询
+                                                    </button>
+                                                </center>
+                                            </div>
+                                        </div>
+                                    </div>
+                
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-12 form-group" style="padding: 0">
-                            <label class="col-md-4 control-label">结束时间：</label>
-                            <div class="col-md-8" style="padding: 0">
-                                <input type="text" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
-                            </div>
-                        </div>
-                        <br>
-                        <a href="javascript:;" id="search" class="btn green"> 查询 </a>
                     </form>
                     <hr>
+                    <div style="overflow: scroll; height: 870px;">
+                        <table id="statistic_report_dt"  style="word-break:keep-all" class="table table-bordered table-advance">{% csrf_token %}
+                            <thead>
+        
+                            </thead>
+                            <tbody>
+        
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </div>
-        <div class="col-md-9" style="padding:0 0 0 15px">
-            <section class="panel panel-default" style="padding: 15px">
-                <div style="overflow: scroll; height: 870px;">
-                    <table id="statistic_report_dt"  style="word-break:keep-all" class="table table-bordered table-advance">{% csrf_token %}
-                        <thead>
-    
-                        </thead>
-                        <tbody>
-    
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-
     </section>
 </section>
 
