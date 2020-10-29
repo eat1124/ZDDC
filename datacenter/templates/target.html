@@ -451,6 +451,7 @@
                                     <label class="col-md-2 control-label">周期</label>
                                     <div class="col-md-4">
                                         <select class="form-control" id="cycle" name="cycle">
+                                            <option value="">无</option>
                                             {% for cycle in cycle_list %}
                                                 <option value="{{ cycle.cycle_id }}">{{ cycle.cycle_name }}</option>
                                             {% endfor %}

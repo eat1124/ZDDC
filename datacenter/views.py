@@ -3086,7 +3086,7 @@ def target_data(request):
                 "upperlimit": target.upperlimit,
                 "lowerlimit": target.lowerlimit,
                 "formula": target.formula,
-                "cycle": target.cycle_id,
+                "cycle": target.cycle_id if target.cycle_id else "",
                 "source": target.source_id,
                 "source_content": target.source_content,
                 "storage": target.storage_id,
@@ -3309,7 +3309,7 @@ def target_save(request):
                                     my_cycle = all_cycle.get(id=cycle_id)
                                     target_save.cycle = my_cycle
                                 except:
-                                    pass
+                                    target_save.cycle = None
                                 try:
                                     source_id = int(source)
                                     my_source = all_source.get(id=source_id)
@@ -3443,7 +3443,7 @@ def target_save(request):
                                                 my_cycle = all_cycle.get(id=cycle_id)
                                                 target_save.cycle = my_cycle
                                             except:
-                                                pass
+                                                target_save.cycle = None
                                             try:
                                                 source_id = int(source)
                                                 my_source = all_source.get(id=source_id)
@@ -6106,6 +6106,14 @@ def reporting_new(request):
                                 meterdata.twentyfourdata = rows[0][0]
                             except:
                                 pass
+                        if any([rows, target.cycle]):  # 没取到数据 或者 没有取数周期，根据数据源实时取
+                            ret = Extract.getDataFromSource(target, datetime.datetime.now())
+                            result_list = ret["result"]
+                            if result_list:
+                                try:
+                                    meterdata.twentyfourdata = result_list[0][0]
+                                except:
+                                    pass
 
                     meterdata.target = target
                     meterdata.datadate = reporting_date
@@ -6178,6 +6186,26 @@ def reporting_new(request):
                                 extractdata.curvalue = round(extractdata.curvalue, target.digit)
                             except:
                                 pass
+                        if any([rows, target.cycle]):  # 没取到数据 或者 没有取数周期，根据数据源实时取
+                            ret = Extract.getDataFromSource(target, datetime.datetime.now())
+                            result_list = ret["result"]
+                            if result_list:
+                                try:
+                                    if target.is_repeat == '2':
+                                        rownum = 0
+                                        rowvalue = 0
+                                        for row in result_list:
+                                            if row[0] is not None:
+                                                rowvalue += row[0]
+                                                rownum += 1
+                                        extractdata.curvalue = rowvalue / rownum
+                                    else:
+                                        extractdata.curvalue = result_list[0][0]
+                                    extractdata.curvalue = decimal.Decimal(
+                                        float(extractdata.curvalue) * float(target.magnification))
+                                    extractdata.curvalue = round(extractdata.curvalue, target.digit)
+                                except:
+                                    pass
 
                     if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
