@@ -48,15 +48,15 @@
                         <ul id="navtabs_1" class="nav nav-tabs" style="border-bottom-color: #eee;">
                             <li>
                                 <a href="#tab_1_2" id='tabcheck2' data-toggle="tab"
-                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;"> 动力中心发电量 </a>
+                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;"> 燃热发电量 </a>
                             </li>
                             <li>
                                 <a href="#tab_1_3" id='tabcheck3' data-toggle="tab"
-                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;"> 老厂发电量 </a>
+                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;"> 9F发电量 </a>
                             </li>
                             <li>
                                 <a href="#tab_1_1" id='tabcheck1' data-toggle="tab"
-                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;" disabled> 新厂发电量 </a>
+                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;" disabled> 煤机发电量 </a>
                             </li>
                         </ul>
                         <div id="myTabContent1" class="tab-content">
@@ -96,31 +96,31 @@
                         <ul id="navtabs_2" class="nav nav-tabs" style="border-bottom-color: #eee;">
                             <li>
                                 <a href="#tab_1_5" id='tabcheck5' data-toggle="tab"
-                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;"> 动力中心重要指标 </a>
+                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;"> 燃热重要指标 </a>
                             </li>
                             <li>
                                 <a href="#tab_1_6" id='tabcheck6' data-toggle="tab"
-                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;"> 老厂重要指标 </a>
+                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;"> 9F重要指标 </a>
                             </li>
                             <li>
                                 <a href="#tab_1_4" id='tabcheck4' data-toggle="tab"
-                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;" readonly> 新厂重要指标 </a>
+                                   style="color:#2ab4c0;font-weight: 700;font-size: 16px;" readonly> 煤机重要指标 </a>
                             </li>
                         </ul>
                         <div id="myTabContent1" class="tab-content">
-                            <!-- 新厂 -->
+                            <!-- 煤机 -->
                             <div class="tab-pane fade active in" id="tab_1_4">
                                 <div class="row">
                                     <div class="col-md-6 col-md-12">
                                         <div class="portlet yellow-crusta box">
                                             <div class="portlet-title">
                                                 <div class="caption">
-                                                    <i class="fa fa-bolt"></i>发电量
+                                                    <i class="fa fa-bolt"></i>经营指标
                                                 </div>
                                             </div>
                                             <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_fdl">
+                                                <div class="row static-info" style="height:220px;">
+                                                    <div class="row col-md-6" id="left_fdl" style="margin: 0; padding:0;">
                                                         <div class="col-md-12">
                                                             <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
@@ -130,50 +130,8 @@
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
                                                         </div>
                                                     </div>
-                                                    <div class="row col-md-6" id="right_fdl">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="row static-info">
-                                                    <div id="fdl_div"
-                                                         style="margin: 10px 10px -10px 10px; border: solid 1px rgb(51,204,204);">
-                                                        <table class="table table-hover table-advance table-light">
-                                                            <thead>
-                                                            <tr>
-                                                                <th> 发电量</th>
-                                                                <th> 昨日值</th>
-                                                                <th> 月累计</th>
-                                                                <th> 年累计</th>
-                                                            </tr>
-                                                            </thead>
-                                                            <tbody id="fdl_today">
-                                                            <tr>
-                                                                <td>11机组</td>
-                                                                <td>1</td>
-                                                                <td>2</td>
-                                                                <td>3</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>12机组</td>
-                                                                <td>4</td>
-                                                                <td>5</td>
-                                                                <td>6</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>9F机组</td>
-                                                                <td>7</td>
-                                                                <td>8</td>
-                                                                <td>9</td>
-                                                            </tr>
-                                                            </tbody>
-                                                        </table>
+                                                    <div class="row col-md-6" id="right_fdl" style="margin: 0; padding:0;">
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -183,12 +141,12 @@
                                         <div class="portlet blue-hoki box">
                                             <div class="portlet-title">
                                                 <div class="caption">
-                                                    <i class="fa fa-indent"></i>综合指标
+                                                    <i class="fa fa-indent"></i>环保指标
                                                 </div>
                                             </div>
                                             <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_zh">
+                                                <div class="row static-info" style="height:220px;">
+                                                    <div class="row col-md-6" id="left_zh" style="margin: 0; padding:0;">
                                                         <div class="col-md-12">
                                                             <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
@@ -198,75 +156,7 @@
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
                                                         </div>
                                                     </div>
-                                                    <div class="row col-md-6" id="right_zh">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 col-md-12">
-                                        <div class="portlet green-meadow box">
-                                            <div class="portlet-title">
-                                                <div class="caption">
-                                                    <i class="fa fa-envira"></i>环保指标
-                                                </div>
-                                            </div>
-                                            <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_hb">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row col-md-6" id="right_hb">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-md-12">
-                                        <div class="portlet red-sunglo box">
-                                            <div class="portlet-title">
-                                                <div class="caption">
-                                                    <i class="fa fa-tachometer"></i>能耗指标
-                                                </div>
-                                            </div>
-                                            <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_nh">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row col-md-6" id="right_nh">
+                                                    <div class="row col-md-6" id="right_zh" style="margin: 0; padding:0;">
                                                         <div class="col-md-12">
                                                             <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
@@ -282,19 +172,19 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- 动力中心 -->
+                            <!-- 燃热 -->
                             <div class="tab-pane fade" id="tab_1_5">
                                 <div class="row">
                                     <div class="col-md-6 col-md-12">
                                         <div class="portlet yellow-crusta box">
                                             <div class="portlet-title">
                                                 <div class="caption">
-                                                    <i class="fa fa-bolt"></i>发电量
+                                                    <i class="fa fa-bolt"></i>经营指标
                                                 </div>
                                             </div>
                                             <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_fdl">
+                                                <div class="row static-info" style="height:220px;">
+                                                    <div class="row col-md-6" id="left_fdl" style="margin: 0; padding:0;">
                                                         <div class="col-md-12">
                                                             <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
@@ -304,50 +194,8 @@
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
                                                         </div>
                                                     </div>
-                                                    <div class="row col-md-6" id="right_fdl">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="row static-info">
-                                                    <div id="fdl_div"
-                                                         style="margin: 10px 10px -10px 10px; border: solid 1px rgb(51,204,204);">
-                                                        <table class="table table-hover table-advance table-light">
-                                                            <thead>
-                                                            <tr>
-                                                                <th> 发电量</th>
-                                                                <th> 昨日值</th>
-                                                                <th> 月累计</th>
-                                                                <th> 年累计</th>
-                                                            </tr>
-                                                            </thead>
-                                                            <tbody id="fdl_today">
-                                                            <tr>
-                                                                <td>11机组</td>
-                                                                <td>1</td>
-                                                                <td>2</td>
-                                                                <td>3</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>12机组</td>
-                                                                <td>4</td>
-                                                                <td>5</td>
-                                                                <td>6</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>9F机组</td>
-                                                                <td>7</td>
-                                                                <td>8</td>
-                                                                <td>9</td>
-                                                            </tr>
-                                                            </tbody>
-                                                        </table>
+                                                    <div class="row col-md-6" id="right_fdl" style="margin: 0; padding:0;">
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -357,12 +205,12 @@
                                         <div class="portlet blue-hoki box">
                                             <div class="portlet-title">
                                                 <div class="caption">
-                                                    <i class="fa fa-indent"></i>综合指标
+                                                    <i class="fa fa-indent"></i>环保指标
                                                 </div>
                                             </div>
                                             <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_zh">
+                                                <div class="row static-info" style="height:220px;">
+                                                    <div class="row col-md-6" id="left_zh" style="margin: 0; padding:0;">
                                                         <div class="col-md-12">
                                                             <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
@@ -372,75 +220,7 @@
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
                                                         </div>
                                                     </div>
-                                                    <div class="row col-md-6" id="right_zh">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 col-md-12">
-                                        <div class="portlet green-meadow box">
-                                            <div class="portlet-title">
-                                                <div class="caption">
-                                                    <i class="fa fa-envira"></i>环保指标
-                                                </div>
-                                            </div>
-                                            <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_hb">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row col-md-6" id="right_hb">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-md-12">
-                                        <div class="portlet red-sunglo box">
-                                            <div class="portlet-title">
-                                                <div class="caption">
-                                                    <i class="fa fa-tachometer"></i>能耗指标
-                                                </div>
-                                            </div>
-                                            <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_nh">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row col-md-6" id="right_nh">
+                                                    <div class="row col-md-6" id="right_zh" style="margin: 0; padding:0;">
                                                         <div class="col-md-12">
                                                             <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
@@ -456,19 +236,19 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- 老厂重要指标 -->
+                            <!-- 9F -->
                             <div class=" tab-pane fade" id="tab_1_6">
                                 <div class="row">
                                     <div class="col-md-6 col-md-12">
                                         <div class="portlet yellow-crusta box">
                                             <div class="portlet-title">
                                                 <div class="caption">
-                                                    <i class="fa fa-bolt"></i>发电量
+                                                    <i class="fa fa-bolt"></i>经营指标
                                                 </div>
                                             </div>
                                             <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_fdl">
+                                                <div class="row static-info" style="height:220px;">
+                                                    <div class="row col-md-6" id="left_fdl" style="margin: 0; padding:0;">
                                                         <div class="col-md-12">
                                                             <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
@@ -478,50 +258,8 @@
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
                                                         </div>
                                                     </div>
-                                                    <div class="row col-md-6" id="right_fdl">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="row static-info">
-                                                    <div id="fdl_div"
-                                                         style="margin: 10px 10px -10px 10px; border: solid 1px rgb(51,204,204);">
-                                                        <table class="table table-hover table-advance table-light">
-                                                            <thead>
-                                                            <tr>
-                                                                <th> 发电量</th>
-                                                                <th> 昨日值</th>
-                                                                <th> 月累计</th>
-                                                                <th> 年累计</th>
-                                                            </tr>
-                                                            </thead>
-                                                            <tbody id="fdl_today">
-                                                            <tr>
-                                                                <td>11机组</td>
-                                                                <td>1</td>
-                                                                <td>2</td>
-                                                                <td>3</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>12机组</td>
-                                                                <td>4</td>
-                                                                <td>5</td>
-                                                                <td>6</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>9F机组</td>
-                                                                <td>7</td>
-                                                                <td>8</td>
-                                                                <td>9</td>
-                                                            </tr>
-                                                            </tbody>
-                                                        </table>
+                                                    <div class="row col-md-6" id="right_fdl" style="margin: 0; padding:0;">
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -531,12 +269,12 @@
                                         <div class="portlet blue-hoki box">
                                             <div class="portlet-title">
                                                 <div class="caption">
-                                                    <i class="fa fa-indent"></i>综合指标
+                                                    <i class="fa fa-indent"></i>环保指标
                                                 </div>
                                             </div>
                                             <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_zh">
+                                                <div class="row static-info" style="height:220px;">
+                                                    <div class="row col-md-6" id="left_zh" style="margin: 0; padding:0;">
                                                         <div class="col-md-12">
                                                             <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
@@ -546,75 +284,7 @@
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>
                                                         </div>
                                                     </div>
-                                                    <div class="row col-md-6" id="right_zh">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 col-md-12">
-                                        <div class="portlet green-meadow box">
-                                            <div class="portlet-title">
-                                                <div class="caption">
-                                                    <i class="fa fa-envira"></i>环保指标
-                                                </div>
-                                            </div>
-                                            <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_hb">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row col-md-6" id="right_hb">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-md-12">
-                                        <div class="portlet red-sunglo box">
-                                            <div class="portlet-title">
-                                                <div class="caption">
-                                                    <i class="fa fa-tachometer"></i>能耗指标
-                                                </div>
-                                            </div>
-                                            <div class="portlet-body">
-                                                <div class="row static-info">
-                                                    <div class="row col-md-6" id="left_nh">
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
-                                                            <div class="col-md-4 value" style="padding:0"> loading...</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row col-md-6" id="right_nh">
+                                                    <div class="row col-md-6" id="right_zh" style="margin: 0; padding:0;">
                                                         <div class="col-md-12">
                                                             <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> loading...:</div>
                                                             <div class="col-md-4 value" style="padding:0"> loading...</div>

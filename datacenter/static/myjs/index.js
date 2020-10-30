@@ -229,277 +229,117 @@ function getImportantTargets() {
         data: {},
         success: function (data) {
             $('#navtabs_2').find('a').eq(0).tab('show');
-            var dlzx = data.data.DLZX;
-            var xc = data.data.XC;
-            var lc = data.data.LC;
+            var rr = data.data["RR"];
+                mj = data.data["MJ"];
+                jf = data.data["9F"];
+            var rr_jyzbs = rr["JYZB"],
+                rr_hbzbs = rr["HBZB"];
+            var mj_jyzbs = mj["JYZB"],
+                mj_hbzbs = mj["HBZB"];
+            var jf_jyzbs = jf["JYZB"],
+                jf_hbzbs = jf["HBZB"];
 
             /*
-                动力中心
+                燃热
              */
-            //  发电量
-            var dlzx_fdl_left = $("#tab_1_5").find("div#left_fdl");
-            var dlzx_fdl_right = $("#tab_1_5").find("div#right_fdl");
+            //  经营指标
+            var rr_jyzb_left = $("#tab_1_5").find("div#left_fdl");
+            var rr_jyzb_right = $("#tab_1_5").find("div#right_fdl");
 
-            dlzx_fdl_left.empty();
-            dlzx_fdl_right.empty();
-            for (var i = 0; i < dlzx.FDL.TARGETS.length; i++) {
+            rr_jyzb_left.empty();
+            for (var i = 0; i < rr_jyzbs.length; i++) {
+                rr_jyzb_left.append('<div class="col-md-12" style="margin-bottom: 5px;">\n' +
+                    '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + rr_jyzbs[i]["target_name"] + ':</div>\n' +
+                    '    <div class="col-md-6 value" style="padding:0; text-align: right;"> ' + rr_jyzbs[i]["value"] + ' ' + rr_jyzbs[i]["unit"] + '</div>\n' +
+                    '</div>');
+            }
+            //  环保指标
+            var rr_hbzb_left = $("#tab_1_5").find("div#left_zh");
+            var rr_hbzb_right = $("#tab_1_5").find("div#right_zh");
+
+            rr_hbzb_left.empty();
+            rr_hbzb_right.empty();
+            for (var i = 0; i < rr_hbzbs.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    dlzx_fdl_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.FDL.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + dlzx.FDL.TARGETS[i].value + '</div>\n' +
+                    rr_hbzb_right.append('<div class="col-md-12" style="margin-bottom: 5px;">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + rr_hbzbs[i]["target_name"] + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0; text-align: right;"> ' + rr_hbzbs[i]["value"] + ' ' + rr_hbzbs[i]["unit"] + '</div>\n' +
                         '</div>');
                 } else {
-                    dlzx_fdl_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.FDL.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + dlzx.FDL.TARGETS[i].value + '</div>\n' +
-                        '</div>')
-                }
-            }
-            var dlzx_fdl_today = $("#tab_1_5").find("tbody#fdl_today");
-            dlzx_fdl_today.empty();
-            for (var j = 0; j < dlzx.FDL.FDL_LIST.length; j++) {
-                dlzx_fdl_today.append('<tr>\n' +
-                    '    <td>' + dlzx.FDL.FDL_LIST[j].jz_name + '</td>\n' +
-                    '    <td>' + dlzx.FDL.FDL_LIST[j].yest_value + '</td>\n' +
-                    '    <td>' + dlzx.FDL.FDL_LIST[j].cumulativemonth + '</td>\n' +
-                    '    <td>' + dlzx.FDL.FDL_LIST[j].cumulativeyear + '</td>\n' +
-                    '</tr>');
-            }
-            //  综合
-            var dlzx_zh_left = $("#tab_1_5").find("div#left_zh");
-            var dlzx_zh_right = $("#tab_1_5").find("div#right_zh");
-
-            dlzx_zh_left.empty();
-            dlzx_zh_right.empty();
-            for (var i = 0; i < dlzx.ZH.TARGETS.length; i++) {
-                if ((i + 1) % 2 == 0) {    // 偶数
-                    dlzx_zh_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.ZH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + dlzx.ZH.TARGETS[i].value + '</div>\n' +
+                    rr_hbzb_left.append('<div class="col-md-12" style="margin-bottom: 5px;">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + rr_hbzbs[i]["target_name"] + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0; text-align: right;"> ' + rr_hbzbs[i]["value"] + ' ' + rr_hbzbs[i]["unit"] + '</div>\n' +
                         '</div>');
-                } else {
-                    dlzx_zh_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.ZH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + dlzx.ZH.TARGETS[i].value + '</div>\n' +
-                        '</div>')
-                }
-            }
-            //  环保
-            var dlzx_hb_left = $("#tab_1_5").find("div#left_hb");
-            var dlzx_hb_right = $("#tab_1_5").find("div#right_hb");
-
-            dlzx_hb_left.empty();
-            dlzx_hb_right.empty();
-            for (var i = 0; i < dlzx.HB.TARGETS.length; i++) {
-                if ((i + 1) % 2 == 0) {    // 偶数
-                    dlzx_hb_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.HB.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + dlzx.HB.TARGETS[i].value + '</div>\n' +
-                        '</div>');
-                } else {
-                    dlzx_hb_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.HB.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + dlzx.HB.TARGETS[i].value + '</div>\n' +
-                        '</div>')
-                }
-            }
-            //  能耗
-            var dlzx_nh_left = $("#tab_1_5").find("div#left_nh");
-            var dlzx_nh_right = $("#tab_1_5").find("div#right_nh");
-
-            dlzx_nh_left.empty();
-            dlzx_nh_right.empty();
-            for (var i = 0; i < dlzx.NH.TARGETS.length; i++) {
-                if ((i + 1) % 2 == 0) {    // 偶数
-                    dlzx_nh_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.NH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + dlzx.NH.TARGETS[i].value + '</div>\n' +
-                        '</div>');
-                } else {
-                    dlzx_nh_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + dlzx.NH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + dlzx.NH.TARGETS[i].value + '</div>\n' +
-                        '</div>')
                 }
             }
 
             /*
-                新厂
+                煤机
              */
-            //  发电量
-            var xc_fdl_left = $("#tab_1_4").find("div#left_fdl");
-            var xc_fdl_right = $("#tab_1_4").find("div#right_fdl");
+            //  经营指标
+            var mj_jyzb_left = $("#tab_1_4").find("div#left_fdl");
+            var mj_jyzb_right = $("#tab_1_4").find("div#right_fdl");
 
-            xc_fdl_left.empty();
-            xc_fdl_right.empty();
-            for (var i = 0; i < xc.FDL.TARGETS.length; i++) {
+            mj_jyzb_left.empty();
+            for (var i = 0; i < mj_jyzbs.length; i++) {
+                mj_jyzb_left.append('<div class="col-md-12" style="margin-bottom: 5px;">\n' +
+                    '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + mj_jyzbs[i]["target_name"] + ':</div>\n' +
+                    '    <div class="col-md-6 value" style="padding:0; text-align: right;"> ' + mj_jyzbs[i]["value"] + ' ' + mj_jyzbs[i]["unit"] + '</div>\n' +
+                    '</div>');
+            }
+
+            //  环保指标
+            var mj_hbzb_left = $("#tab_1_4").find("div#left_zh");
+            var mj_hbzb_right = $("#tab_1_4").find("div#right_zh");
+
+            mj_hbzb_left.empty();
+            mj_hbzb_right.empty();
+            for (var i = 0; i < mj_hbzbs.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    xc_fdl_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.FDL.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + xc.FDL.TARGETS[i].value + '</div>\n' +
+                    mj_hbzb_right.append('<div class="col-md-12" style="margin-bottom: 5px;">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + mj_hbzbs[i]["target_name"] + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0; text-align: right;"> ' + mj_hbzbs[i]["value"] + ' ' + mj_hbzbs[i]["unit"] + '</div>\n' +
                         '</div>');
                 } else {
-                    xc_fdl_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.FDL.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + xc.FDL.TARGETS[i].value + '</div>\n' +
-                        '</div>')
-                }
-            }
-            var xc_fdl_today = $("#tab_1_4").find("tbody#fdl_today");
-            xc_fdl_today.empty();
-            for (var j = 0; j < xc.FDL.FDL_LIST.length; j++) {
-                xc_fdl_today.append('<tr>\n' +
-                    '    <td>' + xc.FDL.FDL_LIST[j].jz_name + '</td>\n' +
-                    '    <td>' + xc.FDL.FDL_LIST[j].yest_value + '</td>\n' +
-                    '    <td>' + xc.FDL.FDL_LIST[j].cumulativemonth + '</td>\n' +
-                    '    <td>' + xc.FDL.FDL_LIST[j].cumulativeyear + '</td>\n' +
-                    '</tr>');
-            }
-            //  综合
-            var xc_zh_left = $("#tab_1_4").find("div#left_zh");
-            var xc_zh_right = $("#tab_1_4").find("div#right_zh");
-
-            xc_zh_left.empty();
-            xc_zh_right.empty();
-            for (var i = 0; i < xc.ZH.TARGETS.length; i++) {
-                if ((i + 1) % 2 == 0) {    // 偶数
-                    xc_zh_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.ZH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + xc.ZH.TARGETS[i].value + '</div>\n' +
+                    mj_hbzb_left.append('<div class="col-md-12" style="margin-bottom: 5px;">\n' +
+                        '    <div class="col-md-6 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + mj_hbzbs[i]["target_name"] + ':</div>\n' +
+                        '    <div class="col-md-6 value" style="padding:0; text-align: right;"> ' + mj_hbzbs[i]["value"] + ' ' + mj_hbzbs[i]["unit"] + '</div>\n' +
                         '</div>');
-                } else {
-                    xc_zh_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.ZH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + xc.ZH.TARGETS[i].value + '</div>\n' +
-                        '</div>')
-                }
-            }
-            //  环保
-            var xc_hb_left = $("#tab_1_4").find("div#left_hb");
-            var xc_hb_right = $("#tab_1_4").find("div#right_hb");
-
-            xc_hb_left.empty();
-            xc_hb_right.empty();
-            for (var i = 0; i < xc.HB.TARGETS.length; i++) {
-                if ((i + 1) % 2 == 0) {    // 偶数
-                    xc_hb_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.HB.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + xc.HB.TARGETS[i].value + '</div>\n' +
-                        '</div>');
-                } else {
-                    xc_hb_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.HB.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + xc.HB.TARGETS[i].value + '</div>\n' +
-                        '</div>')
-                }
-            }
-            //  能耗
-            var xc_nh_left = $("#tab_1_4").find("div#left_nh");
-            var xc_nh_right = $("#tab_1_4").find("div#right_nh");
-
-            xc_nh_left.empty();
-            xc_nh_right.empty();
-            for (var i = 0; i < xc.NH.TARGETS.length; i++) {
-                if ((i + 1) % 2 == 0) {    // 偶数
-                    xc_nh_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.NH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + xc.NH.TARGETS[i].value + '</div>\n' +
-                        '</div>');
-                } else {
-                    xc_nh_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + xc.NH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + xc.NH.TARGETS[i].value + '</div>\n' +
-                        '</div>')
                 }
             }
 
             /*
-                老厂
+                9F
              */
-            //  发电量
-            var lc_fdl_left = $("#tab_1_6").find("div#left_fdl");
-            var lc_fdl_right = $("#tab_1_6").find("div#right_fdl");
+            //  经营指标
+            var jf_jyzb_left = $("#tab_1_6").find("div#left_fdl");
+            var jf_jyzb_right = $("#tab_1_6").find("div#right_fdl");
 
-            lc_fdl_left.empty();
-            lc_fdl_right.empty();
-            for (var i = 0; i < lc.FDL.TARGETS.length; i++) {
+            jf_jyzb_left.empty();
+            jf_jyzb_right.empty();
+            for (var i = 0; i < jf_jyzbs.length; i++) {
+                jf_jyzb_left.append('<div class="col-md-12" style="margin-bottom: 5px;">\n' +
+                    '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + jf_jyzbs[i]["target_name"] + ':</div>\n' +
+                    '    <div class="col-md-4 value" style="padding:0; text-align: right;"> ' + jf_jyzbs[i]["value"] + ' ' + jf_jyzbs[i]["unit"] + '</div>\n' +
+                    '</div>');
+            }
+            //  环保指标
+            var jf_hbzb_left = $("#tab_1_6").find("div#left_zh");
+            var jf_hbzb_right = $("#tab_1_6").find("div#right_zh");
+
+            jf_hbzb_left.empty();
+            jf_hbzb_right.empty();
+            for (var i = 0; i < jf_hbzbs.length; i++) {
                 if ((i + 1) % 2 == 0) {    // 偶数
-                    lc_fdl_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.FDL.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + lc.FDL.TARGETS[i].value + '</div>\n' +
+                    jf_hbzb_right.append('<div class="col-md-12" style="margin-bottom: 5px;">\n' +
+                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + jf_hbzbs[i]["target_name"] + ':</div>\n' +
+                        '    <div class="col-md-4 value" style="padding:0; text-align: right;"> ' + jf_hbzbs[i]["value"] + ' ' + jf_hbzbs[i]["unit"] + '</div>\n' +
                         '</div>');
                 } else {
-                    lc_fdl_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.FDL.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + lc.FDL.TARGETS[i].value + '</div>\n' +
-                        '</div>')
-                }
-            }
-            var lc_fdl_today = $("#tab_1_6").find("tbody#fdl_today");
-            lc_fdl_today.empty();
-            for (var j = 0; j < lc.FDL.FDL_LIST.length; j++) {
-                lc_fdl_today.append('<tr>\n' +
-                    '    <td>' + lc.FDL.FDL_LIST[j].jz_name + '</td>\n' +
-                    '    <td>' + lc.FDL.FDL_LIST[j].yest_value + '</td>\n' +
-                    '    <td>' + lc.FDL.FDL_LIST[j].cumulativemonth + '</td>\n' +
-                    '    <td>' + lc.FDL.FDL_LIST[j].cumulativeyear + '</td>\n' +
-                    '</tr>');
-            }
-            //  综合
-            var lc_zh_left = $("#tab_1_6").find("div#left_zh");
-            var lc_zh_right = $("#tab_1_6").find("div#right_zh");
-
-            lc_zh_left.empty();
-            lc_zh_right.empty();
-            for (var i = 0; i < lc.ZH.TARGETS.length; i++) {
-                if ((i + 1) % 2 == 0) {    // 偶数
-                    lc_zh_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.ZH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + lc.ZH.TARGETS[i].value + '</div>\n' +
+                    jf_hbzb_left.append('<div class="col-md-12" style="margin-bottom: 5px;">\n' +
+                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + jf_hbzbs[i]["target_name"] + ':</div>\n' +
+                        '    <div class="col-md-4 value" style="padding:0; text-align: right;"> ' + jf_hbzbs[i]["value"] + ' ' + jf_hbzbs[i]["unit"] + '</div>\n' +
                         '</div>');
-                } else {
-                    lc_zh_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.ZH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + lc.ZH.TARGETS[i].value + '</div>\n' +
-                        '</div>')
-                }
-            }
-            //  环保
-            var lc_hb_left = $("#tab_1_6").find("div#left_hb");
-            var lc_hb_right = $("#tab_1_6").find("div#right_hb");
-
-            lc_hb_left.empty();
-            lc_hb_right.empty();
-            for (var i = 0; i < lc.HB.TARGETS.length; i++) {
-                if ((i + 1) % 2 == 0) {    // 偶数
-                    lc_hb_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.HB.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + lc.HB.TARGETS[i].value + '</div>\n' +
-                        '</div>');
-                } else {
-                    lc_hb_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.HB.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + lc.HB.TARGETS[i].value + '</div>\n' +
-                        '</div>')
-                }
-            }
-            //  能耗
-            var lc_nh_left = $("#tab_1_6").find("div#left_nh");
-            var lc_nh_right = $("#tab_1_6").find("div#right_nh");
-
-            lc_nh_left.empty();
-            lc_nh_right.empty();
-            for (var i = 0; i < lc.NH.TARGETS.length; i++) {
-                if ((i + 1) % 2 == 0) {    // 偶数
-                    lc_nh_right.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.NH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + lc.NH.TARGETS[i].value + '</div>\n' +
-                        '</div>');
-                } else {
-                    lc_nh_left.append('<div class="col-md-12">\n' +
-                        '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + lc.NH.TARGETS[i].name + ':</div>\n' +
-                        '    <div class="col-md-4 value" style="padding:0"> ' + lc.NH.TARGETS[i].value + '</div>\n' +
-                        '</div>')
                 }
             }
         }

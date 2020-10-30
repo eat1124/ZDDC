@@ -8597,6 +8597,77 @@ def get_month_fdl(request):
         return HttpResponseRedirect("/login")
 
 
+def get_target_data_recently(code):
+    """
+    获取指标 最近有数据的一天的数据
+    :param code:
+    :return appointed_time_object:
+    """
+    data = {
+        "target_name": "",
+        "unit": "",
+        "curvalue": 0,
+        "cumulativemonth": 0,
+        "cumulativeyear": 0
+    }
+
+    model_map = {
+        "1": "Meterdata",
+        "15": "Entrydata",
+        "16": "Extractdata",
+        "17": "Calculatedata",
+    }
+    targets = Target.objects.exclude(state="9").filter(code=code)
+    if targets.exists():
+        target = targets[0]
+        operation_type = target.operationtype
+        digit = target.digit
+
+        data["unit"] = target.unity
+        data["target_name"] = target.name
+
+        model_name = ""
+        try:
+            model_name = model_map[operation_type]
+        except Exception:
+            pass
+        # 操作类型: 计算、提取、录入、电表走字
+        now_time = datetime.datetime.now()
+        for i in range(1, 3):  # 2年内
+            recent_object = getmodels(model_name, str(now_time.year)).objects.exclude(state="9").filter(
+                target=target
+            ).last()
+            if recent_object:
+                curvalue = 0
+                cumulativemonth = 0
+                cumulativeyear = 0
+
+                try:
+                    curvalue = float(round(recent_object.curvalue, digit))
+                except Exception:
+                    pass
+                try:
+                    cumulativemonth = float(round(recent_object.cumulativemonth, digit))
+                except Exception:
+                    pass
+                try:
+                    cumulativeyear = float(round(recent_object.cumulativeyear, digit))
+                except Exception:
+                    pass
+
+                data["curvalue"] = curvalue
+                data["cumulativemonth"] = cumulativemonth
+                data["cumulativeyear"] = cumulativeyear
+                break
+            now_time = now_time - datetime.timedelta(days=1)
+        else:
+            data["curvalue"] = 0
+            data["cumulativemonth"] = 0
+            data["cumulativeyear"] = 0
+
+    return data
+
+
 def get_appointed_time_data(code, appointed_time):
     """
     获取指标指定时间的数据对象
@@ -8672,226 +8743,310 @@ def get_appointed_time_data(code, appointed_time):
 
 def get_important_targets(request):
     """
-    获取动力中心、新厂、老厂重要指标数据
+    获取燃热、煤机、9F重要指标 最近有数据的一天
+        煤机：发电量、上网电量、供热量、耗煤量、负荷率、厂用电率、发电标煤耗、供电标煤耗、供热标煤耗
+        燃热：发电量、上网电量、供热量、负荷率、厂用电率、发电标煤耗、供电标煤耗、供热标煤耗 -> 没有耗煤量
+        9F：发电量、上网电量、耗气量、负荷率、厂用电率、发电标煤耗、供电标煤耗
     :param request:
     :return:
     """
     if request.user.is_authenticated():
         status = 1
-
-        # **************
-        #   动力中心
-        # **************
-        #   发电量指标
-        dlzx_fdl_target_codes = ["DLZX_JYTJ_01_SWDL", "DLZX_JYTJ_02_SWDL", "DLZX_JYTJ_SWDL"]  # <<
-        dlzx_fdl_jz_target_codes = ["DLZX_JYTJ_01_FDL", "DLZX_JYTJ_02_FDL", "DLZX_JYTJ_FDL"]  # <<
-
-        dlzx_fdl_list = []
-        dlzx_fdl_targets = []
-        now = datetime.datetime.now()
-        # now = datetime.datetime.strptime("2020-07-21", "%Y-%m-%d")
-        yestoday = now - datetime.timedelta(days=1)
-        for dlzx_fdl_jz_target_code in dlzx_fdl_jz_target_codes:
-            appointed_time_data = get_appointed_time_data(dlzx_fdl_jz_target_code, yestoday)
-            dlzx_fdl_list.append({
-                "jz_name": appointed_time_data["target_name"],
-                "yest_value": appointed_time_data["curvalue"],
-                "cumulativemonth": appointed_time_data["cumulativemonth"],
-                "cumulativeyear": appointed_time_data["cumulativeyear"]
-            })
-
-        for dlzx_fdl_target_code in dlzx_fdl_target_codes:
-            appointed_time_data = get_appointed_time_data(dlzx_fdl_target_code, yestoday)
-            dlzx_fdl_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
-        #   综合指标
-        dlzx_zh_target_codes = ["DLZX_JYTJ_01_ZGRL_NEW", "DLZX_JYTJ_02_ZGRL_NEW", "DLZX_JYTJ_ZGRL_NEW"]  # <<
-
-        dlzx_zh_targets = []
-        for dlzx_zh_target_code in dlzx_zh_target_codes:
-            appointed_time_data = get_appointed_time_data(dlzx_zh_target_code, yestoday)
-            dlzx_zh_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
-        #   环保指标
-        dlzx_hb_target_codes = ["DLZX_JYTJ_WSPFL"]  # <<
-
-        dlzx_hb_targets = []
-        for dlzx_hb_target_code in dlzx_hb_target_codes:
-            appointed_time_data = get_appointed_time_data(dlzx_hb_target_code, yestoday)
-            dlzx_hb_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
-        #   能耗指标
-        dlzx_nh_target_codes = ["DLZX_JYTJ_DGYS#1", "DLZX_JYTJ_2DGYS#2", "DLZX_JYTJ_BHGYS"]  # <<
-        dlzx_nh_targets = []
-        for dlzx_nh_target_code in dlzx_nh_target_codes:
-            appointed_time_data = get_appointed_time_data(dlzx_nh_target_code, yestoday)
-            dlzx_nh_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
-
-        # **************
-        #   新厂
-        # **************
-        #   发电量指标
-        xc_fdl_target_codes = []  # <<
-        xc_fdl_jz_target_codes = []  # <<
-
-        xc_fdl_list = []
-        xc_fdl_targets = []
-        for xc_fdl_jz_target_code in xc_fdl_jz_target_codes:
-            appointed_time_data = get_appointed_time_data(xc_fdl_jz_target_code, yestoday)
-            xc_fdl_list.append({
-                "jz_name": appointed_time_data["target_name"],
-                "yest_value": appointed_time_data["curvalue"],
-                "cumulativemonth": appointed_time_data["cumulativemonth"],
-                "cumulativeyear": appointed_time_data["cumulativeyear"]
-            })
-
-        for xc_fdl_target_code in xc_fdl_target_codes:
-            appointed_time_data = get_appointed_time_data(xc_fdl_target_code, yestoday)
-            xc_fdl_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
-        #   综合指标
-        xc_zh_target_codes = []  # <<
-
-        xc_zh_targets = []
-        for xc_zh_target_code in xc_zh_target_codes:
-            appointed_time_data = get_appointed_time_data(xc_zh_target_code, yestoday)
-            xc_zh_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
-        #   环保指标
-        xc_hb_target_codes = []  # <<
-
-        xc_hb_targets = []
-        for xc_hb_target_code in xc_hb_target_codes:
-            appointed_time_data = get_appointed_time_data(xc_hb_target_code, yestoday)
-            xc_hb_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
-        #   能耗指标
-        xc_nh_target_codes = []  # <<
-
-        xc_nh_targets = []
-        for xc_nh_target_code in xc_nh_target_codes:
-            appointed_time_data = get_appointed_time_data(xc_nh_target_code, yestoday)
-            xc_nh_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
-
-        # **************
-        #   老厂
-        # **************
-        #   发电量指标
-        lc_fdl_target_codes = ["CYDL_FD_M_9F"]  # <<
-        lc_fdl_jz_target_codes = ["FDL_9F", "FD_11_01", "FD_12_01"]  # <<
-
-        lc_fdl_list = []
-        lc_fdl_targets = []
-        for lc_fdl_jz_target_code in lc_fdl_jz_target_codes:
-            appointed_time_data = get_appointed_time_data(lc_fdl_jz_target_code, yestoday)
-            lc_fdl_list.append({
-                "jz_name": appointed_time_data["target_name"],
-                "yest_value": appointed_time_data["curvalue"],
-                "cumulativemonth": appointed_time_data["cumulativemonth"],
-                "cumulativeyear": appointed_time_data["cumulativeyear"]
-            })
-
-        for lc_fdl_target_code in lc_fdl_target_codes:
-            appointed_time_data = get_appointed_time_data(lc_fdl_target_code, yestoday)
-            lc_fdl_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
-        #   综合指标
-        lc_zh_target_codes = ["GWRZ_TRQ"]  # <<
-
-        lc_zh_targets = []
-        for lc_zh_target_code in lc_zh_target_codes:
-            appointed_time_data = get_appointed_time_data(lc_zh_target_code, yestoday)
-            lc_zh_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
-        #   环保指标
-        lc_hb_target_codes = []  # <<
-
-        lc_hb_targets = []
-        for lc_hb_target_code in lc_hb_target_codes:
-            appointed_time_data = get_appointed_time_data(lc_hb_target_code, yestoday)
-            lc_hb_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
-        #   能耗指标
-        lc_nh_target_codes = ["HML_BML_9F", "FDBZMHLV_9F", "GDBZMHLV_9F", "ZHGDBZMHL_9F"]  # <<
-
-        lc_nh_targets = []
-        for lc_nh_target_code in lc_nh_target_codes:
-            appointed_time_data = get_appointed_time_data(lc_nh_target_code, yestoday)
-            lc_nh_targets.append({
-                "name": appointed_time_data["target_name"],
-                "value": appointed_time_data["curvalue"]
-            })
         data = {
-            "DLZX": {
-                "FDL": {
-                    "FDL_LIST": dlzx_fdl_list,
-                    "TARGETS": dlzx_fdl_targets
-                },
-                "ZH": {
-                    "TARGETS": dlzx_zh_targets
-                },
-                "HB": {
-                    "TARGETS": dlzx_hb_targets
-                },
-                "NH": {
-                    "TARGETS": dlzx_nh_targets
-                }
+            "RR": {
+                "JYZB": [{
+                    "target": "DLZX_JYTJ_FDL",
+                    "v_type": "cumulativeyear",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_JYTJ_SWDL",
+                    "v_type": "cumulativeyear",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_JYTJ_ZGRL_NEW",
+                    "v_type": "cumulativeyear",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_JYTJ_FHL_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_JYTJ_ZHCYDL_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_JYTJ_FDBZMH_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_JYTJ_GDBZMH_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_JYTJ_GRBZMH_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }],
+                "HBZB": [{
+                    "target": "DLZX_HB_01_RJPFND_SO2",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_HB_02_RJPFND_SO2",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_HB_01_RJ_SO2",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_HB_02_RJ_SO2",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_HB_01_RJ_YQPFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_HB_02_RJ_YQPFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_HB_01_RJPFND_NOx",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_HB_02_RJPFND_NOx",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_HB_01_RJ_NOx",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "DLZX_HB_02_RJ_NOx",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }],
             },
-            "XC": {
-                "FDL": {
-                    "FDL_LIST": xc_fdl_list,
-                    "TARGETS": xc_fdl_targets
-                },
-                "ZH": {
-                    "TARGETS": xc_zh_targets
-                },
-                "HB": {
-                    "TARGETS": xc_hb_targets
-                },
-                "NH": {
-                    "TARGETS": xc_nh_targets
-                }
+            "MJ": {
+                "JYZB":[{
+                    "target": "NEW_JYTJ_FDL",
+                    "v_type": "cumulativeyear",
+                    "value": 0,
+                }, {
+                    "target": "NEW_JYTJ_SWDL",
+                    "v_type": "cumulativeyear",
+                    "value": 0,
+                }, {
+                    "target": "NEW_JYTJ_GRL",
+                    "v_type": "cumulativeyear",
+                    "value": 0,
+                }, {
+                    "target": "NEW_JYTJ_HML",
+                    "v_type": "cumulativeyear",
+                    "value": 0,
+                }, {
+                    "target": "NEW_JYTJ_FHL_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_JYTJ_ZHCYDL_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_JYTJ_FDBZMH_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_JYTJ_GDBZMH_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_JYTJ_GRBZMH_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }],
+                "HBZB": [{
+                    "target": "NEW_HB_01_SO2ND",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_HB_02_SO2ND",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_HB_01_SO2PFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_HB_02_SO2PFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_HB_01_YQPFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_HB_02_YQPFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_HB_01_NOXND",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_HB_02_NOXND",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_HB_01_NOXPFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "NEW_HB_02_NOXPFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }],
             },
-            "LC": {
-                "FDL": {
-                    "FDL_LIST": lc_fdl_list,
-                    "TARGETS": lc_fdl_targets
-                },
-                "ZH": {
-                    "TARGETS": lc_zh_targets
-                },
-                "HB": {
-                    "TARGETS": lc_hb_targets
-                },
-                "NH": {
-                    "TARGETS": lc_nh_targets
-                }
-            }
+            "9F": {
+                "JYZB":[{
+                    "target": "FDL_9F",
+                    "v_type": "cumulativeyear",
+                    "value": 0,
+                }, {
+                    "target": "SWDL_9F",
+                    "v_type": "cumulativeyear",
+                    "value": 0,
+                }, {
+                    "target": "FDHQ",
+                    "v_type": "cumulativeyear",
+                    "value": 0,
+                }, {
+                    "target": "FHL_9F",
+                    "v_type": "cumulativeyear",
+                    "value": 0,
+                }, {
+                    "target": "ZHCYDL_9F_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "FDBZMHLV_9F_NLJ",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "ZHGDBZMHL_9F_Y",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }],
+                "HBZB": [{
+                    "target": "OLD_HB_11_SO2SJPJND",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "OLD_HB_12_SO2SJPJND",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "OLD_HB_11_YQPFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "OLD_HB_12_YQPFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "OLD_HB_11_NOXND",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "OLD_HB_12_NOXND",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "OLD_HB_11_NOXPFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }, {
+                    "target": "OLD_HB_12_NOXPFL",
+                    "v_type": "curvalue",
+                    "value": 0,
+                }]
+            },
         }
+
+        # now = datetime.datetime.now()
+        # now = datetime.datetime.strptime("2020-07-21", "%Y-%m-%d")
+
+        # **************
+        #   燃热
+        # **************
+        #   经营指标
+        rr_jyzbs = data["RR"]["JYZB"]
+
+        for rr_jyzb in rr_jyzbs:
+            rr_jyzb_code = rr_jyzb["target"]
+            recent_data = get_target_data_recently(rr_jyzb_code)
+            rr_jyzb["value"] = recent_data.get(rr_jyzb["v_type"], 0)
+            rr_jyzb["target_name"] = recent_data["target_name"]
+            rr_jyzb["unit"] = recent_data["unit"]
+
+        #   环保指标
+        rr_hbzbs = data["RR"]["HBZB"]
+
+        for rr_hbzb in rr_hbzbs:
+            rr_hbzb_code = rr_hbzb["target"]
+            recent_data = get_target_data_recently(rr_hbzb_code)
+            rr_hbzb["value"] = recent_data.get(rr_hbzb["v_type"], 0)
+            rr_hbzb["target_name"] = recent_data["target_name"]
+            rr_hbzb["unit"] = recent_data["unit"]
+
+        # **************
+        #   煤机
+        # **************
+        #   经营指标
+        mj_jyzbs = data["MJ"]["JYZB"]
+
+        for mj_jyzb in mj_jyzbs:
+            mj_jyzb_code = mj_jyzb["target"]
+            recent_data = get_target_data_recently(mj_jyzb_code)
+            mj_jyzb["value"] = recent_data.get(mj_jyzb["v_type"], 0)
+            mj_jyzb["target_name"] = recent_data["target_name"]
+            mj_jyzb["unit"] = recent_data["unit"]
+
+        #   环保指标
+        mj_hbzbs = data["MJ"]["HBZB"]
+
+        for mj_hbzb in mj_hbzbs:
+            mj_hbzb_code = mj_hbzb["target"]
+            recent_data = get_target_data_recently(mj_hbzb_code)
+            mj_hbzb["value"] = recent_data.get(mj_hbzb["v_type"], 0)
+            mj_hbzb["target_name"] = recent_data["target_name"]
+            mj_hbzb["unit"] = recent_data["unit"]
+
+        # **************
+        #   9F
+        # **************
+        #   经营指标
+        jf_jyzbs = data["9F"]["JYZB"]
+
+        for jf_jyzb in jf_jyzbs:
+            jf_jyzb_code = jf_jyzb["target"]
+            recent_data = get_target_data_recently(jf_jyzb_code)
+            jf_jyzb["value"] = recent_data.get(jf_jyzb["v_type"], 0)
+            jf_jyzb["target_name"] = recent_data["target_name"]
+            jf_jyzb["unit"] = recent_data["unit"]
+
+        #   环保指标
+        jf_hbzbs = data["9F"]["HBZB"]
+
+        for jf_hbzb in jf_hbzbs:
+            jf_hbzb_code = jf_hbzb["target"]
+            recent_data = get_target_data_recently(jf_hbzb_code)
+            jf_hbzb["value"] = recent_data.get(jf_hbzb["v_type"], 0)
+            jf_hbzb["target_name"] = recent_data["target_name"]
+            jf_hbzb["unit"] = recent_data["unit"]
+
         return JsonResponse({
             "status": status,
             "data": data
