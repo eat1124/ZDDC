@@ -8783,11 +8783,11 @@ def get_important_targets(request):
                 "FDL_JH": [
                     [   # 发电量年计划
                         {"target": "DLZX_JYTJ_FDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
-                        {"target": "DLZX_JYTJ_FDL", "v_type": "curvalue", "value": 0}   # 已完成
+                        {"target": "DLZX_JYTJ_FDL", "v_type": "cumulativeyear", "value": 0}   # 已完成
                     ],
                     [   # 上网电量年计划
                         {"target": "DLZX_JYTJ_SWDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
-                        {"target": "DLZX_JYTJ_SWDL", "v_type": "curvalue", "value": 0}  # 已完成
+                        {"target": "DLZX_JYTJ_SWDL", "v_type": "cumulativeyear", "value": 0}  # 已完成
                     ],
                 ]
             },
@@ -8817,12 +8817,12 @@ def get_important_targets(request):
                 ],
                 "FDL_JH": [
                     [  # 发电量年计划
-                        {"target": "NEW_JYTJ_FDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
-                        {"target": "NEW_JYTJ_FDL", "v_type": "curvalue", "value": 0}  # 已完成
+                        {"target": "NEW_JYTJ_FDLNJH", "v_type": "curvalue", "value": 0},  # 计划
+                        {"target": "NEW_JYTJ_FDL", "v_type": "cumulativeyear", "value": 0}  # 已完成
                     ],
                     [  # 上网电量年计划
-                        {"target": "NEW_JYTJ_SWDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
-                        {"target": "NEW_JYTJ_SWDL", "v_type": "curvalue", "value": 0}  # 已完成
+                        {"target": "NEW_JYTJ_SWDLNJH", "v_type": "curvalue", "value": 0},  # 计划
+                        {"target": "NEW_JYTJ_SWDL", "v_type": "cumulativeyear", "value": 0}  # 已完成
                     ],
                 ]
             },
@@ -8849,11 +8849,11 @@ def get_important_targets(request):
                 "FDL_JH": [
                     [  # 发电量年计划
                         {"target": "9F_FDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
-                        {"target": "FDL_9F", "v_type": "curvalue", "value": 0}  # 已完成
+                        {"target": "FDL_9F", "v_type": "cumulativeyear", "value": 0}  # 已完成
                     ],
                     [  # 上网电量年计划
                         {"target": "9F_SWDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
-                        {"target": "SWDL_9F", "v_type": "curvalue", "value": 0}  # 已完成
+                        {"target": "SWDL_9F", "v_type": "cumulativeyear", "value": 0}  # 已完成
                     ],
                 ]
             },
