@@ -215,10 +215,67 @@ function setFDLChart(chart, data) {
 
 // 解决图标自适应大小问题
 $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-    $("#xc_fdl").highcharts().reflow();
-    $("#dlzx_fdl").highcharts().reflow();
-    $("#lc_fdl").highcharts().reflow();
+    try {
+        $("#xc_fdl").highcharts().reflow();
+        $("#dlzx_fdl").highcharts().reflow();
+        $("#lc_fdl").highcharts().reflow();
+
+        $("#rr_plan").highcharts().reflow();
+        $("#mj_plan").highcharts().reflow();
+        $("#jf_plan").highcharts().reflow();
+    } catch (e) {
+    }
 });
+
+
+function createHighChart(renderTo, year_plan_all, year_plan_done) {
+    new Highcharts.Chart({
+        chart: {
+            renderTo: renderTo,
+            type: 'column',
+            // inverted: true,
+        },
+        title: {
+            text: '年发电计划'
+        },
+        xAxis: {
+            categories: [
+                '发电量年计划',
+                '上网电量年计划',
+            ]
+        },
+        yAxis: [{
+            min: 0,
+            title: {
+                text: '发电量'
+            }
+        }],
+        legend: {
+            shadow: false
+        },
+        tooltip: {
+            shared: true
+        },
+        plotOptions: {
+            column: {
+                grouping: false,
+                shadow: false,
+                borderWidth: 0
+            }
+        },
+        series: [{
+            name: '总计划',
+            color: 'rgba(165,170,217,1)',
+            data: year_plan_all,
+            pointPadding: 0.3,
+        }, {
+            name: '已完成',
+            color: 'rgba(126,86,134,.9)',
+            data: year_plan_done,
+            pointPadding: 0.4,
+        }],
+    });
+}
 
 
 function getImportantTargets() {
@@ -229,8 +286,8 @@ function getImportantTargets() {
         data: {},
         success: function (data) {
             $('#navtabs_2').find('a').eq(0).tab('show');
-            var rr = data.data["RR"];
-                mj = data.data["MJ"];
+            var rr = data.data["RR"],
+                mj = data.data["MJ"],
                 jf = data.data["9F"];
             var rr_jyzbs = rr["JYZB"],
                 rr_hbzbs = rr["HBZB"];
@@ -244,7 +301,6 @@ function getImportantTargets() {
              */
             //  经营指标
             var rr_jyzb_left = $("#tab_1_5").find("div#left_fdl");
-            var rr_jyzb_right = $("#tab_1_5").find("div#right_fdl");
 
             rr_jyzb_left.empty();
             for (var i = 0; i < rr_jyzbs.length; i++) {
@@ -273,12 +329,27 @@ function getImportantTargets() {
                 }
             }
 
+            // 年计划
+            var rr_year_plan_all = [],
+                rr_year_plan_done = [];
+            var rr_fdl_jhs = rr["FDL_JH"];
+            for (var i = 0; i < rr_fdl_jhs.length; i++) {
+                for (var j = 0; j < rr_fdl_jhs[i].length; j++) {
+                    if (j == 0) {
+                        rr_year_plan_all.push(rr_fdl_jhs[i][j]["value"]);
+                    }
+                    if (j == 1) {
+                        rr_year_plan_done.push(rr_fdl_jhs[i][j]["value"]);
+                    }
+                }
+            }
+            createHighChart("rr_plan", rr_year_plan_all, rr_year_plan_done);
+
             /*
                 煤机
              */
             //  经营指标
             var mj_jyzb_left = $("#tab_1_4").find("div#left_fdl");
-            var mj_jyzb_right = $("#tab_1_4").find("div#right_fdl");
 
             mj_jyzb_left.empty();
             for (var i = 0; i < mj_jyzbs.length; i++) {
@@ -308,15 +379,29 @@ function getImportantTargets() {
                 }
             }
 
+            // 年计划
+            var mj_year_plan_all = [],
+                mj_year_plan_done = [];
+            var mj_fdl_jhs = mj["FDL_JH"];
+            for (var i = 0; i < mj_fdl_jhs.length; i++) {
+                for (var j = 0; j < mj_fdl_jhs[i].length; j++) {
+                    if (j == 0) {
+                        mj_year_plan_all.push(mj_fdl_jhs[i][j]["value"]);
+                    }
+                    if (j == 1) {
+                        mj_year_plan_done.push(mj_fdl_jhs[i][j]["value"]);
+                    }
+                }
+            }
+            createHighChart("mj_plan", mj_year_plan_all, mj_year_plan_done);
+
             /*
                 9F
              */
             //  经营指标
             var jf_jyzb_left = $("#tab_1_6").find("div#left_fdl");
-            var jf_jyzb_right = $("#tab_1_6").find("div#right_fdl");
 
             jf_jyzb_left.empty();
-            jf_jyzb_right.empty();
             for (var i = 0; i < jf_jyzbs.length; i++) {
                 jf_jyzb_left.append('<div class="col-md-12" style="margin-bottom: 5px;">\n' +
                     '    <div class="col-md-8 name" style="padding:0"><span><i class="fa fa-caret-right"></i></span> ' + jf_jyzbs[i]["target_name"] + ':</div>\n' +
@@ -342,6 +427,23 @@ function getImportantTargets() {
                         '</div>');
                 }
             }
+
+            // 年计划
+            var jf_year_plan_all = [],
+                jf_year_plan_done = [];
+            var jf_fdl_jhs = jf["FDL_JH"];
+            for (var i = 0; i < jf_fdl_jhs.length; i++) {
+                for (var j = 0; j < jf_fdl_jhs[i].length; j++) {
+                    if (j == 0) {
+                        jf_year_plan_all.push(jf_fdl_jhs[i][j]["value"]);
+                    }
+                    if (j == 1) {
+                        jf_year_plan_done.push(jf_fdl_jhs[i][j]["value"]);
+                    }
+                }
+            }
+            createHighChart("jf_plan", jf_year_plan_all, jf_year_plan_done);
+
         }
     })
 }

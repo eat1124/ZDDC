@@ -5160,7 +5160,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
             else:
                 pass
         # else:
-            # raise Exception('获取外部系统数据失败。')
+        # raise Exception('获取外部系统数据失败。')
     else:
         formula = ""
 
@@ -7104,6 +7104,8 @@ def getpagefuns(funid, request=""):
 def test(request):
     if request.user.is_authenticated() and request.session['isadmin']:
         errors = []
+        code = "DLZX_JYTJ_FDL_NJH"
+        ret = get_target_data_recently(code)
         return render(request, 'test.html',
                       {'username': request.user.userinfo.fullname, "errors": errors})
     else:
@@ -8747,6 +8749,8 @@ def get_important_targets(request):
         煤机：发电量、上网电量、供热量、耗煤量、负荷率、厂用电率、发电标煤耗、供电标煤耗、供热标煤耗
         燃热：发电量、上网电量、供热量、负荷率、厂用电率、发电标煤耗、供电标煤耗、供热标煤耗 -> 没有耗煤量
         9F：发电量、上网电量、耗气量、负荷率、厂用电率、发电标煤耗、供电标煤耗
+    发电量月计划、上网电量月计划
+    
     :param request:
     :return:
     """
@@ -8754,224 +8758,104 @@ def get_important_targets(request):
         status = 1
         data = {
             "RR": {
-                "JYZB": [{
-                    "target": "DLZX_JYTJ_FDL",
-                    "v_type": "cumulativeyear",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_JYTJ_SWDL",
-                    "v_type": "cumulativeyear",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_JYTJ_ZGRL_NEW",
-                    "v_type": "cumulativeyear",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_JYTJ_FHL_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_JYTJ_ZHCYDL_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_JYTJ_FDBZMH_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_JYTJ_GDBZMH_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_JYTJ_GRBZMH_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }],
-                "HBZB": [{
-                    "target": "DLZX_HB_01_RJPFND_SO2",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_HB_02_RJPFND_SO2",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_HB_01_RJ_SO2",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_HB_02_RJ_SO2",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_HB_01_RJ_YQPFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_HB_02_RJ_YQPFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_HB_01_RJPFND_NOx",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_HB_02_RJPFND_NOx",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_HB_01_RJ_NOx",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "DLZX_HB_02_RJ_NOx",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }],
+                "JYZB": [
+                    {"target": "DLZX_JYTJ_FDL", "v_type": "cumulativeyear", "value": 0},
+                    {"target": "DLZX_JYTJ_SWDL", "v_type": "cumulativeyear", "value": 0},
+                    {"target": "DLZX_JYTJ_ZGRL_NEW", "v_type": "cumulativeyear", "value": 0},
+                    {"target": "DLZX_JYTJ_FHL_Y", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_JYTJ_ZHCYDL_Y", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_JYTJ_FDBZMH_Y", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_JYTJ_GDBZMH_Y", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_JYTJ_GRBZMH_Y", "v_type": "curvalue", "value": 0}
+                ],
+                "HBZB": [
+                    {"target": "DLZX_HB_01_RJPFND_SO2", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_HB_02_RJPFND_SO2", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_HB_01_RJ_SO2", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_HB_02_RJ_SO2", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_HB_01_RJ_YQPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_HB_02_RJ_YQPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_HB_01_RJPFND_NOx", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_HB_02_RJPFND_NOx", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_HB_01_RJ_NOx", "v_type": "curvalue", "value": 0},
+                    {"target": "DLZX_HB_02_RJ_NOx", "v_type": "curvalue", "value": 0}
+                ],
+                "FDL_JH": [
+                    [   # 发电量年计划
+                        {"target": "DLZX_JYTJ_FDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
+                        {"target": "DLZX_JYTJ_FDL", "v_type": "curvalue", "value": 0}   # 已完成
+                    ],
+                    [   # 上网电量年计划
+                        {"target": "DLZX_JYTJ_SWDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
+                        {"target": "DLZX_JYTJ_SWDL", "v_type": "curvalue", "value": 0}  # 已完成
+                    ],
+                ]
             },
             "MJ": {
-                "JYZB":[{
-                    "target": "NEW_JYTJ_FDL",
-                    "v_type": "cumulativeyear",
-                    "value": 0,
-                }, {
-                    "target": "NEW_JYTJ_SWDL",
-                    "v_type": "cumulativeyear",
-                    "value": 0,
-                }, {
-                    "target": "NEW_JYTJ_GRL",
-                    "v_type": "cumulativeyear",
-                    "value": 0,
-                }, {
-                    "target": "NEW_JYTJ_HML",
-                    "v_type": "cumulativeyear",
-                    "value": 0,
-                }, {
-                    "target": "NEW_JYTJ_FHL_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_JYTJ_ZHCYDL_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_JYTJ_FDBZMH_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_JYTJ_GDBZMH_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_JYTJ_GRBZMH_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }],
-                "HBZB": [{
-                    "target": "NEW_HB_01_SO2ND",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_HB_02_SO2ND",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_HB_01_SO2PFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_HB_02_SO2PFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_HB_01_YQPFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_HB_02_YQPFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_HB_01_NOXND",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_HB_02_NOXND",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_HB_01_NOXPFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "NEW_HB_02_NOXPFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }],
+                "JYZB": [
+                    {"target": "NEW_JYTJ_FDL", "v_type": "cumulativeyear", "value": 0},
+                    {"target": "NEW_JYTJ_SWDL", "v_type": "cumulativeyear", "value": 0},
+                    {"target": "NEW_JYTJ_GRL", "v_type": "cumulativeyear", "value": 0},
+                    {"target": "NEW_JYTJ_HML", "v_type": "cumulativeyear", "value": 0},
+                    {"target": "NEW_JYTJ_FHL_Y", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_JYTJ_ZHCYDL_Y", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_JYTJ_FDBZMH_Y", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_JYTJ_GDBZMH_Y", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_JYTJ_GRBZMH_Y", "v_type": "curvalue", "value": 0}
+                ],
+                "HBZB": [
+                    {"target": "NEW_HB_01_SO2ND", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_02_SO2ND", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_01_SO2PFL", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_02_SO2PFL", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_01_YQPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_02_YQPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_01_NOXND", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_02_NOXND", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_01_NOXPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_02_NOXPFL", "v_type": "curvalue", "value": 0}
+                ],
+                "FDL_JH": [
+                    [  # 发电量年计划
+                        {"target": "NEW_JYTJ_FDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
+                        {"target": "NEW_JYTJ_FDL", "v_type": "curvalue", "value": 0}  # 已完成
+                    ],
+                    [  # 上网电量年计划
+                        {"target": "NEW_JYTJ_SWDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
+                        {"target": "NEW_JYTJ_SWDL", "v_type": "curvalue", "value": 0}  # 已完成
+                    ],
+                ]
             },
             "9F": {
-                "JYZB":[{
-                    "target": "FDL_9F",
-                    "v_type": "cumulativeyear",
-                    "value": 0,
-                }, {
-                    "target": "SWDL_9F",
-                    "v_type": "cumulativeyear",
-                    "value": 0,
-                }, {
-                    "target": "FDHQ",
-                    "v_type": "cumulativeyear",
-                    "value": 0,
-                }, {
-                    "target": "FHL_9F",
-                    "v_type": "cumulativeyear",
-                    "value": 0,
-                }, {
-                    "target": "ZHCYDL_9F_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "FDBZMHLV_9F_NLJ",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "ZHGDBZMHL_9F_Y",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }],
-                "HBZB": [{
-                    "target": "OLD_HB_11_SO2SJPJND",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "OLD_HB_12_SO2SJPJND",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "OLD_HB_11_YQPFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "OLD_HB_12_YQPFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "OLD_HB_11_NOXND",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "OLD_HB_12_NOXND",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "OLD_HB_11_NOXPFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }, {
-                    "target": "OLD_HB_12_NOXPFL",
-                    "v_type": "curvalue",
-                    "value": 0,
-                }]
+                "JYZB": [
+                    {"target": "FDL_9F", "v_type": "cumulativeyear", "value": 0},
+                    {"target": "SWDL_9F", "v_type": "cumulativeyear", "value": 0},
+                    {"target": "FDHQ", "v_type": "cumulativeyear", "value": 0},
+                    {"target": "FHL_9F", "v_type": "cumulativeyear", "value": 0},
+                    {"target": "ZHCYDL_9F_Y", "v_type": "curvalue", "value": 0},
+                    {"target": "FDBZMHLV_9F_NLJ", "v_type": "curvalue", "value": 0},
+                    {"target": "ZHGDBZMHL_9F_Y", "v_type": "curvalue", "value": 0,
+                     }],
+                "HBZB": [
+                    {"target": "OLD_HB_11_SO2SJPJND", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_12_SO2SJPJND", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_11_YQPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_12_YQPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_11_NOXND", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_12_NOXND", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_11_NOXPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_12_NOXPFL", "v_type": "curvalue", "value": 0}
+                ],
+                "FDL_JH": [
+                    [  # 发电量年计划
+                        {"target": "9F_FDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
+                        {"target": "FDL_9F", "v_type": "curvalue", "value": 0}  # 已完成
+                    ],
+                    [  # 上网电量年计划
+                        {"target": "9F_SWDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
+                        {"target": "SWDL_9F", "v_type": "curvalue", "value": 0}  # 已完成
+                    ],
+                ]
             },
         }
 
@@ -9000,7 +8884,14 @@ def get_important_targets(request):
             rr_hbzb["value"] = recent_data.get(rr_hbzb["v_type"], 0)
             rr_hbzb["target_name"] = recent_data["target_name"]
             rr_hbzb["unit"] = recent_data["unit"]
+        #   年计划
+        rr_njhs = data["RR"]["FDL_JH"]
 
+        for rr_njh in rr_njhs:
+            for rn in rr_njh:
+                recent_data = get_target_data_recently(rn["target"])
+                rn["value"] = recent_data.get(rn["v_type"], 0)
+                rn["target_name"] = recent_data["target_name"]
         # **************
         #   煤机
         # **************
@@ -9024,6 +8915,14 @@ def get_important_targets(request):
             mj_hbzb["target_name"] = recent_data["target_name"]
             mj_hbzb["unit"] = recent_data["unit"]
 
+        #   年计划
+        mj_njhs = data["MJ"]["FDL_JH"]
+
+        for mj_njh in mj_njhs:
+            for mn in mj_njh:
+                recent_data = get_target_data_recently(mn["target"])
+                mn["value"] = recent_data.get(mn["v_type"], 0)
+                mn["target_name"] = recent_data["target_name"]
         # **************
         #   9F
         # **************
@@ -9046,6 +8945,15 @@ def get_important_targets(request):
             jf_hbzb["value"] = recent_data.get(jf_hbzb["v_type"], 0)
             jf_hbzb["target_name"] = recent_data["target_name"]
             jf_hbzb["unit"] = recent_data["unit"]
+
+        #   年计划
+        jf_njhs = data["9F"]["FDL_JH"]
+
+        for jf_njh in jf_njhs:
+            for jn in jf_njh:
+                recent_data = get_target_data_recently(jn["target"])
+                jn["value"] = recent_data.get(jn["v_type"], 0)
+                jn["target_name"] = recent_data["target_name"]
 
         return JsonResponse({
             "status": status,
@@ -9908,10 +9816,10 @@ def extract_electric_energy(request):
             """
             electric_energy_value = 0
 
-            if f:   # #1
+            if f:  # #1
                 t_code = settings.F_ELERTRIC_ENERGY
                 t_tag = settings.F_TAG
-            else:   # #2
+            else:  # #2
                 t_code = settings.S_ELERTRIC_ENERGY
                 t_tag = settings.S_TAG
 
@@ -9961,7 +9869,7 @@ def extract_electric_energy(request):
         f_electric_energy = decimal.Decimal("0")
         s_electric_energy = decimal.Decimal("0")
         if f_checkbox == "on":
-            if not any([f_start_time1, f_start_time2, f_start_time3, f_start_time4, 
+            if not any([f_start_time1, f_start_time2, f_start_time3, f_start_time4,
                         f_end_time1, f_end_time2, f_end_time3, f_end_time4]):
                 return JsonResponse({
                     'status': 0,
@@ -10005,7 +9913,7 @@ def extract_electric_energy(request):
                 else:
                     f_electric_energy += do_extract(f_start_time4, f_end_time4, f=True)
         if s_checkbox == "on":
-            if not any([s_start_time1, s_start_time2, s_start_time3, s_start_time4, 
+            if not any([s_start_time1, s_start_time2, s_start_time3, s_start_time4,
                         s_end_time1, s_end_time2, s_end_time3, s_end_time4]):
                 return JsonResponse({
                     'status': 0,
