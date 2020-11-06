@@ -499,6 +499,10 @@ class Extract(object):
                     db_query.close()
         else:
             error = 'Extract >> getDataFromSource() >> 数据源不存在。'
+        # 乘以取数倍率
+        if result_list and target.operationtype in ["16", "17"]:
+            result_list = [[result_list[0][0] * (target.magnification if target.magnification else 1)]]
+
         return {"result": result_list, "error": error}
 
     def save_row_data(self, target, time, result_list):
