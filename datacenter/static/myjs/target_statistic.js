@@ -350,7 +350,7 @@ $("#multiple_targets")
             '        <span style="text-align: center; vertical-align: middle;"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
             '    </div>\n' +
             '    <div class="col-md-5" style="padding: 0">\n' +
-            '        <input type="text" class="form-control">\n' +
+            '        <input type="text" class="form-control" value="' + target.text + '">\n' +
             '    </div>\n' +
             '</div>');
     })  // 新增
