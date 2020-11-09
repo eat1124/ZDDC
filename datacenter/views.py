@@ -26,6 +26,7 @@ import base64
 import win32api
 import calendar
 import socket
+from dateutil.relativedelta import relativedelta
 
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
@@ -4013,6 +4014,24 @@ def getreporting_date(date, cycletype):
     return date
 
 
+def get_a_cycle_aft(date, cycletype):
+    """
+    一个周期后
+    """
+    if cycletype == "10":   # 日报
+        date += datetime.timedelta(days=1)
+    if cycletype == "11":   # 月报
+        date += relativedelta(months=1)
+    if cycletype == "12":   # 季报
+        date += relativedelta(months=3)
+    if cycletype == "13":   # 半年报
+        date += relativedelta(months=6)
+    if cycletype == "14":   # 年报
+        date += relativedelta(months=12)
+
+    return date
+
+
 def reporting_index(request, cycletype, funid):
     """
     数据填报
@@ -6052,9 +6071,10 @@ def reporting_new(request):
             # 生成本次计算guid
             # 数据库中与本次guid不同的指标才参数计算
             guid = uuid.uuid1()
-            cur_target = Target.objects.exclude(state="9").filter(adminapp_id=app, cycletype=cycletype,
-                                                                  operationtype=operationtype, work=work).order_by(
-                "sort")
+            cur_target = Target.objects.exclude(state="9").filter(
+                adminapp_id=app, cycletype=cycletype, operationtype=operationtype, work=work
+            ).order_by("sort")
+
             # 所有常数
             all_constant = Constant.objects.exclude(state="9").values()
             all_target = Target.objects.exclude(state="9")
@@ -6067,8 +6087,10 @@ def reporting_new(request):
             tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
                          "Calculatedata": CalculateTable}
 
-            print(len(cur_target))
             for target in cur_target:
+                # 根据指标周期修改reporting_date
+                a_cycle_aft_date = get_a_cycle_aft(reporting_date, cycletype)
+
                 # 电表走字
                 if operationtype == "1":
 
@@ -6088,8 +6110,9 @@ def reporting_new(request):
                         tablename = target.storage.tablename
                     except:
                         pass
-                    if tablename != "":
-                        rows = []
+                    # if tablename != "":
+                    rows = []
+                    if tablename:
                         try:
                             with connection.cursor() as cursor:
                                 reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
@@ -6101,19 +6124,19 @@ def reporting_new(request):
                         finally:
                             connection.close()
 
-                        if len(rows) > 0:
+                    if len(rows) > 0:
+                        try:
+                            meterdata.twentyfourdata = rows[0][0]
+                        except:
+                            pass
+                    if not rows or not target.cycle:  # 没取到数据 或者 没有取数周期，根据数据源实时取
+                        ret = Extract.getDataFromSource(target, a_cycle_aft_date)
+                        result_list = ret["result"]
+                        if result_list:
                             try:
-                                meterdata.twentyfourdata = rows[0][0]
+                                meterdata.twentyfourdata = result_list[0][0]
                             except:
                                 pass
-                        if any([rows, target.cycle]):  # 没取到数据 或者 没有取数周期，根据数据源实时取
-                            ret = Extract.getDataFromSource(target, datetime.datetime.now())
-                            result_list = ret["result"]
-                            if result_list:
-                                try:
-                                    meterdata.twentyfourdata = result_list[0][0]
-                                except:
-                                    pass
 
                     meterdata.target = target
                     meterdata.datadate = reporting_date
@@ -6145,6 +6168,7 @@ def reporting_new(request):
                     entrydata.save()
                 # 提取
                 if operationtype == "16":
+                    print(target.id)
                     extractdata = getmodels("Extractdata", str(reporting_date.year))()
                     extractdata.target = target
                     extractdata.datadate = reporting_date
@@ -6155,8 +6179,9 @@ def reporting_new(request):
                         tablename = target.storage.tablename
                     except:
                         pass
-                    if tablename != "":
-                        rows = []
+
+                    rows = []
+                    if tablename:
                         try:
                             cursor = connection.cursor()
                             with connection.cursor() as cursor:
@@ -6169,43 +6194,43 @@ def reporting_new(request):
                             connection.close()
                         except Exception as e:
                             pass
-                        if len(rows) > 0:
+                    if len(rows) > 0:
+                        try:
+                            if target.is_repeat == '2':
+                                rownum = 0
+                                rowvalue = 0
+                                for row in rows:
+                                    if row[0] is not None:
+                                        rowvalue += row[0]
+                                        rownum += 1
+                                extractdata.curvalue = rowvalue / rownum
+                            else:
+                                extractdata.curvalue = rows[0][0]
+                            extractdata.curvalue = decimal.Decimal(
+                                float(extractdata.curvalue) * float(target.magnification))
+                            extractdata.curvalue = round(extractdata.curvalue, target.digit)
+                        except:
+                            pass
+                    if not rows or not target.cycle:  # 没取到数据 或者 没有取数周期，根据数据源实时取
+                        ret = Extract.getDataFromSource(target, a_cycle_aft_date)
+                        result_list = ret["result"]
+                        if result_list:
                             try:
                                 if target.is_repeat == '2':
                                     rownum = 0
                                     rowvalue = 0
-                                    for row in rows:
+                                    for row in result_list:
                                         if row[0] is not None:
                                             rowvalue += row[0]
                                             rownum += 1
                                     extractdata.curvalue = rowvalue / rownum
                                 else:
-                                    extractdata.curvalue = rows[0][0]
+                                    extractdata.curvalue = result_list[0][0]
                                 extractdata.curvalue = decimal.Decimal(
                                     float(extractdata.curvalue) * float(target.magnification))
                                 extractdata.curvalue = round(extractdata.curvalue, target.digit)
-                            except:
-                                pass
-                        if any([rows, target.cycle]):  # 没取到数据 或者 没有取数周期，根据数据源实时取
-                            ret = Extract.getDataFromSource(target, datetime.datetime.now())
-                            result_list = ret["result"]
-                            if result_list:
-                                try:
-                                    if target.is_repeat == '2':
-                                        rownum = 0
-                                        rowvalue = 0
-                                        for row in result_list:
-                                            if row[0] is not None:
-                                                rowvalue += row[0]
-                                                rownum += 1
-                                        extractdata.curvalue = rowvalue / rownum
-                                    else:
-                                        extractdata.curvalue = result_list[0][0]
-                                    extractdata.curvalue = decimal.Decimal(
-                                        float(extractdata.curvalue) * float(target.magnification))
-                                    extractdata.curvalue = round(extractdata.curvalue, target.digit)
-                                except:
-                                    pass
+                            except Exception as e:
+                                print(e)
 
                     if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
