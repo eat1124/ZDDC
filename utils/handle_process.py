@@ -501,7 +501,7 @@ class Extract(object):
             error = 'Extract >> getDataFromSource() >> 数据源不存在。'
         # 乘以取数倍率
         if result_list and target.operationtype in ["16", "17"]:
-            result_list = [[result_list[0][0] * (target.magnification if target.magnification else 1)]]
+            result_list = [[result_list[0][0] * (target.magnification if target.magnification else 1) if result_list[0][0] else 0]]
 
         return {"result": result_list, "error": error}
 
