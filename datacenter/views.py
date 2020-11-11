@@ -9133,9 +9133,14 @@ def target_value_search(request, funid):
         c_app = get_app_from_fun(funid)
         if not c_app["err"]:
             app_id = c_app["app_id"]
+
+        # 月初 -> 现在
+        n_time = datetime.datetime.now()
+        end_date = "{:%Y-%m-%d}".format(n_time)
+        start_date = "{:%Y-%m-%d}".format(n_time.replace(day=1))
         return render(request, 'target_value_search.html', {
             'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request), 
-            "app_id": app_id,
+            "app_id": app_id, "start_date": start_date, "end_date": end_date,
         })
     else:
         return HttpResponseRedirect('/login')
@@ -9177,11 +9182,18 @@ def get_target_value(c_target, start_date, end_date):
                     Q(datadate__gte=start_date.date()) & Q(datadate__lte=end_date.date())
                 )
         # 对值的处理
-        for ato in appointed_time_object.values("curvalue", "target__name", "target__code", "datadate", "target__digit"):
+        for ato in appointed_time_object.values(
+                "curvalue", "target__name", "target__code", "datadate", "target__digit", 
+                "cumulativemonth", "cumulativequarter", "cumulativehalfyear", "cumulativeyear",
+            ):
             data.append({
                 "name": ato["target__name"],
                 "code": ato["target__code"],
                 "curvalue": round(ato["curvalue"], ato["target__digit"]),
+                "cumulativemonth": round(ato["cumulativemonth"], ato["target__digit"]),
+                "cumulativequarter": round(ato["cumulativequarter"], ato["target__digit"]),
+                "cumulativehalfyear": round(ato["cumulativehalfyear"], ato["target__digit"]),
+                "cumulativeyear": round(ato["cumulativeyear"], ato["target__digit"]),
                 "datadate": ato["datadate"]
             })
 
@@ -9218,7 +9230,7 @@ def get_target_search_data(request):
             status = 0
             info = "结束时间未选择。"
         else:
-            c_targets = Target.objects.exclude(state="9").filter(Q(name=target) | Q(code=target)).filter(
+            c_targets = Target.objects.exclude(state="9").filter(Q(name__icontains=target) | Q(code__icontains=target)).filter(
                 Q(adminapp__id=app_id) | Q(app__id=app_id)
             )
             if c_targets.exists():
@@ -9241,6 +9253,10 @@ def get_target_search_data(request):
                             "name": tv["name"],
                             "code": tv["code"],
                             "curvalue": tv["curvalue"],
+                            "cumulativemonth": tv["cumulativemonth"],
+                            "cumulativequarter": tv["cumulativequarter"],
+                            "cumulativehalfyear": tv["cumulativehalfyear"],
+                            "cumulativeyear": tv["cumulativeyear"],
                             "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
                         } for tv in target_values]
                     else:
@@ -9249,6 +9265,10 @@ def get_target_search_data(request):
                             "name": tv["name"],
                             "code": tv["code"],
                             "curvalue": tv["curvalue"],
+                            "cumulativemonth": tv["cumulativemonth"],
+                            "cumulativequarter": tv["cumulativequarter"],
+                            "cumulativehalfyear": tv["cumulativehalfyear"],
+                            "cumulativeyear": tv["cumulativeyear"],
                             "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
                         } for tv in get_target_value(c_target, start_date, None)]
                         # 结束时间到年初
@@ -9256,6 +9276,10 @@ def get_target_search_data(request):
                             "name": tv["name"],
                             "code": tv["code"],
                             "curvalue": tv["curvalue"],
+                            "cumulativemonth": tv["cumulativemonth"],
+                            "cumulativequarter": tv["cumulativequarter"],
+                            "cumulativehalfyear": tv["cumulativehalfyear"],
+                            "cumulativeyear": tv["cumulativeyear"],
                             "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
                         } for tv in get_target_value(c_target, None, end_date)]
 
@@ -9270,6 +9294,10 @@ def get_target_search_data(request):
                                     "name": tv["name"],
                                     "code": tv["code"],
                                     "curvalue": tv["curvalue"],
+                                    "cumulativemonth": tv["cumulativemonth"],
+                                    "cumulativequarter": tv["cumulativequarter"],
+                                    "cumulativehalfyear": tv["cumulativehalfyear"],
+                                    "cumulativeyear": tv["cumulativeyear"],
                                     "time": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
                                 } for tv in target_values]
                                 if m_data:

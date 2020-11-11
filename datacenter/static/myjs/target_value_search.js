@@ -43,8 +43,12 @@ $(document).ready(function () {
             "columns": [
                 {"data": "name"},
                 {"data": "code"},
+                {"data": "time"},
                 {"data": "curvalue"},
-                {"data": "time"}
+                {"data": "cumulativemonth"},
+                {"data": "cumulativequarter"},
+                {"data": "cumulativehalfyear"},
+                {"data": "cumulativeyear"},
             ],
             "columnDefs": [],
             "oLanguage": {
