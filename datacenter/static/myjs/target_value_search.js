@@ -38,6 +38,7 @@ $(document).ready(function () {
         $('#search_table').dataTable({
             "bAutoWidth": true,
             "bSort": false,
+            "ordering": false,
             "bProcessing": true,
             "data": data,
             "columns": [
@@ -64,6 +65,9 @@ $(document).ready(function () {
                     "sLast": "尾页"
                 },
                 "sZeroRecords": "没有检索到数据",
+            },
+            "fnDrawCallback": function(oSettings) { 
+                $("#search_table thead th:first").removeClass("sorting_asc");//移除checkbox列的排序箭头 
             }
         });
     }

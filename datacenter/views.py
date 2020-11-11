@@ -9189,11 +9189,11 @@ def get_target_value(c_target, start_date, end_date):
             data.append({
                 "name": ato["target__name"],
                 "code": ato["target__code"],
-                "curvalue": round(ato["curvalue"], ato["target__digit"]),
-                "cumulativemonth": round(ato["cumulativemonth"], ato["target__digit"]),
-                "cumulativequarter": round(ato["cumulativequarter"], ato["target__digit"]),
-                "cumulativehalfyear": round(ato["cumulativehalfyear"], ato["target__digit"]),
-                "cumulativeyear": round(ato["cumulativeyear"], ato["target__digit"]),
+                "curvalue": round(ato["curvalue"] if ato["curvalue"] else 0, ato["target__digit"]),
+                "cumulativemonth": round(ato["cumulativemonth"] if ato["cumulativemonth"] else 0, ato["target__digit"]),
+                "cumulativequarter": round(ato["cumulativequarter"] if ato["cumulativequarter"] else 0, ato["target__digit"]),
+                "cumulativehalfyear": round(ato["cumulativehalfyear"] if ato["cumulativehalfyear"] else 0, ato["target__digit"]),
+                "cumulativeyear": round(ato["cumulativeyear"] if ato["cumulativeyear"] else 0, ato["target__digit"]),
                 "datadate": ato["datadate"]
             })
 
