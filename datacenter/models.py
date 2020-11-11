@@ -449,6 +449,7 @@ class ReportingLog(models.Model):
     adminapp = models.ForeignKey(App, null=True, related_name='reportlog_adminapp_set')
     work = models.ForeignKey('Work', null=True, verbose_name='业务')
     cycletype = models.CharField("周期类型", blank=True, max_length=20)
+    operationtype = models.CharField("操作类型", blank=True, max_length=20)
     datadate = models.DateTimeField("报表时间", blank=True, null=True)
     write_time = models.DateTimeField("制表时间", blank=True, null=True)
     user = models.OneToOneField(User, blank=True, null=True)

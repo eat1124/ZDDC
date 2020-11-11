@@ -7,13 +7,21 @@ from django.db import transaction
 from .models import *
 
 
-def map_operation(operation_type):
+def map_operation(operation_type, ch=False):
+    """
+    @params ch{bool}: True 返回中文 False返回英文表名
+    """
     # operation_map 
     OPERATION_MAP = {
         "1": "Meterdata",
         "15": "Entrydata",
         "16": "Extractdata",
         "17": "Calculatedata",
+    } if not ch else {
+        "1": "电表走字",
+        "15": "录入",
+        "16": "提取",
+        "17": "计算",
     }
     return OPERATION_MAP.get(operation_type, "")
 

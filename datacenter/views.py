@@ -6324,6 +6324,7 @@ def reporting_del(request):
                             'write_time': datetime.datetime.now(),
                             'datadate': reporting_date,
                             'cycletype': cycletype,
+                            'operationtype': operationtype,
                             'adminapp_id': app,
                             'work': work,
                             'user_id': user_id,
@@ -8450,12 +8451,16 @@ def get_reporting_log(request):
             datadate = get_format_date(datadate, rl.cycletype)
             user = '<span style="color:#3598DC">{0}</span>'.format(user)
             datadate = '<span style="color:#F7CA18">{0}</span>'.format(datadate)
-            log = '{user}{reporting_type}{app}{work}{datadate}{cycletype}报数据。'.format(**{
+            app = '<span style="color:#26C281">{0}</span>'.format(app)
+            work = '<span style="color:#2ab4c0">{0}</span>'.format(work)
+            operationtype = '<span style="color:#c5bf66">{0}</span>'.format(map_operation(rl.operationtype, True)) if rl.operationtype else ""
+            log = '{user}{reporting_type}{app}{work}{datadate}{cycletype}报{operationtype}数据。'.format(**{
                 'user': user,
                 'app': app,
                 'work': work if work else '',
                 'reporting_type': reporting_type,
                 'cycletype': cycletype,
+                'operationtype': operationtype,
                 'datadate': datadate
             })
             # 黄展翔 发布 动力中心经营统计计划部填报 2020-01-02日报数据
