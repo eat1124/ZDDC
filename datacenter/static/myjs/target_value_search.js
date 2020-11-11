@@ -16,11 +16,12 @@ $(document).ready(function () {
         $.ajax({
             type: "POST",
             dataType: "JSON",
-            url: "../get_target_search_data/",
+            url: "../../get_target_search_data/",
             data: {
                 target: $('#target').val(),
                 start_date: $("#start_date").val(),
-                end_date: $("#end_date").val()
+                end_date: $("#end_date").val(),
+                app_id: $("#app_id").val(),
             },
             success: function (data) {
                 if (data.status == 1){

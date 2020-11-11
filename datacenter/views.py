@@ -9124,8 +9124,18 @@ def get_report_search_data(request):
 
 def target_value_search(request, funid):
     if request.user.is_authenticated():
+        # 管理应用id
+        app_id = ""
+        try:
+            funid = int(funid)
+        except ValueError:
+            pass
+        c_app = get_app_from_fun(funid)
+        if not c_app["err"]:
+            app_id = c_app["app_id"]
         return render(request, 'target_value_search.html', {
-            'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request)
+            'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request), 
+            "app_id": app_id,
         })
     else:
         return HttpResponseRedirect('/login')
@@ -9193,7 +9203,11 @@ def get_target_search_data(request):
         target = request.POST.get("target", "")
         start_date = request.POST.get("start_date", "")
         end_date = request.POST.get("end_date", "")
-
+        app_id = request.POST.get("app_id", "")
+        try:
+            app_id = int(app_id)
+        except ValueError:
+            pass
         if not target:
             status = 0
             info = '指标代码或者指标名称未填写。'
@@ -9204,7 +9218,9 @@ def get_target_search_data(request):
             status = 0
             info = "结束时间未选择。"
         else:
-            c_targets = Target.objects.exclude(state="9").filter(Q(name=target) | Q(code=target))
+            c_targets = Target.objects.exclude(state="9").filter(Q(name=target) | Q(code=target)).filter(
+                Q(adminapp__id=app_id) | Q(app__id=app_id)
+            )
             if c_targets.exists():
                 c_target = c_targets[0]
 
@@ -9262,7 +9278,7 @@ def get_target_search_data(request):
                         data = s_target_values + m_target_values + e_target_values
             else:
                 status = 0
-                info = "指标不存在。"
+                info = "当前应用不存在该指标。"
 
         return JsonResponse({
             "status": status,
@@ -9275,14 +9291,27 @@ def get_target_search_data(request):
 
 def target_statistic(request, funid):
     if request.user.is_authenticated():
+        # 管理应用id
+        app_id = ""
+        try:
+            funid = int(funid)
+        except ValueError:
+            pass
+        c_app = get_app_from_fun(funid)
+        if not c_app["err"]:
+            app_id = c_app["app_id"]
+
         # 周期类型
         cycle_list = DictList.objects.exclude(state="9").filter(dictindex_id=12)
 
-        targets = Target.objects.exclude(state="9").values("id", "name", "cycletype")
-
+        targets = Target.objects.exclude(state="9").filter(
+            Q(adminapp__id=app_id)|Q(app__id=app_id)
+        ).values("id", "name", "cycletype")
+        print(len(targets))
         return render(request, 'target_statistic.html', {
             'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request),
-            "cycle_list": cycle_list, "targets": list(targets)  # 解决 remaining elements truncated
+            "cycle_list": cycle_list, "targets": list(targets),  # 解决 remaining elements truncated
+            "app_id": app_id,
         })
     else:
         return HttpResponseRedirect('/login')

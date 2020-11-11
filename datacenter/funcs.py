@@ -7,6 +7,26 @@ from django.db import transaction
 from .models import *
 
 
+def get_app_from_fun(fun_id: int) -> dict:
+    """
+    功能所属的应用
+    """
+    err = ""
+    app_id = None
+    try:
+        c_fun = Fun.objects.exclude(state="9").get(id=fun_id)
+    except:
+        err = "功能不存在"
+    else:
+        app_id = c_fun.app_id
+        if not app_id:
+            err = "无关联应用"
+    return {
+        "err": err,
+        "app_id": app_id,
+    }
+
+
 def map_operation(operation_type, ch=False):
     """
     @params ch{bool}: True 返回中文 False返回英文表名

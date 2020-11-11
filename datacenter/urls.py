@@ -149,11 +149,11 @@ urlpatterns = [
     url(r'^get_report_search_data/$', get_report_search_data),
 
     # 指标数据查询
-    url(r'^target_value_search/$', target_value_search, {'funid': '142'}),
+    url(r'^target_value_search/(?P<funid>\d+)/$', target_value_search),
     url(r'^get_target_search_data/$', get_target_search_data),
 
     # 指标统计查询
-    url(r'^target_statistic/$', target_statistic, {'funid': '143'}),
+    url(r'^target_statistic/(?P<funid>\d+)/$', target_statistic),
     url(r'^target_statistic_data/$', target_statistic_data),
     url(r'^target_statistic_save/$', target_statistic_save),
     url(r'^target_statistic_del/$', target_statistic_del),

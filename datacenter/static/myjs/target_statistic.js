@@ -2,7 +2,7 @@ function getSearchStatistic() {
     $.ajax({
         type: "POST",
         dataType: "JSON",
-        url: "../target_statistic_data/",
+        url: "../../target_statistic_data/",
         data: {},
         success: function (data) {
             var table_data = data.data,
@@ -83,7 +83,7 @@ function renderStatisticDataTable(table_data) {
                 },
                 success: function (data) {
                     if (data.status == 1) {
-                        table.ajax.url("../target_statistic_data/").load();
+                        table.ajax.url("../../target_statistic_data/").load();
                         alert("删除成功！");
                     }
                 },
@@ -179,6 +179,7 @@ function renderTargetColDataTable(table_data) {
         }
         // 选中指标
         if (data.if_group == "是") {
+            console.log(targets)
             $('#multiple_targets').select2('val', targets);
             // 重命名加载
             for (var j = 0; j < data.targets.length; j++) {
@@ -324,19 +325,23 @@ $('#search_new').click(function () {
 });
 
 $('#col_new').click(function () {
-    $('#col_id').val(0);
-    $('#col_name').val('');
-    $('#col_remark').val('');
-    $('#if_group').val('是');
-    $('#multiple_targets').select2('val', []);
-    $('#single_target').select2('val', "");
-    $('#new_target').empty();
-    $('#rename_div').show();
-    $('#static02').modal('show');
-
-    $('#multiple_div').show();
-    $('#single_div').hide();
-
+    if (!$('#search_name').val()){
+        alert('查询名未填写!');
+    } else if (!$('#search_type').val()){
+        alert('类型未选择!');
+    } else {
+        $('#col_id').val(0);
+        $('#col_name').val('');
+        $('#col_remark').val('');
+        $('#if_group').val('是');
+        $('#multiple_targets').select2('val', []);
+        $('#single_target').select2('val', "");
+        $('#new_target').empty();
+        $('#rename_div').show();
+        $('#static02').modal('show');
+        $('#multiple_div').show();
+        $('#single_div').hide();
+    }
 });
 
 $("#multiple_targets")
@@ -428,7 +433,7 @@ $('#statistic_save').click(function () {
     $.ajax({
         type: "POST",
         dataType: "JSON",
-        url: "../target_statistic_save/",
+        url: "../../target_statistic_save/",
         data: {
             "id": $('#search_statistic_id').val(),
             "name": $('#search_name').val(),
@@ -440,7 +445,7 @@ $('#statistic_save').click(function () {
             if (data.status == 1) {
                 $('#static01').hide();
                 $('.modal-backdrop').remove();
-                search_table.ajax.url("../target_statistic_data/").load();
+                search_table.ajax.url("../../target_statistic_data/").load();
             }
             alert(data.info);
         }
