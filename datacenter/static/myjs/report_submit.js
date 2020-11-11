@@ -238,6 +238,8 @@ $(document).ready(function() {
         }
     }
     var selected_report_type = $("#selected_report_type").val();
+    console.log(selected_report_type)
+
     try {
         if (selected_report_type){
             $('#search_report_type').val(selected_report_type);

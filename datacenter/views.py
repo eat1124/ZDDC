@@ -6658,10 +6658,7 @@ def report_submit_index(request, funid):
         errors = []
         id = ""
         report_type_list = []
-
-        report_type = request.GET.get("report_type", "")
-        report_time = request.GET.get("report_time", "")
-
+        report_type = ""
         adminapp = ""
         try:
             cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
@@ -6670,16 +6667,26 @@ def report_submit_index(request, funid):
             return HttpResponseRedirect("/index")
 
         # 下拉框选项
+        # 查看该应用有报表的类型
+        report_types = ReportModel.objects.exclude(state="9").order_by("sort").filter(app_id=adminapp).values(
+            "report_type"
+        )
+        all_report_types = [rt["report_type"] for rt in report_types]
+
         c_dict_index_1 = DictIndex.objects.filter(
             id=7).exclude(state='9')
         if c_dict_index_1.exists():
             c_dict_index_1 = c_dict_index_1[0]
             dict_list1 = c_dict_index_1.dictlist_set.exclude(state="9")
             for i in dict_list1:
-                report_type_list.append({
-                    "report_name": i.name,
-                    "report_type_id": i.id,
-                })
+                if str(i.id) in all_report_types:
+                    report_type_list.append({
+                        "report_name": i.name,
+                        "report_type_id": i.id,
+                    })
+
+                    if not report_type:
+                        report_type = i.id
         all_app = App.objects.exclude(state="9")
         all_app_list = []
         for app in all_app:
@@ -6745,8 +6752,6 @@ def report_submit_index(request, funid):
             "26": date5.strftime("%Y"),
         }
 
-        if report_type in temp_dict.keys() and report_time:
-            temp_dict[report_type] = report_time
         return render(request, 'report_submit.html',
                       {'username': request.user.userinfo.fullname,
                        "selected_report_type": report_type,
