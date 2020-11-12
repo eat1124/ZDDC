@@ -73,12 +73,6 @@
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <div class="col-md-2 control-label"><b>指标列</b></div>
-                                <div class="col-md-10">
-                                    <hr style="height:1px;border:none;border-top:1px solid #87cefa;">
-                                </div>
-                            </div>
                             <div class="form-group" style="padding: 0 10px">
                                 <div class="table-toolbar">
                                     <div class="row">
@@ -98,8 +92,8 @@
                                     <thead>
                                     <tr>
                                         <th> 列名</th>
-                                        <th> 是否分组</th>
                                         <th> 分组</th>
+                                        <th> 统计类型</th>
                                         <th style="width:50px;"> 操作</th>
                                     </tr>
                                     </thead>
@@ -145,12 +139,12 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-md-2 control-label" for="form_control_1"><span
-                                        style="color:red; ">*</span>是否分组</label>
+                                <label class="col-md-2 control-label" for="form_control_1"><span style="color:red; ">*</span>统计类型</label>
                                 <div class="col-md-10">
-                                    <select id="if_group" name="if_group" class="form-control">
-                                        <option value="是">是</option>
-                                        <option value="否">否</option>
+                                    <select id="statistic_type" name="statistic_type" class="form-control">
+                                        <option value="-">无</option>
+                                        <option value="1">求和</option>
+                                        <option value="2">平均</option>
                                     </select>
                                 </div>
                             </div>
@@ -183,7 +177,7 @@
                             </div>
                             <div id="rename_div">
                                 <div class="form-group">
-                                    <div class="col-md-2 control-label"><b>重命名</b></div>
+                                    <div class="col-md-2 control-label"><b>列信息配置</b></div>
                                     <div class="col-md-10">
                                         <hr style="height:1px;border:none;border-top:1px solid #87cefa;">
                                     </div>

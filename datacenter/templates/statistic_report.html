@@ -21,6 +21,9 @@
     <script src="/static/new/js/ie/respond.min.js"></script>
     <script src="/static/new/js/ie/excanvas.js"></script>
     <![endif]-->
+    <!-- fakeLoader.js -->
+    <link href="/static/assets/global/plugins/fakeLoader.js/css/fakeLoader.css" rel="stylesheet" type="text/css"/>
+
 </head>
 
 <body>
@@ -28,11 +31,13 @@
 <section class="vbox">
     <section class="scrollable wrapper">
         <div class="col-md-12" style="padding:0">
-            <section class="panel panel-default" style="padding:0 15px 0 15px;">
+            <section class="panel panel-default" style="padding:15px 15px 0 15px;">
                 <h3 class="event-form-title margin-bottom-20"><center>统计查询 {% if search_name %}({{ search_name }}) {% endif %}</center></h3>
                 <div id="external-events">
-                    <form class="inline-form">
+                    <div class="inline-form">
                         <input type="text" id="search_id" name="search_id" value="{{ search_id }}" hidden>
+                        <input type="text" id="date_type" name="date_type" value="{{ date_type }}" hidden>
+                        <input type="text" id="search_name" name="search_name" value="{{ search_name }}" hidden>
                         <br>
                         <div class="row">
                             <div class="col-md-12">
@@ -44,7 +49,9 @@
                                                     <div class="form-group" >
                                                         <label class="col-md-4 control-label">开始时间</label>
                                                         <div class="col-md-6">
-                                                            <input type="text" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+                                                            <input type="text" id="start_daydate" name="start_daydate" class="form-control" value="{{ s_date }}">
+                                                            <input style="display: none;" type="text" id="start_date_seasondate" name="start_date_seasondate" class="form-control" value="{{ s_seasondate }}">
+                                                            <input style="display: none;" type="text" id="start_date_yeardate" name="start_date_yeardate" class="form-control" value="{{ s_yeardate }}">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -52,15 +59,19 @@
                                                     <div class="form-group">
                                                         <label class="col-md-4 control-label">结束时间</label>
                                                         <div class="col-md-6">
-                                                            <input type="text" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+                                                            <input type="text" id="end_daydate" name="end_daydate" class="form-control" value="{{ e_date }}">
+                                                            <input style="display: none;" type="text" id="end_date_seasondate" name="end_date_seasondate" class="form-control" value="{{ e_seasondate }}">
+                                                            <input style="display: none;" type="text" id="end_date_yeardate" name="end_date_yeardate" class="form-control" value="{{ e_yeardate }}">
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-12">
                                                 <center>
-                                                    <button class="btn btn-sm btn-default" id="search">查询
+                                                    <button class="btn btn-sm btn-primary" id="search">查询
                                                     </button>
+                                                    <a class="btn btn-sm btn-primary" id="to_excel">导出 <i class="fa fa-file-excel-o" style="color:currentColor"></i>
+                                                    </a>
                                                 </center>
                                             </div>
                                         </div>
@@ -69,9 +80,9 @@
                                 </div>
                             </div>
                         </div>
-                    </form>
+                    </div>
                     <hr>
-                    <div style="overflow: scroll; height: 870px;">
+                    <div style="overflow: scroll;">
                         <table id="statistic_report_dt"  style="word-break:keep-all" class="table table-bordered table-advance">{% csrf_token %}
                             <thead>
         
@@ -86,26 +97,34 @@
         </div>
     </section>
 </section>
-
+<div id="report_search" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+    <div class='modal-dialog'
+         style="font-family: Impact;font-size:30px;font-weight:bold;color:#fff;width: 800px;position: absolute; height:100px;left: 48%; top: 45%;margin-left:-200px;margin-top:-100px;">
+        <span class="col-md-5" style="margin-left: 133px; margin-top: 21px">查询中，请稍候</span>
+        <div class="fakeLoader" style="padding-left: 40px">
+        </div>
+    </div>
+</div>
 <script src="/static/assets/global/plugins/jquery.min.js" type="text/javascript"></script>
 <script src="/static/assets/global/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
 <!-- App -->
 <script src="/static/new/js/app.js"></script>
 <script src="/static/new/js/slimscroll/jquery.slimscroll.min.js"></script>
 <script src="/static/assets/global/plugins/jquery-validation/js/jquery.validate.js" type="text/javascript"></script>
-<link href="/static/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css"/>
-<link href="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet"
-      type="text/css"/>
 <link href="/static/assets/global/plugins/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css"
       rel="stylesheet" type="text/css"/>
 
-
-<script src="/static/assets/global/plugins/datatables/datatables.min.js" type="text/javascript"></script>
-<script src="/static/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js"
-        type="text/javascript"></script>
 <script src="/static/assets/global/plugins/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"
         type="text/javascript"></script>
-<script src="/static/myjs/statistic_report.js" type="text/javascript"></script>
+<script src="/static/assets/global/plugins/laydate/laydate.js"></script>
+<!-- layui -->
+<link rel="stylesheet" href="/static/assets/global/plugins/layui-2.5.6/dist/css/layui.css"  media="all">
+<script src="/static/assets/global/plugins/layui-2.5.6/dist/layui.js" charset="utf-8"></script>
 
+<!-- tableExport -->
+<script src="/static/assets/global/plugins/tableExport.jquery/libs/FileSaver/FileSaver.min.js"></script>
+<script src="/static/assets/global/plugins/tableExport.jquery/tableExport.js" type="text/javascript"></script>
+
+<script src="/static/myjs/statistic_report.js" type="text/javascript"></script>
 </body>
 </html>
