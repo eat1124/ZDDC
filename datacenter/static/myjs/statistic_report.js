@@ -342,7 +342,7 @@ function getStatisticReport(start_date, end_date, search_id, date_type) {
                     } else {
                         // 合计求和->总计
                         var zj_sum = 0;
-                        var hj_tds = $('#statistic_report_dt').find('tr').eq(-2).find('td');
+                        var hj_tds = $('#statistic_report_dt').find('tr').eq(-1).find('td');
                         for (var n = 0; n < colspan; n++) {
                             var c_hj = parseFloat(hj_tds.eq(td_num).text());
                             if (!isNaN(c_hj)) {

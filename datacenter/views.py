@@ -9246,7 +9246,7 @@ def get_target_search_data(request):
     if request.user.is_authenticated():
         status = 1
         info = ""
-        data = []
+        all_data = []
 
         target = request.POST.get("target", "")
         start_date = request.POST.get("start_date", "")
@@ -9266,20 +9266,20 @@ def get_target_search_data(request):
             status = 0
             info = "结束时间未选择。"
         else:
-            c_targets = Target.objects.exclude(state="9").filter(Q(name__icontains=target) | Q(code__icontains=target)).filter(
-                Q(adminapp__id=app_id) | Q(app__id=app_id)
-            )
-            if c_targets.exists():
-                c_target = c_targets[0]
+            # 判断开始时间与结束时间是否在同一年
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
 
-                # 判断开始时间与结束时间是否在同一年
-                start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-                end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            if start_date > end_date:
+                status = 0
+                info = "开始时间不得迟于结束时间。"
+            else:
+                c_targets = Target.objects.exclude(state="9").filter(Q(name__icontains=target) | Q(code__icontains=target)).filter(
+                    Q(adminapp__id=app_id) | Q(app__id=app_id)
+                )
+                for c_target in c_targets:
+                    data = []
 
-                if start_date > end_date:
-                    status = 0
-                    info = "开始时间不得迟于结束时间。"
-                else:
                     start_date_year = start_date.year
                     end_date_year = end_date.year
                     delta_year = end_date_year - start_date_year
@@ -9340,14 +9340,12 @@ def get_target_search_data(request):
                                     m_target_values.extend(m_data)
 
                         data = s_target_values + m_target_values + e_target_values
-            else:
-                status = 0
-                info = "当前应用不存在该指标。"
 
+                    all_data.extend(data)
         return JsonResponse({
             "status": status,
             "info": info,
-            "data": sorted(data, key=lambda e: e.__getitem__('time'), reverse=True) if data else []
+            "data": sorted(all_data, key=lambda e: e.__getitem__('time'), reverse=True) if all_data else []
         })
     else:
         return HttpResponseRedirect('/login')
