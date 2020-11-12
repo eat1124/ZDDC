@@ -27,6 +27,7 @@ import win32api
 import calendar
 import socket
 from dateutil.relativedelta import relativedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from django.utils.timezone import utc
 from django.utils.timezone import localtime
@@ -4014,9 +4015,17 @@ def getreporting_date(date, cycletype):
     return date
 
 
+def get_last_day_in_month(d):
+    """
+    获取当月最后一天的日期
+    """
+    last_day = calendar.monthrange(d.year, d.month)[1]
+    return d.replace(day=last_day)
+
+
 def get_a_cycle_aft(date, cycletype):
     """
-    一个周期后
+    一个周期后的最后一天
     """
     if cycletype == "10":   # 日报
         date += datetime.timedelta(days=1)
@@ -4028,8 +4037,7 @@ def get_a_cycle_aft(date, cycletype):
         date += relativedelta(months=6)
     if cycletype == "14":   # 年报
         date += relativedelta(months=12)
-
-    return date
+    return get_last_day_in_month(date)
 
 
 def reporting_index(request, cycletype, funid):
@@ -5993,6 +6001,8 @@ def reporting_reextract(request):
                      "Calculatedata": CalculateTable}
 
         for target in all_target:
+            # 根据指标周期修改reporting_date
+            a_cycle_aft_date = get_a_cycle_aft(reporting_date, cycletype)
             if operationtype == "16":
                 extractdata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target_id=target.id).filter(datadate=reporting_date)
@@ -6003,8 +6013,9 @@ def reporting_reextract(request):
                         tablename = target.storage.tablename
                     except:
                         pass
-                    if tablename != "":
-                        rows = []
+                    
+                    rows = []
+                    if tablename:
                         try:
                             with connection.cursor() as cursor:
                                 reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
@@ -6033,6 +6044,27 @@ def reporting_reextract(request):
                                 extractdata.curvalue = round(extractdata.curvalue, target.digit)
                             except:
                                 pass
+                    if not rows or not target.cycle:  # 没取到数据 或者 没有取数周期，根据数据源实时取
+                        ret = Extract.getDataFromSource(target, a_cycle_aft_date)
+                        result_list = ret["result"]
+                        if result_list:
+                            try:
+                                if target.is_repeat == '2':
+                                    rownum = 0
+                                    rowvalue = 0
+                                    for row in result_list:
+                                        if row[0] is not None:
+                                            rowvalue += row[0]
+                                            rownum += 1
+                                    extractdata.curvalue = rowvalue / rownum
+                                else:
+                                    extractdata.curvalue = result_list[0][0]
+                                extractdata.curvalue = decimal.Decimal(
+                                    float(extractdata.curvalue) * float(target.magnification))
+                                extractdata.curvalue = round(extractdata.curvalue, target.digit)
+                            except Exception as e:
+                                print(e)
+
                     if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
@@ -6168,7 +6200,6 @@ def reporting_new(request):
                     entrydata.save()
                 # 提取
                 if operationtype == "16":
-                    print(target.id)
                     extractdata = getmodels("Extractdata", str(reporting_date.year))()
                     extractdata.target = target
                     extractdata.datadate = reporting_date
@@ -9362,12 +9393,12 @@ def target_statistic_data(request):
             "name": "第一列",
             "targets": [{"target_id": 35, "new_target_name": "新指标名1", "target_name": "指标1"}, {"target_id": 36, "new_target_name": "新指标名2", "target_name": "指标2"}],
             "remark": "指标列说明",
-            "if_group": "是"
+            "statistc_type": "0"
         }, {
             "name": "第二列",
             "targets": [{"target_id": 37, "new_target_name": "新指标名3"}],
             "remark": "指标列说明",
-            "if_group": "否"
+            "statistc_type": "1"
         }]
     }, {
         "id": 2,
@@ -9498,10 +9529,99 @@ def target_statistic_del(request):
 
 
 def statistic_report(request):
+    """
+
+    @param request:
+    @return: e_date
+             s_date
+             e_seasondate
+             s_seasondate
+             e_yeardate
+             s_yeardate
+    """
     if request.user.is_authenticated():
-        start_date = request.GET.get("start_date", "")
-        end_date = request.GET.get("end_date", "")
+        date_type = request.GET.get("date_type", "")
         search_id = request.GET.get("search_id", "")
+
+        # date_type: 日 月 季 半年 年 显示不同时间
+        n_time = datetime.datetime.now()
+
+        e_time = n_time.replace(hour=0, minute=0, second=0, microsecond=0)  # 结束时间
+        e_date = e_time.strftime("%Y-%m-%d")
+        s_time = n_time.replace(hour=0, minute=0, second=0, microsecond=0)  # 开始时间
+        s_date = s_time.strftime("%Y-%m-%d")
+        if date_type == '10':   # 日
+            s_time = s_time - relativedelta(months=1)
+            s_time = get_last_day_in_month(s_time)
+            s_date = s_time.strftime("%Y-%m-%d")
+        if date_type == '11':   # 月
+            s_time = s_time - relativedelta(months=1)
+            s_time = get_last_day_in_month(s_time)
+
+            s_date = s_time.strftime("%Y-%m")
+            e_date = e_time.strftime("%Y-%m")
+
+        e_seasondate = ''
+        s_seasondate = ''
+        if date_type == '12':   # 季
+            now = n_time
+            month = (now.month - 1) - (now.month - 1) % 3 + 1
+            now = (n_time.replace(month=month, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1))
+            s_now = now - relativedelta(months=3)
+            s_now = get_last_day_in_month(s_now)
+            def get_date_and_seasondate(c_time):
+                date, seasondate = "", ""
+                year = c_time.strftime("%Y")
+                if c_time.month in (1, 2, 3):
+                    season = '第1季度'
+                    seasondate = year + '-' + season
+                    date = year + '-' + "03-31"
+                if c_time.month in (4, 5, 6):
+                    season = '第2季度'
+                    seasondate = year + '-' + season
+                    date = year + '-' + "06-30"
+                if c_time.month in (7, 8, 9):
+                    season = '第3季度'
+                    seasondate = year + '-' + season
+                    date = year + '-' + "09-30"
+                if c_time.month in (10, 11, 12):
+                    season = '第4季度'
+                    seasondate = year + '-' + season
+                    date = year + '-' + "12-31"
+                return date, seasondate
+            e_date, e_seasondate = get_date_and_seasondate(now)
+            s_date, s_seasondate = get_date_and_seasondate(s_now)
+
+        e_yeardate = ''
+        s_yeardate = ''
+        if date_type == '13':   # 半年
+            now = n_time
+            month = (now.month - 1) - (now.month - 1) % 6 + 1
+            now = (n_time.replace(month=month, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1))
+            s_now = now - relativedelta(months=6)
+            s_now = get_last_day_in_month(s_now)
+
+            def get_date_and_yeardate(c_time):
+                date, yeardate = "", ""
+                year = now.strftime("%Y")
+                if now.month in (1, 2, 3, 4, 5, 6):
+                    season = '上半年'
+                    yeardate = year + '-' + season
+                    date = year + '-' + "06-30"
+                if now.month in (7, 8, 9, 10, 11, 12):
+                    season = '下半年'
+                    yeardate = year + '-' + season
+                    date = year + '-' + "12-31"
+                return date, yeardate
+            e_date, e_yeardate = get_date_and_yeardate(now)
+            s_date, s_yeardate = get_date_and_yeardate(s_now)
+        if date_type == '14':   # 年
+            now = (n_time.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1))
+            s_now = now - relativedelta(months=12)
+            s_now = get_last_day_in_month(s_now)
+
+            e_date = now.strftime("%Y")
+            s_date = s_now.strftime("%Y")
 
         search_name = ""
         try:
@@ -9525,9 +9645,10 @@ def get_statistic_report(request):
     [{"date": "2020-01-31", "target_values": []}, {"date": "2020-01-30", "target_values": []}]
     """
     if request.user.is_authenticated():
-        start_date = request.GET.get("start_date", "")
-        end_date = request.GET.get("end_date", "")
-        search_id = request.GET.get("search_id", "")
+        start_date = request.POST.get("start_date", "")
+        end_date = request.POST.get("end_date", "")
+        search_id = request.POST.get("search_id", "")
+        date_type = request.POST.get("date_type", "")
 
         # start_date = "2020-01-01"
         # end_date = "2020-01-31"
@@ -9544,7 +9665,7 @@ def get_statistic_report(request):
             "targets": []
         }]
         body_data = []
-
+        v_sums = []  # 合计
         if not start_date:
             status = 0
             info = "开始时间未选择。"
@@ -9556,15 +9677,27 @@ def get_statistic_report(request):
             info = "当前页面已失效，请重新访问。"
         else:
             try:
-                start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-                end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+                start_date = getreporting_date(start_date, date_type)
+                end_date = getreporting_date(end_date, date_type)
+
                 target_statistic = TargetStatistic.objects.get(id=int(search_id))
                 col_data = target_statistic.col_data
 
+                """
+                "[{
+                    'statistic_type': '1', 
+                    'name': 'b', 
+                    'remark': '', 
+                    'targets': [
+                        {'new_target_name': '#1运行时间', 'target_id': '1884', 'cumulative_type': '0', 'target_name': '#1运行时间'}, 
+                        {'new_target_name': '#2运行时间', 'target_id': '1885', 'cumulative_type': '4', 'target_name': '#2运行时间'}
+                    ]
+                }]"
+                """
                 try:
                     col_data = eval(col_data)
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(e)
                 else:
                     """
                     [{'name': '列二', 'if_group': '否', 'remark': '列二的说明', 
@@ -9576,7 +9709,7 @@ def get_statistic_report(request):
                     """
 
                     # 指定时间段内 Calculatedata Extractdata Entrydata Meterdata所有数据
-                    def get_target_values(operation_type, start_date, end_date):
+                    def get_target_values(operation_type, start_date, end_date, date_type):
                         """
                         获取指定时间内，不同操作类型的所有数据，包括隔年、跨年
                         :param operation_type:
@@ -9606,17 +9739,22 @@ def get_statistic_report(request):
                             if delta_year == 0:  # 同一年
                                 target_val = getmodels(model_name, str(start_date_year)).objects.exclude(state="9").filter(
                                     Q(datadate__gte=start_date.date()) & Q(datadate__lte=end_date.date())
-                                ).values("curvalue", "target_id", "datadate", "target__digit")
+                                ).values(
+                                    "curvalue", "cumulativemonth", "cumulativequarter", "cumulativehalfyear", "cumulativeyear",
+                                    "target_id", "datadate", "target__digit", "target__cycletype"
+                                )
 
                             else:
                                 # 开始时间到年底
                                 start_target_val = getmodels(model_name, str(start_date_year)).objects.exclude(state="9").filter(datadate__gte=start_date.date()).values(
-                                    "curvalue", "target_id", "datadate", "target__digit"
+                                    "curvalue", "cumulativemonth", "cumulativequarter", "cumulativehalfyear", "cumulativeyear",
+                                    "target_id", "datadate", "target__digit", "target__cycletype"
                                 )
 
                                 # 结束时间到年初
                                 end_target_val = getmodels(model_name, str(end_date_year)).objects.exclude(state="9").filter(datadate__lte=end_date.date()).values(
-                                    "curvalue", "target_id", "datadate", "target__digit"
+                                    "curvalue", "cumulativemonth", "cumulativequarter", "cumulativehalfyear", "cumulativeyear",
+                                    "target_id", "datadate", "target__digit", "target__cycletype"
                                 )
                                 target_val.extend(start_target_val)
                                 target_val.extend(end_target_val)
@@ -9626,7 +9764,8 @@ def get_statistic_report(request):
                                         start_date_year += 1
                                         start_date = datetime.datetime(start_date_year, 1, 1)
                                         middle_target_val = getmodels(model_name, str(start_date_year)).objects.exclude(state="9").filter(datadate__gte=start_date.date()).values(
-                                            "curvalue", "target_id", "datadate", "target__digit"
+                                            "curvalue", "cumulativemonth", "cumulativequarter", "cumulativehalfyear", "cumulativeyear",
+                                            "target_id", "datadate", "target__digit", "target__cycletype"
                                         )
                                         if middle_target_val:
                                             target_val.extend(middle_target_val)
@@ -9634,15 +9773,19 @@ def get_statistic_report(request):
                                     pass
                             data = [{
                                 "id": tv["target_id"],
-                                "curvalue": float(round(tv["curvalue"], tv["target__digit"])),
+                                "curvalue": float(round(tv["curvalue"] if tv["curvalue"] else 0, tv["target__digit"])),
+                                "cumulativemonth": float(round(tv["cumulativemonth"] if tv["cumulativemonth"] else 0, tv["target__digit"])),
+                                "cumulativequarter": float(round(tv["cumulativequarter"] if tv["cumulativequarter"] else 0, tv["target__digit"])),
+                                "cumulativehalfyear": float(round(tv["cumulativehalfyear"] if tv["cumulativehalfyear"] else 0, tv["target__digit"])),
+                                "cumulativeyear": float(round(tv["cumulativeyear"] if tv["cumulativeyear"] else 0, tv["target__digit"])),
                                 "date": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
-                            } for tv in target_val]
+                            } for tv in target_val if str(tv["target__cycletype"]) == date_type]
                         return sorted(data, key=lambda e: e.__getitem__('date'), reverse=True)
 
-                    meter_data = get_target_values('1', start_date, end_date)
-                    entry_data = get_target_values('15', start_date, end_date)
-                    extract_data = get_target_values('16', start_date, end_date)
-                    calculate_data = get_target_values('17', start_date, end_date)
+                    meter_data = get_target_values('1', start_date, end_date, date_type)
+                    entry_data = get_target_values('15', start_date, end_date, date_type)
+                    extract_data = get_target_values('16', start_date, end_date, date_type)
+                    calculate_data = get_target_values('17', start_date, end_date, date_type)
 
                     all_data = {
                         "1": meter_data,
@@ -9651,18 +9794,13 @@ def get_statistic_report(request):
                         "17": calculate_data,
                     }
 
-                    # 间隔时间
-                    delta_time = end_date - start_date
-                    delta_days = delta_time.days
-
                     # head_data
                     for cd in col_data:
                         head_targets = []
                         col_name = cd["name"]
                         targets = cd["targets"]
-                        if_group = cd["if_group"]
                         colspan = len(targets)
-                        if if_group == "是":
+                        if colspan > 1:
                             rowspan = 1
                         else:
                             rowspan = 2
@@ -9677,50 +9815,182 @@ def get_statistic_report(request):
                         })
 
                     # body_data
-                    for i in range(1, delta_days + 2):
+                    # 时间列表
+                    def get_date_list_during_period(start_time, end_time, date_type):
+                        """
+                        不同周期类型下，指定时间区间获取时间列表
+                            日：每日
+                            月：月最后一天
+                            季：季最后一天
+                            半年：半年最后一天
+                            年：年最后一天
+                        @param start_time:
+                        @param end_time:
+                        @param date_type:
+                        @return date_list:
+                        """
+                        date_list = []
+
+                        n = 0
+                        n_time = end_time
+                        if date_type == "10":
+                            while True:
+                                date_list.append(n_time)
+
+                                n_time -= datetime.timedelta(days=1)
+
+                                if n_time < start_time or n > 3*365:  # 最大循环
+                                    break
+                                n += 1
+                        if date_type == "11":
+                            while True:
+                                date_list.append(n_time)
+
+                                n_time -= relativedelta(months=1)
+                                n_time = get_last_day_in_month(n_time)
+
+                                if n_time < start_time or n > 3*365:
+                                    break
+                                n += 1
+                        if date_type == "12":
+                            while True:
+                                date_list.append(n_time)
+
+                                n_time -= relativedelta(months=3)
+                                n_time = get_last_day_in_month(n_time)
+
+                                if n_time < start_time or n > 3*365:
+                                    break
+                                n += 1
+                        if date_type == "13":
+                            while True:
+                                date_list.append(n_time)
+
+                                n_time -= relativedelta(months=6)
+                                n_time = get_last_day_in_month(n_time)
+
+                                if n_time < start_time or n > 3*365:
+                                    break
+                                n += 1
+                        if date_type == "14":
+                            while True:
+                                date_list.append(n_time)
+
+                                n_time -= relativedelta(months=12)
+                                n_time = get_last_day_in_month(n_time)
+
+                                if n_time < start_time or n > 2000:
+                                    break
+                                n += 1
+
+                        return date_list
+
+                    date_list = get_date_list_during_period(start_date, end_date, date_type)
+
+                    all_targets = Target.objects.exclude(state="9").values(
+                        "id", "name", "operationtype"
+                    )
+                    def get_target_info(target_id:str)->dict:
+                        target_info = {}
+                        for t in all_targets:
+                            if str(t['id']) == target_id:
+                                target_info = t
+                                break
+                        return target_info
+
+                    def handle_target_data(date):
                         target_values = []
+
                         for cd in col_data:
                             targets = cd["targets"]
+                            statistic_type = cd["statistic_type"]
                             for target in targets:
                                 target_id = target["target_id"]
+                                operation_type = get_target_info(target_id).get("operationtype", "")
                                 try:
-                                    target_id = int(target_id)
-                                    cur_target = Target.objects.get(id=target_id)
+                                    cur_data = all_data[operation_type]
                                 except Exception:
                                     pass
                                 else:
-                                    operation_type = cur_target.operationtype
-                                    try:
-                                        cur_data = all_data[operation_type]
-                                    except Exception:
-                                        pass
-                                    else:
-                                        has_value = False
-                                        for d in cur_data:
-                                            if d["id"] == target_id and d["date"] == "{:%Y-%m-%d}".format(start_date):
-                                                target_values.append(d["curvalue"])
-                                                has_value = True
-                                                break
-                                        if not has_value:
-                                            target_values.append(0)
-
+                                    has_value = False
+                                    for d in cur_data:
+                                        if str(d["id"]) == target_id and d["date"] == "{:%Y-%m-%d}".format(date):
+                                            # 判断取的值类型
+                                            if target["cumulative_type"] == "0":
+                                                target_values.append({
+                                                    "value": d["curvalue"],
+                                                    "statistic_type": statistic_type,
+                                                })
+                                            if target["cumulative_type"] == "1":
+                                                target_values.append({
+                                                    "value": d["cumulativemonth"],
+                                                    "statistic_type": statistic_type,
+                                                })
+                                            if target["cumulative_type"] == "2":
+                                                target_values.append({
+                                                    "value": d["cumulativequarter"],
+                                                    "statistic_type": statistic_type,
+                                                })
+                                            if target["cumulative_type"] == "3":
+                                                target_values.append({
+                                                    "value": d["cumulativehalfyear"],
+                                                    "statistic_type": statistic_type,
+                                                })
+                                            if target["cumulative_type"] == "4":
+                                                target_values.append({
+                                                    "value": d["cumulativeyear"],
+                                                    "statistic_type": statistic_type,
+                                                })
+                                            has_value = True
+                                            break
+                                    if not has_value:
+                                        target_values.append({
+                                            "value": "-",
+                                            "statistic_type": statistic_type,
+                                        })
                         if target_values:
-                            body_data.append({
-                                "date": "{:%Y-%m-%d}".format(start_date),
+                            return {
+                                "date": "{:%Y-%m-%d}".format(date),
                                 "target_values": target_values
-                            })
+                            }
 
-                        start_date += datetime.timedelta(days=1)
+                    pool = ThreadPoolExecutor(max_workers=100)
+                    all_tasks = [pool.submit(handle_target_data, date) for date in date_list]
+                    for future in as_completed(all_tasks):
+                        if future.result():
+                            body_data.append(future.result())
+
+                body_data = sorted(body_data, key=lambda e: e.__getitem__('date'), reverse=True)
+                # 合计(判断求和/平均)
+                if body_data:
+                    target_values_length = len(body_data[0]["target_values"])
+                    for i in range(0, target_values_length):
+                        v_sum = 0
+                        statistic_type = ""
+                        for bd in body_data:
+                            target_values = bd["target_values"]
+                            c_v = target_values[i].get("value", "-")
+                            statistic_type = target_values[i].get("statistic_type", "-")
+                            if type(c_v)!=str:
+                                v_sum += c_v
+                        if statistic_type == "1":  # 求和
+                            pass
+                        if statistic_type == "2":   # 平均
+                            v_sum = v_sum/len(body_data)
+                        if statistic_type == "-":   # 无
+                            v_sum = "-"
+                        v_sums.append(v_sum if v_sum else "-")
+
             except Exception as e:
                 status = 0
                 info = "获取报表数据失败{0}".format(e)
-
         return JsonResponse({
             "status": status,
             "info": info,
             "data": {
                 "head_data": head_data,
-                "body_data": body_data
+                "body_data": body_data,
+                "v_sums": v_sums,
             }
         })
     else:
