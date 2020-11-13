@@ -9398,7 +9398,7 @@ def target_statistic(request, funid):
         targets = Target.objects.exclude(state="9").filter(
             Q(adminapp__id=app_id) | Q(app__id=app_id)
         ).values("id", "name", "cycletype")
-        print(len(targets))
+
         return render(request, 'target_statistic.html', {
             'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request),
             "cycle_list": cycle_list, "targets": list(targets),  # 解决 remaining elements truncated
@@ -9996,21 +9996,22 @@ def get_statistic_report(request):
                 if body_data:
                     target_values_length = len(body_data[0]["target_values"])
                     for i in range(0, target_values_length):
-                        v_sum = 0
+                        v_sum = decimal.Decimal('0')
                         statistic_type = ""
                         for bd in body_data:
                             target_values = bd["target_values"]
                             c_v = target_values[i].get("value", "-")
                             statistic_type = target_values[i].get("statistic_type", "-")
                             if type(c_v) != str:
-                                v_sum += c_v
+                                v_sum += decimal.Decimal(str(c_v))
                         if statistic_type == "1":  # 求和
                             pass
                         if statistic_type == "2":  # 平均
                             v_sum = v_sum / len(body_data)
+                            v_sum = round(v_sum, 4)
                         if statistic_type == "-":  # 无
                             v_sum = "-"
-                        v_sums.append(v_sum if v_sum else "-")
+                        v_sums.append(float(v_sum) if v_sum else "-")
 
             except Exception as e:
                 status = 0
