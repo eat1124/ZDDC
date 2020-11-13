@@ -4027,15 +4027,15 @@ def get_a_cycle_aft(date, cycletype):
     """
     一个周期后的最后一天
     """
-    if cycletype == "10":   # 日报
+    if cycletype == "10":  # 日报
         date += datetime.timedelta(days=1)
-    if cycletype == "11":   # 月报
+    if cycletype == "11":  # 月报
         date += relativedelta(months=1)
-    if cycletype == "12":   # 季报
+    if cycletype == "12":  # 季报
         date += relativedelta(months=3)
-    if cycletype == "13":   # 半年报
+    if cycletype == "13":  # 半年报
         date += relativedelta(months=6)
-    if cycletype == "14":   # 年报
+    if cycletype == "14":  # 年报
         date += relativedelta(months=12)
     return get_last_day_in_month(date)
 
@@ -6013,7 +6013,7 @@ def reporting_reextract(request):
                         tablename = target.storage.tablename
                     except:
                         pass
-                    
+
                     rows = []
                     if tablename:
                         try:
@@ -7113,13 +7113,18 @@ def childfun(myfun, funid):
             if str(fun.id) == funid:
                 isselected = True
                 pisselected = True
-                mychildfun.append(
-                    {"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon, "isselected": isselected,
-                     "child": []})
+                mychildfun.append({
+                    "id": fun.id, "name": fun.name, "url": url,
+                    "icon": fun.icon, "isselected": isselected,
+                    "child": [], "new_window": fun.if_new_wd,
+                })
             else:
                 returnfuns = childfun(fun, funid)
-                mychildfun.append({"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
-                                   "isselected": returnfuns["isselected"], "child": returnfuns["fun"]})
+                mychildfun.append({
+                    "id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
+                    "isselected": returnfuns["isselected"], "child": returnfuns["fun"],
+                    "new_window": fun.if_new_wd,
+                })
                 if returnfuns["isselected"]:
                     pisselected = returnfuns["isselected"]
     return {"fun": mychildfun, "isselected": pisselected}
@@ -7139,13 +7144,18 @@ def getpagefuns(funid, request=""):
                 url = fun.url + str(fun.id) + "/" if fun.url else ""
             if str(fun.id) == funid:
                 isselected = True
-                pagefuns.append(
-                    {"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon, "isselected": isselected,
-                     "child": []})
+                pagefuns.append({
+                    "id": fun.id, "name": fun.name, "url": url,
+                    "icon": fun.icon, "isselected": isselected,
+                    "child": [], "new_window": fun.if_new_wd,
+                })
             else:
                 returnfuns = childfun(fun, funid)
-                pagefuns.append({"id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
-                                 "isselected": returnfuns["isselected"], "child": returnfuns["fun"]})
+                pagefuns.append({
+                    "id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
+                    "isselected": returnfuns["isselected"], "child": returnfuns["fun"],
+                    "new_window": fun.if_new_wd,
+                })
 
     curfun = Fun.objects.filter(id=int(funid))
     if len(curfun) > 0:
@@ -7158,7 +7168,8 @@ def getpagefuns(funid, request=""):
             jsurl = '/' + curjsurl[0]
 
         mycurfun = {
-            "id": curfun[0].id, "name": curfun[0].name, "url": myurl, "jsurl": jsurl}
+            "id": curfun[0].id, "name": curfun[0].name, "url": myurl, "jsurl": jsurl
+        }
 
     return {"pagefuns": pagefuns, "curfun": mycurfun, "task_nums": task_nums}
 
@@ -7445,13 +7456,15 @@ def get_fun_tree(parent, selectid, all_apps, all_nodes, all_works):
 
         selected_work = child['work_id']
 
-        node["data"] = {"url": child['url'],
-                        "icon": child['icon'],
-                        "pname": parent['name'],
-                        "app_list": app_select_list,
-                        "app_div_show": True if child['funtype'] == "fun" else False,
-                        "selected_work": selected_work
-                        }
+        node["data"] = {
+            "url": child['url'],
+            "icon": child['icon'],
+            "pname": parent['name'],
+            "app_list": app_select_list,
+            "app_div_show": True if child['funtype'] == "fun" else False,
+            "selected_work": selected_work,
+            "new_window": child["if_new_wd"],
+        }
         node["children"] = get_fun_tree(child, selectid, all_apps, all_nodes, all_works)
 
         try:
@@ -7481,6 +7494,10 @@ def function(request, funid):
             works_select_list = []
             hiddendiv = "hidden"
             app_hidden_div = ""
+
+            visited_url_div = ""
+            new_window_div = ""
+
             all_apps = App.objects.exclude(state="9").values()
             all_works = Work.objects.exclude(state='9').values('id', 'name', 'app_id')
 
@@ -7495,6 +7512,7 @@ def function(request, funid):
                 icon = request.POST.get('icon')
                 app = request.POST.get('app', '')
                 works = request.POST.get('works', '')
+                new_window = request.POST.get('new_window', '')
                 try:
                     id = int(id)
                 except:
@@ -7542,6 +7560,7 @@ def function(request, funid):
                             funsave.sort = sort if sort else None
                             funsave.app_id = int(app) if app else None
                             funsave.work_id = works
+                            funsave.if_new_wd = new_window
                             funsave.save()
 
                             title = name
@@ -7561,6 +7580,7 @@ def function(request, funid):
                                 funsave.icon = icon
                                 funsave.app_id = int(app) if app else None
                                 funsave.work_id = works
+                                funsave.if_new_wd = new_window
                                 funsave.save()
 
                                 title = name
@@ -7596,8 +7616,12 @@ def function(request, funid):
 
                         if mytype == "node":
                             app_hidden_div = "hidden"
+                            visited_url_div = "hidden"
+                            new_window_div = "hidden"
                         else:
                             app_hidden_div = ""
+                            visited_url_div = ""
+                            new_window_div = ""
 
                         # 功能节点修改后，更新funlist
                         global funlist
@@ -7639,13 +7663,15 @@ def function(request, funid):
 
                 selected_work = rootnode['work_id']
 
-                root["data"] = {"url": rootnode['url'],
-                                "icon": rootnode['icon'],
-                                "pname": "无",
-                                "app_list": app_select_list,
-                                "app_div_show": True if rootnode['funtype'] == "fun" else False,
-                                "selected_work": selected_work,
-                                }
+                root["data"] = {
+                    "url": rootnode['url'],
+                    "icon": rootnode['icon'],
+                    "pname": "无",
+                    "app_list": app_select_list,
+                    "app_div_show": True if rootnode['funtype'] == "fun" else False,
+                    "selected_work": selected_work,
+                    "new_window": rootnode["if_new_wd"],
+                }
                 try:
                     if int(selectid) == rootnode['id']:
                         root["state"] = {"opened": True, "selected": True}
@@ -7657,13 +7683,16 @@ def function(request, funid):
                 treedata.append(root)
 
             treedata = json.dumps(treedata)
-            return render(request, 'function.html',
-                          {'username': request.user.userinfo.fullname, 'errors': errors, "id": id,
-                           "pid": pid, "pname": pname, "name": name, "url": url, "icon": icon, "title": title,
-                           "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata,
-                           "works_select_list": works_select_list,
-                           "app_select_list": pre_app_select_list, "app_hidden_div": app_hidden_div,
-                           "pagefuns": getpagefuns(funid, request=request)})
+            return render(request, 'function.html', {
+                'username': request.user.userinfo.fullname, 'errors': errors, "id": id,
+                "pid": pid, "pname": pname, "name": name, "url": url, "icon": icon, "title": title,
+                "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata,
+                "works_select_list": works_select_list,
+                "app_select_list": pre_app_select_list, "app_hidden_div": app_hidden_div,
+                "pagefuns": getpagefuns(funid, request=request),
+                "visited_url_div": visited_url_div,
+                "new_window_div": new_window_div,
+            })
         except Exception as e:
             print(e)
             return HttpResponseRedirect("/index")
@@ -8847,11 +8876,11 @@ def get_important_targets(request):
                     {"target": "DLZX_HB_02_RJ_NOx", "v_type": "curvalue", "value": 0}
                 ],
                 "FDL_JH": [
-                    [   # 发电量年计划
+                    [  # 发电量年计划
                         {"target": "DLZX_JYTJ_FDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
-                        {"target": "DLZX_JYTJ_FDL", "v_type": "cumulativeyear", "value": 0}   # 已完成
+                        {"target": "DLZX_JYTJ_FDL", "v_type": "cumulativeyear", "value": 0}  # 已完成
                     ],
-                    [   # 上网电量年计划
+                    [  # 上网电量年计划
                         {"target": "DLZX_JYTJ_SWDL_NJH", "v_type": "curvalue", "value": 0},  # 计划
                         {"target": "DLZX_JYTJ_SWDL", "v_type": "cumulativeyear", "value": 0}  # 已完成
                     ],
@@ -9175,7 +9204,7 @@ def target_value_search(request, funid):
         end_date = "{:%Y-%m-%d}".format(n_time)
         start_date = "{:%Y-%m-%d}".format(n_time.replace(day=1))
         return render(request, 'target_value_search.html', {
-            'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request), 
+            'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request),
             "app_id": app_id, "start_date": start_date, "end_date": end_date,
         })
     else:
@@ -9219,9 +9248,9 @@ def get_target_value(c_target, start_date, end_date):
                 )
         # 对值的处理
         for ato in appointed_time_object.values(
-                "curvalue", "target__name", "target__code", "datadate", "target__digit", 
+                "curvalue", "target__name", "target__code", "datadate", "target__digit",
                 "cumulativemonth", "cumulativequarter", "cumulativehalfyear", "cumulativeyear",
-            ):
+        ):
             data.append({
                 "name": ato["target__name"],
                 "code": ato["target__code"],
@@ -9367,7 +9396,7 @@ def target_statistic(request, funid):
         cycle_list = DictList.objects.exclude(state="9").filter(dictindex_id=12)
 
         targets = Target.objects.exclude(state="9").filter(
-            Q(adminapp__id=app_id)|Q(app__id=app_id)
+            Q(adminapp__id=app_id) | Q(app__id=app_id)
         ).values("id", "name", "cycletype")
         print(len(targets))
         return render(request, 'target_statistic.html', {
@@ -9548,11 +9577,11 @@ def statistic_report(request):
         e_date = e_time.strftime("%Y-%m-%d")
         s_time = n_time.replace(hour=0, minute=0, second=0, microsecond=0)  # 开始时间
         s_date = s_time.strftime("%Y-%m-%d")
-        if date_type == '10':   # 日
+        if date_type == '10':  # 日
             s_time = s_time - relativedelta(months=1)
             s_time = get_last_day_in_month(s_time)
             s_date = s_time.strftime("%Y-%m-%d")
-        if date_type == '11':   # 月
+        if date_type == '11':  # 月
             s_time = s_time - relativedelta(months=1)
             s_time = get_last_day_in_month(s_time)
 
@@ -9561,12 +9590,13 @@ def statistic_report(request):
 
         e_seasondate = ''
         s_seasondate = ''
-        if date_type == '12':   # 季
+        if date_type == '12':  # 季
             now = n_time
             month = (now.month - 1) - (now.month - 1) % 3 + 1
             now = (n_time.replace(month=month, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1))
             s_now = now - relativedelta(months=3)
             s_now = get_last_day_in_month(s_now)
+
             def get_date_and_seasondate(c_time):
                 date, seasondate = "", ""
                 year = c_time.strftime("%Y")
@@ -9587,12 +9617,13 @@ def statistic_report(request):
                     seasondate = year + '-' + season
                     date = year + '-' + "12-31"
                 return date, seasondate
+
             e_date, e_seasondate = get_date_and_seasondate(now)
             s_date, s_seasondate = get_date_and_seasondate(s_now)
 
         e_yeardate = ''
         s_yeardate = ''
-        if date_type == '13':   # 半年
+        if date_type == '13':  # 半年
             now = n_time
             month = (now.month - 1) - (now.month - 1) % 6 + 1
             now = (n_time.replace(month=month, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1))
@@ -9611,9 +9642,10 @@ def statistic_report(request):
                     yeardate = year + '-' + season
                     date = year + '-' + "12-31"
                 return date, yeardate
+
             e_date, e_yeardate = get_date_and_yeardate(now)
             s_date, s_yeardate = get_date_and_yeardate(s_now)
-        if date_type == '14':   # 年
+        if date_type == '14':  # 年
             now = (n_time.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1))
             s_now = now - relativedelta(months=12)
             s_now = get_last_day_in_month(s_now)
@@ -9837,7 +9869,7 @@ def get_statistic_report(request):
 
                                 n_time -= datetime.timedelta(days=1)
 
-                                if n_time < start_time or n > 3*365:  # 最大循环
+                                if n_time < start_time or n > 3 * 365:  # 最大循环
                                     break
                                 n += 1
                         if date_type == "11":
@@ -9847,7 +9879,7 @@ def get_statistic_report(request):
                                 n_time -= relativedelta(months=1)
                                 n_time = get_last_day_in_month(n_time)
 
-                                if n_time < start_time or n > 3*365:
+                                if n_time < start_time or n > 3 * 365:
                                     break
                                 n += 1
                         if date_type == "12":
@@ -9857,7 +9889,7 @@ def get_statistic_report(request):
                                 n_time -= relativedelta(months=3)
                                 n_time = get_last_day_in_month(n_time)
 
-                                if n_time < start_time or n > 3*365:
+                                if n_time < start_time or n > 3 * 365:
                                     break
                                 n += 1
                         if date_type == "13":
@@ -9867,7 +9899,7 @@ def get_statistic_report(request):
                                 n_time -= relativedelta(months=6)
                                 n_time = get_last_day_in_month(n_time)
 
-                                if n_time < start_time or n > 3*365:
+                                if n_time < start_time or n > 3 * 365:
                                     break
                                 n += 1
                         if date_type == "14":
@@ -9888,7 +9920,8 @@ def get_statistic_report(request):
                     all_targets = Target.objects.exclude(state="9").values(
                         "id", "name", "operationtype"
                     )
-                    def get_target_info(target_id:str)->dict:
+
+                    def get_target_info(target_id: str) -> dict:
                         target_info = {}
                         for t in all_targets:
                             if str(t['id']) == target_id:
@@ -9969,13 +10002,13 @@ def get_statistic_report(request):
                             target_values = bd["target_values"]
                             c_v = target_values[i].get("value", "-")
                             statistic_type = target_values[i].get("statistic_type", "-")
-                            if type(c_v)!=str:
+                            if type(c_v) != str:
                                 v_sum += c_v
                         if statistic_type == "1":  # 求和
                             pass
-                        if statistic_type == "2":   # 平均
-                            v_sum = v_sum/len(body_data)
-                        if statistic_type == "-":   # 无
+                        if statistic_type == "2":  # 平均
+                            v_sum = v_sum / len(body_data)
+                        if statistic_type == "-":  # 无
                             v_sum = "-"
                         v_sums.append(v_sum if v_sum else "-")
 

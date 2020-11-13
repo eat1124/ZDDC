@@ -32,6 +32,8 @@ $(function () {
                         } else {
                             $("#app_div").show();
                             $("#works_div").show();
+                            $("#visited_url_div").show();
+                            $("#new_window_div").show();
                             $('input:radio[name=radio2]')[0].checked = true;
                             $("#title").text("新建");
                             $("#id").val("0");
@@ -136,9 +138,13 @@ $(function () {
             $('#app_list').val(JSON.stringify(data.node.data.app_list));
             if (data.node.type == "fun") {
                 $('input:radio[name=radio2]')[0].checked = true;
+                $('#visited_url_div').show();
+                $('#new_window_div').show();
             }
             if (data.node.type == "node") {
                 $('input:radio[name=radio2]')[1].checked = true;
+                $('#visited_url_div').hide();
+                $('#new_window_div').hide();
             }
             if (data.node.parent == "#") {
                 $("#save").hide();
@@ -184,6 +190,8 @@ $(function () {
             var work_options = customWorkOptions(app_id, app_list);
             $('#works').append(work_options);
             $('#works').val(data.node.data.selected_work);
+            console.log(data.node.data.new_window)
+            $('#new_window').val(data.node.data.new_window);
         });
 
     function customWorkOptions(app_id, app_list) {
@@ -222,9 +230,11 @@ $(function () {
             if ($("#fun:checked").val() == "fun") {
                 $("#app_div").show();
                 $("#works_div").show();
+                $("#new_window_div").show();
             } else {
                 $("#app_div").hide();
                 $("#works_div").hide();
+                $("#new_window_div").hide();
             }
         })
     });

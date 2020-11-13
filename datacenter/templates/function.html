@@ -70,7 +70,7 @@
                                         <div class="form-control-focus"></div>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" id="visited_url_div" {{ visited_url_div }}>
                                     <label class="col-md-2 control-label">访问地址</label>
                                     <div class="col-md-10">
                                         <input type="text" class="form-control" id="url" name="url" value="{{ url }}"
@@ -107,6 +107,15 @@
                                                 <option {{ work.selected }}
                                                         value="{{ work.id }}">{{ work.name }} </option>
                                             {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="new_window_div" {{ new_window_div }}>
+                                    <label class="col-md-2 control-label" for="form_control_1">新窗口打开</label>
+                                    <div class="col-md-10">
+                                        <select id="new_window" name="new_window" class="form-control">
+                                            <option value="1">是</option>
+                                            <option value="0" selected>否</option>
                                         </select>
                                     </div>
                                 </div>

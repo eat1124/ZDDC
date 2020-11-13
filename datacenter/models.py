@@ -24,6 +24,7 @@ class Fun(models.Model):
     url = models.CharField("地址", blank=True, null=True, max_length=256)
     icon = models.CharField("图标", blank=True, null=True, max_length=100)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
+    if_new_wd = models.CharField("是否新窗口打开", null=True, blank="0", max_length=20)
 
 
 class Group(models.Model):
