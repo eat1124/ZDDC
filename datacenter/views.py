@@ -8932,14 +8932,14 @@ def get_important_targets(request):
                     {"target": "ZHGDBZMHL_9F_Y", "v_type": "curvalue", "value": 0,
                      }],
                 "HBZB": [
-                    {"target": "OLD_HB_11_SO2SJPJND", "v_type": "curvalue", "value": 0},
-                    {"target": "OLD_HB_12_SO2SJPJND", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_11_NOXPJSCND", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_12_NOXPJSCND", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_11_NOXPJZSND", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_12_NOXPJZSND", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_11_NOXPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "OLD_HB_12_NOXPFL", "v_type": "curvalue", "value": 0},
                     {"target": "OLD_HB_11_YQPFL", "v_type": "curvalue", "value": 0},
                     {"target": "OLD_HB_12_YQPFL", "v_type": "curvalue", "value": 0},
-                    {"target": "OLD_HB_11_NOXND", "v_type": "curvalue", "value": 0},
-                    {"target": "OLD_HB_12_NOXND", "v_type": "curvalue", "value": 0},
-                    {"target": "OLD_HB_11_NOXPFL", "v_type": "curvalue", "value": 0},
-                    {"target": "OLD_HB_12_NOXPFL", "v_type": "curvalue", "value": 0}
                 ],
                 "FDL_JH": [
                     [  # 发电量年计划
