@@ -4037,7 +4037,7 @@ def get_a_cycle_aft(date, cycletype):
         date += relativedelta(months=6)
     if cycletype == "14":  # 年报
         date += relativedelta(months=12)
-    return get_last_day_in_month(date)
+    return get_last_day_in_month(date) if cycletype in ["11", "12", "13", "14"] else date
 
 
 def reporting_index(request, cycletype, funid):
