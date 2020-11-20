@@ -1,10 +1,79 @@
 import datetime
+import calendar
+from dateutil.relativedelta import relativedelta
 
 from django.db import connection
 from django.http import Http404
 from django.db import transaction
 
 from .models import *
+
+
+def cumulate_today(target, table_list, reporting_date):
+    """
+    当前周期累计 指标必须为累计类型
+    target {object}
+    reporting_date {datetime}
+    table_list {models.Model}
+    is_none {bool}: True 新增 False 修改
+    """
+    err = ""
+
+    from .views import getmodels, getcumulative
+    operation_type = target.operationtype
+    table_name = map_operation(operation_type)
+    table_model = getmodels(table_name, str(reporting_date.year))
+    td_data = table_model.objects.filter(target=target).filter(datadate=reporting_date).exclude(state="9").last()
+    if td_data:
+        cumulative = getcumulative(table_list, target, reporting_date, td_data.curvalue)
+        td_data.cumulativemonth = cumulative["cumulativemonth"]
+        td_data.cumulativequarter = cumulative["cumulativequarter"]
+        td_data.cumulativehalfyear = cumulative["cumulativehalfyear"]
+        td_data.cumulativeyear = cumulative["cumulativeyear"]
+        td_data.save()
+    else:
+        err = "该月无数据"
+    return err
+
+
+def auto_cumulate(target, reporting_date, table_list):
+    """
+    根据指标周期，往后(包括今日)每个周期自动计算累计
+    target {object}
+    reporting_date {datetime}
+    table_list {models.Model}: 4种操作类型的所有数据模型
+    """
+    cycle_type = target.cycletype
+    while True:
+        err = cumulate_today(target, table_list, reporting_date)
+        reporting_date = get_a_cycle_aft(reporting_date, cycle_type)    
+        if err == "该月无数据":
+            break
+
+
+def get_last_day_in_month(d):
+    """
+    获取当月最后一天的日期
+    """
+    last_day = calendar.monthrange(d.year, d.month)[1]
+    return d.replace(day=last_day)
+
+
+def get_a_cycle_aft(date, cycletype):
+    """
+    一个周期后的最后一天
+    """
+    if cycletype == "10":  # 日报
+        date += datetime.timedelta(days=1)
+    if cycletype == "11":  # 月报
+        date += relativedelta(months=1)
+    if cycletype == "12":  # 季报
+        date += relativedelta(months=3)
+    if cycletype == "13":  # 半年报
+        date += relativedelta(months=6)
+    if cycletype == "14":  # 年报
+        date += relativedelta(months=12)
+    return get_last_day_in_month(date) if cycletype in ["11", "12", "13", "14"] else date
 
 
 def get_app_from_fun(fun_id: int) -> dict:

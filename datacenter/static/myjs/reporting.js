@@ -1540,6 +1540,7 @@ $(document).ready(function () {
         $.each(table, function (i, item) {
             savedata.push({
                 "id": item.id,
+                "target_id": item.target_id,
                 "curvalue": $('#table1_curvalue_' + item.id).val(),
                 "curvaluedate": $('#table1_curvaluedate_' + item.id).val(),
                 "curvaluetext": $('#table1_curvaluetext_' + item.id).val(),
@@ -1661,6 +1662,7 @@ $(document).ready(function () {
         $.each(table, function (i, item) {
             savedata.push({
                 "id": item.id,
+                "target_id": item.target_id,
                 "curvalue": $('#table2_curvalue_' + item.id).val(),
                 "curvaluedate": $('#table2_curvaluedate_' + item.id).val(),
                 "curvaluetext": $('#table2_curvaluetext_' + item.id).val(),
@@ -1826,6 +1828,7 @@ $(document).ready(function () {
         $.each(table, function (i, item) {
             savedata.push({
                 "id": item.id,
+                "target_id": item.target_id,
                 "curvalue": $('#table3_curvalue_' + item.id).val(),
                 "curvaluedate": $('#table3_curvaluedate_' + item.id).val(),
                 "curvaluetext": $('#table3_curvaluetext_' + item.id).val(),
@@ -1975,6 +1978,7 @@ $(document).ready(function () {
         $.each(table, function (i, item) {
             savedata.push({
                 "id": item.id,
+                "target_id": item.target_id,
                 "oldtable_zerodata": item.oldtable_zerodata,
                 "oldtable_twentyfourdata": item.oldtable_twentyfourdata,
                 "oldtable_value": item.oldtable_value,

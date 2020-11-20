@@ -4015,31 +4015,6 @@ def getreporting_date(date, cycletype):
     return date
 
 
-def get_last_day_in_month(d):
-    """
-    获取当月最后一天的日期
-    """
-    last_day = calendar.monthrange(d.year, d.month)[1]
-    return d.replace(day=last_day)
-
-
-def get_a_cycle_aft(date, cycletype):
-    """
-    一个周期后的最后一天
-    """
-    if cycletype == "10":  # 日报
-        date += datetime.timedelta(days=1)
-    if cycletype == "11":  # 月报
-        date += relativedelta(months=1)
-    if cycletype == "12":  # 季报
-        date += relativedelta(months=3)
-    if cycletype == "13":  # 半年报
-        date += relativedelta(months=6)
-    if cycletype == "14":  # 年报
-        date += relativedelta(months=12)
-    return get_last_day_in_month(date) if cycletype in ["11", "12", "13", "14"] else date
-
-
 def reporting_index(request, cycletype, funid):
     """
     数据填报
@@ -6122,7 +6097,6 @@ def reporting_new(request):
             for target in cur_target:
                 # 根据指标周期修改reporting_date
                 a_cycle_aft_date = get_a_cycle_aft(reporting_date, cycletype)
-
                 # 电表走字
                 if operationtype == "1":
 
@@ -6176,7 +6150,6 @@ def reporting_new(request):
                         meterdata.zerodata)
                     meterdata.curvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
                     meterdata.curvalue = round(meterdata.curvalue, target.digit)
-
                     if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, meterdata.curvalue)
                         meterdata.cumulativemonth = cumulative["cumulativemonth"]
@@ -6190,7 +6163,6 @@ def reporting_new(request):
                     entrydata.target = target
                     entrydata.datadate = reporting_date
                     entrydata.curvalue = 0
-                    entrydata.curvalue = round(entrydata.curvalue, target.digit)
                     if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
                         entrydata.cumulativemonth = cumulative["cumulativemonth"]
@@ -6465,6 +6437,16 @@ def reporting_save(request):
                 'data': '日期处理异常。'
             })
 
+        # add
+        tableyear = str(reporting_date.year)
+
+        EntryTable = getmodels("Entrydata", tableyear)
+        MeterTable = getmodels("Meterdata", tableyear)
+        ExtractTable = getmodels("Extractdata", tableyear)
+        CalculateTable = getmodels("Calculatedata", tableyear)
+        tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
+                "Calculatedata": CalculateTable}
+
         save_query_data = []
         meterchangedata = []
         # 循环前执行所有查询,所有需要存储的键值存储在{}中,直接执行queryset(id=?).update(**kwargs)
@@ -6675,6 +6657,22 @@ def reporting_save(request):
                 if operationtype == "17":
                     getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
                         id=single_save_query_data['id']).update(**result)
+                # 保存时，重新累计
+                try:
+                    target = Target.objects.get(id=int(curdata['target_id']))
+                    if target.cumulative in ['1', '2', '3', '4']:
+                        cumulative = getcumulative(tableList, target, reporting_date, decimal.Decimal(str(curdata["curvalue"])))
+                        operation_type = target.operationtype
+                        table_name = map_operation(operation_type)
+                        table_model = getmodels(table_name, str(reporting_date.year))
+                        td_data = table_model.objects.filter(target=target).filter(datadate=reporting_date).exclude(state="9").last()
+                        td_data.cumulativemonth = cumulative["cumulativemonth"]
+                        td_data.cumulativequarter = cumulative["cumulativequarter"]
+                        td_data.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                        td_data.cumulativeyear = cumulative["cumulativeyear"]
+                        td_data.save()
+                except Exception as e:
+                    print(e)
             else:
                 pass
 
