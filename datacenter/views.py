@@ -4794,6 +4794,66 @@ def getcumulative(tableList, target, date, value):
     lastcumulativemonth, lastcumulativequarter, lastcumulativehalfyear, lastcumulativeyear \
         = get_last_cumulative_data(tableList, target, date)
 
+    def get_sum_cumulative_data(tableList, tmp_target, tmp_start_date, tmp_date):
+        """
+        算数平均
+        求和：指标在此时间范围
+        """
+        last_sum_data = 0
+        lastg_date = tmp_date + datetime.timedelta(days=-1)
+        queryset = tableList["Entrydata"].objects
+        operationtype = tmp_target.operationtype
+        if operationtype == "1":
+            queryset = tableList["Meterdata"].objects
+        if operationtype == "15":
+            queryset = tableList["Entrydata"].objects
+        if operationtype == "16":
+            queryset = tableList["Extractdata"].objects
+        if operationtype == "17":
+            queryset = tableList["Calculatedata"].objects
+
+        # 根据时间范围， 查出所有数据求和
+        range_date = (tmp_start_date, lastg_date)
+        all_data = queryset.exclude(state="9").filter(datadate__range=range_date).filter(target=tmp_target)
+        if len(all_data) > 0:
+            try:
+                last_sum_data = all_data.aggregate(Sum('curvalue'))["curvalue__sum"]
+            except:
+                pass
+        return last_sum_data
+
+    def get_sum_cumulative_exclude_zero(tableList, tmp_target, tmp_start_date, tmp_date):
+        """
+        非零算数平均
+        求和：指标在此时间范围（去除0）
+        """
+        last_sum_data = 0
+        day_count = 0
+
+        lastg_date = tmp_date + datetime.timedelta(days=-1)
+
+        queryset = tableList["Entrydata"].objects
+        operationtype = tmp_target.operationtype
+        if operationtype == "1":
+            queryset = tableList["Meterdata"].objects
+        if operationtype == "15":
+            queryset = tableList["Entrydata"].objects
+        if operationtype == "16":
+            queryset = tableList["Extractdata"].objects
+        if operationtype == "17":
+            queryset = tableList["Calculatedata"].objects
+
+        # 根据时间范围， 查出所有数据求和（去除0）
+        range_date = (tmp_start_date, lastg_date)
+        all_data = queryset.exclude(state="9").filter(datadate__range=range_date).filter(target=tmp_target).exclude(curvalue='0')
+        if len(all_data) > 0:
+            try:
+                last_sum_data = all_data.aggregate(Sum('curvalue'))["curvalue__sum"]
+                day_count = int(len(all_data))
+            except:
+                pass
+        return last_sum_data, day_count
+
     cumulative = target.cumulative
     weight_target = target.weight_target
 
@@ -4815,101 +4875,126 @@ def getcumulative(tableList, target, date, value):
                         )).total_seconds() / (60 * 60 * 24)
                     ) + 1
 
-                now = datetime.datetime.now()
+                # 1.月累计
+                ms_date = date.replace(day=1)
+                last_sum_data = get_sum_cumulative_data(tableList, target, ms_date, date)
+                # 判断是否是当月的第一天,当月第一天等于当前值
+                if date.day == 1:
+                    cumulativemonth = value
+                else:
+                    cumulativemonth = (last_sum_data + value) / date.day
 
-                # 1.当月昨天的天数
-                if date.day > 1:  # 日报月初月累计为当前值
-                    cumulativemonth = ((lastcumulativemonth * (date.day - 1)) + value) / date.day
-                # 2.当季到昨天的天数
-                # 判断当前月所在季度，第一季度/非第一季度
-                if date.month <= 3:
-                    days_in_quarter = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
-                                               yestoday_date)
-                    cumulativequarter = (lastcumulativequarter * days_in_quarter + value) / (days_in_quarter + 1)
+                # 2.季累计
+                month = (date.month - 1) - (date.month - 1) % 3 + 1
+                ss_date = datetime.datetime(date.year, month, 1)
+                days_in_quarter = get_days(ss_date, yestoday_date)
+                last_sum_data = get_sum_cumulative_data(tableList, target, ss_date, date)
+                # 判断是否是当季的第一天,当季第一天等于当前值
+                if date.day == 1 and date.month in (1, 4, 7, 10):
+                    cumulativequarter = value
                 else:
-                    # 判断是否所在季度第一天
-                    if not (date.month % 3 == 1 and date.day == 1):
-                        # 当季到昨天的天数 = 昨天天数 - 上季度末天数
-                        m_month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
-                        m_newdate = datetime.datetime(date.year, m_month, 1)
-                        days_in_quarter = get_days(
-                            m_newdate.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
-                            yestoday_date)
-                        cumulativequarter = (lastcumulativequarter * days_in_quarter + value) / (days_in_quarter + 1)
-                # 3.半年到昨天的天数(区分前/后半年)
-                if date.month - 6 < 0:
-                    days_in_halfyear = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
-                                                yestoday_date)
-                    cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (days_in_halfyear + 1)
+                    cumulativequarter = (last_sum_data + value) / (days_in_quarter + 1)
+
+                # 3.半年累计
+                month = (date.month - 1) - (date.month - 1) % 6 + 1
+                hs_date = datetime.datetime(date.year, month, 1)
+                days_in_halfyear = get_days(hs_date, yestoday_date)
+                last_sum_data = get_sum_cumulative_data(tableList, target, hs_date, date)
+                # 判断是否是半年的第一天,半年第一天等于当前值
+                if date.day == 1 and date.month in (1, 7):
+                    cumulativehalfyear = value
                 else:
-                    # 判断是否后半年的第一天
-                    if not (date.month == 7 and date.day == 1):
-                        # 半年到昨天的天数 = 昨天天数 - 上半年末天数
-                        h_month = (date.month - 1) - (date.month - 1) % 6 + 1  # 10
-                        h_newdate = datetime.datetime(date.year, h_month, 1)
-                        days_in_halfyear = get_days(
-                            h_newdate.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
-                            yestoday_date)
-                        cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (
-                                days_in_halfyear + 1)
-                # 4.当年到昨天的天数
-                days_in_year = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
-                                        yestoday_date)
-                cumulativeyear = (lastcumulativeyear * days_in_year + value) / days_in_year + 1
+                    cumulativehalfyear = (last_sum_data + value) / (days_in_halfyear + 1)
+
+                # 4.年累计
+                ys_date = date.replace(month=1, day=1)
+                days_in_year = get_days(ys_date, yestoday_date)
+                last_sum_data = get_sum_cumulative_data(tableList, target, ys_date, date)
+                cumulativeyear = (last_sum_data + value) / (days_in_year + 1)
             else:
                 pass
         if target.cycletype == "11":
             # 月报
             if date.month > 1:
-                last_month_date = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + \
-                                  datetime.timedelta(days=-1)
-                # 1.上个月份
-                # last_months = last_month_date.month
-                # cumulativemonth = (lastcumulativemonth * last_months + value) / (last_months + 1)
-                # 2.当季上个月所在月份
-                if date.month > 3:  # 不是第一个季度
-                    last_month_on_quarter = last_month_date.month % 3
+                # 1.月累计
+                cumulativemonth = value
+                # 2.季累计
+                month = (date.month - 1) - (date.month - 1) % 3 + 1
+                ss_date = datetime.datetime(date.year, month, 1)
+                last_sum_data = get_sum_cumulative_data(tableList, target, ss_date, date)
+                # 判断是否是当季的第一天,当季第一天等于当前值
+                if date.day == 1 and date.month in (1, 4, 7, 10):
+                    cumulativequarter = value
                 else:
-                    last_month_on_quarter = last_month_date.month
-                if last_month_on_quarter > 0:  # 任何一季度首月季累计为当前值
-                    cumulativequarter = (lastcumulativequarter * last_month_on_quarter + value) / (
-                            last_month_on_quarter + 1)
-                # 3.半年上个月所在月份(区分前/后半年)
-                last_month_on_halfyear = -1
-                if date.month > 6:
-                    if date.month - 6 > 1:
-                        last_month_on_halfyear = last_month_date.month - 6
+                    cumulativequarter = (last_sum_data + value) / (date.month-ss_date.month+1)
+
+                # 3.半年累计
+                month = (date.month - 1) - (date.month - 1) % 6 + 1
+                hs_date = datetime.datetime(date.year, month, 1)
+                last_sum_data = get_sum_cumulative_data(tableList, target, hs_date, date)
+                # 判断是否是半年的第一天,半年第一天等于当前值
+                if date.day == 1 and date.month in (1, 7):
+                    cumulativehalfyear = value
                 else:
-                    last_month_on_halfyear = last_month_date.month
-                if last_month_on_halfyear != -1:
-                    cumulativehalfyear = (lastcumulativehalfyear * last_month_on_halfyear + value) / (
-                            last_month_on_halfyear + 1)
-                # 4.年上个月所在月份
-                last_month_on_year = last_month_date.month
-                cumulativeyear = (lastcumulativeyear * last_month_on_year + value) / (last_month_on_year + 1)
+                    cumulativehalfyear = (last_sum_data + value) / (date.month-hs_date.month+1)
+
+                # 4.年累计
+                ys_date = date.replace(month=1, day=1)
+                last_sum_data = get_sum_cumulative_data(tableList, target, ys_date, date)
+                cumulativeyear = (last_sum_data + value) / (date.month - ys_date.month + 1)
             else:
                 pass
         if target.cycletype == "12":
-            # 季报
-            if date.month > 3:  # 非第一季度
-                q_month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
-                q_newdate = datetime.datetime(date.year, q_month, 1)
-                last_quarter_date = q_newdate + datetime.timedelta(days=-1)
+            if date.month > 3:
+                # 季报
+                # 1.月累计
+                cumulativemonth = value
+                # 2.季累计
+                cumulativequarter = value
+                # 3.半年上个月所在月份(区分前/后半年)
+                month = (date.month - 1) - (date.month - 1) % 6 + 1
+                hs_date = datetime.datetime(date.year, month, 1)
+                last_sum_data = get_sum_cumulative_data(tableList, target, hs_date, date)
+                # 判断是否是半年的第一天,半年第一天等于当前值
+                if date.month == 3 or date.month == 9:
+                    day = 1
+                elif date.month == 6 or date.month == 12:
+                    day = 2
+                if hs_date.day == 1 and hs_date == 7:
+                    cumulativehalfyear = value
+                else:
+                    cumulativehalfyear = (last_sum_data + value) / day
 
-                # 1.上个季度
-                last_quarters = last_quarter_date.month // 3
-                cumulativequarter = (lastcumulativequarter * last_quarters + value) / (last_quarters + 1)
-                # 2.半年所在季度(区分前/后半年)
-                if date.month in [4, 5, 6, 10, 11, 12]:
-                    quarter_on_halfyear = 1
-                    cumulativehalfyear = (lastcumulativehalfyear * quarter_on_halfyear + value) / (
-                            quarter_on_halfyear + 1)
-                # 3.年所在季度
-                quarter_on_year = last_quarter_date.month // 3
-                cumulativeyear = (lastcumulativeyear * quarter_on_year + value) / (quarter_on_year + 1)
+                # 4.年累计
+                ys_date = date.replace(month=1, day=1)
+                last_sum_data = get_sum_cumulative_data(tableList, target, ys_date, date)
+                if date.month == 3:
+                    day = 1
+                elif date.month == 6:
+                    day = 2
+                elif date.month == 9:
+                    day = 3
+                elif date.month == 12:
+                    day = 4
+                cumulativeyear = (last_sum_data + value) / day
+
         if target.cycletype == "13":
             if date.month > 6:
-                cumulativeyear = (lastcumulativeyear + value) / 2
+                # 半年报
+                # 1.月累计
+                cumulativemonth = value
+                # 2.季累计
+                cumulativequarter = value
+                # 3.半年累计
+                cumulativehalfyear = value
+                # 4.年累计
+                ys_date = date.replace(month=1, day=1)
+                last_sum_data = get_sum_cumulative_data(tableList, target, ys_date, date)
+                if date.month == 6:
+                    day = 1
+                elif date.month == 12:
+                    day = 2
+                cumulativeyear = (last_sum_data + value) / day
         if target.cycletype == "14":
             # 年报均为当前值
             pass
@@ -5002,128 +5087,173 @@ def getcumulative(tableList, target, date, value):
             # 日报
             yestoday_date = date + datetime.timedelta(days=-1)
             if date.year == yestoday_date.year:
-                # 当月昨天天数、当季到昨天的天数、半年到昨天的天数、当年到昨天的天数
-                def get_days(start_time, end_time):
-                    return int(
-                        (end_time.replace(hour=0, minute=0, second=0, microsecond=0) - start_time.replace(
-                            day=1, hour=0, minute=0, second=0, microsecond=0
-                        )).total_seconds() / (60 * 60 * 24)
-                    ) + 1
+                # 1.月累计
+                ms_date = date.replace(day=1)
+                last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, ms_date, date)
 
-                now = datetime.datetime.now()
+                # 判断是否是当月的第一天,当月第一天等于当前值
+                if date.day == 1:
+                    cumulativemonth = value
+                else:
+                    if value == 0:
+                        if day_count != 0:
+                            cumulativemonth = (last_sum_data + value) / day_count
+                        else:
+                            cumulativemonth = value
+                    else:
+                        cumulativemonth = (last_sum_data + value) / (day_count+1)
 
-                # 1.当月昨天的天数
-                if date.day > 1:  # 日报月初月累计为当前值
-                    if lastcumulativemonth:
-                        cumulativemonth = ((lastcumulativemonth * (date.day - 1)) + value) / date.day
-                # 2.当季到昨天的天数
-                # 判断当前月所在季度，第一季度/非第一季度
-                if date.month <= 3:
-                    days_in_quarter = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
-                                               yestoday_date)
-                    if lastcumulativequarter:
-                        cumulativequarter = (lastcumulativequarter * days_in_quarter + value) / (days_in_quarter + 1)
+                # 2.季累计
+                month = (date.month - 1) - (date.month - 1) % 3 + 1
+                ss_date = datetime.datetime(date.year, month, 1)
+                last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, ss_date, date)
+                # 判断是否是当季的第一天,当季第一天等于当前值
+
+                if date.day == 1 and date.month in (1, 4, 7, 10):
+                    cumulativequarter = value
                 else:
-                    # 判断是否所在季度第一天
-                    if not (date.month % 3 == 1 and date.day == 1):
-                        # 当季到昨天的天数 = 昨天天数 - 上季度末天数
-                        m_month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
-                        m_newdate = datetime.datetime(date.year, m_month, 1)
-                        days_in_quarter = get_days(
-                            m_newdate.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
-                            yestoday_date)
-                        if lastcumulativequarter:
-                            cumulativequarter = (lastcumulativequarter * days_in_quarter + value) / (
-                                    days_in_quarter + 1)
-                # 3.半年到昨天的天数(区分前/后半年)
-                if date.month - 6 < 0:
-                    days_in_halfyear = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
-                                                yestoday_date)
-                    if lastcumulativehalfyear:
-                        cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (
-                                days_in_halfyear + 1)
+                    if value == 0:
+                        if day_count != 0:
+                            cumulativequarter = (last_sum_data + value) / day_count
+                        else:
+                            cumulativequarter = value
+                    else:
+                        cumulativequarter = (last_sum_data + value) / (day_count+1)
+
+                # 3.半年累计
+                month = (date.month - 1) - (date.month - 1) % 6 + 1
+                hs_date = datetime.datetime(date.year, month, 1)
+                last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, hs_date, date)
+                # 判断是否是半年的第一天,半年第一天等于当前值
+                if date.day == 1 and date.month in (1, 7):
+                    cumulativehalfyear = value
                 else:
-                    # 判断是否后半年的第一天
-                    if not (date.month == 7 and date.day == 1):
-                        # 半年到昨天的天数 = 昨天天数 - 上半年末天数
-                        h_month = (date.month - 1) - (date.month - 1) % 6 + 1  # 10
-                        h_newdate = datetime.datetime(date.year, h_month, 1)
-                        days_in_halfyear = get_days(
-                            h_newdate.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
-                            yestoday_date)
-                        if lastcumulativehalfyear:
-                            cumulativehalfyear = (lastcumulativehalfyear * days_in_halfyear + value) / (
-                                    days_in_halfyear + 1)
-                # 4.当年到昨天的天数
-                days_in_year = get_days(now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
-                                        yestoday_date)
-                if lastcumulativeyear:
-                    cumulativeyear = (lastcumulativeyear * days_in_year + value) / days_in_year + 1
+                    if value == 0:
+                        if day_count != 0:
+                            cumulativehalfyear = (last_sum_data + value) / day_count
+                        else:
+                            cumulativehalfyear = value
+                    else:
+                        cumulativehalfyear = (last_sum_data + value) / (day_count+1)
+
+                # 4.年累计
+                ys_date = date.replace(month=1, day=1)
+                last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, ys_date, date)
+                if value == 0:
+                    if day_count != 0:
+                        cumulativeyear = (last_sum_data + value) / day_count
+                    else:
+                        cumulativeyear = value
+                else:
+                    cumulativeyear = (last_sum_data + value) / (day_count+1)
             else:
                 pass
         if target.cycletype == "11":
             # 月报
             if date.month > 1:
-                last_month_date = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + \
-                                  datetime.timedelta(days=-1)
-                # 1.上个月份
-                # last_months = last_month_date.month
-                # cumulativemonth = (lastcumulativemonth * last_months + value) / (last_months + 1)
-                # 2.当季上个月所在月份
-                if date.month > 3:  # 不是第一个季度
-                    last_month_on_quarter = last_month_date.month % 3
+                # 1.月累计
+                cumulativemonth = value
+                # 2.季累计
+                month = (date.month - 1) - (date.month - 1) % 3 + 1
+                ss_date = datetime.datetime(date.year, month, 1)
+                last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, ss_date, date)
+                # 判断是否是当季的第一天,当季第一天等于当前值
+                if date.day == 1 and date.month in (1, 4, 7, 10):
+                    cumulativequarter = value
                 else:
-                    last_month_on_quarter = last_month_date.month
-                if last_month_on_quarter > 0:  # 任何一季度首月季累计为当前值
-                    if lastcumulativequarter:
-                        cumulativequarter = (lastcumulativequarter * last_month_on_quarter + value) / (
-                                last_month_on_quarter + 1)
-                # 3.半年上个月所在月份(区分前/后半年)
-                last_month_on_halfyear = -1
-                if date.month > 6:
-                    if date.month - 6 > 1:
-                        last_month_on_halfyear = last_month_date.month - 6
+                    if value == 0:
+                        if day_count != 0:
+                            cumulativequarter = (last_sum_data + value) / day_count
+                        else:
+                            cumulativequarter = value
+                    else:
+                        cumulativequarter = (last_sum_data + value) / (day_count + 1)
+
+                # 3.半年累计
+                month = (date.month - 1) - (date.month - 1) % 6 + 1
+                hs_date = datetime.datetime(date.year, month, 1)
+                last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, hs_date, date)
+                # 判断是否是半年的第一天,半年第一天等于当前值
+                if date.day == 1 and date.month in (1, 7):
+                    cumulativehalfyear = value
                 else:
-                    last_month_on_halfyear = last_month_date.month
-                if last_month_on_halfyear != -1:
-                    if lastcumulativehalfyear:
-                        cumulativehalfyear = (lastcumulativehalfyear * last_month_on_halfyear + value) / (
-                                last_month_on_halfyear + 1)
-                # 4.年上个月所在月份
-                last_month_on_year = last_month_date.month
-                if lastcumulativeyear:
-                    cumulativeyear = (lastcumulativeyear * last_month_on_year + value) / (last_month_on_year + 1)
+                    if value == 0:
+                        if day_count != 0:
+                            cumulativehalfyear = (last_sum_data + value) / day_count
+                        else:
+                            cumulativehalfyear = value
+                    else:
+                        cumulativehalfyear = (last_sum_data + value) / (day_count + 1)
+
+                # 4.年累计
+                ys_date = date.replace(month=1, day=1)
+                last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, ys_date, date)
+                if value == 0:
+                    if day_count != 0:
+                        cumulativeyear = (last_sum_data + value) / day_count
+                    else:
+                        cumulativeyear = value
+                else:
+                    cumulativeyear = (last_sum_data + value) / (day_count + 1)
             else:
                 pass
         if target.cycletype == "12":
-            # 季报
-            if date.month > 3:  # 非第一季度
-                q_month = (date.month - 1) - (date.month - 1) % 3 + 1  # 10
-                q_newdate = datetime.datetime(date.year, q_month, 1)
-                last_quarter_date = q_newdate + datetime.timedelta(days=-1)
+            if date.month > 3:
+                # 季报
+                # 1.月累计
+                cumulativemonth = value
+                # 2.季累计
+                cumulativequarter = value
+                # 3.半年上个月所在月份(区分前/后半年)
+                month = (date.month - 1) - (date.month - 1) % 6 + 1
+                hs_date = datetime.datetime(date.year, month, 1)
+                last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, hs_date, date)
+                # 判断是否是半年的第一天,半年第一天等于当前值
+                if date.day == 1 and date.month in (1, 7):
+                    cumulativehalfyear = value
+                else:
+                    if value == 0:
+                        if day_count != 0:
+                            cumulativehalfyear = (last_sum_data + value) / day_count
+                        else:
+                            cumulativehalfyear = value
+                    else:
+                        cumulativehalfyear = (last_sum_data + value) / (day_count+1)
 
-                # 1.上个季度
-                last_quarters = last_quarter_date.month // 3
-                if lastcumulativequarter:
-                    cumulativequarter = (lastcumulativequarter * last_quarters + value) / (last_quarters + 1)
-                # 2.半年所在季度(区分前/后半年)
-                if date.month in [4, 5, 6, 10, 11, 12]:
-                    quarter_on_halfyear = 1
-                    if lastcumulativehalfyear:
-                        cumulativehalfyear = (lastcumulativehalfyear * quarter_on_halfyear + value) / (
-                                quarter_on_halfyear + 1)
-                # 3.年所在季度
-                quarter_on_year = last_quarter_date.month // 3
-                if lastcumulativeyear:
-                    cumulativeyear = (lastcumulativeyear * quarter_on_year + value) / (quarter_on_year + 1)
+                # 4.年累计
+                ys_date = date.replace(month=1, day=1)
+                last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, ys_date, date)
+                if value == 0:
+                    if day_count != 0:
+                        cumulativeyear = (last_sum_data + value) / day_count
+                    else:
+                        cumulativeyear = value
+                else:
+                    cumulativeyear = (last_sum_data + value) / (day_count+1)
+
         if target.cycletype == "13":
             if date.month > 6:
-                if lastcumulativeyear:
-                    cumulativeyear = (lastcumulativeyear + value) / 2
+                # 半年报
+                # 1.月累计
+                cumulativemonth = value
+                # 2.季累计
+                cumulativequarter = value
+                # 3.半年累计
+                cumulativehalfyear = value
+                # 4.年累计
+                ys_date = date.replace(month=1, day=1)
+                last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, ys_date, date)
+                if value == 0:
+                    if day_count != 0:
+                        cumulativeyear = (last_sum_data + value) / day_count
+                    else:
+                        cumulativeyear = value
+                else:
+                    cumulativeyear = (last_sum_data + value) / (day_count+1)
         if target.cycletype == "14":
             # 年报均为当前值
             pass
-    # 处理保留位数
+
     try:
         cumulativemonth = round(cumulativemonth, target.digit)
     except:
@@ -5485,7 +5615,6 @@ def ajax_cumulate(request):
         reporting_date = request.POST.get('reporting_date', '')
         cycletype = request.POST.get('cycletype', '')
         result = {}
-
         try:
             reporting_date = getreporting_date(reporting_date, cycletype)
         except:
