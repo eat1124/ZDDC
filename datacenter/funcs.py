@@ -1,12 +1,24 @@
 import datetime
 import calendar
 from dateutil.relativedelta import relativedelta
+import re
 
 from django.db import connection
 from django.http import Http404
 from django.db import transaction
 
 from .models import *
+
+
+def get_targets_from_formula(formula):
+    """
+    公式中提取指标代码
+    @param formula {str}: 公式
+    @return targets {list}: 指标代码列表
+    """
+    com = re.compile("<(.+?):.+?>")
+    targets = com.findall(formula)
+    return targets
 
 
 def cumulate_today(target, table_list, reporting_date):

@@ -247,7 +247,7 @@ $(document).ready(function () {
         "bPaginate": false,
         "bFilter": false,
         "ajax": "../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
-        "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15" + "&funid=" + $('#funid').val(),
+            "&reporting_date=" + $('#reporting_date').val() + "&operationtype=15" + "&funid=" + $('#funid').val(),
         "columns": [
             {"data": "id"},
             {"data": "target_name"},
@@ -337,11 +337,11 @@ $(document).ready(function () {
         "fnDrawCallback": function (data) {
             layui.use('laydate', function () {
                 var laydate = layui.laydate;
-                
-                $('input[id^="table1_curvaluedate_"]').each(function(){
+
+                $('input[id^="table1_curvaluedate_"]').each(function () {
                     var d_ele = $(this).prop("id");
                     laydate.render({
-                        elem: '#' + d_ele, 
+                        elem: '#' + d_ele,
                         type: 'datetime',
                         theme: '#428bca'
                     });
@@ -433,7 +433,7 @@ $(document).ready(function () {
         "bPaginate": false,
         "bFilter": false,
         "ajax": "../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" +
-        $('#reporting_date').val() + "&operationtype=16" + "&funid=" + $('#funid').val(),
+            $('#reporting_date').val() + "&operationtype=16" + "&funid=" + $('#funid').val(),
         "columns": [
             {"data": "id"},
             {"data": "target_name"},
@@ -446,6 +446,7 @@ $(document).ready(function () {
             {"data": "cumulativequarter"},
             {"data": "cumulativehalfyear"},
             {"data": "cumulativeyear"},
+            {"data": null},
         ],
 
         "columnDefs": [
@@ -466,7 +467,7 @@ $(document).ready(function () {
                 "visible": false,
             },
             {
-                "targets": -5,
+                "targets": -6,
                 "mRender": function (data, type, full) {
                     if (full.target_datatype == 'numbervalue') {
                         return "<input style='margin-top:-5px;width:134px;height:24px;' id='table2_curvalue_" + full.id + "' name='table2_curvalue'  type='number' value='" + data + "'></input>"
@@ -480,30 +481,36 @@ $(document).ready(function () {
                 }
             },
             {
-                "targets": -4,
+                "targets": -5,
                 "mRender": function (data, type, full) {
                     return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table2_cumulativemonth_" + full.id + "' name='table2_cumulativemonth'  type='text' value='" + data + "'></input>"
                 }
             },
             {
-                "targets": -3,
+                "targets": -4,
                 "mRender": function (data, type, full) {
                     return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table2_cumulativequarter_" + full.id + "' name='table2_cumulativequarter'  type='text' value='" + data + "'></input>"
                 }
             },
             {
-                "targets": -2,
+                "targets": -3,
                 "mRender": function (data, type, full) {
                     return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table2_cumulativehalfyear_" + full.id + "' name='table2_cumulativehalfyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
-                "targets": -1,
+                "targets": -2,
                 "mRender": function (data, type, full) {
                     return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table2_cumulativeyear_" + full.id + "' name='table2_cumulativeyear'  type='text' value='" + data + "'></input>"
                 }
             },
-
+            {
+                "targets": -1,
+                "data": null,
+                "width": "80px",
+                "orderable": false,
+                "defaultContent": "<button  id='single_reextract' title='重新提取' class='btn btn-xs btn-primary' type='button'><i class='fa fa-hand-paper-o'></i></button>",
+            }
         ],
         "oLanguage": {
             "sLengthMenu": "每页显示 _MENU_ 条记录",
@@ -597,6 +604,29 @@ $(document).ready(function () {
         }
     });
 
+    $('#sample_2 tbody').on('click', 'button#single_reextract', function () {
+        if (confirm("是否对当前指标进行重新提取?")) {
+            var table = $('#sample_2').DataTable();
+            var data = table.row($(this).parents('tr')).data();
+            $.ajax({
+                type: "POST",
+                dataType: "JSON",
+                url: "../../../single_reextract/",
+                data: {
+                    "target_id": data.target_id,
+                    "reporting_date": $('#reporting_date').val(),
+                },
+                success: function (data) {
+                    if (status == 1) {
+                        table.ajax.reload();
+                    } else {
+                        alert(data.info);
+                    }
+                }
+            })
+        }
+    });
+
     // 数据计算 operationtype 17
     $('#sample_3').dataTable({
         "bAutoWidth": true,
@@ -605,9 +635,10 @@ $(document).ready(function () {
         "bPaginate": false,
         "bFilter": false,
         "ajax": "../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" +
-        $('#reporting_date').val() + "&operationtype=17" + "&funid=" + $('#funid').val(),
+            $('#reporting_date').val() + "&operationtype=17" + "&funid=" + $('#funid').val(),
         "columns": [
             {"data": "id"},
+            {"data": "target_id"},
             {"data": "target_name"},
             {"data": "target_unity"},
             {"data": "target_code"},
@@ -627,7 +658,7 @@ $(document).ready(function () {
                 "visible": false,
             },
             {
-                "targets": 3,
+                "targets": 1,
                 "visible": false,
             },
             {
@@ -636,6 +667,10 @@ $(document).ready(function () {
             },
             {
                 "targets": 5,
+                "visible": false,
+            },
+            {
+                "targets": 6,
                 "visible": false,
             },
             {
@@ -679,8 +714,10 @@ $(document).ready(function () {
             {
                 "targets": -1,
                 "data": null,
-                "width": "100px",
-                "defaultContent": "<button  id='edit' title='编辑' data-toggle='modal'  data-target='#static3'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>"
+                "orderable": false,
+                "defaultContent": "<button  id='edit' title='编辑' data-toggle='modal'  data-target='#static3'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>" +
+                    "<button id='single_recalculate1' title='重新计算(包括当前指标)' class='btn btn-xs purple-plum' type='button'><i class='fa fa-calculator'></i></button>" +
+                    "<button id='single_recalculate2' title='重新计算(不包括当前指标)' class='btn btn-xs blue-hoki' type='button'><i class='fa fa-calculator'></i></button>"
             }
         ],
         "oLanguage": {
@@ -776,12 +813,62 @@ $(document).ready(function () {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
-    //
     $('#sample_3 tbody').on('click', 'button#edit', function () {
         $("#formuladiv").empty();
         var table = $('#sample_3').DataTable();
         var data = table.row($(this).parents('tr')).data();
         $.getformula(data.id.toString());
+    });
+
+    $('#sample_3 tbody').on('click', 'button#single_recalculate1', function () {
+        if (confirm("是否对当前指标进行重新计算?")) {
+            var table = $('#sample_3').DataTable();
+            var data = table.row($(this).parents('tr')).data();
+            $.ajax({
+                type: "POST",
+                dataType: "JSON",
+                url: "../../../single_recalculate/",
+                data: {
+                    "target_id": data.target_id,
+                    "reporting_date": $('#reporting_date').val(),
+                    "recalculate_type": "1",
+                },
+                success: function (data) {
+                    var info = data.info,
+                        status = data.status;
+                    if (status == 1) {
+                        table.ajax.reload();
+                    } else {
+                        alert(info);
+                    }
+                }
+            })
+        }
+    });
+    $('#sample_3 tbody').on('click', 'button#single_recalculate2', function () {
+        if (confirm("是否对当前指标进行重新计算?")) {
+            var table = $('#sample_3').DataTable();
+            var data = table.row($(this).parents('tr')).data();
+            $.ajax({
+                type: "POST",
+                dataType: "JSON",
+                url: "../../../single_recalculate/",
+                data: {
+                    "target_id": data.target_id,
+                    "reporting_date": $('#reporting_date').val(),
+                    "recalculate_type": "0",
+                },
+                success: function (data) {
+                    var info = data.info,
+                        status = data.status;
+                    if (status == 1) {
+                        table.ajax.reload();
+                    } else {
+                        alert(info);
+                    }
+                }
+            })
+        }
     });
 
     $.formulabtnclick = function () {
@@ -867,8 +954,8 @@ $(document).ready(function () {
         "bPaginate": false,
         "bFilter": false,
         "ajax": "../../../reporting_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() +
-        "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1" +
-        "&funid=" + $('#funid').val(),
+            "&reporting_date=" + $('#reporting_date').val() + "&operationtype=1" +
+            "&funid=" + $('#funid').val(),
         "columns": [
             {"data": "id"},
             {"data": "target_name"},
@@ -1291,9 +1378,9 @@ $(document).ready(function () {
                                     if (Number($('#table5_zerodata_' + id).val()) == Number($('#table5_twentyfourdata_' + id).val())) {
                                         $('#table5_zerodata_' + id).parent().parent().children().css("color", "#FF0000")
                                     } else if ((data5[i].target_upperlimit && (Number($('#table5_curvalue_' + id).val()) > data5[i].target_upperlimit)) || (data5[i].target_lowerlimit && Number($('#table5_curvalue_' + id).val()) < data5[i].target_lowerlimit)) {
-                                         $('#table5_zerodata_' + id).parent().parent().children().css("color", "#FF0000")
+                                        $('#table5_zerodata_' + id).parent().parent().children().css("color", "#FF0000")
                                     } else {
-                                         $('#table5_zerodata_' + id).parent().parent().children().css("color", "#000000")
+                                        $('#table5_zerodata_' + id).parent().parent().children().css("color", "#000000")
                                     }
                                     return false
                                 }

@@ -5144,9 +5144,10 @@ def getcumulative(tableList, target, date, value):
             "cumulativehalfyear": cumulativehalfyear, "cumulativeyear": cumulativeyear}
 
 
-def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
+def getcalculatedata(target, date, guid, all_constant, all_target, tableList, forward=True):
     """
     数据计算
+    @forward {bool}: 是否往前计算
     """
     curvalue = -9999
     if target.data_from == 'et':
@@ -5158,11 +5159,8 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                 curvalue = float(ret['result'][0][0])
             except Exception as e:
                 print(e)
-                # raise Exception('获取外部系统数据失败。')
             else:
                 pass
-        # else:
-        # raise Exception('获取外部系统数据失败。')
     else:
         formula = ""
 
@@ -5213,15 +5211,16 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList):
                             membertarget = newtarget
                             # 指标为加权指标先计算
                             cumulative = membertarget.cumulative
-                            if cumulative == '3':
-                                wt_membertarget = membertarget.weight_target
-                                getcalculatedata(wt_membertarget, date, guid, all_constant, all_target, tableList)
 
-                            if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id \
-                                    and membertarget.cycletype == target.cycletype and membertarget.work_id == target.work_id \
-                                    and membertarget.calculateguid != guid and not (cond.startswith(
-                                'L') or cond.startswith('S')):  # 判断指标公式非当前周期的数据:
-                                getcalculatedata(membertarget, date, guid, all_constant, all_target, tableList)
+                            if forward:
+                                if cumulative == '3':
+                                    wt_membertarget = membertarget.weight_target
+                                    getcalculatedata(wt_membertarget, date, guid, all_constant, all_target, tableList)
+
+                                if membertarget.operationtype == target.operationtype and membertarget.adminapp_id == target.adminapp_id \
+                                        and membertarget.cycletype == target.cycletype and membertarget.work_id == target.work_id \
+                                        and membertarget.calculateguid != guid and not (cond.startswith('L') or cond.startswith('S')):  # 判断指标公式非当前周期的数据:
+                                    getcalculatedata(membertarget, date, guid, all_constant, all_target, tableList)
 
                             # 取当年表
                             queryset = tableList["Entrydata"].objects
@@ -5524,6 +5523,204 @@ def ajax_cumulate(request):
         return JsonResponse(result)
     else:
         return HttpResponseRedirect('/login')
+
+
+def single_reextract(request):
+    """
+    对单个指标重新提取
+    """
+    if request.user.is_authenticated():
+        status = 1
+        info = "重新提取成功"
+
+        target_id = request.POST.get("target_id", "")
+        reporting_date = request.POST.get('reporting_date', '')
+
+        try:
+            c_target = Target.objects.get(id=int(target_id))
+        except:
+            status = 0
+            info = "当前指标不存在"
+        else:
+            cycletype = c_target.cycletype
+            operationtype = c_target.operationtype
+
+            try:
+                reporting_date = getreporting_date(reporting_date, cycletype)
+            except:
+                status = 0
+                info = "时间处理异常"
+            else:
+                tableyear = str(reporting_date.year)
+
+                EntryTable = getmodels("Entrydata", tableyear)
+                MeterTable = getmodels("Meterdata", tableyear)
+                ExtractTable = getmodels("Extractdata", tableyear)
+                CalculateTable = getmodels("Calculatedata", tableyear)
+                tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
+                             "Calculatedata": CalculateTable}
+
+                # 根据指标周期修改reporting_date
+                a_cycle_aft_date = get_a_cycle_aft(reporting_date, cycletype)
+                if operationtype == "16":
+                    extractdata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        target_id=c_target.id).filter(datadate=reporting_date)
+                    if len(extractdata) > 0:
+                        extractdata = extractdata[0]
+                        tablename = ""
+                        try:
+                            tablename = c_target.storage.tablename
+                        except:
+                            pass
+
+                        rows = []
+                        if tablename:
+                            try:
+                                with connection.cursor() as cursor:
+                                    reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
+                                    strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
+                                        tablename=tablename, target_id=c_target.id, datadate=reporting_date_stf
+                                    )
+                                    cursor.execute(strsql)
+                                    rows = cursor.fetchall()
+                                connection.close()
+                            except Exception as e:
+                                pass
+                            if len(rows) > 0:
+                                try:
+                                    if c_target.is_repeat == '2':
+                                        rownum = 0
+                                        rowvalue = 0
+                                        for row in rows:
+                                            if row[0] is not None:
+                                                rowvalue += row[0]
+                                                rownum += 1
+                                        extractdata.curvalue = rowvalue / rownum
+                                    else:
+                                        extractdata.curvalue = rows[0][0]
+                                    extractdata.curvalue = decimal.Decimal(
+                                        float(extractdata.curvalue) * float(c_target.magnification))
+                                    extractdata.curvalue = round(extractdata.curvalue, c_target.digit)
+                                except:
+                                    pass
+                        if not rows or not c_target.cycle:  # 没取到数据 或者 没有取数周期，根据数据源实时取
+                            ret = Extract.getDataFromSource(c_target, a_cycle_aft_date)
+                            result_list = ret["result"]
+                            if result_list:
+                                try:
+                                    if c_target.is_repeat == '2':
+                                        rownum = 0
+                                        rowvalue = 0
+                                        for row in result_list:
+                                            if row[0] is not None:
+                                                rowvalue += row[0]
+                                                rownum += 1
+                                        extractdata.curvalue = rowvalue / rownum
+                                    else:
+                                        extractdata.curvalue = result_list[0][0]
+                                    extractdata.curvalue = decimal.Decimal(
+                                        float(extractdata.curvalue) * float(c_target.magnification))
+                                    extractdata.curvalue = round(extractdata.curvalue, c_target.digit)
+                                except Exception as e:
+                                    print(e)
+
+                        if c_target.cumulative in ['1', '2', '3', '4']:
+                            cumulative = getcumulative(tableList, c_target, reporting_date, extractdata.curvalue)
+                            extractdata.cumulativemonth = cumulative["cumulativemonth"]
+                            extractdata.cumulativequarter = cumulative["cumulativequarter"]
+                            extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                            extractdata.cumulativeyear = cumulative["cumulativeyear"]
+                        extractdata.save()
+                        info = "{0}{1}".format(c_target.name, info)
+            return JsonResponse({
+                "status": status,
+                "info": info,
+            })
+
+
+def recalculate_targets_formula_contains(target, date, guid, all_constant, all_target, tableList, contains_self=True):
+    """
+    重新计算包括当前指标的计算指标
+    @param target:
+    @param date:
+    @param guid: 一致表示参与过计算
+    @param all_constant:
+    @param all_target:
+    @param tableList:
+    @param contains_self: 是否重新计算当前指标
+    @return:
+    """
+    try:
+        all_targets = all_target.exclude(calculateguid=guid)
+        if contains_self:  # 计算当前指标
+            getcalculatedata(target, date, guid, all_constant, all_target, tableList, forward=False)
+
+        # 后续指标
+        for t in all_targets:
+            if t.operationtype == "17":
+                ts_contained = get_targets_from_formula(t.formula)
+                if target.code in ts_contained and t.calculateguid != guid:
+                    recalculate_targets_formula_contains(t, date, guid, all_constant, all_target, tableList)
+    except Exception as e:
+        print(e)
+        return False
+    return True
+
+
+def single_recalculate(request):
+    if request.user.is_authenticated():
+        target_id = request.POST.get("target_id", "")
+        reporting_date = request.POST.get('reporting_date', '')
+        recalculate_type = request.POST.get('recalculate_type', '')
+        status = 1
+        info = "重新计算成功"
+        try:
+            c_target = Target.objects.get(id=int(target_id))
+        except:
+            status = 0
+            info = "当前指标不存在"
+        else:
+            cycletype = c_target.cycletype
+            operationtype = c_target.operationtype
+
+            try:
+                reporting_date = getreporting_date(reporting_date, cycletype)
+            except:
+                status = 0
+                info = "时间处理异常"
+            else:
+                if operationtype == "17":
+                    guid = uuid.uuid1()
+                    all_constant = Constant.objects.exclude(state="9").values()
+                    all_target = Target.objects.exclude(state="9")
+                    tableyear = str(reporting_date.year)
+
+                    EntryTable = getmodels("Entrydata", tableyear)
+                    MeterTable = getmodels("Meterdata", tableyear)
+                    ExtractTable = getmodels("Extractdata", tableyear)
+                    CalculateTable = getmodels("Calculatedata", tableyear)
+                    tableList = {
+                        "Entrydata": EntryTable,
+                        "Meterdata": MeterTable,
+                        "Extractdata": ExtractTable,
+                        "Calculatedata": CalculateTable
+                    }
+
+                    if recalculate_type == "1":
+                        ret = recalculate_targets_formula_contains(c_target, reporting_date, guid, all_constant, all_target, tableList)
+                    else:
+                        ret = recalculate_targets_formula_contains(c_target, reporting_date, guid, all_constant, all_target, tableList, contains_self=False)
+                    if not ret:
+                        status = 0
+                        info = "指标{0}重新计算失败".format(c_target.name)
+                else:
+                    status = 0
+                    info = "该指标不是计算指标"
+
+        return JsonResponse({
+            "status": status,
+            "info": info,
+        })
 
 
 def reporting_formulacalculate(request):
@@ -6445,7 +6642,7 @@ def reporting_save(request):
         ExtractTable = getmodels("Extractdata", tableyear)
         CalculateTable = getmodels("Calculatedata", tableyear)
         tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
-                "Calculatedata": CalculateTable}
+                     "Calculatedata": CalculateTable}
 
         save_query_data = []
         meterchangedata = []
