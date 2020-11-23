@@ -4923,7 +4923,7 @@ def getcumulative(tableList, target, date, value):
                 ss_date = datetime.datetime(date.year, month, 1)
                 last_sum_data = get_sum_cumulative_data(tableList, target, ss_date, date)
                 # 判断是否是当季的第一天,当季第一天等于当前值
-                if date.day == 1 and date.month in (1, 4, 7, 10):
+                if date.day == 1 and date.month in (4, 7, 10):
                     cumulativequarter = value
                 else:
                     cumulativequarter = (last_sum_data + value) / (date.month-ss_date.month+1)
@@ -4933,7 +4933,7 @@ def getcumulative(tableList, target, date, value):
                 hs_date = datetime.datetime(date.year, month, 1)
                 last_sum_data = get_sum_cumulative_data(tableList, target, hs_date, date)
                 # 判断是否是半年的第一天,半年第一天等于当前值
-                if date.day == 1 and date.month in (1, 7):
+                if date.day == 1 and date.month == 7:
                     cumulativehalfyear = value
                 else:
                     cumulativehalfyear = (last_sum_data + value) / (date.month-hs_date.month+1)
@@ -4945,8 +4945,8 @@ def getcumulative(tableList, target, date, value):
             else:
                 pass
         if target.cycletype == "12":
+            # 季报
             if date.month > 3:
-                # 季报
                 # 1.月累计
                 cumulativemonth = value
                 # 2.季累计
@@ -4956,11 +4956,11 @@ def getcumulative(tableList, target, date, value):
                 hs_date = datetime.datetime(date.year, month, 1)
                 last_sum_data = get_sum_cumulative_data(tableList, target, hs_date, date)
                 # 判断是否是半年的第一天,半年第一天等于当前值
-                if date.month == 3 or date.month == 9:
+                if date.month == 9:
                     day = 1
                 elif date.month == 6 or date.month == 12:
                     day = 2
-                if hs_date.day == 1 and hs_date == 7:
+                if date.day == 1 and date.month == 7:
                     cumulativehalfyear = value
                 else:
                     cumulativehalfyear = (last_sum_data + value) / day
@@ -4968,9 +4968,7 @@ def getcumulative(tableList, target, date, value):
                 # 4.年累计
                 ys_date = date.replace(month=1, day=1)
                 last_sum_data = get_sum_cumulative_data(tableList, target, ys_date, date)
-                if date.month == 3:
-                    day = 1
-                elif date.month == 6:
+                if date.month == 6:
                     day = 2
                 elif date.month == 9:
                     day = 3
@@ -4990,11 +4988,7 @@ def getcumulative(tableList, target, date, value):
                 # 4.年累计
                 ys_date = date.replace(month=1, day=1)
                 last_sum_data = get_sum_cumulative_data(tableList, target, ys_date, date)
-                if date.month == 6:
-                    day = 1
-                elif date.month == 12:
-                    day = 2
-                cumulativeyear = (last_sum_data + value) / day
+                cumulativeyear = (last_sum_data + value) / 2
         if target.cycletype == "14":
             # 年报均为当前值
             pass
@@ -5158,7 +5152,7 @@ def getcumulative(tableList, target, date, value):
                 ss_date = datetime.datetime(date.year, month, 1)
                 last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, ss_date, date)
                 # 判断是否是当季的第一天,当季第一天等于当前值
-                if date.day == 1 and date.month in (1, 4, 7, 10):
+                if date.day == 1 and date.month in (4, 7, 10):
                     cumulativequarter = value
                 else:
                     if value == 0:
@@ -5174,7 +5168,7 @@ def getcumulative(tableList, target, date, value):
                 hs_date = datetime.datetime(date.year, month, 1)
                 last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, hs_date, date)
                 # 判断是否是半年的第一天,半年第一天等于当前值
-                if date.day == 1 and date.month in (1, 7):
+                if date.day == 1 and date.month == 7:
                     cumulativehalfyear = value
                 else:
                     if value == 0:
@@ -5198,18 +5192,18 @@ def getcumulative(tableList, target, date, value):
             else:
                 pass
         if target.cycletype == "12":
+            # 季报
             if date.month > 3:
-                # 季报
                 # 1.月累计
                 cumulativemonth = value
                 # 2.季累计
                 cumulativequarter = value
-                # 3.半年上个月所在月份(区分前/后半年)
+                # 3.半年累计
                 month = (date.month - 1) - (date.month - 1) % 6 + 1
                 hs_date = datetime.datetime(date.year, month, 1)
                 last_sum_data, day_count = get_sum_cumulative_exclude_zero(tableList, target, hs_date, date)
                 # 判断是否是半年的第一天,半年第一天等于当前值
-                if date.day == 1 and date.month in (1, 7):
+                if date.day == 1 and date.month == 7:
                     cumulativehalfyear = value
                 else:
                     if value == 0:
@@ -5232,8 +5226,8 @@ def getcumulative(tableList, target, date, value):
                     cumulativeyear = (last_sum_data + value) / (day_count+1)
 
         if target.cycletype == "13":
+            # 半年报
             if date.month > 6:
-                # 半年报
                 # 1.月累计
                 cumulativemonth = value
                 # 2.季累计
