@@ -617,10 +617,12 @@ $(document).ready(function () {
                     "reporting_date": $('#reporting_date').val(),
                 },
                 success: function (data) {
+                    var status = data.status,
+                        info = data.info;
                     if (status == 1) {
                         table.ajax.reload();
                     } else {
-                        alert(data.info);
+                        alert(info);
                     }
                 }
             })
