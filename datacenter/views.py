@@ -3113,6 +3113,7 @@ def target_data(request):
                 # "push_config": json.dumps(target.push_config if target.push_config else {}),
                 "push_config": target.push_config.replace('"', '\\\"').replace("\'", '"') if target.push_config else "",
                 # "push_config": target.push_config.replace('"', '\"') if target.push_config else "",
+                "is_select": target.is_select
             })
         return JsonResponse({"data": result})
 
@@ -3177,6 +3178,7 @@ def target_save(request):
 
         if_push = request.POST.get('if_push', '')
         push_config = request.POST.get('push_config', '')
+        is_select = request.POST.get('is_select', '')
 
         try:
             push_config = json.loads(push_config)
@@ -3239,6 +3241,7 @@ def target_save(request):
                             target_save.businesstype = businesstype
                             target_save.unit = unit
                             target_save.unity = unity
+                            target_save.is_select = is_select
                             if data_from:
                                 target_save.data_from = data_from
 
@@ -3375,6 +3378,7 @@ def target_save(request):
                                         target_save.businesstype = businesstype
                                         target_save.unit = unit
                                         target_save.unity = unity
+                                        target_save.is_select = is_select
                                         if data_from:
                                             target_save.data_from = data_from
 

@@ -276,6 +276,7 @@ $(document).ready(function () {
 
         $("#data_from").val(data.data_from);
         $('#if_push').val(data.if_push);
+        $('#is_select').val(data.is_select);
         $('#push_config').hide();
 
         // 过滤出所有works
@@ -605,6 +606,7 @@ $(document).ready(function () {
         $("#storagetag").val("");
         $("#storagefields").val("");
         $("#is_repeat").val("1");
+        $('#is_select').val("no");
 
         ajaxFunction();
         analysisFunction();
@@ -708,6 +710,7 @@ $(document).ready(function () {
 
                 if_push: if_push,
                 push_config: push_config,
+                is_select: $('#is_select').val(),
             },
             success: function (data) {
                 var myres = data["res"];
