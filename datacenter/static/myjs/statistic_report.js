@@ -325,7 +325,7 @@ function getStatisticReport(start_date, end_date, search_id, date_type) {
                  */
                 var v_sum_tr = '<tr><td style="text-align: center;">合计</td>';
                 for (var L = 0; L < v_sums.length; L++) {
-                    v_sum_tr += '<td style="text-align: right;">' + v_sums[L] + '</td>';
+                    v_sum_tr += '<td style="text-align: right;"><input name="statistic_type" value="' + v_sums[L]["statistic_type"] + '" hidden>' + v_sums[L]["v"] + '</td>';
                 }
                 v_sum_tr += '</td></tr>';
                 $('#statistic_report_dt').find('tbody').append(v_sum_tr);
@@ -338,20 +338,35 @@ function getStatisticReport(start_date, end_date, search_id, date_type) {
                     var col_name = head_data[m]['col_name'],
                         colspan = head_data[m]['colspan'];
                     if (m == 0) {
-                        first_zj_tr += '<th colspan="' + colspan + ' " style="text-align: center;font-weight: normal;">总计</th>';
+                        first_zj_tr += '<td colspan="' + colspan + ' " style="text-align: center;">总计</td>';
                     } else {
                         // 合计求和->总计
+                        // 根据指标statistic_type求总计
                         var zj_sum = 0;
                         var hj_tds = $('#statistic_report_dt').find('tr').eq(-1).find('td');
+                        var statistic_type = null;
+                        var avai_num = 0;W
                         for (var n = 0; n < colspan; n++) {
-                            var c_hj = parseFloat(hj_tds.eq(td_num).text());
+                            hj_td = hj_tds.eq(td_num);
+                            var c_hj = parseFloat(hj_td.text());
+                            statistic_type = hj_td.find("input[name='statistic_type']").val();
+                            
                             if (!isNaN(c_hj)) {
                                 zj_sum += c_hj;
+                                avai_num += 1;
                             }
+
                             td_num += 1;
                         }
+                        if (statistic_type == '1'){  // 求和
+                            // ...
+                        } else if (statistic_type == '2'){
+                            zj_sum = (zj_sum/avai_num).toFixed(2)
+                        } else {
+                            zj_sum = "-"
+                        }
 
-                        first_zj_tr += '<th colspan="' + colspan + ' " style="text-align: center;font-weight: normal;">' + zj_sum + '</th>';
+                        first_zj_tr += '<td colspan="' + colspan + ' " style="text-align: center;">' + zj_sum + '</td>';
                     }
                 }
                 first_zj_tr += '</tr>';
