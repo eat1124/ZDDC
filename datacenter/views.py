@@ -4108,15 +4108,6 @@ def reporting_index(request, cycletype, funid):
             extracttagtabclass = ""
             calculatetagtabclass = ""
 
-            meternew = ""
-            entrynew = ""
-            extractnew = ""
-            calculatenew = ""
-
-            meterreset = ""
-            entryreset = ""
-            extractreset = ""
-            calculatereset = ""
             curapp = App.objects.filter(id=app)
 
             # 只有该功能对应的业务为核心业务，才显示数据查询标签
@@ -4245,14 +4236,6 @@ def reporting_index(request, cycletype, funid):
                            "entrytagtabclass": entrytagtabclass,
                            "extracttagtabclass": extracttagtabclass,
                            "calculatetagtabclass": calculatetagtabclass,
-                           "meternew": meternew,
-                           "entrynew": entrynew,
-                           "extractnew": extractnew,
-                           "calculatenew": calculatenew,
-                           "meterreset": meterreset,
-                           "entryreset": entryreset,
-                           "extractreset": extractreset,
-                           "calculatereset": calculatereset,
                            "search_app": search_app,
                            "pagefuns": getpagefuns(funid),
                            "funid": funid})
