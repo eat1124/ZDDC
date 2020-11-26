@@ -1,10 +1,32 @@
 $(document).ready(function () {
+    function getUrl() {
+        var url = document.location.toString();
+        var arrUrl = url.split("//");
+
+        var start = arrUrl[1].indexOf("/");
+        var relUrl = arrUrl[1].substring(start);//stop省略，截取从start开始到结尾的所有字符
+
+        if (relUrl.indexOf("?") != -1) {
+            relUrl = relUrl.split("?")[0];
+        }
+        relUrl = relUrl.split("/");
+        var tUrl = "get_report_search_data/";
+        for (var i=0; i<relUrl.length; i++){
+            if (!relUrl[i]){
+                tUrl = "../" + tUrl;
+            }
+        }
+        return tUrl;
+    }
+    var gUrl = getUrl();
     function getReportSearchTree() {
         $.ajax({
             type: "POST",
             dataType: "json",
-            url: "../get_report_search_data/",
-            data: {},
+            url: gUrl,
+            data: {
+                "app_id": $('#app_id').val()
+            },
             success: function (data) {
                 var treeData = data.data;
                 $('#report_search_tree').jstree('destroy');

@@ -9350,8 +9350,19 @@ def get_important_targets(request):
 
 def report_search(request, funid):
     if request.user.is_authenticated():
+        app_id = ""
+        try:
+            funid = int(funid)
+        except ValueError:
+            pass
+        c_app = get_app_from_fun(funid)
+        if not c_app["err"]:
+            app_id = c_app["app_id"]
+
         return render(request, 'report_search.html', {
-            'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request)
+            'username': request.user.userinfo.fullname,
+            "pagefuns": getpagefuns(funid, request),
+            "app_id": app_id,
         })
     else:
         return HttpResponseRedirect('/login')
@@ -9368,11 +9379,18 @@ def get_report_search_data(request):
     if request.user.is_authenticated():
         status = 1
         info = ""
+        app_id = request.POST.get("app_id", "")
 
         # 应用 App
         # 报表类型 DictList DictIndex=7
         # 报表记录 ReportSubmit ReportModel
         apps = App.objects.exclude(state="9")
+        try:
+            app_id = int(app_id)
+            apps = apps.filter(id=app_id)
+        except ValueError:
+            pass
+
         cycles = DictList.objects.exclude(state="9").filter(dictindex_id=12).values()
         report_submits = ReportSubmit.objects.filter(state="1").order_by("-id").values(
             "id", "app_id", "report_model_id", "report_model__name", "state", "person", "write_time", "report_time",
