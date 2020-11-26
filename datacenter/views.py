@@ -4206,10 +4206,6 @@ def reporting_index(request, cycletype, funid):
                 extracttag = "display: none;"
             if len(calculate_target) <= 0 and len(calculate_data) <= 0:
                 calculatetag = "display: none;"
-            if len(meter_data) <= 0:
-                meterreset = "display: none;"
-            else:
-                meternew = "display: none;"
 
             if search_target is not None and len(search_target) > 0:
                 searchtagclass = "class=active"
@@ -4226,19 +4222,6 @@ def reporting_index(request, cycletype, funid):
             elif len(calculate_target) > 0:
                 calculatetagclass = "class=active"
                 calculatetagtabclass = "active in"
-
-            if len(entry_data) <= 0:
-                entryreset = "display: none;"
-            else:
-                entrynew = "display: none;"
-            if len(extract_data) <= 0:
-                extractreset = "display: none;"
-            else:
-                extractnew = "display: none;"
-            if len(calculate_data) <= 0:
-                calculatereset = "display: none;"
-            else:
-                calculatenew = "display: none;"
 
             return render(request, 'reporting.html',
                           {'username': request.user.userinfo.fullname,
@@ -6710,6 +6693,87 @@ def reporting_release(request):
         return JsonResponse(result)
 
 
+def reporting_cancel_release(request):
+    if request.user.is_authenticated():
+        result = {
+            'status': 1,
+            'data': '取消成功。'
+        }
+        app = request.POST.get('app', '')
+        savedata = request.POST.get('savedata')
+        savedata = json.loads(savedata)
+        cycletype = request.POST.get('cycletype', '')
+        reporting_date = request.POST.get('reporting_date', '')
+        funid = request.POST.get('funid', '')
+        work = None
+        user_id = request.user.id
+
+        try:
+            funid = int(funid)
+            fun = Fun.objects.get(id=funid)
+            work = fun.work
+            app = int(app)
+        except Exception as e:
+            print(e)
+            result['status'] = 0
+            result['data'] = '网络异常。'
+        else:
+            try:
+                reporting_date = getreporting_date(reporting_date, cycletype)
+            except Exception as e:
+                result['status'] = 0
+                result['data'] = '报表时间处理异常。'
+            else:
+                # 分别存入数据库
+                savedata1 = savedata['1']
+                savedata15 = savedata['15']
+                savedata16 = savedata['16']
+                savedata17 = savedata['17']
+
+                # 发布
+                error_info = ''
+
+                try:
+                    getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id__in=[int(x['id']) for x in savedata1]).update(releasestate='0')
+                except Exception as e:
+                    error_info += '电表走字指标数据,'
+                    result['status'] = 0
+                try:
+                    getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id__in=[int(x['id']) for x in savedata15]).update(releasestate='0')
+                except Exception as e:
+                    error_info += '数据录入指标数据,'
+                    result['status'] = 0
+                try:
+                    getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id__in=[int(x['id']) for x in savedata16]).update(releasestate='0')
+                except Exception as e:
+                    error_info += '数据提取指标数据,'
+                    result['status'] = 0
+                try:
+                    getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                        id__in=[int(x['id']) for x in savedata17]).update(releasestate='0')
+                except Exception as e:
+                    error_info += '数据计算指标数据'
+                    result['status'] = 0
+
+                if result['status']:
+                    ReportingLog.objects.create(**{
+                        'write_time': datetime.datetime.now(),
+                        'datadate': reporting_date,
+                        'cycletype': cycletype,
+                        'adminapp_id': app,
+                        'work': work,
+                        'user_id': user_id,
+                        'type': 'cancelrelease',
+                    })
+                else:
+                    result['data'] = '{0}取消失败。'.format(error_info[:-1] if error_info.endswith(',') else error_info)
+
+        return JsonResponse(result)
+
+
 def reporting_save(request):
     if request.user.is_authenticated():
         ret = {
@@ -8767,7 +8831,8 @@ def get_reporting_log(request):
         reporting_type_dict = {
             'del': '删除',
             'release': '发布',
-            'save': '保存'
+            'save': '保存',
+            'cancelrelease': '取消发布'
         }
 
         dict_list = DictList.objects.exclude(state='9').values()
