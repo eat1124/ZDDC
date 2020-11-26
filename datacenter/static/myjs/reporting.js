@@ -282,14 +282,19 @@ $(document).ready(function () {
             {
                 "targets": -5,
                 "mRender": function (data, type, full) {
+                    //发布之后，把输入框设置为不可修改，取消发布后可以修改，通过字段
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input style='margin-top:-5px;width:134px;height:24px;' id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
-                        return "<input class='table1_curvaluedate' style='margin-top:-5px;width:134px;height:24px;' id='table1_curvaluedate_" + full.id + "' name='table1_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        return "<input " + disabled + " class='table1_curvaluedate' style='margin-top:-5px;width:134px;height:24px;' id='table1_curvaluedate_" + full.id + "' name='table1_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                     }
                     if (full.target_datatype == 'text') {
-                        return "<input style='margin-top:-5px;width:134px;height:24px;'  id='table1_curvaluetext_" + full.id + "' name='table1_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;'  id='table1_curvaluetext_" + full.id + "' name='table1_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
                     }
                 }
             },
@@ -347,16 +352,8 @@ $(document).ready(function () {
                     });
                 });
             });
-            // $('.table1_curvaluedate').datetimepicker({
-            //     format: 'yyyy-mm-dd hh:ii:ss',
-            //     autoclose: true,
-            //     minView: 0,
-            //     minuteStep: 1
-            // });
             if (data.aoData.length > 0) {
                 $("#new1").hide();
-                $("#save1").show();
-                $("#del1").show();
             } else {
                 $("#new1").show();
                 $("#save1").hide();
@@ -364,6 +361,7 @@ $(document).ready(function () {
                 $("#release1").hide();
                 $("#gorelease1").hide();
                 $("#unrelease1").hide();
+                $("#cancel_release1").hide();
             }
         },
         // 创建行回调函数
@@ -374,14 +372,22 @@ $(document).ready(function () {
             // 1 发布 0 未发布
             // gorelease1 已发布 unrelease1 未发布
             if (data.releasestate == '0') {
+                $("#save1").show();
+                $("#del1").show();
                 $("#release1").show();
                 $("#gorelease1").hide();
                 $("#unrelease1").show();
+                $("#cancel_release1").hide();
+
             }
             if (data.releasestate == '1') {
+                $("#new1").hide();
+                $("#save1").hide();
+                $("#del1").hide();
                 $("#release1").hide();
                 $("#unrelease1").hide();
                 $("#gorelease1").show();
+                $("#cancel_release1").show();
             }
 
         },
@@ -469,14 +475,18 @@ $(document).ready(function () {
             {
                 "targets": -6,
                 "mRender": function (data, type, full) {
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input style='margin-top:-5px;width:134px;height:24px;' id='table2_curvalue_" + full.id + "' name='table2_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table2_curvalue_" + full.id + "' name='table2_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
-                        return "<input class='table2_curvaluedate'style='margin-top:-5px;width:134px;height:24px;' id='table2_curvaluedate_" + full.id + "' name='table2_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        return "<input " + disabled + " class='table2_curvaluedate'style='margin-top:-5px;width:134px;height:24px;' id='table2_curvaluedate_" + full.id + "' name='table2_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                     }
                     if (full.target_datatype == 'text') {
-                        return "<input  style='margin-top:-5px;width:134px;height:24px;' id='table2_curvaluetext_" + full.id + "' name='table2_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table2_curvaluetext_" + full.id + "' name='table2_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
                     }
                 }
             },
@@ -534,9 +544,6 @@ $(document).ready(function () {
             });
             if (data.aoData.length > 0) {
                 $("#new2").hide();
-                $("#save2").show();
-                $("#del2").show();
-                $("#reset2").show();
             } else {
                 $("#new2").show();
                 $("#save2").hide();
@@ -545,6 +552,7 @@ $(document).ready(function () {
                 $("#release2").hide();
                 $("#gorelease2").hide();
                 $("#unrelease2").hide();
+                $("#cancel_release2").hide();
             }
         },
         "createdRow": function (row, data, index) {
@@ -553,14 +561,23 @@ $(document).ready(function () {
             }
 
             if (data.releasestate == '0') {
+                $("#save2").show();
+                $("#del2").show();
+                $("#reset2").show();
                 $("#release2").show();
                 $("#gorelease2").hide();
                 $("#unrelease2").show();
+                $("#cancel_release2").hide();
             }
             if (data.releasestate == '1') {
+                $("#new2").hide();
+                $("#save2").hide();
+                $("#del2").hide();
+                $("#reset2").hide();
                 $("#release2").hide();
                 $("#unrelease2").hide();
                 $("#gorelease2").show();
+                $("#cancel_release2").show();
             }
 
 
@@ -678,14 +695,18 @@ $(document).ready(function () {
             {
                 "targets": -6,
                 "mRender": function (data, type, full) {
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input style='margin-top:-5px;width:134px;height:24px;' id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
-                        return "<input class='table3_curvaluedate' style='margin-top:-5px;width:134px;height:24px;' id='table3_curvaluedate_" + full.id + "' name='table3_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        return "<input " + disabled + " class='table3_curvaluedate' style='margin-top:-5px;width:134px;height:24px;' id='table3_curvaluedate_" + full.id + "' name='table3_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                     }
                     if (full.target_datatype == 'text') {
-                        return "<input style='margin-top:-5px;width:134px;height:24px;'  id='table3_curvaluetext_" + full.id + "' name='table3_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;'  id='table3_curvaluetext_" + full.id + "' name='table3_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
                     }
                 }
             },
@@ -744,10 +765,6 @@ $(document).ready(function () {
             });
             if (data.aoData.length > 0) {
                 $("#new3").hide();
-                $("#save3").show();
-                $("#del3").show();
-                $("#reset3").show();
-
             } else {
                 $("#new3").show();
                 $("#save3").hide();
@@ -756,6 +773,7 @@ $(document).ready(function () {
                 $("#release3").hide();
                 $("#gorelease3").hide();
                 $("#unrelease3").hide();
+                $("#cancel_release3").hide();
             }
         },
         "createdRow": function (row, data, index) {
@@ -764,14 +782,23 @@ $(document).ready(function () {
             }
 
             if (data.releasestate == '0') {
+                $("#save3").show();
+                $("#del3").show();
+                $("#reset3").show();
                 $("#release3").show();
                 $("#gorelease3").hide();
                 $("#unrelease3").show();
+                $("#cancel_release3").hide();
             }
             if (data.releasestate == '1') {
+                $("#new3").hide();
+                $("#save3").hide();
+                $("#del3").hide();
+                $("#reset3").hide();
                 $("#release3").hide();
                 $("#unrelease3").hide();
                 $("#gorelease3").show();
+                $("#cancel_release3").show();
             }
 
         },
@@ -996,8 +1023,12 @@ $(document).ready(function () {
             {
                 "targets": -10,
                 "mRender": function (data, type, full) {
-                    var disabled = ""
-                    if (full.meterchangedata_id) {
+                    // var disabled = ""
+                    // if (full.meterchangedata_id) {
+                    //     disabled = "disabled"
+                    // }
+                    var disabled = "";
+                    if (full.releasestate=='1'){
                         disabled = "disabled"
                     }
                     return "<input " + disabled + "   style='margin-top:-5px;width:100px;height:24px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
@@ -1006,8 +1037,12 @@ $(document).ready(function () {
             {
                 "targets": -9,
                 "mRender": function (data, type, full) {
-                    var disabled = ""
-                    if (full.meterchangedata_id) {
+                    // var disabled = ""
+                    // if (full.meterchangedata_id) {
+                    //     disabled = "disabled"
+                    // }
+                    var disabled = "";
+                    if (full.releasestate=='1'){
                         disabled = "disabled"
                     }
                     return "<input " + disabled + "  style='margin-top:-5px;width:100px;height:24px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
@@ -1028,8 +1063,12 @@ $(document).ready(function () {
             {
                 "targets": -6,
                 "mRender": function (data, type, full) {
-                    var disabled = ""
-                    if (full.meterchangedata_id) {
+                    // var disabled = ""
+                    // if (full.meterchangedata_id) {
+                    //     disabled = "disabled"
+                    // }
+                    var disabled = "";
+                    if (full.releasestate=='1'){
                         disabled = "disabled"
                     }
                     if (full.target_datatype == 'numbervalue') {
@@ -1096,8 +1135,6 @@ $(document).ready(function () {
             });
             if (data.aoData.length > 0) {
                 $("#new5").hide();
-                $("#save5").show();
-                $("#del5").show();
             } else {
                 $("#new5").show();
                 $("#save5").hide();
@@ -1105,6 +1142,7 @@ $(document).ready(function () {
                 $("#release5").hide();
                 $("#gorelease5").hide();
                 $("#unrelease5").hide();
+                $("#cancel_release5").hide();
             }
         },
         "createdRow": function (row, data, index) {
@@ -1113,15 +1151,21 @@ $(document).ready(function () {
             }
 
             if (data.releasestate == '0') {
+                $("#save5").show();
+                $("#del5").show();
                 $("#release5").show();
                 $("#gorelease5").hide();
                 $("#unrelease5").show();
-
+                $("#cancel_release5").hide();
             }
             if (data.releasestate == '1') {
+                $("#new5").hide();
+                $("#save5").hide();
+                $("#del5").hide();
                 $("#release5").hide();
                 $("#unrelease5").hide();
                 $("#gorelease5").show();
+                $("#cancel_release5").show();
             }
         },
 
@@ -1502,7 +1546,30 @@ $(document).ready(function () {
             minView: 4,
         });
     }
-
+    function reportingSave(operationtype, savedata, table) {
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_save/",
+            data: {
+                operationtype: operationtype,
+                cycletype: $('#cycletype').val(),
+                savedata: JSON.stringify(savedata),
+                reporting_date: $('#reporting_date').val(),
+                funid: $('#funid').val(),
+            },
+            success: function (data) {
+                console.log(data['data'])
+                if (data['status'] == 1) {
+                    table.ajax.reload();
+                }
+                alert(data['data']);
+            },
+            error: function (e) {
+                alert("页面出现错误，请于管理员联系。");
+            }
+        });
+    }
     $("#new1").click(function () {
         var table = $('#sample_1').DataTable();
         $.ajax({
@@ -1565,63 +1632,6 @@ $(document).ready(function () {
 
         }
     });
-
-    function reportingSave(operationtype, savedata, table) {
-        $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../../reporting_save/",
-            data: {
-                operationtype: operationtype,
-                cycletype: $('#cycletype').val(),
-                savedata: JSON.stringify(savedata),
-                reporting_date: $('#reporting_date').val(),
-                funid: $('#funid').val(),
-            },
-            success: function (data) {
-                console.log(data['data'])
-                if (data['status'] == 1) {
-                    table.ajax.reload();
-                }
-                alert(data['data']);
-            },
-            error: function (e) {
-                alert("页面出现错误，请于管理员联系。");
-            }
-        });
-    }
-
-    function reportingRelease(savedata, tables) {
-        $.ajax({
-            type: "POST",
-            dataType: 'json',
-            url: "../../../reporting_release/",
-            data:
-                {
-                    app: $('#app').val(),
-                    cycletype: $('#cycletype').val(),
-                    savedata: JSON.stringify(savedata),
-                    reporting_date: $('#reporting_date').val(),
-                    funid: $('#funid').val(),
-                },
-            success: function (data) {
-                if (data['status'] == 1) {
-                    for (var i = 0; i < tables.length; i++) {
-                        tables[i].ajax.reload();
-                    }
-                    $("#new1").hide();
-                    $("#save1").show();
-                    $("#del1").show();
-                    $("#reset1").show();
-                }
-                alert(data['data']);
-            },
-            error: function (e) {
-                alert("发布失败，请于管理员联系。");
-            }
-        });
-    }
-
     $('#save1').click(function () {
         $("Element").blur();
         var table = $('#sample_1').DataTable().data();
@@ -1640,44 +1650,6 @@ $(document).ready(function () {
             })
         });
         reportingSave(15, savedata, table);
-    });
-    $('#release1').click(function () {
-        $("Element").blur();
-        var table1 = $('#sample_1').DataTable().data();
-        var savedata1 = [];
-        $.each(table1, function (i, item) {
-            savedata1.push({
-                "id": item.id,
-            })
-        });
-
-        var table2 = $('#sample_2').DataTable().data();
-        var savedata2 = [];
-        $.each(table2, function (i, item) {
-            savedata2.push({
-                "id": item.id,
-            })
-        });
-
-        var table3 = $('#sample_3').DataTable().data();
-        var savedata3 = [];
-        $.each(table3, function (i, item) {
-            savedata3.push({
-                "id": item.id,
-            })
-        });
-
-        var table5 = $('#sample_5').DataTable().data();
-        var savedata5 = [];
-        $.each(table5, function (i, item) {
-            savedata5.push({
-                "id": item.id,
-            })
-        });
-
-        var savedata = {'15': savedata1, '16': savedata2, '17': savedata3, '1': savedata5};
-
-        reportingRelease(savedata, [table1, table2, table3, table5]);
     });
 
     $("#new2").click(function () {
@@ -1788,44 +1760,6 @@ $(document).ready(function () {
                 alert("提取失败，请于管理员联系。");
             }
         });
-    });
-    $('#release2').click(function () {
-        $("Element").blur();
-        var table1 = $('#sample_1').DataTable().data();
-        var savedata1 = [];
-        $.each(table1, function (i, item) {
-            savedata1.push({
-                "id": item.id,
-            })
-        });
-
-        var table2 = $('#sample_2').DataTable().data();
-        var savedata2 = [];
-        $.each(table2, function (i, item) {
-            savedata2.push({
-                "id": item.id,
-            })
-        });
-
-        var table3 = $('#sample_3').DataTable().data();
-        var savedata3 = [];
-        $.each(table3, function (i, item) {
-            savedata3.push({
-                "id": item.id,
-            })
-        });
-
-        var table5 = $('#sample_5').DataTable().data();
-        var savedata5 = [];
-        $.each(table5, function (i, item) {
-            savedata5.push({
-                "id": item.id,
-            })
-        });
-
-        var savedata = {'15': savedata1, '16': savedata2, '17': savedata3, '1': savedata5};
-
-        reportingRelease(savedata, [table1, table2, table3, table5]);
     });
     var customModal = {
         "show": function () {
@@ -1959,44 +1893,6 @@ $(document).ready(function () {
             }
         });
     });
-    $('#release3').click(function () {
-        $("Element").blur();
-        var table1 = $('#sample_1').DataTable().data();
-        var savedata1 = [];
-        $.each(table1, function (i, item) {
-            savedata1.push({
-                "id": item.id,
-            })
-        });
-
-        var table2 = $('#sample_2').DataTable().data();
-        var savedata2 = [];
-        $.each(table2, function (i, item) {
-            savedata2.push({
-                "id": item.id,
-            })
-        });
-
-        var table3 = $('#sample_3').DataTable().data();
-        var savedata3 = [];
-        $.each(table3, function (i, item) {
-            savedata3.push({
-                "id": item.id,
-            })
-        });
-
-        var table5 = $('#sample_5').DataTable().data();
-        var savedata5 = [];
-        $.each(table5, function (i, item) {
-            savedata5.push({
-                "id": item.id,
-            })
-        });
-
-        var savedata = {'15': savedata1, '16': savedata2, '17': savedata3, '1': savedata5};
-
-        reportingRelease(savedata, [table1, table2, table3, table5]);
-    });
 
     $("#new5").click(function () {
         var table = $('#sample_5').DataTable();
@@ -2095,7 +1991,65 @@ $(document).ready(function () {
         });
         reportingSave(1, savedata, table);
     });
-    $('#release5').click(function () {
+
+    function reportingRelease(savedata, tables) {
+        if (confirm("确定要发布数据？")) {
+            $.ajax({
+                type: "POST",
+                dataType: 'json',
+                url: "../../../reporting_release/",
+                data:
+                    {
+                        app: $('#app').val(),
+                        cycletype: $('#cycletype').val(),
+                        savedata: JSON.stringify(savedata),
+                        reporting_date: $('#reporting_date').val(),
+                        funid: $('#funid').val(),
+                    },
+                success: function (data) {
+                    if (data['status'] == 1) {
+                        for (var i = 0; i < tables.length; i++) {
+                            tables[i].ajax.reload();
+                        }
+                    }
+                    alert(data['data']);
+                },
+                error: function (e) {
+                    alert("发布失败，请于管理员联系。");
+                }
+            });
+        }
+    }
+    function reportingCancelRelease(savedata, tables) {
+        if (confirm("确定要取消发布？")) {
+            $.ajax({
+                type: "POST",
+                dataType: 'json',
+                url: "../../../reporting_cancel_release/",
+                data:
+                    {
+                        app: $('#app').val(),
+                        cycletype: $('#cycletype').val(),
+                        savedata: JSON.stringify(savedata),
+                        reporting_date: $('#reporting_date').val(),
+                        funid: $('#funid').val(),
+                    },
+                success: function (data) {
+                    if (data['status'] == 1) {
+                        for (var i = 0; i < tables.length; i++) {
+                            tables[i].ajax.reload();
+                        }
+                    }
+                    alert(data['data']);
+                },
+                error: function (e) {
+                    alert("取消发布失败，请于管理员联系。");
+                }
+            });
+        }
+    }
+    // 发布
+    $('#release1,#release2,#release3,#release5').click(function () {
         $("Element").blur();
         var table1 = $('#sample_1').DataTable().data();
         var savedata1 = [];
@@ -2132,6 +2086,45 @@ $(document).ready(function () {
         var savedata = {'15': savedata1, '16': savedata2, '17': savedata3, '1': savedata5};
 
         reportingRelease(savedata, [table1, table2, table3, table5]);
+    });
+    // 取消发布
+    $('#cancel_release1,#cancel_release2,#cancel_release3, #cancel_release5').click(function () {
+        $("Element").blur();
+        var table1 = $('#sample_1').DataTable().data();
+        var savedata1 = [];
+        $.each(table1, function (i, item) {
+            savedata1.push({
+                "id": item.id,
+            })
+        });
+
+        var table2 = $('#sample_2').DataTable().data();
+        var savedata2 = [];
+        $.each(table2, function (i, item) {
+            savedata2.push({
+                "id": item.id,
+            })
+        });
+
+        var table3 = $('#sample_3').DataTable().data();
+        var savedata3 = [];
+        $.each(table3, function (i, item) {
+            savedata3.push({
+                "id": item.id,
+            })
+        });
+
+        var table5 = $('#sample_5').DataTable().data();
+        var savedata5 = [];
+        $.each(table5, function (i, item) {
+            savedata5.push({
+                "id": item.id,
+            })
+        });
+
+        var savedata = {'15': savedata1, '16': savedata2, '17': savedata3, '1': savedata5};
+
+        reportingCancelRelease(savedata, [table1, table2, table3, table5]);
     });
 
     // nav_tab切换事件
