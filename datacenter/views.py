@@ -7400,7 +7400,7 @@ def childfun(myfun, funid):
             # if len(fun.app.all()) > 0:
             if fun.app:
                 url = fun.url + str(fun.id) + "/" if fun.url else ""
-            if str(fun.id) == funid:
+            if str(fun.id) == str(funid):
                 isselected = True
                 pisselected = True
                 mychildfun.append({
@@ -7432,7 +7432,7 @@ def getpagefuns(funid, request=""):
             url = fun.url if fun.url else ""
             if fun.app:
                 url = fun.url + str(fun.id) + "/" if fun.url else ""
-            if str(fun.id) == funid:
+            if str(fun.id) == str(funid):
                 isselected = True
                 pagefuns.append({
                     "id": fun.id, "name": fun.name, "url": url,
