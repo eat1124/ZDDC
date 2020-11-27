@@ -10166,7 +10166,7 @@ def get_statistic_report(request):
                                 "cumulativehalfyear": float(round(tv["cumulativehalfyear"] if tv["cumulativehalfyear"] else 0, tv["target__digit"])),
                                 "cumulativeyear": float(round(tv["cumulativeyear"] if tv["cumulativeyear"] else 0, tv["target__digit"])),
                                 "date": "{0:%Y-%m-%d}".format(tv["datadate"]) if tv["datadate"] else "",
-                            } for tv in target_val if str(tv["target__cycletype"]) == date_type]
+                            } for tv in target_val]
                         return sorted(data, key=lambda e: e.__getitem__('date'), reverse=True)
 
                     meter_data = get_target_values('1', start_date, end_date, date_type)
@@ -10306,31 +10306,31 @@ def get_statistic_report(request):
                                             # 判断取的值类型
                                             if target["cumulative_type"] == "0":
                                                 target_values.append({
-                                                    "value": d["curvalue"] if d["curvalue"] else "-",
+                                                    "value": d["curvalue"] if d["curvalue"] else "/",
                                                     "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "1":
                                                 target_values.append({
-                                                    "value": d["cumulativemonth"] if d["curvalue"] else "-",
+                                                    "value": d["cumulativemonth"] if d["curvalue"] else "/",
                                                     "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "2":
                                                 target_values.append({
-                                                    "value": d["cumulativequarter"] if d["curvalue"] else "-",
+                                                    "value": d["cumulativequarter"] if d["curvalue"] else "/",
                                                     "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "3":
                                                 target_values.append({
-                                                    "value": d["cumulativehalfyear"] if d["curvalue"] else "-",
+                                                    "value": d["cumulativehalfyear"] if d["curvalue"] else "/",
                                                     "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "4":
                                                 target_values.append({
-                                                    "value": d["cumulativeyear"] if d["curvalue"] else "-",
+                                                    "value": d["cumulativeyear"] if d["curvalue"] else "/",
                                                     "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
@@ -10373,16 +10373,16 @@ def get_statistic_report(request):
                                 in_sum += 1
                         if cumulative == "1":  # 求和
                             pass
-                        if cumulative == ["2", "4"]:  # 平均
-                            v_sum = v_sum / in_sum
+                        if cumulative in ["2", "4"]:  # 平均
+                            v_sum = v_sum / decimal.Decimal(str(in_sum)) if in_sum else 0
                             v_sum = round(v_sum, 4)
                         if cumulative == "0":  # 不累计
-                            v_sum = "-"
+                            v_sum = "/"
                         if cumulative == "3":   # 加权平均->待
-                            v_sum = "-"
+                            v_sum = "/"
                         v_sums.append({
                             "statistic_type": statistic_type,
-                            "v": float(v_sum) if v_sum and v_sum != "-" else "-"
+                            "v": float(v_sum) if v_sum and v_sum != "/" else "/"
                         }) # 合计里放个总计类型
             except Exception as e:
                 status = 0

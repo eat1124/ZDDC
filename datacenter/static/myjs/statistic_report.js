@@ -345,7 +345,7 @@ function getStatisticReport(start_date, end_date, search_id, date_type) {
                         var zj_sum = 0;
                         var hj_tds = $('#statistic_report_dt').find('tr').eq(-1).find('td');
                         var statistic_type = null;
-                        var avai_num = 0;W
+                        var avai_num = 0;
                         for (var n = 0; n < colspan; n++) {
                             hj_td = hj_tds.eq(td_num);
                             var c_hj = parseFloat(hj_td.text());
