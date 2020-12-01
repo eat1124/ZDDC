@@ -297,6 +297,7 @@ $('#col_new').click(function () {
 });
 
 $("#multiple_targets")
+    // 新增
     .on("select2:select", function (e) {
         var target = e.params.data;
         $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target.id + '">\n' +
@@ -319,13 +320,23 @@ $("#multiple_targets")
             '        </select>\n' + 
             '    </div>\n' +
             '</div>');
-    })  // 新增
+
+        if ($('#col_name').val() == ''){
+            $('#col_name').val(target.text);
+        }
+    })
+    // 删除
     .on("select2:unselect", function (e) {
         // 将指定id的div删除
         var target = e.params.data;
         var target_id = target.id;
         $('#new_target').find('div[target_id="' + target_id + '"]').remove();
-    });  // 删除
+
+        if ($("#multiple_targets").val() == null){
+            $('#col_name').val('');
+        }
+    });
+
 
 $('#col_load').click(function () {
     // 非空条件

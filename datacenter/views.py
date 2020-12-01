@@ -10354,7 +10354,7 @@ def get_statistic_report(request):
                         if future.result():
                             body_data.append(future.result())
 
-                body_data = sorted(body_data, key=lambda e: e.__getitem__('date'), reverse=True)
+                body_data = sorted(body_data, key=lambda e: e.__getitem__('date'), reverse=False)
                 # 合计(判断求和/平均)
                 if body_data:
                     target_values_length = len(body_data[0]["target_values"])
@@ -10367,7 +10367,9 @@ def get_statistic_report(request):
                             target_values = bd["target_values"]
                             c_v = target_values[i].get("value", "-")
                             statistic_type = target_values[i].get("statistic_type", "-")
-                            cumulative = target_values[i].get("cumulative", "-")
+                            pre_cumulative = target_values[i].get("cumulative", "-")
+                            if pre_cumulative not in ["-", ""]:
+                                cumulative = pre_cumulative
                             if type(c_v) != str and c_v:
                                 v_sum += decimal.Decimal(str(c_v))
                                 in_sum += 1

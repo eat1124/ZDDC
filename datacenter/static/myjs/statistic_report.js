@@ -352,7 +352,7 @@ function getStatisticReport(start_date, end_date, search_id, date_type) {
                             statistic_type = hj_td.find("input[name='statistic_type']").val();
                             
                             if (!isNaN(c_hj)) {
-                                zj_sum += c_hj;
+                                zj_sum = math.add(math.bignumber(Number(zj_sum)), math.bignumber(Number(c_hj))); // math.js精度计算
                                 avai_num += 1;
                             }
 
