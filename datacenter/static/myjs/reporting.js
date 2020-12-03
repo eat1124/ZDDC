@@ -738,9 +738,16 @@ $(document).ready(function () {
                 "targets": -1,
                 "data": null,
                 "orderable": false,
-                "defaultContent": "<button  id='edit' title='编辑' data-toggle='modal'  data-target='#static3'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>" +
-                    "<button id='single_recalculate1' title='重新计算(包括当前指标)' class='btn btn-xs purple-plum' type='button'><i class='fa fa-calculator'></i></button>" +
-                    "<button id='single_recalculate2' title='重新计算(不包括当前指标)' class='btn btn-xs blue-hoki' type='button'><i class='fa fa-calculator'></i></button>"
+
+                "mRender": function (data, type, full) {
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
+                    return "<button " + disabled + " id='edit' title='查看公式' data-toggle='modal'  data-target='#static3'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>" +
+                    "<button " + disabled + " id='single_recalculate1' title='重新计算(包括当前指标)' class='btn btn-xs purple-plum' type='button'><i class='fa fa-calculator'></i></button>" +
+                    "<button " + disabled + " id='single_recalculate2' title='重新计算(不包括当前指标)' class='btn btn-xs blue-hoki' type='button'><i class='fa fa-calculator'></i></button>"
+                }
             }
         ],
         "oLanguage": {
@@ -1110,7 +1117,13 @@ $(document).ready(function () {
                 "targets": -1,
                 "data": null,
                 "width": "10px",
-                "defaultContent": "<button  id='edit' title='换表' data-toggle='modal'  data-target='#static5'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>"
+                "mRender": function (data, type, full) {
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
+                    return "<button " + disabled + " id='edit' title='换表' data-toggle='modal'  data-target='#static5'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>"
+                }
             },
         ],
         "oLanguage": {
