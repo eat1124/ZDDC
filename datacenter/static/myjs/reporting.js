@@ -519,7 +519,14 @@ $(document).ready(function () {
                 "data": null,
                 "width": "80px",
                 "orderable": false,
-                "defaultContent": "<button  id='single_reextract' title='重新提取' class='btn btn-xs btn-primary' type='button'><i class='fa fa-hand-paper-o'></i></button>",
+                "mRender": function (data, type, full) {
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
+                    return "<button " + disabled + " id='single_reextract' title='重新提取' class='btn btn-xs btn-primary' type='button'><i class='fa fa-hand-paper-o'></i></button>"
+                }
+
             }
         ],
         "oLanguage": {
@@ -738,7 +745,6 @@ $(document).ready(function () {
                 "targets": -1,
                 "data": null,
                 "orderable": false,
-
                 "mRender": function (data, type, full) {
                     var disabled = "";
                     if (full.releasestate=='1'){
