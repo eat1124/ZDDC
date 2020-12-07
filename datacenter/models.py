@@ -390,7 +390,7 @@ class ReportSubmitInfo(models.Model):
     """
     report_submit = models.ForeignKey(ReportSubmit)
     name = models.CharField("信息名称", max_length=100)
-    value = models.CharField("默认值", max_length=100)
+    value = models.CharField("默认值", max_length=2000)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
 
