@@ -30,9 +30,9 @@ $(document).ready(function () {
             "width": "100px",
             "render": function (data, type, full) {
                 if (full.if_template){
-                    return "<td><button class='btn btn-xs btn-primary' type='button'><a href='/download_file/?file_name'><i class='fa fa-arrow-circle-down' style='color: white'></i></a></button></td>".replace("file_name", "file_name=" + full.file_name);
+                    return "<td><button title='下载' class='btn btn-xs btn-primary' type='button'><a href='/download_file/?file_name'><i class='fa fa-arrow-circle-down' style='color: white'></i></a></button></td>".replace("file_name", "file_name=" + full.file_name);
                 } else {
-                    return "<td><button class='btn btn-xs btn-primary' type='button'><a href='/download_file/?file_name'><i class='fa fa-arrow-circle-down' style='color: white'></i></a></button><button  id='edit' title='编辑' data-toggle='modal'  data-target='#static'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button><button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button></td>".replace("file_name", "file_name=" + full.file_name);
+                    return "<td><button title='下载' class='btn btn-xs btn-primary' type='button'><a href='/download_file/?file_name'><i class='fa fa-arrow-circle-down' style='color: white'></i></a></button><button  id='edit' title='编辑' data-toggle='modal'  data-target='#static'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button><button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button></td>".replace("file_name", "file_name=" + full.file_name);
                 }
             },
         }],

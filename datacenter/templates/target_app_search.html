@@ -20,6 +20,34 @@
                             <div class="col-md-12">
                                 <div class="col-md-6">
                                     <div class="form-group ">
+                                        <label class="col-md-3 control-label">所属应用</label>
+                                        <div class="col-md-7">
+                                            <input type="text" id="search_app_list" name="search_app_list"
+                                                   value="{{ search_app }}"
+                                                   hidden>
+                                            <select class="form-control" id="searchapp" name="searchapp">
+                                                <option selected value="">全部</option>
+                                                {% for app in search_app %}
+                                                    <option value="{{ app.id }}">{{ app.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group ">
+                                        <label class="col-md-3 control-label">所属业务</label>
+                                        <div class="col-md-7">
+                                            <select class="form-control" id="works" name="works">
+
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="col-md-6">
+                                    <div class="form-group ">
                                         <label class="col-md-3 control-label">操作类型</label>
                                         <div class="col-md-7">
                                             <select class="form-control" id="search_operationtype"
@@ -75,34 +103,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-12">
-                                <div class="col-md-6">
-                                    <div class="form-group ">
-                                        <label class="col-md-3 control-label">所属应用</label>
-                                        <div class="col-md-7">
-                                            <input type="text" id="search_app_list" name="search_app_list"
-                                                   value="{{ search_app }}"
-                                                   hidden>
-                                            <select class="form-control" id="searchapp" name="searchapp">
-                                                <option selected value="">全部</option>
-                                                {% for app in search_app %}
-                                                    <option value="{{ app.id }}">{{ app.name }}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group ">
-                                        <label class="col-md-3 control-label">所属业务</label>
-                                        <div class="col-md-7">
-                                            <select class="form-control" id="works" name="works">
 
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -522,6 +523,32 @@
                                             <div class="col-md-12">
                                                 <div class="col-md-6">
                                                     <div class="form-group ">
+                                                        <label class="col-md-3 control-label">所属应用</label>
+                                                        <div class="col-md-7">
+                                                            <select class="form-control" id="searchapp1"
+                                                                    name="searchapp1">
+                                                                <option selected value="">全部</option>
+                                                                {% for app in search_app %}
+                                                                    <option value="{{ app.id }}">{{ app.name }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group ">
+                                                        <label class="col-md-3 control-label">所属业务</label>
+                                                        <div class="col-md-7">
+                                                            <select class="form-control" id="works1" name="works1">
+
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="col-md-6">
+                                                    <div class="form-group ">
                                                         <label class="col-md-3 control-label">操作类型</label>
                                                         <div class="col-md-7">
                                                             <select class="form-control" id="search_operationtype1"
@@ -574,32 +601,6 @@
                                                                 {% for unit in unit_list %}
                                                                     <option value="{{ unit.unit_id }}">{{ unit.unit_name }}</option>
                                                                 {% endfor %}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-12">
-                                                <div class="col-md-6">
-                                                    <div class="form-group ">
-                                                        <label class="col-md-3 control-label">所属应用</label>
-                                                        <div class="col-md-7">
-                                                            <select class="form-control" id="searchapp1"
-                                                                    name="searchapp1">
-                                                                <option selected value="">全部</option>
-                                                                {% for app in search_app %}
-                                                                    <option value="{{ app.id }}">{{ app.name }}</option>
-                                                                {% endfor %}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group ">
-                                                        <label class="col-md-3 control-label">所属业务</label>
-                                                        <div class="col-md-7">
-                                                            <select class="form-control" id="works1" name="works1">
-
                                                             </select>
                                                         </div>
                                                     </div>
