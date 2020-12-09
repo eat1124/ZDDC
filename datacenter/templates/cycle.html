@@ -70,6 +70,7 @@
                                         <option value="1" selected>每日</option>
                                         <option value="2">每周</option>
                                         <option value="3">每月</option>
+                                        <option value="4" >每小时</option>
                                     </select>
                                     <div class="form-control-focus"></div>
                                 </div>
@@ -169,8 +170,16 @@
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>
+                            <div class="form-group" id="per_hour_div" hidden>
+                                <label class="col-md-2 control-label"><span style="color:red; ">*</span>第几分钟</label>
+                                <div class="col-md-10">
+                                    <input type="number" id="per_hour" name="per_hour"
+                                           class="form-control">
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
 
-                            <div class="form-group">
+                            <div class="form-group" id="per_time_div" hidden>
                                 <label class="col-md-2 control-label"><span style="color:red; ">*</span>时间</label>
                                 <div class="col-md-10">
                                     <div class="input-group">

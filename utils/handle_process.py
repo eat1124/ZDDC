@@ -384,7 +384,7 @@ class Extract(object):
             # 时间点 子周期
             sub_cycles = cycle_rule.subcycle_set.exclude(state="9")
             for sub_cycle in sub_cycles:
-                minute, hour, day_of_week, day_of_month = None, None, None, None
+                minute, hour, day_of_week, day_of_month,min_of_hour = None, None, None, None
                 try:
                     minute = int(sub_cycle.minute)
                 except:
@@ -401,6 +401,10 @@ class Extract(object):
                     day_of_month = int(sub_cycle.day_of_month)
                 except:
                     pass
+                try:
+                    min_of_hour = int(sub_cycle.min_of_hour)
+                except:
+                    pass
 
                 # 当前时间
                 now_minute = now_time.minute
@@ -408,18 +412,22 @@ class Extract(object):
                 now_weekday = now_time.weekday()
                 now_day = now_time.day
 
-                if now_hour == hour and now_minute == minute:
-                    # 每日/每周/每月
-                    if schedule_type == 1:
+                if schedule_type == 4:
+                    if now_minute == min_of_hour:
                         self._get_data(now_time)
-                    if schedule_type == 2:
-                        # 判断一周第几天
-                        if now_weekday == day_of_week:
+                else:
+                    if now_hour == hour and now_minute == minute:
+                        # 每日/每周/每月
+                        if schedule_type == 1:
                             self._get_data(now_time)
-                    if schedule_type == 3:
-                        # 判断一月第几天
-                        if now_day == day_of_month:
-                            self._get_data(now_time)
+                        if schedule_type == 2:
+                            # 判断一周第几天
+                            if now_weekday == day_of_week:
+                                self._get_data(now_time)
+                        if schedule_type == 3:
+                            # 判断一月第几天
+                            if now_day == day_of_month:
+                                self._get_data(now_time)
         self.pm.last_time = now_time
         self.pm.save()
 

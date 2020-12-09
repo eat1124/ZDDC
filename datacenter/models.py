@@ -89,6 +89,7 @@ class Cycle(models.Model):
         (1, "每日"),
         (2, "每周"),
         (3, "每月"),
+        (4, "每小时"),
     )
     schedule_type = models.IntegerField(choices=schedule_type_choices, default=1, null=True)
 
@@ -99,6 +100,7 @@ class SubCycle(models.Model):
     hour = models.CharField('小时', max_length=64, default='', blank=True)
     day_of_week = models.CharField('周中日', max_length=64, default='', blank=True)
     day_of_month = models.CharField('月中日', max_length=64, default='', blank=True)
+    min_of_hour = models.CharField('时中分', max_length=64, default='', blank=True)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
 

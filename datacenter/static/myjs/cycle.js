@@ -28,8 +28,9 @@ $(document).ready(function () {
                         minutes = sub_cycle_data[i]['minutes'],
                         per_week = sub_cycle_data[i]['per_week'],
                         per_month = sub_cycle_data[i]['per_month'];
+                        per_hour = sub_cycle_data[i]['per_hour'];
                     var per_time = hours + ":" + minutes;
-                    var sub_cycle_point = getSubCyclePoint(schedule_type, per_time, per_week, per_month);
+                    var sub_cycle_point = getSubCyclePoint(schedule_type, per_time, per_week, per_month,per_hour);
                     sub_cycle_points += sub_cycle_point + ","
                 }
                 if (sub_cycle_points.endsWith(',')){
@@ -100,12 +101,13 @@ $(document).ready(function () {
             var per_time = subCycleData[i]["hours"] + ":" + subCycleData[i]["minutes"],
                 per_week = subCycleData[i]["per_week"],
                 per_month = subCycleData[i]["per_month"],
+                per_hour = subCycleData[i]["per_hour"],
                 hours = subCycleData[i]["hours"],
                 minutes = subCycleData[i]["minutes"],
                 sub_cycle_id = subCycleData[i]["sub_cycle_id"]
 
-            var sub_cycle_point = getSubCyclePoint(data.schedule_type, per_time, per_week, per_month);
-            sub_cycle_data.push([sub_cycle_id, sub_cycle_point, hours, minutes, per_week, per_month])
+            var sub_cycle_point = getSubCyclePoint(data.schedule_type, per_time, per_week, per_month,per_hour);
+            sub_cycle_data.push([sub_cycle_id, sub_cycle_point, hours, minutes, per_week, per_month,per_hour])
             loadSubCycleData();
         }
     });
@@ -131,7 +133,8 @@ $(document).ready(function () {
                 "hours": cycle_point_data[i][2]?cycle_point_data[i][2]:"",
                 "minutes": cycle_point_data[i][3]?cycle_point_data[i][3]:"",
                 "per_week": cycle_point_data[i][4]?cycle_point_data[i][4]:"",
-                "per_month": cycle_point_data[i][5]?cycle_point_data[i][5]:""
+                "per_month": cycle_point_data[i][5]?cycle_point_data[i][5]:"",
+                "per_hour": cycle_point_data[i][6]?cycle_point_data[i][6]:""
             });
         }
 
@@ -188,17 +191,28 @@ $(document).ready(function () {
         var schedule_type = $('#schedule_type').val();
 
         if (schedule_type == 1) {
+            $("#per_time_div").show();
             $("#per_week_div").hide();
             $("#per_month_div").hide();
+            $("#per_hour_div").hide();
         }
         if (schedule_type == 2) {
-            $("#per_week").val(1);
+            $("#per_time_div").show();
             $("#per_week_div").show();
             $("#per_month_div").hide();
+            $("#per_hour_div").hide();
         }
         if (schedule_type == 3) {
+            $("#per_time_div").show();
             $("#per_week_div").hide();
             $("#per_month_div").show();
+            $("#per_hour_div").hide();
+        }
+        if (schedule_type == 4) {
+            $("#per_time_div").hide();
+            $("#per_week_div").hide();
+            $("#per_month_div").hide();
+            $("#per_hour_div").show();
         }
     });
 
@@ -207,9 +221,10 @@ $(document).ready(function () {
         $("#per_time").val("00:00").timepicker("setTime", "00:00");
         $("#per_week").val("").trigger("change");
         $("#per_month").val("").trigger("change");
+        $("#per_hour").val("").trigger("change");
     });
 
-    function getSubCyclePoint(schedule_type, per_time, per_week, per_month){
+    function getSubCyclePoint(schedule_type, per_time, per_week, per_month,per_hour){
         var sub_cycle_point = "";
         if (schedule_type == 1) {  // day
             sub_cycle_point = "每日" + per_time;
@@ -219,6 +234,9 @@ $(document).ready(function () {
         }
         if (schedule_type == 3) {  // month
             sub_cycle_point = "每月第" + per_month + "天" + " " + per_time;
+        }
+        if (schedule_type == 4) {  // month
+            sub_cycle_point = "每小时第" + per_hour + "分钟";
         }
         return sub_cycle_point
     }
@@ -230,6 +248,7 @@ $(document).ready(function () {
             per_time = $("#per_time").val(),
             per_week = $("#per_week").val(),
             per_month = $("#per_month").val();
+            per_hour = $("#per_hour").val();
         var hours = "",
             minutes = "";
         var per_time_list = per_time.split(":");
@@ -237,9 +256,9 @@ $(document).ready(function () {
         minutes = per_time_list[1].trim();
 
         // 构造时间点
-        var sub_cycle_point = getSubCyclePoint(schedule_type, per_time, per_week, per_month);
+        var sub_cycle_point = getSubCyclePoint(schedule_type, per_time, per_week, per_month,per_hour);
         if (sub_cycle_id == 0){  // 新增 整合 日 周 月
-            var load_list = ['暂无', sub_cycle_point, hours, minutes, per_week, per_month];
+            var load_list = ['暂无', sub_cycle_point, hours, minutes, per_week, per_month,per_hour];
             table.row.add(load_list).draw();
 
             // 飘红
@@ -255,7 +274,7 @@ $(document).ready(function () {
             table.rows().eq(0).each(function (index) {
                 if (index == $('#edit_row').val()) {
                     var dataNode = table.row(index);
-                    dataNode.data([sub_cycle_id, sub_cycle_point, hours, minutes, per_week, per_month]).draw();
+                    dataNode.data([sub_cycle_id, sub_cycle_point, hours, minutes, per_week, per_month, per_hour]).draw();
                     $('#static1').modal('hide');
                 }
             });
@@ -338,12 +357,14 @@ $(document).ready(function () {
                     minutes = data[3],
                     per_week = data[4],
                     per_month = data[5];
+                    per_hour = data[6];
 
                 var per_time = hours + ":" + minutes;
                 $("#sub_cycle_id").val(data[0]);
                 $("#per_time").val(per_time).timepicker("setTime", per_time);
                 $("#per_week").val(per_week != "" ? per_week : "").trigger("change");
                 $("#per_month").val(per_month != "" ? per_month : "").trigger("change");
+                $("#per_hour").val(per_hour != "" ? per_hour : "").trigger("change");
                 return false;
             }
         });

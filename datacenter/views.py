@@ -2351,6 +2351,7 @@ def cycle_data(request):
                     "hours": sc.hour,
                     "per_week": sc.day_of_week,
                     "per_month": sc.day_of_month,
+                    "per_hour": sc.min_of_hour,
                 })
 
             result.append({
@@ -2410,6 +2411,7 @@ def cycle_save(request):
                                     "minute": sc["minutes"],
                                     "day_of_week": sc["per_week"],
                                     "day_of_month": sc["per_month"],
+                                    "min_of_hour": sc["per_hour"],
                                 }
                                 cycle_save.subcycle_set.create(**sc_data)
                     except Exception as e:
@@ -2447,6 +2449,7 @@ def cycle_save(request):
                                     "minute": sc["minutes"],
                                     "day_of_week": sc["per_week"],
                                     "day_of_month": sc["per_month"],
+                                    "min_of_hour": sc["per_hour"],
                                 }
                                 # add/edit
                                 if sc["sub_cycle_id"] == "暂无":
