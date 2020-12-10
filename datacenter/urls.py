@@ -1,5 +1,8 @@
 from django.conf.urls import url
 from datacenter.views import *
+from django.conf.urls import handler404, handler500
+handler404 = "datacenter.views.page_not_found"
+handler500 = "datacenter.views.page_error"
 
 urlpatterns = [
     url(r'^$', index, {'funid': '2'}),

@@ -125,14 +125,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'sql_server.pyodbc',
         'NAME': 'datacenter',
-        'USER': 'sa',
+        'USER': 'datacenter',
+        #'HOST': '127.0.0.1',
+        'HOST': '10.160.32.30',
+        'PASSWORD': 'tesunet@2020',
 
-        # 'PASSWORD': '1',
-        # 'HOST': 'localhost',
-        'HOST': '127.0.0.1',
-        'PASSWORD': 'Passw0rD',
-        # 'HOST': '10.150.99.185\SQLEXPRESS',
-        # 'PASSWORD': 'tesunet@2020',
+
 
         'PORT': '1433',
         'OPTIONS': {

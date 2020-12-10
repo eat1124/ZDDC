@@ -1163,7 +1163,7 @@ def run_process(process_id, targets=None):
                             # 时间点 子周期
                             sub_cycles = cycle_rule.subcycle_set.exclude(state="9")
                             for sub_cycle in sub_cycles:
-                                minute, hour, day_of_week, day_of_month = None, None, None, None
+                                minute, hour, day_of_week, day_of_month,min_of_hour = None, None, None, None,None
                                 try:
                                     minute = int(sub_cycle.minute)
                                 except:
@@ -1180,6 +1180,10 @@ def run_process(process_id, targets=None):
                                     day_of_month = int(sub_cycle.day_of_month)
                                 except:
                                     pass
+                                try:
+                                    min_of_hour = int(sub_cycle.min_of_hour)
+                                except:
+                                    pass
 
                                 # 当前时间
                                 now_minute = start_time.minute
@@ -1187,18 +1191,23 @@ def run_process(process_id, targets=None):
                                 now_weekday = start_time.weekday()
                                 now_day = start_time.day
 
-                                if now_hour == hour and now_minute == minute:
-                                    # 每日/每周/每月
-                                    if schedule_type == 1:
+                                if schedule_type == 4:
+                                    if now_minute == min_of_hour:
                                         extract._get_data(start_time, targets)
-                                    if schedule_type == 2:
-                                        # 判断一周第几天
-                                        if now_weekday == day_of_week:
+                                else:
+
+                                    if now_hour == hour and now_minute == minute:
+                                        # 每日/每周/每月
+                                        if schedule_type == 1:
                                             extract._get_data(start_time, targets)
-                                    if schedule_type == 3:
-                                        # 判断一月第几天
-                                        if now_day == day_of_month:
-                                            extract._get_data(start_time, targets)
+                                        if schedule_type == 2:
+                                            # 判断一周第几天
+                                            if now_weekday == day_of_week:
+                                                extract._get_data(start_time, targets)
+                                        if schedule_type == 3:
+                                            # 判断一月第几天
+                                            if now_day == day_of_month:
+                                                extract._get_data(start_time, targets)
 
                         if start_time > end_time:
                             time.sleep(2)
@@ -1313,6 +1322,7 @@ def run_process(process_id, targets=None):
 if __name__ == '__main__':
     logger.info('======================================================================================')
     logger.info('======================================================================================')
+    #run_process(26, '2671')
     if len(sys.argv) == 2:
         # 后台定时任务进程
         logger.info('进程启动。')

@@ -235,27 +235,31 @@ $(function () {
                 if ($("#password1").val() != $("#password2").val())
                     alert("两次输入不同。");
                 else {
-                    $.ajax({
-                        type: "POST",
-                        url: "../orgpassword/",
-                        data:
-                            {
-                                id: $("#id").val(),
-                                password1: $("#password1").val(),
-                                password2: $("#password2").val(),
+                    var reg=/^(?![^a-zA-Z]+$)(?!\D+$).{6,18}$/;
+                    if (!reg.test($("#password1").val()))
+                        alert("请输入6-18位包含数字和字母密码");
+                    else {
+                        $.ajax({
+                            type: "POST",
+                            url: "../orgpassword/",
+                            data:
+                                {
+                                    id: $("#id").val(),
+                                    password1: $("#password1").val(),
+                                    password2: $("#password2").val(),
+                                },
+                            success: function (data) {
+                                if (data = "1") {
+                                    alert("密码修改成功。");
+                                    $('#static').modal('hide');
+                                } else
+                                    alert(data);
                             },
-                        success: function (data) {
-                            if (data = "1") {
-                                alert("密码修改成功。");
-                                $('#static').modal('hide');
+                            error: function (e) {
+                                alert("修改密码失败，请于管理员联系。");
                             }
-                            else
-                                alert(data);
-                        },
-                        error: function (e) {
-                            alert("修改密码失败，请于管理员联系。");
-                        }
-                    });
+                        });
+                    }
                 }
             }
         }
@@ -269,3 +273,14 @@ $(function () {
        }
     });
 });
+
+function toVaild(){
+   var reg=/^(?![^a-zA-Z]+$)(?!\D+$).{6,18}$/;
+    if ($("#id").val()==0&&!$("#password").is(":hidden")&&!reg.test($("#password").val())) {
+        alert("请输入6-18位包含数字和字母密码");
+        return false;
+    }
+    else {
+        return true;
+    }
+}

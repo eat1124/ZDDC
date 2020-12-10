@@ -56,12 +56,21 @@ from ZDDC import settings
 from .funcs import *
 from .ftp_file_handler import *
 from utils.handle_process import Extract, PIQuery, get_dict_name
+from django.shortcuts import render_to_response
 
 funlist = []
 
 info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Admin@2017", "token": "",
         "lastlogin": 0}
 
+
+
+def page_not_found(request):
+    return render_to_response('404.html')
+
+
+def page_error(request):
+    return render_to_response('500.html')
 
 def report_server(request, funid):
     if request.user.is_authenticated():
@@ -1175,243 +1184,247 @@ def report_index(request, funid):
                 if if_contains_sign(file_name):
                     errors.append(r"""请注意文件命名格式，'\/"*?<>'符号文件不允许上传。""")
                 else:
-                    # 报表存储位置
-                    myfilepath = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + file_name
-                    # 判断数据库中文件存储记录
-                    c_exist_model = ReportModel.objects.filter(file_name=file_name).exclude(state="9")
-
-                    # 新增时判断是否存在，修改时覆盖，不需要判断
-                    if c_exist_model.exists() and id == 0:
-                        errors.append("该文件已存在,请勿重复上传。")
+                    file_names=file_name.split('.')
+                    if file_names[-1]!='cpt':
+                        errors.append(r"""只能上传cpt文件。""")
                     else:
-                        if name.strip() == '':
-                            errors.append('报表名称不能为空。')
+                        # 报表存储位置
+                        myfilepath = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + file_name
+                        # 判断数据库中文件存储记录
+                        c_exist_model = ReportModel.objects.filter(file_name=file_name).exclude(state="9")
+
+                        # 新增时判断是否存在，修改时覆盖，不需要判断
+                        if c_exist_model.exists() and id == 0:
+                            errors.append("该文件已存在,请勿重复上传。")
                         else:
-                            if code.strip() == '':
-                                errors.append('报表编码不能为空。')
+                            if name.strip() == '':
+                                errors.append('报表名称不能为空。')
                             else:
-                                if report_type.strip() == '':
-                                    errors.append('报表类别不能为空。')
+                                if code.strip() == '':
+                                    errors.append('报表编码不能为空。')
                                 else:
-                                    if app.strip() == '' and if_template == 0:
-                                        errors.append('关联应用不能为空。')
+                                    if report_type.strip() == '':
+                                        errors.append('报表类别不能为空。')
                                     else:
-                                        write_tag = False
-                                        # 新增 或者 修改(且有my_file存在) 时写入文件
-                                        if id == 0 or id != 0 and my_file:
-                                            # 判断请求服务器下载文件条件是否满足
-                                            # ps_script_path/report_file_path/web_server/report_server/username/password
-                                            rs = ReportServer.objects.first()
-                                            if not rs:
-                                                errors.append('报表服务器参数未配置，报表上传失败。')
-                                            elif not rs.report_server:
-                                                errors.append('报表服务器地址未配置，报表上传失败。')
-                                            elif not rs.username:
-                                                errors.append('报表服务器用户名未配置，报表上传失败。')
-                                            elif not rs.password:
-                                                errors.append('报表服务器密码未配置，报表上传失败。')
-                                            elif not rs.report_file_path:
-                                                errors.append('报表存放路径未配置，报表上传失败。')
-                                            else:
-                                                try:
-                                                    with open(myfilepath, 'wb+') as f:
-                                                        for chunk in my_file.chunks():
-                                                            f.write(chunk)
-                                                except:
-                                                    errors.append('文件上传失败。')
-                                                else:
-                                                    # 只要有文件写入，就发送请求
-                                                    # 远程执行命令，令远程windows发送请求下载文件
-                                                    pre_ps_path = os.path.join(rs.report_file_path, 'report_ps')
-                                                    ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
-                                                    report_file_path = os.path.join(rs.report_file_path, file_name)
-                                                    remote_ip = rs.report_server.split(':')[0]
-                                                    remote_user = rs.username
-                                                    remote_password = rs.password
-                                                    remote_platform = "Windows"
-
-                                                    # 判断ps脚本是否存在
-                                                    # 若不存在，创建路径，写入文件
-                                                    ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(
-                                                        pre_ps_path=pre_ps_path)
-                                                    ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
-                                                                             remote_password, remote_platform)
-                                                    ps_result = ps_script.run("")
-
-                                                    if ps_result['exec_tag'] == 1:
-                                                        errors.append(ps_result['log'])
-                                                    else:
-                                                        # 写入脚本文件
-                                                        ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
-                                                                        'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
-                                                                        'echo try{ >> %s &' % ps_script_path + \
-                                                                        'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
-                                                                        'echo }catch{ >> %s &' % ps_script_path + \
-                                                                        'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
-                                                                        'echo } >> %s &' % ps_script_path
-                                                        ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
-                                                                                 remote_password, remote_platform)
-                                                        ps_upload_result = ps_upload.run("")
-
-                                                        if ps_upload_result['exec_tag'] == 1:
-                                                            errors.append(ps_upload_result['log'])
-                                                        else:
-                                                            # 判断报表路径是否存在
-                                                            # 若不存在，提示不存在，报表上传失败
-                                                            # 获取app_code
-                                                            app_code = "TMP"
-                                                            if if_template:  # 模板
-                                                                app_code = "DATACENTER_TEMPLATE"
-                                                            else:
-                                                                try:
-                                                                    cur_app = App.objects.get(id=int(app))
-                                                                    app_code = cur_app.code
-                                                                except:
-                                                                    pass
-
-                                                            aft_report_file_path = os.path.join(rs.report_file_path, str(app_code))
-                                                            report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
-                                                                report_file_path=aft_report_file_path)
-                                                            rc = ServerByPara(report_check_cmd, remote_ip,
-                                                                              remote_user,
-                                                                              remote_password, remote_platform)
-                                                            rc_result = rc.run("")
-
-                                                            if rc_result['exec_tag'] == 1:
-                                                                errors.append(rc_result['log'])
-                                                            else:
-                                                                # 获取本地IP
-                                                                try:
-                                                                    web_server = socket.gethostbyname(
-                                                                        socket.gethostname())
-                                                                except Exception as e:
-                                                                    errors.append("获取服务器IP失败：%s" % e)
-                                                                else:
-                                                                    url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
-                                                                        web_server=web_server, file_name=file_name)
-                                                                    remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                        ps_script_path,
-                                                                        os.path.join(aft_report_file_path,
-                                                                                     file_name), url_visited)
-
-                                                                    server_obj = ServerByPara(remote_cmd, remote_ip,
-                                                                                              remote_user,
-                                                                                              remote_password,
-                                                                                              remote_platform)
-                                                                    result = server_obj.run("")
-                                                                    if result["exec_tag"] == 0:
-                                                                        write_tag = True
-                                                                    else:
-                                                                        errors.append(result['log'])
-
-                                        if id != 0 and not my_file:
-                                            write_tag = True
-                                        # 远程文件下载成功
-                                        if write_tag:
-                                            # 新增报表模板
-                                            if id == 0:
-                                                all_report = ReportModel.objects.filter(
-                                                    code=code).exclude(state="9")
-                                                if all_report.exists():
-                                                    errors.append('报表编码:' + code + '已存在。')
+                                        if app.strip() == '' and if_template == 0:
+                                            errors.append('关联应用不能为空。')
+                                        else:
+                                            write_tag = False
+                                            # 新增 或者 修改(且有my_file存在) 时写入文件
+                                            if id == 0 or id != 0 and my_file:
+                                                # 判断请求服务器下载文件条件是否满足
+                                                # ps_script_path/report_file_path/web_server/report_server/username/password
+                                                rs = ReportServer.objects.first()
+                                                if not rs:
+                                                    errors.append('报表服务器参数未配置，报表上传失败。')
+                                                elif not rs.report_server:
+                                                    errors.append('报表服务器地址未配置，报表上传失败。')
+                                                elif not rs.username:
+                                                    errors.append('报表服务器用户名未配置，报表上传失败。')
+                                                elif not rs.password:
+                                                    errors.append('报表服务器密码未配置，报表上传失败。')
+                                                elif not rs.report_file_path:
+                                                    errors.append('报表存放路径未配置，报表上传失败。')
                                                 else:
                                                     try:
-                                                        report_save = ReportModel()
-                                                        report_save.name = name
-                                                        report_save.code = code
-                                                        report_save.report_type = report_type
-                                                        report_save.app_id = int(app) if not if_template else None
-                                                        report_save.file_name = file_name
-                                                        report_save.sort = int(sort) if sort else None
-                                                        report_save.if_template = if_template
-
-                                                        report_save.save()
-
-                                                        if if_template == 0:
-                                                            # 关联存储报表模板信息
-                                                            if report_info_num:
-                                                                range_num = int(report_info_num / 3)
-                                                                for i in range(0, range_num):
-                                                                    report_info = ReportInfo()
-                                                                    report_info_name = request.POST.get(
-                                                                        "report_info_name_%d" % (i + 1), "")
-                                                                    report_info_default_value = request.POST.get(
-                                                                        "report_info_value_%d" % (i + 1), "")
-                                                                    if report_info_name:
-                                                                        report_info.name = report_info_name
-                                                                        report_info.default_value = report_info_default_value
-                                                                        report_info.report_model = report_save
-                                                                        report_info.save()
-
-                                                        id = report_save.id
+                                                        with open(myfilepath, 'wb+') as f:
+                                                            for chunk in my_file.chunks():
+                                                                f.write(chunk)
                                                     except:
-                                                        errors.append('数据异常，请联系管理员!')
-                                            # 修改报表模板
-                                            else:
-                                                all_report = ReportModel.objects.filter(code=code).exclude(
-                                                    id=id).exclude(state="9")
-                                                if all_report.exists():
-                                                    errors.append('存储编码:' + code + '已存在。')
-                                                else:
-                                                    try:
-                                                        report_save = ReportModel.objects.get(
-                                                            id=id)
-                                                        report_save.name = name
-                                                        report_save.code = code
-                                                        report_save.report_type = report_type
-                                                        report_save.app_id = int(app) if not if_template else None
-                                                        if my_file:
-                                                            report_save.file_name = file_name
-                                                        report_save.sort = int(sort) if sort else None
-                                                        report_save.if_template = if_template
-                                                        report_save.save()
+                                                        errors.append('文件上传失败。')
+                                                    else:
+                                                        # 只要有文件写入，就发送请求
+                                                        # 远程执行命令，令远程windows发送请求下载文件
+                                                        pre_ps_path = os.path.join(rs.report_file_path, 'report_ps')
+                                                        ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
+                                                        report_file_path = os.path.join(rs.report_file_path, file_name)
+                                                        remote_ip = rs.report_server.split(':')[0]
+                                                        remote_user = rs.username
+                                                        remote_password = rs.password
+                                                        remote_platform = "Windows"
 
-                                                        if if_template == 0:
-                                                            # 修改报表信息关联
-                                                            # 情况：报表信息组相对数据库中存储树，增加/减少/相同 一样
-                                                            if report_info_num:
-                                                                range_num = int(report_info_num / 3)
-                                                                current_report_info = report_save.reportinfo_set.exclude(
-                                                                    state="9")
+                                                        # 判断ps脚本是否存在
+                                                        # 若不存在，创建路径，写入文件
+                                                        ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(
+                                                            pre_ps_path=pre_ps_path)
+                                                        ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
+                                                                                 remote_password, remote_platform)
+                                                        ps_result = ps_script.run("")
 
-                                                                update_id_list = []
-                                                                for i in range(0, range_num):
-                                                                    report_info_name = request.POST.get(
-                                                                        "report_info_name_%d" % (i + 1), "")
-                                                                    report_info_default_value = request.POST.get(
-                                                                        "report_info_value_%d" % (i + 1), "")
-                                                                    report_info_id = request.POST.get(
-                                                                        "report_info_id_%d" % (i + 1), "")
-                                                                    report_info_id = int(
-                                                                        report_info_id) if report_info_id else ""
+                                                        if ps_result['exec_tag'] == 1:
+                                                            errors.append(ps_result['log'])
+                                                        else:
+                                                            # 写入脚本文件
+                                                            ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
+                                                                            'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
+                                                                            'echo try{ >> %s &' % ps_script_path + \
+                                                                            'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
+                                                                            'echo }catch{ >> %s &' % ps_script_path + \
+                                                                            'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
+                                                                            'echo } >> %s &' % ps_script_path
+                                                            ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
+                                                                                     remote_password, remote_platform)
+                                                            ps_upload_result = ps_upload.run("")
 
-                                                                    if report_info_id:
-                                                                        update_id_list.append(report_info_id)
-                                                                        report_info = ReportInfo.objects.filter(
-                                                                            id=report_info_id)
-                                                                        if report_info.exists() and report_info_name:
-                                                                            report_info = report_info[0]
-                                                                            report_info.name = report_info_name
-                                                                            report_info.default_value = report_info_default_value
-                                                                            report_info.report_model = report_save
-                                                                            report_info.save()
+                                                            if ps_upload_result['exec_tag'] == 1:
+                                                                errors.append(ps_upload_result['log'])
+                                                            else:
+                                                                # 判断报表路径是否存在
+                                                                # 若不存在，提示不存在，报表上传失败
+                                                                # 获取app_code
+                                                                app_code = "TMP"
+                                                                if if_template:  # 模板
+                                                                    app_code = "DATACENTER_TEMPLATE"
+                                                                else:
+                                                                    try:
+                                                                        cur_app = App.objects.get(id=int(app))
+                                                                        app_code = cur_app.code
+                                                                    except:
+                                                                        pass
+
+                                                                aft_report_file_path = os.path.join(rs.report_file_path, str(app_code))
+                                                                report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
+                                                                    report_file_path=aft_report_file_path)
+                                                                rc = ServerByPara(report_check_cmd, remote_ip,
+                                                                                  remote_user,
+                                                                                  remote_password, remote_platform)
+                                                                rc_result = rc.run("")
+
+                                                                if rc_result['exec_tag'] == 1:
+                                                                    errors.append(rc_result['log'])
+                                                                else:
+                                                                    # 获取本地IP
+                                                                    try:
+                                                                        web_server = socket.gethostbyname(
+                                                                            socket.gethostname())
+                                                                    except Exception as e:
+                                                                        errors.append("获取服务器IP失败：%s" % e)
                                                                     else:
+                                                                        url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
+                                                                            web_server=web_server, file_name=file_name)
+                                                                        remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                                            ps_script_path,
+                                                                            os.path.join(aft_report_file_path,
+                                                                                         file_name), url_visited)
+
+                                                                        server_obj = ServerByPara(remote_cmd, remote_ip,
+                                                                                                  remote_user,
+                                                                                                  remote_password,
+                                                                                                  remote_platform)
+                                                                        result = server_obj.run("")
+                                                                        if result["exec_tag"] == 0:
+                                                                            write_tag = True
+                                                                        else:
+                                                                            errors.append(result['log'])
+
+                                            if id != 0 and not my_file:
+                                                write_tag = True
+                                            # 远程文件下载成功
+                                            if write_tag:
+                                                # 新增报表模板
+                                                if id == 0:
+                                                    all_report = ReportModel.objects.filter(
+                                                        code=code).exclude(state="9")
+                                                    if all_report.exists():
+                                                        errors.append('报表编码:' + code + '已存在。')
+                                                    else:
+                                                        try:
+                                                            report_save = ReportModel()
+                                                            report_save.name = name
+                                                            report_save.code = code
+                                                            report_save.report_type = report_type
+                                                            report_save.app_id = int(app) if not if_template else None
+                                                            report_save.file_name = file_name
+                                                            report_save.sort = int(sort) if sort else None
+                                                            report_save.if_template = if_template
+
+                                                            report_save.save()
+
+                                                            if if_template == 0:
+                                                                # 关联存储报表模板信息
+                                                                if report_info_num:
+                                                                    range_num = int(report_info_num / 3)
+                                                                    for i in range(0, range_num):
                                                                         report_info = ReportInfo()
+                                                                        report_info_name = request.POST.get(
+                                                                            "report_info_name_%d" % (i + 1), "")
+                                                                        report_info_default_value = request.POST.get(
+                                                                            "report_info_value_%d" % (i + 1), "")
                                                                         if report_info_name:
                                                                             report_info.name = report_info_name
                                                                             report_info.default_value = report_info_default_value
                                                                             report_info.report_model = report_save
                                                                             report_info.save()
-                                                                            update_id_list.append(report_info.id)
-                                                                current_report_info.exclude(
-                                                                    id__in=update_id_list).update(
-                                                                    state="9")
 
-                                                                id = report_save.id
-                                                    except Exception as e:
-                                                        errors.append("修改失败。")
-                                        else:
-                                            errors.append('本次报表上传任务失败。')
+                                                            id = report_save.id
+                                                        except:
+                                                            errors.append('数据异常，请联系管理员!')
+                                                # 修改报表模板
+                                                else:
+                                                    all_report = ReportModel.objects.filter(code=code).exclude(
+                                                        id=id).exclude(state="9")
+                                                    if all_report.exists():
+                                                        errors.append('存储编码:' + code + '已存在。')
+                                                    else:
+                                                        try:
+                                                            report_save = ReportModel.objects.get(
+                                                                id=id)
+                                                            report_save.name = name
+                                                            report_save.code = code
+                                                            report_save.report_type = report_type
+                                                            report_save.app_id = int(app) if not if_template else None
+                                                            if my_file:
+                                                                report_save.file_name = file_name
+                                                            report_save.sort = int(sort) if sort else None
+                                                            report_save.if_template = if_template
+                                                            report_save.save()
+
+                                                            if if_template == 0:
+                                                                # 修改报表信息关联
+                                                                # 情况：报表信息组相对数据库中存储树，增加/减少/相同 一样
+                                                                if report_info_num:
+                                                                    range_num = int(report_info_num / 3)
+                                                                    current_report_info = report_save.reportinfo_set.exclude(
+                                                                        state="9")
+
+                                                                    update_id_list = []
+                                                                    for i in range(0, range_num):
+                                                                        report_info_name = request.POST.get(
+                                                                            "report_info_name_%d" % (i + 1), "")
+                                                                        report_info_default_value = request.POST.get(
+                                                                            "report_info_value_%d" % (i + 1), "")
+                                                                        report_info_id = request.POST.get(
+                                                                            "report_info_id_%d" % (i + 1), "")
+                                                                        report_info_id = int(
+                                                                            report_info_id) if report_info_id else ""
+
+                                                                        if report_info_id:
+                                                                            update_id_list.append(report_info_id)
+                                                                            report_info = ReportInfo.objects.filter(
+                                                                                id=report_info_id)
+                                                                            if report_info.exists() and report_info_name:
+                                                                                report_info = report_info[0]
+                                                                                report_info.name = report_info_name
+                                                                                report_info.default_value = report_info_default_value
+                                                                                report_info.report_model = report_save
+                                                                                report_info.save()
+                                                                        else:
+                                                                            report_info = ReportInfo()
+                                                                            if report_info_name:
+                                                                                report_info.name = report_info_name
+                                                                                report_info.default_value = report_info_default_value
+                                                                                report_info.report_model = report_save
+                                                                                report_info.save()
+                                                                                update_id_list.append(report_info.id)
+                                                                    current_report_info.exclude(
+                                                                        id__in=update_id_list).update(
+                                                                        state="9")
+
+                                                                    id = report_save.id
+                                                        except Exception as e:
+                                                            errors.append("修改失败。")
+                                            else:
+                                                errors.append('本次报表上传任务失败。')
         return render(request, 'report.html',
                       {'username': request.user.userinfo.fullname,
                        "report_type_list": report_type_list,
@@ -1488,239 +1501,243 @@ def report_app_index(request, funid):
                 if if_contains_sign(file_name):
                     errors.append(r"""请注意文件命名格式，'\/"*?<>'符号文件不允许上传。""")
                 else:
-                    # 报表存储位置
-                    myfilepath = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + file_name
-                    # 判断数据库中文件存储记录
-                    c_exist_model = ReportModel.objects.filter(file_name=file_name).exclude(state="9")
-
-                    # 新增时判断是否存在，修改时覆盖，不需要判断
-                    if c_exist_model.exists() and id == 0:
-                        errors.append("该文件已存在,请勿重复上传。")
+                    file_names = file_name.split('.')
+                    if file_names[-1] != 'cpt':
+                        errors.append(r"""只能上传cpt文件。""")
                     else:
-                        if name.strip() == '':
-                            errors.append('报表名称不能为空。')
+                        # 报表存储位置
+                        myfilepath = settings.BASE_DIR + os.sep + "datacenter" + os.sep + "upload" + os.sep + "report_doc" + os.sep + file_name
+                        # 判断数据库中文件存储记录
+                        c_exist_model = ReportModel.objects.filter(file_name=file_name).exclude(state="9")
+
+                        # 新增时判断是否存在，修改时覆盖，不需要判断
+                        if c_exist_model.exists() and id == 0:
+                            errors.append("该文件已存在,请勿重复上传。")
                         else:
-                            if code.strip() == '':
-                                errors.append('报表编码不能为空。')
+                            if name.strip() == '':
+                                errors.append('报表名称不能为空。')
                             else:
-                                if report_type.strip() == '':
-                                    errors.append('报表类型不能为空。')
+                                if code.strip() == '':
+                                    errors.append('报表编码不能为空。')
                                 else:
-                                    if app.strip() == '':
-                                        errors.append('关联应用不能为空。')
+                                    if report_type.strip() == '':
+                                        errors.append('报表类型不能为空。')
                                     else:
-                                        write_tag = False
-                                        # 新增 或者 修改(且有my_file存在) 时写入文件
-                                        if id == 0 or id != 0 and my_file:
-                                            # 判断请求服务器下载文件条件是否满足
-                                            # ps_script_path/report_file_path/web_server/report_server/username/password
-                                            rs = ReportServer.objects.first()
-                                            if not rs:
-                                                errors.append('报表服务器参数未配置，报表上传失败。')
-                                            elif not rs.report_server:
-                                                errors.append('报表服务器地址未配置，报表上传失败。')
-                                            elif not rs.username:
-                                                errors.append('报表服务器用户名未配置，报表上传失败。')
-                                            elif not rs.password:
-                                                errors.append('报表服务器密码未配置，报表上传失败。')
-                                            elif not rs.report_file_path:
-                                                errors.append('报表存放路径未配置，报表上传失败。')
-                                            else:
-                                                try:
-                                                    with open(myfilepath, 'wb+') as f:
-                                                        for chunk in my_file.chunks():
-                                                            f.write(chunk)
-                                                except Exception as e:
-                                                    print(e)
-                                                    errors.append('文件上传失败。')
+                                        if app.strip() == '':
+                                            errors.append('关联应用不能为空。')
+                                        else:
+                                            write_tag = False
+                                            # 新增 或者 修改(且有my_file存在) 时写入文件
+                                            if id == 0 or id != 0 and my_file:
+                                                # 判断请求服务器下载文件条件是否满足
+                                                # ps_script_path/report_file_path/web_server/report_server/username/password
+                                                rs = ReportServer.objects.first()
+                                                if not rs:
+                                                    errors.append('报表服务器参数未配置，报表上传失败。')
+                                                elif not rs.report_server:
+                                                    errors.append('报表服务器地址未配置，报表上传失败。')
+                                                elif not rs.username:
+                                                    errors.append('报表服务器用户名未配置，报表上传失败。')
+                                                elif not rs.password:
+                                                    errors.append('报表服务器密码未配置，报表上传失败。')
+                                                elif not rs.report_file_path:
+                                                    errors.append('报表存放路径未配置，报表上传失败。')
                                                 else:
-                                                    # 只要有文件写入，就发送请求
-                                                    # 远程执行命令，令远程windows发送请求下载文件
-                                                    pre_ps_path = os.path.join(rs.report_file_path, 'report_ps')
-                                                    ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
-                                                    report_file_path = os.path.join(rs.report_file_path, file_name)
-                                                    remote_ip = rs.report_server.split(':')[0]
-                                                    remote_user = rs.username
-                                                    remote_password = rs.password
-                                                    remote_platform = "Windows"
-
-                                                    # 判断ps脚本是否存在
-                                                    # 若不存在，创建路径，写入文件
-                                                    ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(
-                                                        pre_ps_path=pre_ps_path)
-                                                    ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
-                                                                             remote_password, remote_platform)
-                                                    ps_result = ps_script.run("")
-
-                                                    if ps_result['exec_tag'] == 1:
-                                                        errors.append(ps_result['log'])
+                                                    try:
+                                                        with open(myfilepath, 'wb+') as f:
+                                                            for chunk in my_file.chunks():
+                                                                f.write(chunk)
+                                                    except Exception as e:
+                                                        print(e)
+                                                        errors.append('文件上传失败。')
                                                     else:
-                                                        # 写入脚本文件
-                                                        ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
-                                                                        'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
-                                                                        'echo try{ >> %s &' % ps_script_path + \
-                                                                        'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
-                                                                        'echo }catch{ >> %s &' % ps_script_path + \
-                                                                        'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
-                                                                        'echo } >> %s &' % ps_script_path
-                                                        ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
+                                                        # 只要有文件写入，就发送请求
+                                                        # 远程执行命令，令远程windows发送请求下载文件
+                                                        pre_ps_path = os.path.join(rs.report_file_path, 'report_ps')
+                                                        ps_script_path = os.path.join(pre_ps_path, 'request.ps1')
+                                                        report_file_path = os.path.join(rs.report_file_path, file_name)
+                                                        remote_ip = rs.report_server.split(':')[0]
+                                                        remote_user = rs.username
+                                                        remote_password = rs.password
+                                                        remote_platform = "Windows"
+
+                                                        # 判断ps脚本是否存在
+                                                        # 若不存在，创建路径，写入文件
+                                                        ps_check_cmd = r'if not exist {pre_ps_path} md {pre_ps_path}'.format(
+                                                            pre_ps_path=pre_ps_path)
+                                                        ps_script = ServerByPara(ps_check_cmd, remote_ip, remote_user,
                                                                                  remote_password, remote_platform)
-                                                        ps_upload_result = ps_upload.run("")
+                                                        ps_result = ps_script.run("")
 
-                                                        if ps_upload_result['exec_tag'] == 1:
-                                                            errors.append(ps_upload_result['log'])
+                                                        if ps_result['exec_tag'] == 1:
+                                                            errors.append(ps_result['log'])
                                                         else:
-                                                            # 判断报表路径是否存在
-                                                            # 若不存在，提示不存在，报表上传失败
-                                                            # 获取app_code
-                                                            try:
-                                                                cur_app = App.objects.get(id=int(app))
-                                                            except:
-                                                                write_tag = False
-                                                                errors.append('应用不存在。')
+                                                            # 写入脚本文件
+                                                            ps_upload_cmd = 'echo param($a, $b) > %s &' % ps_script_path + \
+                                                                            'echo $Response=Invoke-WebRequest -Uri $b >> %s &' % ps_script_path + \
+                                                                            'echo try{ >> %s &' % ps_script_path + \
+                                                                            'echo    [System.IO.File]::WriteAllBytes($a, $Response.Content) >> %s &' % ps_script_path + \
+                                                                            'echo }catch{ >> %s &' % ps_script_path + \
+                                                                            'echo   [System.Console]::WriteLine($_.Exception.Message) >> %s &' % ps_script_path + \
+                                                                            'echo } >> %s &' % ps_script_path
+                                                            ps_upload = ServerByPara(ps_upload_cmd, remote_ip, remote_user,
+                                                                                     remote_password, remote_platform)
+                                                            ps_upload_result = ps_upload.run("")
+
+                                                            if ps_upload_result['exec_tag'] == 1:
+                                                                errors.append(ps_upload_result['log'])
                                                             else:
-                                                                app_code = cur_app.code
-                                                                aft_report_file_path = os.path.join(rs.report_file_path,
-                                                                                                    str(app_code))
-                                                                report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
-                                                                    report_file_path=aft_report_file_path)
-
-                                                                rc = ServerByPara(report_check_cmd, remote_ip,
-                                                                                  remote_user,
-                                                                                  remote_password, remote_platform)
-                                                                rc_result = rc.run("")
-
-                                                                if rc_result['exec_tag'] == 1:
-                                                                    errors.append(rc_result['log'])
+                                                                # 判断报表路径是否存在
+                                                                # 若不存在，提示不存在，报表上传失败
+                                                                # 获取app_code
+                                                                try:
+                                                                    cur_app = App.objects.get(id=int(app))
+                                                                except:
+                                                                    write_tag = False
+                                                                    errors.append('应用不存在。')
                                                                 else:
-                                                                    # 获取本地IP
-                                                                    try:
-                                                                        web_server = socket.gethostbyname(
-                                                                            socket.gethostname())
-                                                                    except Exception as e:
-                                                                        errors.append("获取服务器IP失败：%s" % e)
+                                                                    app_code = cur_app.code
+                                                                    aft_report_file_path = os.path.join(rs.report_file_path,
+                                                                                                        str(app_code))
+                                                                    report_check_cmd = r'if not exist {report_file_path} md {report_file_path}'.format(
+                                                                        report_file_path=aft_report_file_path)
+
+                                                                    rc = ServerByPara(report_check_cmd, remote_ip,
+                                                                                      remote_user,
+                                                                                      remote_password, remote_platform)
+                                                                    rc_result = rc.run("")
+
+                                                                    if rc_result['exec_tag'] == 1:
+                                                                        errors.append(rc_result['log'])
                                                                     else:
-                                                                        url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
-                                                                            web_server=web_server, file_name=file_name)
-                                                                        remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
-                                                                            ps_script_path,
-                                                                            os.path.join(aft_report_file_path,
-                                                                                         file_name),
-                                                                            url_visited)
-
-                                                                        server_obj = ServerByPara(remote_cmd, remote_ip,
-                                                                                                  remote_user,
-                                                                                                  remote_password,
-                                                                                                  remote_platform)
-                                                                        result = server_obj.run("")
-                                                                        if result["exec_tag"] == 0:
-                                                                            write_tag = True
+                                                                        # 获取本地IP
+                                                                        try:
+                                                                            web_server = socket.gethostbyname(
+                                                                                socket.gethostname())
+                                                                        except Exception as e:
+                                                                            errors.append("获取服务器IP失败：%s" % e)
                                                                         else:
-                                                                            errors.append(result['log'])
+                                                                            url_visited = r"http://{web_server}/download_file?file_name={file_name}".format(
+                                                                                web_server=web_server, file_name=file_name)
+                                                                            remote_cmd = r'powershell.exe -ExecutionPolicy RemoteSigned -file "{0}" "{1}" "{2}"'.format(
+                                                                                ps_script_path,
+                                                                                os.path.join(aft_report_file_path,
+                                                                                             file_name),
+                                                                                url_visited)
 
-                                        if id != 0 and not my_file:
-                                            write_tag = True
+                                                                            server_obj = ServerByPara(remote_cmd, remote_ip,
+                                                                                                      remote_user,
+                                                                                                      remote_password,
+                                                                                                      remote_platform)
+                                                                            result = server_obj.run("")
+                                                                            if result["exec_tag"] == 0:
+                                                                                write_tag = True
+                                                                            else:
+                                                                                errors.append(result['log'])
 
-                                        # 远程文件下载成功
-                                        if write_tag:
-                                            # 新增报表模板
-                                            if id == 0:
-                                                all_report = ReportModel.objects.filter(
-                                                    code=code).exclude(state="9")
-                                                if all_report.exists():
-                                                    errors.append('报表编码:' + code + '已存在。')
-                                                else:
-                                                    try:
-                                                        report_save = ReportModel()
-                                                        report_save.name = name
-                                                        report_save.code = code
-                                                        report_save.report_type = report_type
-                                                        report_save.app_id = int(app)
-                                                        report_save.file_name = file_name
-                                                        report_save.sort = int(sort) if sort else None
-                                                        report_save.save()
+                                            if id != 0 and not my_file:
+                                                write_tag = True
 
-                                                        # 关联存储报表模板信息
-                                                        if report_info_num:
-                                                            range_num = int(report_info_num / 3)
-                                                            for i in range(0, range_num):
-                                                                report_info = ReportInfo()
-                                                                report_info_name = request.POST.get(
-                                                                    "report_info_name_%d" % (i + 1), "")
-                                                                report_info_default_value = request.POST.get(
-                                                                    "report_info_value_%d" % (i + 1), "")
-                                                                if report_info_name:
-                                                                    report_info.name = report_info_name
-                                                                    report_info.default_value = report_info_default_value
-                                                                    report_info.report_model = report_save
-                                                                    report_info.save()
-
-                                                        id = report_save.id
-                                                    except:
-                                                        errors.append('数据异常，请联系管理员!')
-                                            # 修改报表模板
-                                            else:
-                                                all_report = ReportModel.objects.filter(code=code).exclude(
-                                                    id=id).exclude(state="9")
-                                                if all_report.exists():
-                                                    errors.append('存储编码:' + code + '已存在。')
-                                                else:
-                                                    try:
-                                                        report_save = ReportModel.objects.get(id=id)
-                                                        report_save.name = name
-                                                        report_save.code = code
-                                                        report_save.report_type = report_type
-                                                        report_save.app_id = int(app)
-                                                        if my_file:
+                                            # 远程文件下载成功
+                                            if write_tag:
+                                                # 新增报表模板
+                                                if id == 0:
+                                                    all_report = ReportModel.objects.filter(
+                                                        code=code).exclude(state="9")
+                                                    if all_report.exists():
+                                                        errors.append('报表编码:' + code + '已存在。')
+                                                    else:
+                                                        try:
+                                                            report_save = ReportModel()
+                                                            report_save.name = name
+                                                            report_save.code = code
+                                                            report_save.report_type = report_type
+                                                            report_save.app_id = int(app)
                                                             report_save.file_name = file_name
-                                                        report_save.sort = int(sort) if sort else None
-                                                        report_save.save()
+                                                            report_save.sort = int(sort) if sort else None
+                                                            report_save.save()
 
-                                                        # 修改报表信息关联
-                                                        # 情况：报表信息组相对数据库中存储树，增加/减少/相同 一样
-                                                        if report_info_num:
-                                                            range_num = int(report_info_num / 3)
-                                                            current_report_info = report_save.reportinfo_set.exclude(
-                                                                state="9")
-
-                                                            update_id_list = []
-                                                            for i in range(0, range_num):
-                                                                report_info_name = request.POST.get(
-                                                                    "report_info_name_%d" % (i + 1), "")
-                                                                report_info_default_value = request.POST.get(
-                                                                    "report_info_value_%d" % (i + 1), "")
-                                                                report_info_id = request.POST.get(
-                                                                    "report_info_id_%d" % (i + 1), "")
-                                                                report_info_id = int(
-                                                                    report_info_id) if report_info_id else ""
-
-                                                                if report_info_id:
-                                                                    update_id_list.append(report_info_id)
-                                                                    report_info = ReportInfo.objects.filter(
-                                                                        id=report_info_id)
-                                                                    if report_info.exists() and report_info_name:
-                                                                        report_info = report_info[0]
-                                                                        report_info.name = report_info_name
-                                                                        report_info.default_value = report_info_default_value
-                                                                        report_info.report_model = report_save
-                                                                        report_info.save()
-                                                                else:
+                                                            # 关联存储报表模板信息
+                                                            if report_info_num:
+                                                                range_num = int(report_info_num / 3)
+                                                                for i in range(0, range_num):
                                                                     report_info = ReportInfo()
+                                                                    report_info_name = request.POST.get(
+                                                                        "report_info_name_%d" % (i + 1), "")
+                                                                    report_info_default_value = request.POST.get(
+                                                                        "report_info_value_%d" % (i + 1), "")
                                                                     if report_info_name:
                                                                         report_info.name = report_info_name
                                                                         report_info.default_value = report_info_default_value
                                                                         report_info.report_model = report_save
                                                                         report_info.save()
-                                                                        update_id_list.append(report_info.id)
-                                                            current_report_info.exclude(
-                                                                id__in=update_id_list).update(
-                                                                state="9")
 
                                                             id = report_save.id
-                                                    except Exception as e:
-                                                        errors.append("修改失败。")
-                                        else:
-                                            errors.append('本次上传报表任务失败。')
+                                                        except:
+                                                            errors.append('数据异常，请联系管理员!')
+                                                # 修改报表模板
+                                                else:
+                                                    all_report = ReportModel.objects.filter(code=code).exclude(
+                                                        id=id).exclude(state="9")
+                                                    if all_report.exists():
+                                                        errors.append('存储编码:' + code + '已存在。')
+                                                    else:
+                                                        try:
+                                                            report_save = ReportModel.objects.get(id=id)
+                                                            report_save.name = name
+                                                            report_save.code = code
+                                                            report_save.report_type = report_type
+                                                            report_save.app_id = int(app)
+                                                            if my_file:
+                                                                report_save.file_name = file_name
+                                                            report_save.sort = int(sort) if sort else None
+                                                            report_save.save()
+
+                                                            # 修改报表信息关联
+                                                            # 情况：报表信息组相对数据库中存储树，增加/减少/相同 一样
+                                                            if report_info_num:
+                                                                range_num = int(report_info_num / 3)
+                                                                current_report_info = report_save.reportinfo_set.exclude(
+                                                                    state="9")
+
+                                                                update_id_list = []
+                                                                for i in range(0, range_num):
+                                                                    report_info_name = request.POST.get(
+                                                                        "report_info_name_%d" % (i + 1), "")
+                                                                    report_info_default_value = request.POST.get(
+                                                                        "report_info_value_%d" % (i + 1), "")
+                                                                    report_info_id = request.POST.get(
+                                                                        "report_info_id_%d" % (i + 1), "")
+                                                                    report_info_id = int(
+                                                                        report_info_id) if report_info_id else ""
+
+                                                                    if report_info_id:
+                                                                        update_id_list.append(report_info_id)
+                                                                        report_info = ReportInfo.objects.filter(
+                                                                            id=report_info_id)
+                                                                        if report_info.exists() and report_info_name:
+                                                                            report_info = report_info[0]
+                                                                            report_info.name = report_info_name
+                                                                            report_info.default_value = report_info_default_value
+                                                                            report_info.report_model = report_save
+                                                                            report_info.save()
+                                                                    else:
+                                                                        report_info = ReportInfo()
+                                                                        if report_info_name:
+                                                                            report_info.name = report_info_name
+                                                                            report_info.default_value = report_info_default_value
+                                                                            report_info.report_model = report_save
+                                                                            report_info.save()
+                                                                            update_id_list.append(report_info.id)
+                                                                current_report_info.exclude(
+                                                                    id__in=update_id_list).update(
+                                                                    state="9")
+
+                                                                id = report_save.id
+                                                        except Exception as e:
+                                                            errors.append("修改失败。")
+                                            else:
+                                                errors.append('本次上传报表任务失败。')
         return render(request, 'report_app.html',
                       {'username': request.user.userinfo.fullname,
                        "report_type_list": report_type_list,

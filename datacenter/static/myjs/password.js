@@ -84,29 +84,35 @@ jQuery(document).ready(function() {
 });
 
  $('#resetbtn').click(function(){
-    if($("#formreset").validate().form())
-        $.ajax({
-            type: "POST",
-            url: "../../userpassword/",
-            data: $('#formreset').serialize(),
-            success:function(data){
-                if(data=="success")
-                    window.location.href = '../../index/';
-                else
-                {
-                    alert(data);
-                    $('#oldpassword').val("");
-                    $('#register_password').val("");
-                    $('#rpassword').val("");
-                }
-            },
-            error : function(e){
-                $('#oldpassword').val("");
-                $('#register_password').val("");
-                $('#rpassword').val("");
-                alert("密码修改失败，请于客服联系。");
-            }
-        });
+    if($("#formreset").validate().form()) {
+		var reg=/^(?![^a-zA-Z]+$)(?!\D+$).{6,18}$/;
+
+		if (!reg.test($("#register_password").val()))
+			alert("请输入6-18位包含数字和字母密码");
+		else {
+			$.ajax({
+				type: "POST",
+				url: "../../userpassword/",
+				data: $('#formreset').serialize(),
+				success: function (data) {
+					if (data == "success")
+						window.location.href = '../../index/';
+					else {
+						alert(data);
+						$('#oldpassword').val("");
+						$('#register_password').val("");
+						$('#rpassword').val("");
+					}
+				},
+				error: function (e) {
+					$('#oldpassword').val("");
+					$('#register_password').val("");
+					$('#rpassword').val("");
+					alert("密码修改失败，请于客服联系。");
+				}
+			});
+		}
+	}
      else
         alert("输入有误，请重新输入。");
  })
