@@ -384,7 +384,7 @@ class Extract(object):
             # 时间点 子周期
             sub_cycles = cycle_rule.subcycle_set.exclude(state="9")
             for sub_cycle in sub_cycles:
-                minute, hour, day_of_week, day_of_month,min_of_hour = None, None, None, None
+                minute, hour, day_of_week, day_of_month,min_of_hour = None, None, None, None,None
                 try:
                     minute = int(sub_cycle.minute)
                 except:
@@ -1322,7 +1322,7 @@ def run_process(process_id, targets=None):
 if __name__ == '__main__':
     logger.info('======================================================================================')
     logger.info('======================================================================================')
-    #run_process(26, '2671')
+    #run_process(26)
     if len(sys.argv) == 2:
         # 后台定时任务进程
         logger.info('进程启动。')
