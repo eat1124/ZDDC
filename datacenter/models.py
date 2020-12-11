@@ -49,6 +49,8 @@ class UserInfo(models.Model):
     company = models.CharField("公司", blank=True, null=True, max_length=100)
     tell = models.CharField("电话", blank=True, null=True, max_length=50)
     forgetpassword = models.CharField("修改密码地址", blank=True, null=True, max_length=50)
+    login_count = models.IntegerField("登录次数", blank=True, null=True)
+    retry_time = models.DateTimeField("重试时间", blank=True, null=True)
 
 
 class DictIndex(models.Model):
