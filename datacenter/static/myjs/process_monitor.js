@@ -188,14 +188,10 @@ $(document).ready(function () {
                         if (data.data.status == '已关闭') {
                             $('#start').show();
                             $('#stop, #restart').hide();
-                             $('#all_start').show();
-                            $('#all_stop').hide();
 
                         } else if (data.data.status == '运行中') {
                             $('#stop, #restart').show();
                             $('#start').hide();
-                             $('#all_start').hide();
-                            $('#all_stop').show();
                         } else {
                             $('#start, #stop, #restart').hide();
                         }

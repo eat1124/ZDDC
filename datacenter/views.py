@@ -326,6 +326,7 @@ def get_process_monitor_tree(request):
                             }
                             a_info['state'] = {'opened': True}
 
+
                             # 3.周期
                             c_info_list = []
 
@@ -354,7 +355,6 @@ def get_process_monitor_tree(request):
                                                     cp.save()
                                                     status = "已关闭"
 
-
                                     c_info = dict()
                                     c_info['text'] = c.name
                                     c_info['type'] = 'file'
@@ -381,7 +381,6 @@ def get_process_monitor_tree(request):
                                     all_process_list.append(info)
 
                                     c_info['state'] = {'opened': True}
-                                    #
                                     if cycle_id == c.id and app_id == a.id and source_id == s.id:
                                         c_info['state']['selected'] = True
 
@@ -393,11 +392,11 @@ def get_process_monitor_tree(request):
                                         root_info['type'] = 'node_grey'
                                     c_info_list.append(c_info)
                             a_info['children'] = c_info_list
-
-                            a_info_list.append(a_info)
-                    s_info['children'] = a_info_list
-
-                    variable_info_list.append(s_info)
+                            if a_info['children'] != []:
+                                a_info_list.append(a_info)
+                    if a_info_list != []:
+                        s_info['children'] = a_info_list
+                        variable_info_list.append(s_info)
             else:
                 # 固定节点(数据补取、数据清理、数据服务、短信服务)
                 fixed_s_info = dict()
