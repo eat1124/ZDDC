@@ -15,7 +15,7 @@ $(document).ready(function () {
             success: function (data) {
                 index += 1;
                 var treeData = JSON.parse(data.data);
-
+                $("#all_process_data").val(JSON.stringify(data.all_process_list));
                 $('#process_monitor_tree').jstree('destroy');
                 $('#process_monitor_tree').jstree({
                     'core': {
@@ -188,9 +188,14 @@ $(document).ready(function () {
                         if (data.data.status == '已关闭') {
                             $('#start').show();
                             $('#stop, #restart').hide();
+                             $('#all_start').show();
+                            $('#all_stop').hide();
+
                         } else if (data.data.status == '运行中') {
                             $('#stop, #restart').show();
                             $('#start').hide();
+                             $('#all_start').hide();
+                            $('#all_stop').show();
                         } else {
                             $('#start, #stop, #restart').hide();
                         }
@@ -206,6 +211,44 @@ $(document).ready(function () {
         })
     });
 
+
+    $('#all_start, #all_stop').click(function () {
+        var operate = $(this).prop('id');
+        $('#all_start, #all_stop').button('reset');
+        $(this).button('loading');
+
+        function operateButton(operate) {
+            if (operate == 'all_start') {
+                $('#all_start').button('reset');
+            }
+            if (operate == 'all_stop') {
+                $('#all_stop').button('reset');
+            }
+        }
+        var all_process_data = $("#all_process_data").val();
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: '../process_run_all/',
+            data: {
+                'operate': operate,
+                'all_process_data':all_process_data
+            },
+
+            success: function (data) {
+                if (data.tag == 1) {
+                    // 刷新树
+                    getProcessMonitorTree($('#cycle_id').val(), $('#app_id').val(), $('#source_id').val());
+                    operateButton(operate);
+                }
+                alert(data.res);
+            },
+            error: function () {
+                alert('页面出现错误，请于管理员联系。');
+                operateButton(operate);
+            }
+        })
+    });
 
     // 切换标签页
     // 2.指标信息

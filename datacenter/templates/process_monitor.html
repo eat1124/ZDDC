@@ -3,6 +3,18 @@
 {% block content %}
 
     <div style="height:10px"></div>
+    <div class="table-toolbar">
+        <div class="row">
+            <div class="col-md-12 col-lg-12">
+                <div style="float:right; margin-right: 25px;">
+                    <button type="button" id="all_start" name="start" class="btn blue" data-loading-text="启动中..." >全部启动</button>
+                    <button type="button" id="all_stop" name="stop" class="btn blue" data-loading-text="停止中..." >全部停止</button>
+                    <textarea style="display: none" class="form-control" id="all_process_data" name="all_process_data"></textarea>
+
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="portlet-body">
         <div class="row">
             <!-- tree -->
@@ -45,11 +57,11 @@
                                 <!-- 进程信息 -->
                                 <form class="form-horizontal">{% csrf_token %}
                                     <div class="form-body">
-                                        <input type="text" id="source_id" name="source_id" hidden>
-                                        <input type="text" id="app_id" name="app_id" hidden>
-                                        <input type="text" id="cycle_id" name="cycle_id" hidden>
+                                        <input hidden type="text" id="source_id" name="source_id">
+                                        <input hidden type="text" id="app_id" name="app_id">
+                                        <input hidden type="text" id="cycle_id" name="cycle_id">
                                         <!-- 判断固定进程还是动态进程的标签 -->
-                                        <input type="text" id="check_type" name="check_type" hidden>
+                                        <input hidden type="text" id="check_type" name="check_type">
                                         <div class="form-group">
                                             <label class="col-md-2 control-label">数据源名称</label>
                                             <div class="col-md-10">

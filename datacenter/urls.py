@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^process_monitor/$', process_monitor_index, {'funid': '21'}),
     url(r'^process_monitor_data/$', process_monitor_data),
     url(r'^process_run/$', process_run),
+    url(r'^process_run_all/$', process_run_all),
     url(r'^get_process_monitor_tree/$', get_process_monitor_tree),
     url(r'^pm_target_data/$', pm_target_data),
     url(r'^get_exception_data/$', get_exception_data),

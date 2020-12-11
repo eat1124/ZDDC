@@ -247,6 +247,7 @@ def get_process_monitor_tree(request):
         app_id = request.POST.get('app_id', '')
         source_id = request.POST.get('source_id', '')
         index = request.POST.get('index', '')
+        all_process_list = []
         try:
             cycle_id = int(cycle_id)
             app_id = int(app_id)
@@ -353,6 +354,7 @@ def get_process_monitor_tree(request):
                                                     cp.save()
                                                     status = "已关闭"
 
+
                                     c_info = dict()
                                     c_info['text'] = c.name
                                     c_info['type'] = 'file'
@@ -375,6 +377,8 @@ def get_process_monitor_tree(request):
                                         'last_time': last_time,
                                         'status': status
                                     }
+                                    info = {'status': status, 's_id': s.id, 'a_id': a.id, 'c_id': c.id, 'check_type': ''}
+                                    all_process_list.append(info)
 
                                     c_info['state'] = {'opened': True}
                                     #
@@ -435,6 +439,8 @@ def get_process_monitor_tree(request):
                     'last_time': f_last_time,
                     'status': f_status
                 }
+                info = {'status': f_status, 's_id': s.id, 'check_type': s.type}
+                all_process_list.append(info)
                 fixed_info_list.append(fixed_s_info)
 
         # 固定进程放在后面
@@ -448,7 +454,8 @@ def get_process_monitor_tree(request):
         tree_data = json.dumps([root_info], ensure_ascii=False)
         return JsonResponse({
             "ret": 1,
-            "data": tree_data
+            "data": tree_data,
+            "all_process_list": all_process_list
         })
     else:
         return HttpResponseRedirect("/login")
@@ -692,6 +699,85 @@ def process_run(request):
                 'res': res,
                 'data': ''
             })
+
+
+def process_run_all(request):
+    if request.user.is_authenticated():
+        tag = 0
+        res = ""
+        operate = request.POST.get("operate", "")
+        all_process_data = request.POST.get("all_process_data", "")
+        all_process_data = json.loads(all_process_data)
+
+        for i in all_process_data:
+            check_type = i['check_type']
+            if not check_type:
+                try:
+                    app_id = int(i['a_id'])
+                    cycle_id = int(i['c_id'])
+                    source_id = int(i['s_id'])
+                except:
+                    pass
+            else:
+                try:
+                    source_id = int(i['s_id'])
+                except:
+                    pass
+
+            # 进程操作记入日志
+            def record_log_all(app_id, source_id, cycle_id, msg):
+                try:
+                    log = LogInfo()
+                    log.source_id = source_id
+                    log.app_id = app_id
+                    log.cycle_id = cycle_id
+                    log.create_time = datetime.datetime.now()
+                    log.content = msg
+                    log.save()
+                except:
+                    pass
+
+            # 固定进程
+            current_process = ProcessMonitor.objects.filter(source_id=source_id).exclude(state='9')
+
+            # 动态进程
+            if not check_type:
+                current_process = ProcessMonitor.objects.filter(source_id=source_id).filter(app_admin_id=app_id).filter(
+                    cycle_id=cycle_id).exclude(state='9')
+
+            if current_process.exists():
+                current_process = current_process[0]
+                if operate == 'all_start':
+                    # 查看是否运行中
+                    if current_process.status == "运行中":
+                        continue
+                    else:
+                        tag, res = handle_process(current_process, handle_type="RUN")
+                        record_log_all(app_id, source_id, cycle_id, '进程启动成功。')
+                elif operate == 'all_stop':
+                    if current_process.status != "运行中":
+                        continue
+                    else:
+                        tag, res = handle_process(current_process, handle_type="DESTROY")
+                        record_log_all(app_id, source_id, cycle_id, '进程关闭成功。')
+                else:
+                    tag = 0
+                    res = "未接收到操作指令。"
+
+            else:
+                current_process = ProcessMonitor()
+                current_process.source_id = source_id
+                if not check_type:
+                    current_process.app_admin_id = app_id
+                    current_process.cycle_id = cycle_id
+                current_process.save()
+                tag, res = handle_process(current_process, handle_type="RUN")
+                record_log_all(app_id, source_id, cycle_id, '进程启动成功。')
+        return JsonResponse({
+            'tag': tag,
+            'res': res,
+            'data': ''
+        })
 
 
 def pm_target_data(request):
