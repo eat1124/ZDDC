@@ -8985,6 +8985,90 @@ def get_reporting_log(request):
         return HttpResponseRedirect('/login')
 
 
+def reporting_log_index(request, funid):
+    if request.user.is_authenticated():
+        start_time = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
+        end_time = datetime.datetime.now().strftime("%Y-%m-%d")
+        return render(request, 'reporting_log.html',
+                      {'username': request.user.userinfo.fullname,
+                       "pagefuns": getpagefuns(funid),
+                       "start_time": start_time,
+                       "end_time": end_time,
+                       })
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def reporting_log_data(request):
+    if request.user.is_authenticated():
+        start_time = request.GET.get('start_time', '')
+        end_time = request.GET.get('end_time', '')
+
+        reporting_log = ReportingLog.objects.exclude(state='9').order_by('-id').select_related('adminapp', 'work')\
+            .filter(write_time__range=[start_time, end_time])
+        reporting_type_dict = {
+            'del': '删除',
+            'release': '发布',
+            'save': '保存',
+            'cancelrelease': '取消发布'
+        }
+
+        dict_list = DictList.objects.exclude(state='9').values()
+        reporting_log_list = []
+
+        for rl in reporting_log:
+            user = rl.user.userinfo.fullname if rl.user.userinfo else ''
+            app = rl.adminapp.name if rl.adminapp else ''
+            work = rl.work.name if rl.work else ''
+            cycletype = int(rl.cycletype)
+            for dl in dict_list:
+                if cycletype == dl['id']:
+                    cycletype = dl['name']
+                    break
+            reporting_type = ''
+            try:
+                reporting_type = reporting_type_dict[rl.type]
+            except:
+                pass
+            write_time = ''
+            try:
+                write_time = '{:%Y-%m-%d %H:%M:%S}'.format(rl.write_time)
+            except:
+                pass
+
+            # 报表时间
+            datadate = rl.datadate
+
+            datadate = get_format_date(datadate, rl.cycletype)
+            user_no_color = user
+            user = '<span style="color:#3598DC">{0}</span>'.format(user)
+            datadate = '<span style="color:#F7CA18">{0}</span>'.format(datadate)
+            app = '<span style="color:#26C281">{0}</span>'.format(app)
+            work = '<span style="color:#2ab4c0">{0}</span>'.format(work)
+            operationtype = '<span style="color:#c5bf66">{0}</span>'.format(map_operation(rl.operationtype, True)) if rl.operationtype else ""
+            log = '{user}{reporting_type}{app}{work}{datadate}{cycletype}报{operationtype}数据。'.format(**{
+                'user': user,
+                'app': app,
+                'work': work if work else '',
+                'reporting_type': reporting_type,
+                'cycletype': cycletype,
+                'operationtype': operationtype,
+                'datadate': datadate
+            })
+            reporting_log_list.append({
+                'write_time': write_time,
+                'log': log,
+                'user': user_no_color,
+                'id': rl.id
+
+            })
+        return JsonResponse({
+            'data': reporting_log_list
+        })
+    else:
+        return HttpResponseRedirect('/login')
+
+
 def get_month_fdl(request):
     """
     一个月内 新厂、动力中心、老厂 所有机组：全场 分机组 的发电量曲线

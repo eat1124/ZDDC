@@ -131,6 +131,8 @@ urlpatterns = [
     url(r'^ajax_cumulate/$', ajax_cumulate),
     url(r'^single_reextract/$', single_reextract),
     url(r'^single_recalculate/$', single_recalculate),
+    url(r'^reporting_log/$', reporting_log_index, {'funid': '168'}),
+    url(r'^reporting_log_data/$', reporting_log_data),
 
     # 报表上报
     url(r'^report_submit/(?P<funid>\d+)/$', report_submit_index),
