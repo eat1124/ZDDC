@@ -148,18 +148,24 @@ $('#loginbtn').click(function(){
             url: "../userlogin/",
             data: $('#formlogin').serialize(),
             success:function(data){
-                if(data=="success")
+                if(data.res=="success")
                 {
                     window.location.href = '../index/';
                 }
-                else if(data=="success1")
+                else if(data.res=="success1")
                 {
                     window.location.href = '../activate/';
                 }
                 else
                 {
-                    alert(data);
+                    alert(data.res);
                     $('#password').val("");
+                    if (data.login_count == 5){
+						document.getElementById("loginbtn").disabled = true;
+						document.getElementById("username").disabled = true;
+						document.getElementById("password").disabled = true;
+						document.getElementById("remember").disabled = true;
+					}
                 }
             },
             error : function(e){
@@ -199,4 +205,8 @@ $('body').keydown(function(event){
 
 $('#error').click(function(){
 	$(this).empty().hide();
+
+
 });
+
+

@@ -7728,7 +7728,6 @@ def ad_login(request):
 
 def userlogin(request):
     if request.method == 'POST':
-        result = ""
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
         # 加入AD认证
@@ -7736,6 +7735,10 @@ def userlogin(request):
         if user is not None and user.is_active:
             auth.login(request, user)
             myuserinfo = user.userinfo
+            login_count = 0
+            myuserinfo.login_count = login_count
+            myuserinfo.retry_time = datetime.datetime.now()
+            myuserinfo.save()
             if myuserinfo.forgetpassword:
                 myuserinfo.forgetpassword = ""
                 myuserinfo.save()
@@ -7746,7 +7749,6 @@ def userlogin(request):
                     result = "success"
                 if (request.POST.get('remember', '') != '1'):
                     request.session.set_expiry(0)
-                # myuser = User.objects.get(username=username)
                 usertype = user.userinfo.usertype
                 if usertype == '1':
                     request.session['ispuser'] = True
@@ -7756,9 +7758,36 @@ def userlogin(request):
             else:
                 result = "登录失败，请于客服联系。"
         else:
-            result = "用户名或密码不正确。"
-
-    return HttpResponse(result)
+            user = User.objects.get(username=username)
+            login_count = user.userinfo.login_count if user.userinfo.login_count else 0
+            if login_count < 4:
+                login_count += 1
+                user.userinfo.login_count = login_count
+                user.userinfo.retry_time = datetime.datetime.now()
+                user.userinfo.save()
+                result = "用户名或密码不正确。"
+            elif login_count == 5:
+                retry_time = user.userinfo.retry_time
+                now_time = datetime.datetime.now()
+                mins = int((now_time - retry_time).total_seconds() / 60)
+                if mins < 10:
+                    result = "登录频繁，请于10分钟后登录。"
+                else:
+                    login_count = 1
+                    user.userinfo.login_count = login_count
+                    user.userinfo.retry_time = datetime.datetime.now()
+                    user.userinfo.save()
+                    result = "用户名或密码不正确。"
+            else:
+                user.userinfo.login_count = login_count + 1
+                user.userinfo.retry_time = datetime.datetime.now()
+                user.userinfo.save()
+                result = "登录频繁，请于10分钟后登录。"
+                login_count = login_count + 1
+    return JsonResponse({
+        'res': result,
+        'login_count': login_count,
+    })
 
 
 def forgetPassword(request):

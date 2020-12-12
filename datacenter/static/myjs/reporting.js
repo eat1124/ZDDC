@@ -987,7 +987,7 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
     });
-    var data5 = "";
+
     // 电表走字 operationtype 1
     $('#sample_5').dataTable({
         "bAutoWidth": true,
@@ -1036,12 +1036,8 @@ $(document).ready(function () {
             {
                 "targets": -10,
                 "mRender": function (data, type, full) {
-                    // var disabled = ""
-                    // if (full.meterchangedata_id) {
-                    //     disabled = "disabled"
-                    // }
                     var disabled = "";
-                    if (full.releasestate=='1'){
+                    if (full.releasestate=='1' || full.meterchangedata_id){
                         disabled = "disabled"
                     }
                     return "<input " + disabled + "   style='margin-top:-5px;width:100px;height:24px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
@@ -1050,12 +1046,8 @@ $(document).ready(function () {
             {
                 "targets": -9,
                 "mRender": function (data, type, full) {
-                    // var disabled = ""
-                    // if (full.meterchangedata_id) {
-                    //     disabled = "disabled"
-                    // }
                     var disabled = "";
-                    if (full.releasestate=='1'){
+                    if (full.releasestate=='1' || full.meterchangedata_id){
                         disabled = "disabled"
                     }
                     return "<input " + disabled + "  style='margin-top:-5px;width:100px;height:24px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
@@ -1076,12 +1068,8 @@ $(document).ready(function () {
             {
                 "targets": -6,
                 "mRender": function (data, type, full) {
-                    // var disabled = ""
-                    // if (full.meterchangedata_id) {
-                    //     disabled = "disabled"
-                    // }
                     var disabled = "";
-                    if (full.releasestate=='1'){
+                    if (full.releasestate=='1' || full.meterchangedata_id){
                         disabled = "disabled"
                     }
                     if (full.target_datatype == 'numbervalue') {
