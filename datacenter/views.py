@@ -9032,7 +9032,7 @@ def reporting_log_data(request):
     if request.user.is_authenticated():
         start_time = request.GET.get('start_time', '')
         end_time = request.GET.get('end_time', '')
-
+        end_time = datetime.datetime.strptime(end_time, "%Y-%m-%d") + datetime.timedelta(days=1)
         reporting_log = ReportingLog.objects.exclude(state='9').order_by('-id').select_related('adminapp', 'work')\
             .filter(write_time__range=[start_time, end_time])
         reporting_type_dict = {
