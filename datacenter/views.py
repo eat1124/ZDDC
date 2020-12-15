@@ -1272,7 +1272,7 @@ def report_index(request, funid):
                     errors.append(r"""请注意文件命名格式，'\/"*?<>'符号文件不允许上传。""")
                 else:
                     file_names=file_name.split('.')
-                    if file_names[-1]!='cpt':
+                    if file_names[-1]!='cpt' and file_names[-1] != "":
                         errors.append(r"""只能上传cpt文件。""")
                     else:
                         # 报表存储位置
@@ -1589,7 +1589,7 @@ def report_app_index(request, funid):
                     errors.append(r"""请注意文件命名格式，'\/"*?<>'符号文件不允许上传。""")
                 else:
                     file_names = file_name.split('.')
-                    if file_names[-1] != 'cpt':
+                    if file_names[-1] != 'cpt' and file_names[-1] != "":
                         errors.append(r"""只能上传cpt文件。""")
                     else:
                         # 报表存储位置
