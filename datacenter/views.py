@@ -856,7 +856,7 @@ def get_exception_data(request):
             exceptions = ExceptionData.objects.filter(
                 app_id=app_id, source_id=source_id, cycle_id=cycle_id
             ).filter(extract_error_time__range=[t_before, t_after]).exclude(state=9).order_by('-id')
-            for exception in exceptions:
+            for num, exception in enumerate(exceptions):
                 result.append({
                     'id': exception.id,
                     'target_name': exception.target.name if exception.target else '',
@@ -866,6 +866,8 @@ def get_exception_data(request):
                     'last_supplement_time': '{:%Y-%m-%d %H:%M:%S}'.format(
                         exception.last_supplement_time) if exception.last_supplement_time else '',
                 })
+                if num > 98:
+                    break
         return JsonResponse({"data": result})
     else:
         return HttpResponseRedirect("/login")
@@ -9664,6 +9666,9 @@ def get_report_search_data(request):
         )
         report_models = ReportModel.objects.exclude(state="9").values()
 
+        rs = ReportServer.objects.first()
+        report_server = rs.report_server if rs else ''
+
         # 周期 报表类型对应字典
         #   根据周期匹配报表类型
         compile_dict = {
@@ -9717,7 +9722,6 @@ def get_report_search_data(request):
 
                         # 报表数据
                         report_submit_list = []
-
                         for report_submit in report_submits:
                             if report_submit["report_model_id"] == report_model["id"]:
                                 # 周期类型 + 时间
@@ -9739,6 +9743,8 @@ def get_report_search_data(request):
                                     "code": report_submit["report_model__code"],
 
                                     "url": url,
+                                    "relative_file_name": app.code + '/' + report_submit["report_model__name"],
+                                    "report_server": report_server
                                 })
                         report_model_info["data"] = report_submit_list
                         report_model_list.append(report_model_info)
@@ -9751,7 +9757,6 @@ def get_report_search_data(request):
             app_info["children"] = cycle_list
             app_list.append(app_info)
         root_info["children"] = app_list
-
         return JsonResponse({
             "status": status,
             "info": info,

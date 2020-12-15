@@ -219,7 +219,6 @@ $(document).ready(function() {
             $('#year').show();
         }
         if (report_type == "26") {
-            console.log('eeee')
             $('#year').hide();
             $('#season').hide();
             $('#reporting_date').show();
@@ -238,7 +237,6 @@ $(document).ready(function() {
         }
     }
     var selected_report_type = $("#selected_report_type").val();
-    console.log(selected_report_type)
 
     try {
         if (selected_report_type){
