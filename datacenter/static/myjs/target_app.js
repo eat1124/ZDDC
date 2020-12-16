@@ -234,6 +234,7 @@ $(document).ready(function () {
 
         $("#data_from").val(data.data_from);
         $('#is_select').val(data.is_select);
+        $('#warn_range').val(data.warn_range);
         // 过滤出所有works
         $('#work_edit').empty();
 
@@ -430,7 +431,7 @@ $(document).ready(function () {
         $("#businesstype").val("");
         $("#unit").val("");
         $("#magnification").val("1");
-        $("#digit").val("2");
+        $("#digit").val("4");
         $("#upperlimit").val("");
         $("#lowerlimit").val("");
         $("#datatype").val("numbervalue");
@@ -452,6 +453,7 @@ $(document).ready(function () {
         $("#storagefields").val("");
         $("#is_repeat").val("1");
         $('#is_select').val("no");
+        $('#warn_range').val("");
 
         // 业务
         $('#work_edit').empty();
@@ -512,6 +514,7 @@ $(document).ready(function () {
                     storagefields: $("#storagefields").val(),
                     is_repeat: $("#is_repeat").val(),
                     is_select: $('#is_select').val(),
+                    warn_range: $("#warn_range").val(),
                     savetype: 'app',
 
                     works: $('#work_edit').val(),

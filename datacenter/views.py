@@ -3220,7 +3220,8 @@ def target_data(request):
                 # "push_config": json.dumps(target.push_config if target.push_config else {}),
                 "push_config": target.push_config.replace('"', '\\\"').replace("\'", '"') if target.push_config else "",
                 # "push_config": target.push_config.replace('"', '\"') if target.push_config else "",
-                "is_select": target.is_select
+                "is_select": target.is_select,
+                "warn_range": target.warn_range
             })
         return JsonResponse({"data": result})
 
@@ -3286,6 +3287,7 @@ def target_save(request):
         if_push = request.POST.get('if_push', '')
         push_config = request.POST.get('push_config', '')
         is_select = request.POST.get('is_select', '')
+        warn_range = request.POST.get('warn_range', '')
 
         try:
             push_config = json.loads(push_config)
@@ -3398,6 +3400,10 @@ def target_save(request):
                                 target_save.sort = int(sort)
                             except:
                                 pass
+                            try:
+                                target_save.warn_range = int(warn_range)
+                            except:
+                                target_save.warn_range = None
                             # 计算
                             if operationtype == '17':
                                 target_save.formula = formula
@@ -3536,6 +3542,10 @@ def target_save(request):
                                             target_save.sort = int(sort)
                                         except:
                                             pass
+                                        try:
+                                            target_save.warn_range = int(warn_range)
+                                        except:
+                                            target_save.warn_range = None
                                         if operationtype == '17':
                                             target_save.formula = formula
                                             target_save.source_content = calculate_content
@@ -3591,6 +3601,7 @@ def target_save(request):
                                         result["res"] = "保存成功。"
                                         result["data"] = target_save.id
                                     except Exception as e:
+                                        print(e)
                                         result["res"] = "修改失败。"
 
         return JsonResponse(result)
@@ -4126,6 +4137,53 @@ def getreporting_date(date, cycletype):
     return date
 
 
+def getyesterdayreport_date(date, cycletype):
+    yesterday = ''
+    if cycletype == "10":
+        yesterday = datetime.datetime.strptime(date, "%Y-%m-%d") - datetime.timedelta(days=1)
+    if cycletype == "11":
+        date = datetime.datetime.strptime(date, "%Y-%m")
+        year = date.year
+        if date.month == 1:
+            year = date.year - 1
+            month = 12
+            a, b = calendar.monthrange(year, month)
+            yesterday = datetime.datetime(year=year, month=month, day=b)
+        else:
+            month = date.month - 1
+            a, b = calendar.monthrange(year, month)
+            yesterday = datetime.datetime(year=year, month=month, day=b)
+    if cycletype == "12":
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        year = date.year
+        if date.month == 3:
+            month = 12
+            year = year - 1
+            a, b = calendar.monthrange(year, month)
+            yesterday = datetime.datetime(year=year, month=month, day=b)
+        else:
+            month = date.month - 3
+            a, b = calendar.monthrange(year, month)
+            yesterday = datetime.datetime(year=year, month=month, day=b)
+    if cycletype == "13":
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        year = date.year
+        if date.month == 6:
+            month = 12
+            year = year - 1
+            a, b = calendar.monthrange(year, month)
+            yesterday = datetime.datetime(year=year, month=month, day=b)
+        else:
+            month = date.month - 6
+            a, b = calendar.monthrange(year, month)
+            yesterday = datetime.datetime(year=year, month=month, day=b)
+    if cycletype == "14":
+        date = datetime.datetime.strptime(date, "%Y")
+        year = date.year
+        yesterday = date.replace(year=year-1, month=12, day=31)
+    return yesterday
+
+
 def reporting_index(request, cycletype, funid):
     """
     数据填报
@@ -4359,12 +4417,20 @@ def reporting_data(request):
         reporting_date = request.GET.get('reporting_date', '')
         operationtype = request.GET.get('operationtype', '')
         funid = request.GET.get('funid', '')
+        cy = request.GET.get('cycletype', '')
+        date = request.GET.get('reporting_date', '')
         try:
             app = int(app)
             reporting_date = getreporting_date(reporting_date, cycletype)
         except:
             raise Http404()
+
+        try:
+            yesterday_report_date = getyesterdayreport_date(date, cy)
+        except:
+            pass
         all_data = []
+        yesterday_all_data = []
         work = None
         try:
             funid = int(funid)
@@ -4377,24 +4443,41 @@ def reporting_data(request):
                 all_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
                     target__work=work).order_by("target__sort").select_related("target")
+
+                yesterday_all_data = getmodels("Meterdata", str(yesterday_report_date.year)).objects.exclude(state="9").filter(
+                    target__adminapp_id=app, target__cycletype=cycletype, datadate=yesterday_report_date,
+                    target__work=work).order_by("target__sort").select_related("target").values('target_id', 'curvalue')
+
             if operationtype == "15":
                 all_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
                     target__work=work).order_by("target__sort").select_related("target")
+
+                yesterday_all_data = getmodels("Entrydata", str(yesterday_report_date.year)).objects.exclude(state="9").filter(
+                    target__adminapp_id=app, target__cycletype=cycletype, datadate=yesterday_report_date,
+                    target__work=work).order_by("target__sort").select_related("target").values('target_id', 'curvalue')
             if operationtype == "16":
                 all_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
                     target__work=work).order_by("target__sort").select_related("target")
+
+                yesterday_all_data = getmodels("Extractdata", str(yesterday_report_date.year)).objects.exclude(state="9").filter(
+                    target__adminapp_id=app, target__cycletype=cycletype, datadate=yesterday_report_date,
+                    target__work=work).order_by("target__sort").select_related("target").values('target_id', 'curvalue')
+
             if operationtype == "17":
                 all_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
                     target__adminapp_id=app, target__cycletype=cycletype, datadate=reporting_date,
                     target__work=work).order_by("target__sort").select_related("target")
 
+                yesterday_all_data = getmodels("Calculatedata", str(yesterday_report_date.year)).objects.exclude(state="9").filter(
+                    target__adminapp_id=app, target__cycletype=cycletype, datadate=yesterday_report_date,
+                    target__work=work).order_by("target__sort").select_related("target").values('target_id', 'curvalue')
+
             all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
 
             # 电表走字数据
             all_changedata = Meterchangedata.objects.exclude(state="9").filter(datadate=reporting_date).values()
-
             for data in all_data:
                 businesstypename = data.target.businesstype
 
@@ -4446,6 +4529,12 @@ def reporting_data(request):
                         cumulativeyear = round(data.cumulativeyear, data.target.digit)
                     except:
                         pass
+                yesterday_curvalue = ''
+                for yesterdata in yesterday_all_data:
+                    if yesterdata['target_id'] == data.target_id:
+                        yesterday_curvalue = round(yesterdata['curvalue'], data.target.digit)
+                        break
+
                 if operationtype in ("15", "16", "17"):
                     result.append({
                         "id": data.id,
@@ -4470,6 +4559,9 @@ def reporting_data(request):
                         "target_magnification": data.target.magnification,
                         "target_upperlimit": data.target.upperlimit,
                         "target_lowerlimit": data.target.lowerlimit,
+                        "target_warn_range": data.target.warn_range,
+                        "yesterday_curvalue": yesterday_curvalue
+
                     })
                 elif operationtype == "1":
                     zerodata = "{:f}".format(decimal.Decimal(data.zerodata if data.zerodata else "0").normalize())
@@ -4577,6 +4669,8 @@ def reporting_data(request):
                         "target_magnification": data.target.magnification,
                         "target_upperlimit": data.target.upperlimit,
                         "target_lowerlimit": data.target.lowerlimit,
+                        "target_warn_range": data.target.warn_range,
+                        "yesterday_curvalue": yesterday_curvalue,
 
                         "zerodata": zerodata,
                         "twentyfourdata": twentyfourdata,

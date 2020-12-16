@@ -366,8 +366,11 @@ $(document).ready(function () {
         },
         // 创建行回调函数
         "createdRow": function (row, data, index) {
-            if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)) {
-                $('td', row).css("color", "#FF0000");
+            var target_warn_range = parseFloat(data.target_warn_range)/100;
+            var curvalue = parseFloat(data.curvalue);
+            var yesterday_curvalue = parseFloat(data.yesterday_curvalue);
+            if ((curvalue > yesterday_curvalue * (1 + target_warn_range)) || (curvalue < yesterday_curvalue / (1 + target_warn_range)) || (data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)){
+                $('td', row).css("color", "#0000FF");
             }
             // 1 发布 0 未发布
             // gorelease1 已发布 unrelease1 未发布
