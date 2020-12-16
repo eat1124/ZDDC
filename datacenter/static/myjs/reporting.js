@@ -366,10 +366,15 @@ $(document).ready(function () {
         },
         // 创建行回调函数
         "createdRow": function (row, data, index) {
-            var target_warn_range = parseFloat(data.target_warn_range)/100;
-            var curvalue = parseFloat(data.curvalue);
-            var yesterday_curvalue = parseFloat(data.yesterday_curvalue);
-            if ((curvalue > yesterday_curvalue * (1 + target_warn_range)) || (curvalue < yesterday_curvalue / (1 + target_warn_range)) || (data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)){
+            if (data.target_warn_range){
+                var target_warn_range = parseFloat(data.target_warn_range)/100;
+                var curvalue = parseFloat(data.curvalue);
+                var yesterday_curvalue = parseFloat(data.yesterday_curvalue);
+                if ((curvalue > yesterday_curvalue * (1 + target_warn_range)) || (curvalue < yesterday_curvalue / (1 + target_warn_range))){
+                    $('td', row).css("color", "#0000FF");
+                }
+            }
+            if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)){
                 $('td', row).css("color", "#0000FF");
             }
             // 1 发布 0 未发布
@@ -428,7 +433,7 @@ $(document).ready(function () {
         }
         // 超过上限，低于下限标红
         if ((data.target_upperlimit && Number($('#table1_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table1_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
+            $('td', $(this).parents('tr')).css("color", "#0000FF");
         } else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
@@ -566,8 +571,17 @@ $(document).ready(function () {
             }
         },
         "createdRow": function (row, data, index) {
-            if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit) || data.curvalue == -9999) {
-                $('td', row).css("color", "#FF0000");
+            if (data.target_warn_range){
+                var target_warn_range = parseFloat(data.target_warn_range)/100;
+                var curvalue = parseFloat(data.curvalue);
+                var yesterday_curvalue = parseFloat(data.yesterday_curvalue);
+                if ((curvalue > yesterday_curvalue * (1 + target_warn_range)) || (curvalue < yesterday_curvalue / (1 + target_warn_range))){
+                    $('td', row).css("color", "#0000FF");
+                }
+            }
+
+            if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)){
+                $('td', row).css("color", "#0000FF");
             }
 
             if (data.releasestate == '0') {
@@ -625,7 +639,7 @@ $(document).ready(function () {
         }
         // 超过上限，低于下限标红
         if ((data.target_upperlimit && Number($('#table2_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table2_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
+            $('td', $(this).parents('tr')).css("color", "#0000FF");
         } else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
@@ -793,8 +807,16 @@ $(document).ready(function () {
             }
         },
         "createdRow": function (row, data, index) {
-            if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit) || data.curvalue == -9999) {
-                $('td', row).css("color", "#FF0000");
+            if (data.target_warn_range){
+                var target_warn_range = parseFloat(data.target_warn_range)/100;
+                var curvalue = parseFloat(data.curvalue);
+                var yesterday_curvalue = parseFloat(data.yesterday_curvalue);
+                if ((curvalue > yesterday_curvalue * (1 + target_warn_range)) || (curvalue < yesterday_curvalue / (1 + target_warn_range))){
+                    $('td', row).css("color", "#0000FF");
+                }
+            }
+            if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)){
+                $('td', row).css("color", "#0000FF");
             }
 
             if (data.releasestate == '0') {
@@ -853,7 +875,7 @@ $(document).ready(function () {
 
         // 超过上限，低于下限标红
         if ((data.target_upperlimit && Number($('#table3_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table3_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
+            $('td', $(this).parents('tr')).css("color", "#0000FF");
         } else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
@@ -969,7 +991,7 @@ $(document).ready(function () {
             if (data.curvalue == "" || data.releasestate == "0") {
                 $('td', row).css("color", "#FF0000");
             } else if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)) {
-                $('td', row).css("color", "#FF0000");
+                $('td', row).css("color", "#0000FF");
             }
         },
 
@@ -1116,10 +1138,14 @@ $(document).ready(function () {
                 "width": "10px",
                 "mRender": function (data, type, full) {
                     var disabled = "";
+                    var class_color = "class='btn btn-xs btn-primary'";
                     if (full.releasestate=='1'){
                         disabled = "disabled"
                     }
-                    return "<button " + disabled + " id='edit' title='换表' data-toggle='modal'  data-target='#static5'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>"
+                    if (full.meterchangedata_id){
+                        class_color = "class='btn btn-xs btn-warning'";
+                    }
+                    return "<button " + disabled + " id='edit' title='换表' data-toggle='modal'  data-target='#static5' " + class_color + " type='button'><i class='fa fa-edit'></i></button>"
                 }
             },
         ],
@@ -1156,7 +1182,18 @@ $(document).ready(function () {
             }
         },
         "createdRow": function (row, data, index) {
-            if (data.zerodata == data.twentyfourdata) {
+            if (data.target_warn_range){
+                var target_warn_range = parseFloat(data.target_warn_range)/100;
+                var curvalue = parseFloat(data.curvalue);
+                var yesterday_curvalue = parseFloat(data.yesterday_curvalue);
+                if ((curvalue > yesterday_curvalue * (1 + target_warn_range)) || (curvalue < yesterday_curvalue / (1 + target_warn_range))){
+                    $('td', row).css("color", "#0000FF");
+                }
+            }
+            if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)){
+                $('td', row).css("color", "#0000FF");
+            }
+            if ((data.zerodata == data.twentyfourdata)){
                 $('td', row).css("color", "#FF0000");
             }
 
@@ -1220,10 +1257,12 @@ $(document).ready(function () {
         if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
         } else if ((data.target_upperlimit && Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && dNumber($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
+            $('td', $(this).parents('tr')).css("color", "#0000FF");
         } else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
+
+
     });
     $('#sample_5 tbody').on('change', 'input[name="table5_twentyfourdata"]', function () {
         var table = $('#sample_5').DataTable();
@@ -1262,7 +1301,7 @@ $(document).ready(function () {
         if (Number($('#table5_zerodata_' + data.id).val()) == Number($('#table5_twentyfourdata_' + data.id).val())) {
             $('td', $(this).parents('tr')).css("color", "#FF0000");
         } else if ((data.target_upperlimit && (Number($('#table5_curvalue_' + data.id).val()) > data.target_upperlimit)) || (data.target_lowerlimit && Number($('#table5_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
-            $('td', $(this).parents('tr')).css("color", "#FF0000");
+            $('td', $(this).parents('tr')).css("color", "#0000FF");
         } else {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
@@ -1434,7 +1473,7 @@ $(document).ready(function () {
                                     if (Number($('#table5_zerodata_' + id).val()) == Number($('#table5_twentyfourdata_' + id).val())) {
                                         $('#table5_zerodata_' + id).parent().parent().children().css("color", "#FF0000")
                                     } else if ((data5[i].target_upperlimit && (Number($('#table5_curvalue_' + id).val()) > data5[i].target_upperlimit)) || (data5[i].target_lowerlimit && Number($('#table5_curvalue_' + id).val()) < data5[i].target_lowerlimit)) {
-                                        $('#table5_zerodata_' + id).parent().parent().children().css("color", "#FF0000")
+                                        $('#table5_zerodata_' + id).parent().parent().children().css("color", "#0000FF")
                                     } else {
                                         $('#table5_zerodata_' + id).parent().parent().children().css("color", "#000000")
                                     }
