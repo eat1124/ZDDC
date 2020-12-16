@@ -164,6 +164,7 @@ class Target(models.Model):
     if_push = models.CharField("是否推送", null=True, max_length=20, default="0")
     push_config = models.TextField("推送配置:{'dest_fields': ['', ''], 'origin_source': '', 'constraint_fields': [''], 'dest_table': '', 'origin_fields': ['', '']}", null=True)
     is_select = models.CharField("是否查询", null=True, max_length=20)
+    warn_range = models.IntegerField("报警范围", blank=True, null=True)
 
 
 class Constant(models.Model):
