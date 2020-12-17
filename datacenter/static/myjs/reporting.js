@@ -889,6 +889,7 @@ $(document).ready(function () {
 
     $('#sample_3 tbody').on('click', 'button#single_recalculate1', function () {
         if (confirm("是否对当前指标进行重新计算?")) {
+            customModal.show();
             var table = $('#sample_3').DataTable();
             var data = table.row($(this).parents('tr')).data();
             $.ajax({
@@ -901,19 +902,25 @@ $(document).ready(function () {
                     "recalculate_type": "1",
                 },
                 success: function (data) {
-                    var info = data.info,
-                        status = data.status;
-                    if (status == 1) {
+                    if (data['status'] == 1) {
                         table.ajax.reload();
                     } else {
-                        alert(info);
+                        alert(data['info']);
                     }
+                    customModal.hide();
+                    alert(data['info']);
+                },
+                error: function (e) {
+                    alert("计算失败，请于管理员联系。");
+                    // 隐藏滚动条
+                    customModal.hide();
                 }
             })
         }
     });
     $('#sample_3 tbody').on('click', 'button#single_recalculate2', function () {
         if (confirm("是否对当前指标进行重新计算?")) {
+            customModal.show();
             var table = $('#sample_3').DataTable();
             var data = table.row($(this).parents('tr')).data();
             $.ajax({
@@ -926,13 +933,18 @@ $(document).ready(function () {
                     "recalculate_type": "0",
                 },
                 success: function (data) {
-                    var info = data.info,
-                        status = data.status;
-                    if (status == 1) {
+                    if (data['status'] == 1) {
                         table.ajax.reload();
                     } else {
-                        alert(info);
+                        alert(data['info']);
                     }
+                    customModal.hide();
+                    alert(data['info']);
+                },
+                error: function (e) {
+                    alert("计算失败，请于管理员联系。");
+                    // 隐藏滚动条
+                    customModal.hide();
                 }
             })
         }
