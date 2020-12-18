@@ -4498,12 +4498,22 @@ def reporting_data(request):
                                 break
                 except:
                     pass
+                todayvalue = ""
+                judgevalue = ""
                 curvalue = ""
                 curvaluedate = ""
                 cumulativemonth = ""
                 cumulativequarter = ""
                 cumulativehalfyear = ""
                 cumulativeyear = ""
+                try:
+                    todayvalue = round(data.todayvalue, data.target.digit)
+                except:
+                    pass
+                try:
+                    judgevalue = round(data.judgevalue, data.target.digit) if data.judgevalue else 0
+                except:
+                    pass
                 try:
                     curvalue = round(data.curvalue, data.target.digit)
                 except:
@@ -4538,6 +4548,10 @@ def reporting_data(request):
                 if operationtype in ("15", "16", "17"):
                     result.append({
                         "id": data.id,
+
+                        "todayvalue": todayvalue,
+                        "judgevalue": judgevalue,
+
                         "curvalue": curvalue,
                         "curvaluedate": curvaluedate,
                         "curvaluetext": data.curvaluetext if data.curvaluetext else '',
@@ -4648,6 +4662,8 @@ def reporting_data(request):
 
                     result.append({
                         "id": data.id,
+                        "todayvalue": todayvalue,
+                        "judgevalue": judgevalue,
                         "curvalue": curvalue,
                         "curvaluedate": curvaluedate,
                         "curvaluetext": data.curvaluetext,
@@ -4733,7 +4749,8 @@ def reporting_search_data(request):
                 print(e)
 
         for target in all_target:
-            curtargetdata = {"target": target, "zerodata": "", "twentyfourdata": "", "metervalue": "", "curvalue": "",
+            curtargetdata = {"target": target, "zerodata": "", "twentyfourdata": "", "metervalue": "", "todayvalue": "",
+                             "judgevalue": "", "curvalue": "",
                              "curvaluedate": "", "curvaluetext": "", "cumulativemonth": "", "cumulativequarter": "",
                              "cumulativehalfyear": "", "cumulativeyear": "", "releasestate": ""}
             if target.operationtype == "15":
@@ -4741,7 +4758,9 @@ def reporting_search_data(request):
                     target=target, datadate=reporting_date)
                 if len(targetvalue) > 0:
                     curtargetdata = {"target": target, "zerodata": "", "twentyfourdata": "", "metervalue": "",
-                                     "curvalue": targetvalue[0].curvalue, "curvaluedate": targetvalue[0].curvaluedate,
+                                     "curvalue": targetvalue[0].curvalue, "todayvalue": targetvalue[0].todayvalue,
+                                     "judgevalue": targetvalue[0].judgevalue,
+                                     "curvaluedate": targetvalue[0].curvaluedate,
                                      "curvaluetext": targetvalue[0].curvaluetext,
                                      "cumulativemonth": targetvalue[0].cumulativemonth,
                                      "cumulativequarter": targetvalue[0].cumulativequarter,
@@ -4753,6 +4772,7 @@ def reporting_search_data(request):
                     target=target, datadate=reporting_date)
                 if len(targetvalue) > 0:
                     curtargetdata = {"target": target, "zerodata": "", "twentyfourdata": "", "metervalue": "",
+                                     "todayvalue": targetvalue[0].todayvalue,"judgevalue": targetvalue[0].judgevalue,
                                      "curvalue": targetvalue[0].curvalue, "curvaluedate": targetvalue[0].curvaluedate,
                                      "curvaluetext": targetvalue[0].curvaluetext,
                                      "cumulativemonth": targetvalue[0].cumulativemonth,
@@ -4765,6 +4785,7 @@ def reporting_search_data(request):
                     target=target, datadate=reporting_date)
                 if len(targetvalue) > 0:
                     curtargetdata = {"target": target, "zerodata": "", "twentyfourdata": "", "metervalue": "",
+                                     "todayvalue": targetvalue[0].todayvalue,"judgevalue": targetvalue[0].judgevalue,
                                      "curvalue": targetvalue[0].curvalue, "curvaluedate": targetvalue[0].curvaluedate,
                                      "curvaluetext": targetvalue[0].curvaluetext,
                                      "cumulativemonth": targetvalue[0].cumulativemonth,
@@ -4778,7 +4799,9 @@ def reporting_search_data(request):
                 if len(targetvalue) > 0:
                     curtargetdata = {"target": target, "zerodata": targetvalue[0].zerodata,
                                      "twentyfourdata": targetvalue[0].twentyfourdata,
-                                     "metervalue": targetvalue[0].metervalue, "curvalue": targetvalue[0].curvalue,
+                                     "metervalue": targetvalue[0].metervalue, "todayvalue": targetvalue[0].todayvalue,
+                                     "judgevalue": targetvalue[0].judgevalue,
+                                     "curvalue": targetvalue[0].curvalue,
                                      "curvaluedate": targetvalue[0].curvaluedate,
                                      "curvaluetext": targetvalue[0].curvaluetext,
                                      "cumulativemonth": targetvalue[0].cumulativemonth,
@@ -4815,7 +4838,20 @@ def reporting_search_data(request):
             cumulativehalfyear = ""
             cumulativeyear = ""
             curvalue = ""
+            todayvalue = ""
+            judgevalue = ""
+
             if data["target"].datatype == "numbervalue":
+                todayvalue = data["todayvalue"]
+                try:
+                    todayvalue = round(data["todayvalue"], data["target"].digit)
+                except:
+                    pass
+                judgevalue = data["judgevalue"]
+                try:
+                    judgevalue = round(data["judgevalue"], data["target"].digit)
+                except:
+                    pass
                 curvalue = data["curvalue"]
                 try:
                     curvalue = round(data["curvalue"], data["target"].digit)
@@ -4847,6 +4883,8 @@ def reporting_search_data(request):
                 except:
                     pass
             result.append({
+                "todayvalue": todayvalue,
+                "judgevalue": judgevalue,
                 "curvalue": curvalue,
                 "cumulativemonth": cumulativemonth,
                 "cumulativequarter": cumulativequarter,
@@ -5412,14 +5450,14 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList, fo
     数据计算
     @forward {bool}: 是否往前计算
     """
-    curvalue = -9999
+    todayvalue = -9999
     if target.data_from == 'et':
         # 外部系统，直接取数
         # 从数据库中获取，取第一个值，其他情况抛错
         ret = Extract.getDataFromSource(target, date)
         if ret['result']:
             try:
-                curvalue = float(ret['result'][0][0])
+                todayvalue = float(ret['result'][0][0])
             except Exception as e:
                 print(e)
             else:
@@ -5708,7 +5746,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList, fo
 
         # 根据公式计算出值
         try:
-            curvalue = eval(formula)
+            todayvalue = eval(formula)
         except:
             pass
 
@@ -5721,11 +5759,14 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList, fo
     calculatedata.target = target
     calculatedata.datadate = date
     # 根据倍率与保留位数得出最后的值
-    calculatedata.curvalue = curvalue
-    calculatedata.curvalue = decimal.Decimal(str(float(calculatedata.curvalue))) * decimal.Decimal(
+    calculatedata.todayvalue = todayvalue
+    calculatedata.todayvalue = decimal.Decimal(str(float(calculatedata.todayvalue))) * decimal.Decimal(
         str(float(target.magnification)))
-    calculatedata.curvalue = decimal.Decimal(str(calculatedata.curvalue)).quantize(decimal.Decimal(Digit(target.digit)),
+    calculatedata.todayvalue = decimal.Decimal(str(calculatedata.todayvalue)).quantize(decimal.Decimal(Digit(target.digit)),
                                                                                    rounding=decimal.ROUND_HALF_UP)
+    calculatedata.judgevalue = 0
+    calculatedata.curvalue = calculatedata.todayvalue + calculatedata.judgevalue
+
     # 累计值计算
     if target.cumulative in ['1', '2', '3', '4']:
         cumulative = getcumulative(tableList, target, date, decimal.Decimal(str(calculatedata.curvalue)))
@@ -5978,7 +6019,6 @@ def single_recalculate(request):
                 else:
                     status = 0
                     info = "该指标不是计算指标"
-
         return JsonResponse({
             "status": status,
             "info": info,
@@ -6607,8 +6647,11 @@ def reporting_new(request):
                     meterdata.datadate = reporting_date
                     meterdata.metervalue = decimal.Decimal(meterdata.twentyfourdata) - decimal.Decimal(
                         meterdata.zerodata)
-                    meterdata.curvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
-                    meterdata.curvalue = round(meterdata.curvalue, target.digit)
+                    meterdata.todayvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
+                    meterdata.todayvalue = round(meterdata.todayvalue, target.digit)
+                    meterdata.judgevalue = 0
+                    meterdata.curvalue = meterdata.todayvalue + meterdata.judgevalue
+
                     if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, meterdata.curvalue)
                         meterdata.cumulativemonth = cumulative["cumulativemonth"]
@@ -6621,6 +6664,8 @@ def reporting_new(request):
                     entrydata = getmodels("Entrydata", str(reporting_date.year))()
                     entrydata.target = target
                     entrydata.datadate = reporting_date
+                    entrydata.todayvalue = 0
+                    entrydata.judgevalue = 0
                     entrydata.curvalue = 0
                     if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
@@ -6634,7 +6679,8 @@ def reporting_new(request):
                     extractdata = getmodels("Extractdata", str(reporting_date.year))()
                     extractdata.target = target
                     extractdata.datadate = reporting_date
-                    extractdata.curvalue = -9999
+                    extractdata.todayvalue = -9999
+                    extractdata.judgevalue = 0
 
                     tablename = ""
                     try:
@@ -6665,12 +6711,12 @@ def reporting_new(request):
                                     if row[0] is not None:
                                         rowvalue += row[0]
                                         rownum += 1
-                                extractdata.curvalue = rowvalue / rownum
+                                extractdata.todayvalue = rowvalue / rownum
                             else:
-                                extractdata.curvalue = rows[0][0]
-                            extractdata.curvalue = decimal.Decimal(
-                                float(extractdata.curvalue) * float(target.magnification))
-                            extractdata.curvalue = round(extractdata.curvalue, target.digit)
+                                extractdata.todayvalue = rows[0][0]
+                            extractdata.todayvalue = decimal.Decimal(
+                                float(extractdata.todayvalue) * float(target.magnification))
+                            extractdata.todayvalue = round(extractdata.todayvalue, target.digit)
                         except:
                             pass
                     if not rows or not target.cycle:  # 没取到数据 或者 没有取数周期，根据数据源实时取
@@ -6685,15 +6731,15 @@ def reporting_new(request):
                                         if row[0] is not None:
                                             rowvalue += row[0]
                                             rownum += 1
-                                    extractdata.curvalue = rowvalue / rownum
+                                    extractdata.todayvalue = rowvalue / rownum
                                 else:
-                                    extractdata.curvalue = result_list[0][0]
-                                extractdata.curvalue = decimal.Decimal(
-                                    float(extractdata.curvalue) * float(target.magnification))
-                                extractdata.curvalue = round(extractdata.curvalue, target.digit)
+                                    extractdata.todayvalue = result_list[0][0]
+                                extractdata.todayvalue = decimal.Decimal(
+                                    float(extractdata.todayvalue) * float(target.magnification))
+                                extractdata.todayvalue = round(extractdata.todayvalue, target.digit)
                             except Exception as e:
                                 print(e)
-
+                    extractdata.curvalue = extractdata.todayvalue + extractdata.judgevalue
                     if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
@@ -6993,26 +7039,28 @@ def reporting_save(request):
         # 相比get(),save(),减少查询的操作,直接更新
         if operationtype == "1":
             save_query_data = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").values(
-                'zerodata', 'twentyfourdata', 'metervalue', 'target__magnification',
+                'zerodata', 'twentyfourdata', 'metervalue', 'target__magnification', 'todayvalue', 'judgevalue',
                 'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
                 'cumulativequarter',
                 'cumulativehalfyear', 'cumulativeyear', 'id'
             )
-            meterchangedata = Meterchangedata.objects.exclude(state="9").values()
         if operationtype == "15":
             save_query_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").values(
+                'todayvalue', 'judgevalue',
                 'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
                 'cumulativequarter',
                 'cumulativehalfyear', 'cumulativeyear', 'id'
             )
         if operationtype == "16":
             save_query_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").values(
+                'todayvalue', 'judgevalue',
                 'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
                 'cumulativequarter',
                 'cumulativehalfyear', 'cumulativeyear', 'id'
             )
         if operationtype == "17":
             save_query_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").values(
+                'todayvalue', 'judgevalue',
                 'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
                 'cumulativequarter',
                 'cumulativehalfyear', 'cumulativeyear', 'id'
@@ -7029,6 +7077,20 @@ def reporting_save(request):
                     break
             if single_save_query_data:
                 if single_save_query_data['target__datatype'] == 'numbervalue':
+                    try:
+                        result['todayvalue'] = float(curdata["todayvalue"])
+                        result['todayvalue'] = decimal.Decimal(str(curdata['todayvalue'])).quantize(
+                            decimal.Decimal(Digit(curdata['target__digit'])),
+                            rounding=decimal.ROUND_HALF_UP)
+                    except Exception as e:
+                        pass
+                    try:
+                        result['judgevalue'] = float(curdata["judgevalue"])
+                        result['judgevalue'] = decimal.Decimal(str(curdata['judgevalue'])).quantize(
+                            decimal.Decimal(Digit(curdata['target__digit'])),
+                            rounding=decimal.ROUND_HALF_UP)
+                    except Exception as e:
+                        pass
                     try:
                         result['curvalue'] = float(curdata["curvalue"])
                         result['curvalue'] = decimal.Decimal(str(curdata['curvalue'])).quantize(
@@ -10079,6 +10141,33 @@ def target_statistic(request, funid):
         })
     else:
         return HttpResponseRedirect('/login')
+
+
+def target_insert_data(request):
+    if request.user.is_authenticated():
+        result = []
+        app_id = request.GET.get('app_id', '')
+        try:
+            app_id = int(app_id)
+        except Exception as e:
+            print(e)
+        targets = Target.objects.exclude(state="9").filter(Q(adminapp__id=app_id) | Q(app__id=app_id))
+        all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
+        for target in targets:
+            cycletype = target.cycletype
+            if cycletype:
+                for dict in all_dict_list:
+                    if cycletype == str(dict['id']):
+                        cycletype = dict['name']
+                        break
+
+            result.append({
+                "id": target.id,
+                "name": target.name,
+                "code": target.code,
+                "cycletype": cycletype,
+            })
+        return JsonResponse({"data": result})
 
 
 def target_statistic_data(request):
