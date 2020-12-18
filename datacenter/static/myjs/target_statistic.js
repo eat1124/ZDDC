@@ -161,45 +161,41 @@ function renderTargetColDataTable(table_data) {
         $("#statistic_type").val(data.statistic_type);
         $("#col_remark").val(data.remark);
 
-        var targets = []
+        var targets = [];
         for (var i = 0; i < data.targets.length; i++) {
-            targets.push(data.targets[i].target_id);
+            var target_id = data.targets[i].target_id;
+            var target_name = data.targets[i].target_name;
+            var t_data = target_id + ":"  + target_name;
+            targets.push(t_data);
         }
-
-        $('#multiple_targets').select2('val', targets);
-        // 重命名加载
-        for (var j = 0; j < data.targets.length; j++) {
-            var target = data.targets[j];
-            var cumulative_type = target.cumulative_type;
-            var curvalue_selected = cumulative_type == 0 ? "selected": "",
-                cumulativemonth_selected =  cumulative_type == 1 ? "selected": "",
-                cumulativequarter_selected =  cumulative_type == 2 ? "selected": "",
-                cumulativehalfyear_selected =  cumulative_type == 3 ? "selected": "",
-                cumulativeyear_selected =  cumulative_type == 4 ? "selected": "";
-            $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target.target_id + '">\n' +
+        var target_name_list = [];
+        $('#exist_target').val(targets);
+        for (var i = 0; i < targets.length; i++){
+            var target_id = targets[i].split(':')[0];
+            var target_name = targets[i].split(':')[1];
+            target_name_list.push(target_name);
+            $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target_id + '">\n' +
                 '    <div class="col-md-4" style="padding: 0">\n' +
-                '        <input type="text" readonly class="form-control" value="' + target.target_name + '">\n' +
+                '        <input type="text" readonly class="form-control" value="' + target_name + '">\n' +
                 '    </div>\n' +
                 '    <div class="col-md-1" style="padding: 0 40px; margin-top:5px">\n' +
                 '        <span style="text-align: center; vertical-align: middle;"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
                 '    </div>\n' +
                 '    <div class="col-md-4" style="padding: 0">\n' +
-                '        <input type="text" class="form-control" value="' + target.new_target_name + '">\n' +
+                '        <input type="text" class="form-control" value="' + target_name + '">\n' +
                 '    </div>\n' +
                 '    <div class="col-md-2" style="padding: 0;margin-left:20px">\n' +
-                '        <select class="form-control" name="cumulative_type_opts">\n' +
-                '           <option value="0" ' + curvalue_selected + '>当前值</option>' + 
-                '           <option value="1" ' + cumulativemonth_selected + '>月累计值</option>' + 
-                '           <option value="2" ' + cumulativequarter_selected + '>季累计值</option>' + 
-                '           <option value="3" ' + cumulativehalfyear_selected + '>半年累计值</option>' + 
-                '           <option value="4" ' + cumulativeyear_selected + '>年累计值</option>' + 
-                '        </select>\n' + 
+                '        <select class="form-control">\n' +
+                '           <option value="0">当前值</option>' +
+                '           <option value="1">月累计值</option>' +
+                '           <option value="2">季累计值</option>' +
+                '           <option value="3">半年累计值</option>' +
+                '           <option value="4">年累计值</option>' +
+                '        </select>\n' +
                 '    </div>\n' +
                 '</div>');
         }
-
-        $('#single_div').hide();
-        $('#multiple_div').show();
+        $('#target_data').val(target_name_list);
         $('#rename_div').show();
     });
     $('#col_table tbody').on('click', 'button#delrow', function () {
@@ -214,7 +210,7 @@ function addOrEdit() {
     var col_id = $('#col_id').val();
     if (col_id == 0) {  // 新增
         // new_target下的target_id target_name new_target_name
-        var targets = []
+        var targets = [];
         $('#new_target').children().each(function () {
             var target_id = $(this).attr("target_id"),
                 target_name = $(this).children().eq(0).find('input').val(),
@@ -278,7 +274,6 @@ $('#search_new').click(function () {
     $('#search_name').val('');
     $('#search_type').val('');
     $('#search_remark').val('');
-
     $('#static01').modal('show');
     renderTargetColDataTable([]);
 });
@@ -287,67 +282,23 @@ $('#col_new').click(function () {
     $('#col_id').val(0);
     $('#col_name').val('');
     $('#col_remark').val('');
-    $('#multiple_targets').select2('val', []);
-    $('#single_target').select2('val', "");
+    $('#target_data').val('');
     $('#new_target').empty();
     $('#rename_div').show();
     $('#static02').modal('show');
-    $('#multiple_div').show();
-    $('#single_div').hide();
+    $('#exist_target').val('');
 });
-
-$("#multiple_targets")
-    // 新增
-    .on("select2:select", function (e) {
-        var target = e.params.data;
-        $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target.id + '">\n' +
-            '    <div class="col-md-4" style="padding: 0">\n' +
-            '        <input type="text" readonly class="form-control" value="' + target.text + '">\n' +
-            '    </div>\n' +
-            '    <div class="col-md-1" style="padding: 0 40px; margin-top:5px">\n' +
-            '        <span style="text-align: center; vertical-align: middle;"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
-            '    </div>\n' +
-            '    <div class="col-md-4" style="padding: 0">\n' +
-            '        <input type="text" class="form-control" value="' + target.text + '">\n' +
-            '    </div>\n' +
-            '    <div class="col-md-2" style="padding: 0;margin-left:20px">\n' +
-            '        <select class="form-control">\n' +
-            '           <option value="0">当前值</option>' + 
-            '           <option value="1">月累计值</option>' + 
-            '           <option value="2">季累计值</option>' + 
-            '           <option value="3">半年累计值</option>' + 
-            '           <option value="4">年累计值</option>' + 
-            '        </select>\n' + 
-            '    </div>\n' +
-            '</div>');
-
-        if ($('#col_name').val() == ''){
-            $('#col_name').val(target.text);
-        }
-    })
-    // 删除
-    .on("select2:unselect", function (e) {
-        // 将指定id的div删除
-        var target = e.params.data;
-        var target_id = target.id;
-        $('#new_target').find('div[target_id="' + target_id + '"]').remove();
-
-        if ($("#multiple_targets").val() == null){
-            $('#col_name').val('');
-        }
-    });
-
 
 $('#col_load').click(function () {
     // 非空条件
     if ($('#col_name').val()) {
-        if ($('#multiple_targets').val()) {
+        if ($('#target_data').val()) {
             addOrEdit();
         } else {
             alert('未选择指标。')
         }
     } else {
-        alert("列名未填写。")
+        alert("列名未填写。");
     }
 });
 
@@ -386,3 +337,161 @@ $('#statistic_save').click(function () {
         }
     });
 });
+
+loadtargetData();
+var completed = false;
+function loadtargetData() {
+    if (completed) {
+        var table_1 = $('#sample_1').DataTable();
+        table_1.ajax.url("../../target_insert_data/?app_id=" + $('#app_id').val()).load();
+        }
+    else {
+        $('#sample_1').dataTable({
+            "bAutoWidth": true,
+            "bSort": false,
+            "bProcessing": true,
+            "ajax": "../../target_insert_data/?app_id=" + $('#app_id').val(),
+            "columns": [
+                {"data": "id"},
+                {"data": "id"},
+                {"data": "name"},
+                {"data": "code"},
+                {"data": "cycletype"},
+            ],
+            "columnDefs": [{
+                "targets": 0,
+                "mRender": function (data, type, full) {
+                    var checked = '';
+                    var exist_target_id = $('#exist_target').val().split(',');
+                    var target_id = full.id.toString();
+                    var target_name = full.name;
+                    t_target = target_id + ':' + target_name;
+                    if (exist_target_id.indexOf(t_target) !=-1){
+                       checked = 'checked'
+                    }
+                    var id = full.id;
+                    var target_name = full.name;
+                    var t_target = id + ':' + target_name;
+                    return "<input " + checked + " id='select_target_" + id + "' name='selecttarget' type='checkbox' class='checkboxes' value='" + t_target + "'/>"
+                }
+            }],
+            "oLanguage": {
+                "sLengthMenu": "每页显示 _MENU_ 条记录",
+                "sZeroRecords": "抱歉， 没有找到",
+                "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                "sInfoEmpty": "没有数据",
+                "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                "sSearch": "搜索",
+                "oPaginate": {
+                    "sFirst": "首页",
+                    "sPrevious": "前一页",
+                    "sNext": "后一页",
+                    "sLast": "尾页"
+                },
+                "sZeroRecords": "没有检索到数据",
+            },
+            "initComplete": function () {
+                completed = true;
+                importData = [];
+            },
+        });
+    }
+    importData = [];
+}
+
+// 复选框选择指标
+var importData = [];
+$('#sample_1 tbody').on('click', 'input[name="selecttarget"]', function () {
+    if ($(this).prop('checked')) {
+        importData.push($(this).val());
+    } else {
+        for (var i = 0; i < importData.length; i++) {
+            if (importData[i] == $(this).val()) {
+                importData.splice(i, 1);
+            }
+        }
+    }
+});
+
+// 载入指标
+$('#collect').click(function () {
+    loadtargetData();
+    $('#insert_target').modal('show');
+    var exist_target_id = $('#exist_target').val();
+    if (exist_target_id){
+        exist_target_id = exist_target_id.split(',');
+        for (var i=0; i < exist_target_id.length; i++){
+            if (importData.indexOf(exist_target_id[i]) == -1){
+                importData.push(exist_target_id[i])
+            }
+        }
+    }
+});
+
+// 保存载入指标
+$('#addapp_save').click(function () {
+    $("Element").blur();
+    var table = $('#sample_1').DataTable().data();
+    $.each(table, function (i, item) {
+        if ($('#select_target_' + item.id).prop('checked')) {
+            var t_name = item.id + ':' + item.name;
+            if (importData.indexOf(t_name) == -1 ){
+                importData.push(t_name);
+            }
+        }
+    });
+    if (importData.length < 1) {
+        alert("请至少选择一个指标");
+    } else {
+        var target_list = [];
+        var exist_target_id = [];
+        $('#insert_target').modal('hide');
+        $('#new_target').empty();
+        for (var i = 0; i < importData.length; i++){
+            var target_id = importData[i].split(':')[0];
+            var target_name = importData[i].split(':')[1];
+            target_list.push(target_name);
+            exist_target_id.push(target_id + ':' + target_name);
+            $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target_id + '">\n' +
+                '    <div class="col-md-4" style="padding: 0">\n' +
+                '        <input type="text" readonly class="form-control" value="' + target_name + '">\n' +
+                '    </div>\n' +
+                '    <div class="col-md-1" style="padding: 0 40px; margin-top:5px">\n' +
+                '        <span style="text-align: center; vertical-align: middle;"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
+                '    </div>\n' +
+                '    <div class="col-md-4" style="padding: 0">\n' +
+                '        <input type="text" class="form-control" value="' + target_name + '">\n' +
+                '    </div>\n' +
+                '    <div class="col-md-2" style="padding: 0;margin-left:20px">\n' +
+                '        <select class="form-control">\n' +
+                '           <option value="0">当前值</option>' +
+                '           <option value="1">月累计值</option>' +
+                '           <option value="2">季累计值</option>' +
+                '           <option value="3">半年累计值</option>' +
+                '           <option value="4">年累计值</option>' +
+                '        </select>\n' +
+                '    </div>\n' +
+                '</div>');
+        }
+        $('#target_data').val(target_list);
+        $('#exist_target').val(exist_target_id);
+    }
+});
+
+// 全选
+$('#select_all_target').click(function () {
+     var table = $('#sample_1').DataTable().data();
+     $.each(table, function (i, item) {
+         $('#select_target_' + item.id).prop('checked',true);
+     });
+});
+
+// 取消全选
+$('#select_all_cancel').click(function () {
+     importData = [];
+     var table = $('#sample_1').DataTable().data();
+     $.each(table, function (i, item) {
+            $('#select_target_' + item.id).prop('checked',false)
+     });
+});
+

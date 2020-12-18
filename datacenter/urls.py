@@ -168,8 +168,9 @@ urlpatterns = [
     url(r'^target_statistic_del/$', target_statistic_del),
     url(r'^statistic_report/$', statistic_report),
     url(r'^get_statistic_report/$', get_statistic_report),
+    url(r'^target_insert_data/$', target_insert_data),
 
-    # 发电量独立功能
+    # 上网电量提取独立功能
     url(r'^electric_energy/(?P<funid>\d+)/$', electric_energy),
     url(r'^get_electric_energy/$', get_electric_energy),
     url(r'^save_electric_energy/$', save_electric_energy),
