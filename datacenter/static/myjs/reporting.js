@@ -255,6 +255,8 @@ $(document).ready(function () {
             {"data": "target_code"},
             {"data": "target_businesstypename"},
             {"data": "target_unitname"},
+            {"data": "todayvalue"},
+            {"data": "judgevalue"},
             {"data": "curvalue"},
             {"data": "cumulativemonth"},
             {"data": "cumulativequarter"},
@@ -280,6 +282,29 @@ $(document).ready(function () {
                 "visible": false,
             },
             {
+                "targets": -7,
+                "mRender": function (data, type, full) {
+                    //发布之后，把输入框设置为不可修改，取消发布后可以修改，通过字段
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
+                    return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table1_todayvalue_" + full.id + "' name='table1_todayvalue'  type='number' value='" + data + "'></input>"
+                }
+            },
+            {
+                "targets": -6,
+                "mRender": function (data, type, full) {
+                    //发布之后，把输入框设置为不可修改，取消发布后可以修改，通过字段
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
+                    return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table1_judgevalue_" + full.id + "' name='table1_judgevalue'  type='number' value='" + data + "'></input>"
+
+                }
+            },
+            {
                 "targets": -5,
                 "mRender": function (data, type, full) {
                     //发布之后，把输入框设置为不可修改，取消发布后可以修改，通过字段
@@ -288,7 +313,7 @@ $(document).ready(function () {
                         disabled = "disabled"
                     }
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table1_curvalue_" + full.id + "' name='table1_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
                         return "<input " + disabled + " class='table1_curvaluedate' style='margin-top:-5px;width:134px;height:24px;' id='table1_curvaluedate_" + full.id + "' name='table1_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
@@ -401,9 +426,49 @@ $(document).ready(function () {
         },
     });
     // 填当前值，月累积、季累积、半年累积、年累积自动累加
-    $('#sample_1 tbody').on('change', 'input[name="table1_curvalue"]', function () {
+    $('#sample_1 tbody').on('change', 'input[name="table1_todayvalue"]', function () {
         var table = $('#sample_1').DataTable();
         var data = table.row($(this).parents('tr')).data();
+        $('#table1_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table1_todayvalue_' + data.id).val())), math.bignumber(Number($('#table1_judgevalue_' + data.id).val())))));
+
+        // 累计值 月、季、半年、年
+        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+            $.ajax({
+                type: "POST",
+                url: "../../../ajax_cumulate/",
+                data: {
+                    cur_value: $('#table1_curvalue_' + data.id).val(),
+                    target_id: data.target_id,
+                    reporting_date: $('#reporting_date').val(),
+                    cycletype: $('#cycletype').val(),
+                },
+                success: function (ajax_data) {
+                    if (ajax_data.status == 1) {
+                        $('#table1_cumulativemonth_' + data.id).val(ajax_data.data.cumulativemonth);   // math.js精度计算
+                        $('#table1_cumulativequarter_' + data.id).val(ajax_data.data.cumulativequarter);
+                        $('#table1_cumulativehalfyear_' + data.id).val(ajax_data.data.cumulativehalfyear);
+                        $('#table1_cumulativeyear_' + data.id).val(ajax_data.data.cumulativeyear)
+                    } else {
+                        alert(ajax_data.data);
+                    }
+                },
+                error: function (e) {
+                    alert("页面出现错误，请于管理员联系。");
+                }
+            });
+        }
+        // 超过上限，低于下限标红
+        if ((data.target_upperlimit && Number($('#table1_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table1_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+            $('td', $(this).parents('tr')).css("color", "#0000FF");
+        } else {
+            $('td', $(this).parents('tr')).css("color", "#000000");
+        }
+    });
+
+    $('#sample_1 tbody').on('change', 'input[name="table1_judgevalue"]', function () {
+        var table = $('#sample_1').DataTable();
+        var data = table.row($(this).parents('tr')).data();
+        $('#table1_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table1_todayvalue_' + data.id).val())), math.bignumber(Number($('#table1_judgevalue_' + data.id).val())))));
 
         // 累计值 月、季、半年、年
         if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
@@ -455,6 +520,8 @@ $(document).ready(function () {
             {"data": "target_code"},
             {"data": "target_businesstypename"},
             {"data": "target_unitname"},
+            {"data": "todayvalue"},
+            {"data": "judgevalue"},
             {"data": "curvalue"},
             {"data": "cumulativemonth"},
             {"data": "cumulativequarter"},
@@ -481,6 +548,29 @@ $(document).ready(function () {
                 "visible": false,
             },
             {
+                "targets": -8,
+                "mRender": function (data, type, full) {
+                    //发布之后，把输入框设置为不可修改，取消发布后可以修改，通过字段
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
+                    return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table2_todayvalue_" + full.id + "' name='table2_todayvalue'  type='number' value='" + data + "'></input>"
+                }
+            },
+            {
+                "targets": -7,
+                "mRender": function (data, type, full) {
+                    //发布之后，把输入框设置为不可修改，取消发布后可以修改，通过字段
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
+                    return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table2_judgevalue_" + full.id + "' name='table2_judgevalue'  type='number' value='" + data + "'></input>"
+
+                }
+            },
+            {
                 "targets": -6,
                 "mRender": function (data, type, full) {
                     var disabled = "";
@@ -488,7 +578,7 @@ $(document).ready(function () {
                         disabled = "disabled"
                     }
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table2_curvalue_" + full.id + "' name='table2_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table2_curvalue_" + full.id + "' name='table2_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
                         return "<input " + disabled + " class='table2_curvaluedate'style='margin-top:-5px;width:134px;height:24px;' id='table2_curvaluedate_" + full.id + "' name='table2_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
@@ -607,9 +697,49 @@ $(document).ready(function () {
 
         },
     });
-    $('#sample_2 tbody').on('change', 'input[name="table2_curvalue"]', function () {
+    $('#sample_2 tbody').on('change', 'input[name="table2_todayvalue"]', function () {
         var table = $('#sample_2').DataTable();
         var data = table.row($(this).parents('tr')).data();
+        $('#table2_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table2_todayvalue_' + data.id).val())), math.bignumber(Number($('#table2_judgevalue_' + data.id).val())))));
+
+        // 累计值 月、季、半年、年
+        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+            $.ajax({
+                type: "POST",
+                url: "../../../ajax_cumulate/",
+                data: {
+                    cur_value: $('#table2_curvalue_' + data.id).val(),
+                    target_id: data.target_id,
+                    reporting_date: $('#reporting_date').val(),
+                    cycletype: $('#cycletype').val(),
+                },
+                success: function (ajax_data) {
+                    if (ajax_data.status == 1) {
+                        $('#table2_cumulativemonth_' + data.id).val(ajax_data.data.cumulativemonth);   // math.js精度计算
+                        $('#table2_cumulativequarter_' + data.id).val(ajax_data.data.cumulativequarter);
+                        $('#table2_cumulativehalfyear_' + data.id).val(ajax_data.data.cumulativehalfyear);
+                        $('#table2_cumulativeyear_' + data.id).val(ajax_data.data.cumulativeyear)
+                    } else {
+                        alert(ajax_data.data);
+                    }
+                },
+                error: function (e) {
+                    alert("页面出现错误，请于管理员联系。");
+                }
+            });
+        }
+        // 超过上限，低于下限标红
+        if ((data.target_upperlimit && Number($('#table2_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table2_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+            $('td', $(this).parents('tr')).css("color", "#0000FF");
+        } else {
+            $('td', $(this).parents('tr')).css("color", "#000000");
+        }
+    });
+
+    $('#sample_2 tbody').on('change', 'input[name="table2_judgevalue"]', function () {
+        var table = $('#sample_2').DataTable();
+        var data = table.row($(this).parents('tr')).data();
+        $('#table2_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table2_todayvalue_' + data.id).val())), math.bignumber(Number($('#table2_judgevalue_' + data.id).val())))));
 
         // 累计值 月、季、半年、年
         if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
@@ -687,6 +817,8 @@ $(document).ready(function () {
             {"data": "target_code"},
             {"data": "target_businesstypename"},
             {"data": "target_unitname"},
+            {"data": "todayvalue"},
+            {"data": "judgevalue"},
             {"data": "curvalue"},
             {"data": "cumulativemonth"},
             {"data": "cumulativequarter"},
@@ -717,6 +849,27 @@ $(document).ready(function () {
                 "visible": false,
             },
             {
+                "targets": -8,
+                "mRender": function (data, type, full) {
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
+                    return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table3_todayvalue_" + full.id + "' name='table3_todayvalue'  type='number' value='" + data + "'></input>"
+                }
+            },
+            {
+                "targets": -7,
+                "mRender": function (data, type, full) {
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
+                    return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table3_judgevalue_" + full.id + "' name='table3_judgevalue'  type='number' value='" + data + "'></input>"
+
+                }
+            },
+            {
                 "targets": -6,
                 "mRender": function (data, type, full) {
                     var disabled = "";
@@ -724,7 +877,7 @@ $(document).ready(function () {
                         disabled = "disabled"
                     }
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
                         return "<input " + disabled + " class='table3_curvaluedate' style='margin-top:-5px;width:134px;height:24px;' id='table3_curvaluedate_" + full.id + "' name='table3_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
@@ -842,9 +995,11 @@ $(document).ready(function () {
         },
 
     });
-    $('#sample_3 tbody').on('change', 'input[name="table3_curvalue"]', function () {
+    $('#sample_3 tbody').on('change', 'input[name="table3_todayvalue"]', function () {
         var table = $('#sample_3').DataTable();
         var data = table.row($(this).parents('tr')).data();
+        $('#table3_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table3_todayvalue_' + data.id).val())), math.bignumber(Number($('#table3_judgevalue_' + data.id).val())))));
+
 
         // 累计值 月、季、半年、年
         if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
@@ -880,6 +1035,49 @@ $(document).ready(function () {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
+
+    $('#sample_3 tbody').on('change', 'input[name="table3_judgevalue"]', function () {
+        var table = $('#sample_3').DataTable();
+        var data = table.row($(this).parents('tr')).data();
+        $('#table3_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table3_todayvalue_' + data.id).val())), math.bignumber(Number($('#table3_judgevalue_' + data.id).val())))));
+
+
+        // 累计值 月、季、半年、年
+        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+            $.ajax({
+                type: "POST",
+                url: "../../../ajax_cumulate/",
+                data: {
+                    cur_value: $('#table3_curvalue_' + data.id).val(),
+                    target_id: data.target_id,
+                    reporting_date: $('#reporting_date').val(),
+                    cycletype: $('#cycletype').val(),
+                },
+                success: function (ajax_data) {
+                    if (ajax_data.status == 1) {
+                        $('#table3_cumulativemonth_' + data.id).val(ajax_data.data.cumulativemonth);   // math.js精度计算
+                        $('#table3_cumulativequarter_' + data.id).val(ajax_data.data.cumulativequarter);
+                        $('#table3_cumulativehalfyear_' + data.id).val(ajax_data.data.cumulativehalfyear);
+                        $('#table3_cumulativeyear_' + data.id).val(ajax_data.data.cumulativeyear)
+                    } else {
+                        alert(ajax_data.data);
+                    }
+                },
+                error: function (e) {
+                    alert("页面出现错误，请于管理员联系。");
+                }
+            });
+        }
+
+        // 超过上限，低于下限标红
+        if ((data.target_upperlimit && Number($('#table3_curvalue_' + data.id).val()) > data.target_upperlimit) || (data.target_lowerlimit && Number($('#table3_curvalue_' + data.id).val()) < data.target_lowerlimit)) {
+            $('td', $(this).parents('tr')).css("color", "#0000FF");
+        } else {
+            $('td', $(this).parents('tr')).css("color", "#000000");
+        }
+    });
+
+
     $('#sample_3 tbody').on('click', 'button#edit', function () {
         $("#formuladiv").empty();
         var table = $('#sample_3').DataTable();
@@ -993,6 +1191,8 @@ $(document).ready(function () {
             {"data": "target_name"},
             {"data": "zerodata"},
             {"data": "twentyfourdata"},
+            {"data": "todayvalue"},
+            {"data": "judgevalue"},
             {"data": "curvalue"},
             {"data": "cumulativemonth"},
             {"data": "cumulativequarter"},
@@ -1045,6 +1245,8 @@ $(document).ready(function () {
             {"data": "twentyfourdata"},
             {"data": "metervalue"},
             {"data": "target_magnification"},
+            {"data": "todayvalue"},
+            {"data": "judgevalue"},
             {"data": "curvalue"},
             {"data": "cumulativemonth"},
             {"data": "cumulativequarter"},
@@ -1059,47 +1261,68 @@ $(document).ready(function () {
                 "visible": false,
             },
             {
+                "targets": -15,
+                "visible": false,
+            },
+            {
+                "targets": -14,
+                "visible": false,
+            },
+            {
                 "targets": -13,
                 "visible": false,
             },
             {
                 "targets": -12,
-                "visible": false,
-            },
-            {
-                "targets": -11,
-                "visible": false,
-            },
-            {
-                "targets": -10,
                 "mRender": function (data, type, full) {
                     var disabled = "";
                     if (full.releasestate=='1' || full.meterchangedata_id){
                         disabled = "disabled"
                     }
-                    return "<input " + disabled + "   style='margin-top:-5px;width:100px;height:24px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
+                    return "<input " + disabled + "   style='margin-top:-5px;width:90px;height:24px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
+                }
+            },
+            {
+                "targets": -11,
+                "mRender": function (data, type, full) {
+                    var disabled = "";
+                    if (full.releasestate=='1' || full.meterchangedata_id){
+                        disabled = "disabled"
+                    }
+                    return "<input " + disabled + "  style='margin-top:-5px;width:90px;height:24px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
+                }
+            },
+            {
+                "targets": -10,
+                "mRender": function (data, type, full) {
+                    return "<input disabled style='margin-top:-5px;width:70px;height:24px;' id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -9,
                 "mRender": function (data, type, full) {
-                    var disabled = "";
-                    if (full.releasestate=='1' || full.meterchangedata_id){
-                        disabled = "disabled"
-                    }
-                    return "<input " + disabled + "  style='margin-top:-5px;width:100px;height:24px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:70px;height:24px;' id='table5_magnification_" + full.id + "' name='table5_magnification'  type='text' value='" + full.target_magnification + "'></input>"
                 }
             },
             {
                 "targets": -8,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
+                    var disabled = "";
+                    if (full.releasestate=='1' || full.meterchangedata_id){
+                        disabled = "disabled"
+                    }
+                    return "<input " + disabled + " style='margin-top:-5px;width:80px;height:24px;' id='table5_todayvalue_" + full.id + "' name='table5_todayvalue'  type='number' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -7,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_magnification_" + full.id + "' name='table5_magnification'  type='text' value='" + full.target_magnification + "'></input>"
+                    var disabled = "";
+                    if (full.releasestate=='1' || full.meterchangedata_id){
+                        disabled = "disabled"
+                    }
+                    return "<input " + disabled + " style='margin-top:-5px;width:80px;height:24px;' id='table5_judgevalue_" + full.id + "' name='table5_judgevalue'  type='number' value='" + data + "'></input>"
+
                 }
             },
             {
@@ -1110,7 +1333,7 @@ $(document).ready(function () {
                         disabled = "disabled"
                     }
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input " + disabled + "   style='margin-top:-5px;width:100px;height:24px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
                         return "<input " + disabled + "   class='table5_curvaluedate' style='margin-top:-5px;width:100px;height:24px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
@@ -1237,7 +1460,9 @@ $(document).ready(function () {
 
         $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())), math.bignumber(Number($('#table5_zerodata_' + data.id).val())))));
         var curValue = math.number(math.multiply(math.bignumber(Number($('#table5_metervalue_' + data.id).val())), math.bignumber(Number(data.target_magnification))));
-        $('#table5_curvalue_' + data.id).val(curValue);
+        $('#table5_todayvalue_' + data.id).val(curValue);
+        $('#table5_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table5_todayvalue_' + data.id).val())), math.bignumber(Number($('#table5_judgevalue_' + data.id).val())))));
+
 
         // 累计值 月、季、半年、年
         if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
@@ -1281,7 +1506,8 @@ $(document).ready(function () {
         var data = table.row($(this).parents('tr')).data();
         $('#table5_metervalue_' + data.id).val(math.number(math.subtract(math.bignumber(Number($('#table5_twentyfourdata_' + data.id).val())), math.bignumber(Number($('#table5_zerodata_' + data.id).val())))));
         var curValue = math.number(math.multiply(math.bignumber(Number($('#table5_metervalue_' + data.id).val())), math.bignumber(Number(data.target_magnification))));
-        $('#table5_curvalue_' + data.id).val(curValue)
+        $('#table5_todayvalue_' + data.id).val(curValue);
+        $('#table5_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table5_todayvalue_' + data.id).val())), math.bignumber(Number($('#table5_judgevalue_' + data.id).val())))));
 
         // 累计值 月、季、半年、年
         if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
@@ -1318,9 +1544,11 @@ $(document).ready(function () {
             $('td', $(this).parents('tr')).css("color", "#000000");
         }
     });
-    $('#sample_5 tbody').on('change', 'input[name="table5_curvalue"]', function () {
+    $('#sample_5 tbody').on('change', 'input[name="table5_todayvalue"]', function () {
         var table = $('#sample_5').DataTable();
         var data = table.row($(this).parents('tr')).data();
+        $('#table5_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table5_todayvalue_' + data.id).val())), math.bignumber(Number($('#table5_judgevalue_' + data.id).val())))));
+
         // 累计值 月、季、半年、年
         if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
@@ -1348,6 +1576,44 @@ $(document).ready(function () {
             });
         }
     });
+
+
+    $('#sample_5 tbody').on('change', 'input[name="table5_judgevalue"]', function () {
+        var table = $('#sample_5').DataTable();
+        var data = table.row($(this).parents('tr')).data();
+        // 累计值 月、季、半年、年
+        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+            $('#table5_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table5_todayvalue_' + data.id).val())), math.bignumber(Number($('#table5_judgevalue_' + data.id).val())))));
+
+            $.ajax({
+                type: "POST",
+                url: "../../../ajax_cumulate/",
+                data: {
+                    cur_value: $('#table5_curvalue_' + data.id).val(),
+                    target_id: data.target_id,
+                    reporting_date: $('#reporting_date').val(),
+                    cycletype: $('#cycletype').val(),
+                },
+                success: function (ajax_data) {
+                    if (ajax_data.status == 1) {
+                        $('#table5_cumulativemonth_' + data.id).val(ajax_data.data.cumulativemonth);   // math.js精度计算
+                        $('#table5_cumulativequarter_' + data.id).val(ajax_data.data.cumulativequarter);
+                        $('#table5_cumulativehalfyear_' + data.id).val(ajax_data.data.cumulativehalfyear);
+                        $('#table5_cumulativeyear_' + data.id).val(ajax_data.data.cumulativeyear)
+                    } else {
+                        alert(ajax_data.data);
+                    }
+                },
+                error: function (e) {
+                    alert("页面出现错误，请于管理员联系。");
+                }
+            });
+        }
+    });
+
+
+
+
     // 电表走字换表
     $('#sample_5 tbody').on('click', 'button#edit', function () {
         var data5 = $('#sample_5').DataTable().data();
@@ -1362,6 +1628,9 @@ $(document).ready(function () {
         $("#id").val(data.id);
         $("#target_id").val(data.target_id);
         $("#cumulative").val(data.target_cumulative);
+        $("#todayvalue").val(data.todayvalue);
+        $("#judgevalue").val(data.judgevalue);
+
         $("#curvalue").val(data.curvalue);
         $("#cumulativemonth").val(data.cumulativemonth);
         $("#cumulativequarter").val(data.cumulativequarter);
@@ -1430,9 +1699,10 @@ $(document).ready(function () {
             var id = $("#id").val();
             var target_id = $("#target_id").val();
             var cumulative = $("#cumulative").val();
-            var curvalue = $("#finalvalue").val()
+            var curvalue = $("#finalvalue").val();
 
             $("#table5_magnification_" + id).val($("#newtable_magnification").val());
+            $("#table5_todayvalue_" + id).val(curvalue);
             $("#table5_curvalue_" + id).val(curvalue);
             $("#table5_zerodata_" + id).val($("#oldtable_zerodata").val());
             $("#table5_twentyfourdata_" + id).val($("#newtable_twentyfourdata").val());
@@ -1701,6 +1971,8 @@ $(document).ready(function () {
             savedata.push({
                 "id": item.id,
                 "target_id": item.target_id,
+                "todayvalue": $('#table1_todayvalue_' + item.id).val(),
+                "judgevalue": $('#table1_judgevalue_' + item.id).val(),
                 "curvalue": $('#table1_curvalue_' + item.id).val(),
                 "curvaluedate": $('#table1_curvaluedate_' + item.id).val(),
                 "curvaluetext": $('#table1_curvaluetext_' + item.id).val(),
@@ -1785,6 +2057,8 @@ $(document).ready(function () {
             savedata.push({
                 "id": item.id,
                 "target_id": item.target_id,
+                "todayvalue": $('#table2_todayvalue_' + item.id).val(),
+                "judgevalue": $('#table2_judgevalue_' + item.id).val(),
                 "curvalue": $('#table2_curvalue_' + item.id).val(),
                 "curvaluedate": $('#table2_curvaluedate_' + item.id).val(),
                 "curvaluetext": $('#table2_curvaluetext_' + item.id).val(),
@@ -1913,6 +2187,8 @@ $(document).ready(function () {
             savedata.push({
                 "id": item.id,
                 "target_id": item.target_id,
+                "todayvalue": $('#table3_todayvalue_' + item.id).val(),
+                "judgevalue": $('#table3_judgevalue_' + item.id).val(),
                 "curvalue": $('#table3_curvalue_' + item.id).val(),
                 "curvaluedate": $('#table3_curvaluedate_' + item.id).val(),
                 "curvaluetext": $('#table3_curvaluetext_' + item.id).val(),
@@ -2041,6 +2317,8 @@ $(document).ready(function () {
                 "zerodata": $('#table5_zerodata_' + item.id).val(),
                 "twentyfourdata": $('#table5_twentyfourdata_' + item.id).val(),
                 "metervalue": $('#table5_metervalue_' + item.id).val(),
+                "todayvalue": $('#table5_todayvalue_' + item.id).val(),
+                "judgevalue": $('#table5_judgevalue_' + item.id).val(),
                 "curvalue": $('#table5_curvalue_' + item.id).val(),
                 "curvaluedate": $('#table5_curvaluedate_' + item.id).val(),
                 "curvaluetext": $('#table5_curvaluetext_' + item.id).val(),

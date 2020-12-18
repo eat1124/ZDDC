@@ -394,11 +394,17 @@ $(document).ready(function () {
             $('#cumulate_weight').hide();
             $('#upperlimit_lowerlimit').hide();
             $('#magnification_digit').hide();
+            $('#calculate').hide();
+            $('#calculate_analysis').hide();
+            $('#data_from_div').hide();
         }
         if ($('#datatype option:selected').text() == '数值') {
             $('#cumulate_weight').show();
             $('#upperlimit_lowerlimit').show();
             $('#magnification_digit').show();
+            $('#calculate').show();
+            $('#calculate_analysis').show();
+            $('#data_from_div').show();
         }
 
         ajaxFunction();
