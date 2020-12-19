@@ -233,6 +233,7 @@
                             <th> 指标名称</th>
                             <th> 指标代码</th>
                             <th> 周期</th>
+                            <th> 累计类型</th>
                         </tr>
                         </thead>
 
@@ -261,7 +262,7 @@
         $.ajaxSetup({
             data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
         });
-        var all_targets = {{ targets|safe }}
+
     </script>
 
     <link href="/static/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css"/>

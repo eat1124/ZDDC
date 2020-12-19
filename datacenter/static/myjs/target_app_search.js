@@ -181,29 +181,24 @@ $(document).ready(function () {
         $("#lowerlimit").val(data.lowerlimit);
         $("#datatype").val(data.datatype);
         $("#cumulative").val(data.cumulative);
-
         if (data.cumulative == '3') {
             $('#weight_target').val(data.weight_target).trigger('change').removeProp('disabled');
         } else {
             $('#weight_target').val('').trigger('change').prop('disabled', true);
         }
-
-
         $("#sort").val(data.sort);
         $("#unity").val(data.unity);
         $("#formula").val(data.formula);
-
         $("#cycle").val(data.cycle);
         $("#source").val(data.source);
-
         $("#source_content").val(data.source_content);
-
         $("#storage").val(data.storage);
         $("#storagetag").val(data.storagetag);
         $("#storagefields").val(data.storagefields);
         $("#is_repeat").val(data.is_repeat);
-
         $("#data_from").val(data.data_from);
+        $('#is_select').val(data.is_select);
+        $('#warn_range').val(data.warn_range);
         // 过滤出所有works
         $('#work_edit').empty();
 

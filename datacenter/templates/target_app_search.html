@@ -267,6 +267,20 @@
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">报警范围(%)</label>
+                                <div class="col-md-4">
+                                    <input id="warn_range" type="number" name="warn_range" class="form-control"
+                                           placeholder="" readonly>
+                                    <div class="form-control-focus"></div>
+                                </div>
+                                <label class="col-md-2 control-label">排序</label>
+                                <div class="col-md-4">
+                                    <input id="sort" type="number" name="sort" class="form-control"
+                                           placeholder="" readonly>
+                                    <div class="form-control-focus"></div>
+                                </div>
+                            </div>
                             <div class="form-group" id="magnification_digit">
                                 <label class="col-md-2 control-label"><span style="color:red; ">*</span>倍率</label>
                                 <div class="col-md-4">
@@ -289,10 +303,12 @@
                                            placeholder="" readonly>
                                     <div class="form-control-focus"></div>
                                 </div>
-                                <label class="col-md-2 control-label">排序</label>
+                                <label class="col-md-2 control-label">是否查询</label>
                                 <div class="col-md-4">
-                                    <input id="sort" type="number" name="sort" class="form-control"
-                                           placeholder="" readonly>
+                                    <select id="is_select" name="is_select" class="form-control" disabled>
+                                        <option value="yes">是</option>
+                                        <option value="no">否</option>
+                                    </select>
                                     <div class="form-control-focus"></div>
                                 </div>
                             </div>

@@ -10130,14 +10130,9 @@ def target_statistic(request, funid):
         # 周期类型
         cycle_list = DictList.objects.exclude(state="9").filter(dictindex_id=12)
 
-        targets = Target.objects.exclude(state="9").filter(
-            Q(adminapp__id=app_id) | Q(app__id=app_id)
-        ).values("id", "name", "cycletype")
-
         return render(request, 'target_statistic.html', {
             'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid, request),
-            "cycle_list": cycle_list, "targets": list(targets),  # 解决 remaining elements truncated
-            "app_id": app_id,
+            "cycle_list": cycle_list, "app_id": app_id,
         })
     else:
         return HttpResponseRedirect('/login')
@@ -10153,6 +10148,13 @@ def target_insert_data(request):
             print(e)
         targets = Target.objects.exclude(state="9").filter(Q(adminapp__id=app_id) | Q(app__id=app_id))
         all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
+        cumulative_dict = {
+            "0": "不累计",
+            "1": "求和",
+            "2": "算数平均",
+            "3": "加权平均",
+            "4": "非零算数平均",
+        }
         for target in targets:
             cycletype = target.cycletype
             if cycletype:
@@ -10160,12 +10162,12 @@ def target_insert_data(request):
                     if cycletype == str(dict['id']):
                         cycletype = dict['name']
                         break
-
             result.append({
                 "id": target.id,
                 "name": target.name,
                 "code": target.code,
                 "cycletype": cycletype,
+                "cumulative": cumulative_dict[target.cumulative]
             })
         return JsonResponse({"data": result})
 

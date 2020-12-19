@@ -257,16 +257,6 @@ function addOrEdit() {
     $('#static02').hide();
 }
 
-function displayTargets() {
-    $('#single_target').empty();
-    $('#multiple_targets').empty();
-
-    for (var i = 1; i < all_targets.length; i++) {
-        $('#single_target').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
-        $('#multiple_targets').append('<option value="' + all_targets[i].id + '">' + all_targets[i].name + '</option>')
-    }
-}
-
 getSearchStatistic();
 
 $('#search_new').click(function () {
@@ -300,10 +290,6 @@ $('#col_load').click(function () {
     } else {
         alert("列名未填写。");
     }
-});
-
-$('#static01').on("show.bs.modal", function () {
-    displayTargets();
 });
 
 $('#statistic_save').click(function () {
@@ -357,6 +343,8 @@ function loadtargetData() {
                 {"data": "name"},
                 {"data": "code"},
                 {"data": "cycletype"},
+                {"data": "cumulative"}
+
             ],
             "columnDefs": [{
                 "targets": 0,
