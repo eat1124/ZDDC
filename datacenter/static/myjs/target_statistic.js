@@ -350,17 +350,15 @@ function loadtargetData() {
                 "targets": 0,
                 "mRender": function (data, type, full) {
                     var checked = '';
-                    var exist_target_id = $('#exist_target').val().split(',');
+                    var exist_target = $('#exist_target').val().split(',');
                     var target_id = full.id.toString();
                     var target_name = full.name;
                     t_target = target_id + ':' + target_name;
-                    if (exist_target_id.indexOf(t_target) !=-1){
+                    if (exist_target.indexOf(t_target) !=-1){
                        checked = 'checked'
                     }
-                    var id = full.id;
-                    var target_name = full.name;
-                    var t_target = id + ':' + target_name;
-                    return "<input " + checked + " id='select_target_" + id + "' name='selecttarget' type='checkbox' class='checkboxes' value='" + t_target + "'/>"
+                    var t_target = full.id + ':' + full.name;
+                    return "<input " + checked + " id='select_target_" + full.id + "' name='selecttarget' type='checkbox' class='checkboxes' value='" + t_target + "'/>"
                 }
             }],
             "oLanguage": {
@@ -391,6 +389,15 @@ function loadtargetData() {
 var importData = [];
 $('#sample_1 tbody').on('click', 'input[name="selecttarget"]', function () {
     if ($(this).prop('checked')) {
+        var target_id = $(this).val().split(':')[0];
+        var target_name = $(this).val().split(':')[1];
+        for (var i = 0; i < importData.length; i++){
+            var exist_target_id = importData[i].split(':')[0];
+            var exist_target_name = importData[i].split(':')[1];
+            if (target_id == exist_target_id && target_name != exist_target_name){
+                importData.splice(i, 1)
+            }
+        }
         importData.push($(this).val());
     } else {
         for (var i = 0; i < importData.length; i++) {
@@ -405,12 +412,12 @@ $('#sample_1 tbody').on('click', 'input[name="selecttarget"]', function () {
 $('#collect').click(function () {
     loadtargetData();
     $('#insert_target').modal('show');
-    var exist_target_id = $('#exist_target').val();
-    if (exist_target_id){
-        exist_target_id = exist_target_id.split(',');
-        for (var i=0; i < exist_target_id.length; i++){
-            if (importData.indexOf(exist_target_id[i]) == -1){
-                importData.push(exist_target_id[i])
+    var exist_target = $('#exist_target').val();
+    if (exist_target){
+        exist_target = exist_target.split(',');
+        for (var i=0; i < exist_target.length; i++){
+            if (importData.indexOf(exist_target[i]) == -1){
+                importData.push(exist_target[i])
             }
         }
     }
@@ -432,14 +439,14 @@ $('#addapp_save').click(function () {
         alert("请至少选择一个指标");
     } else {
         var target_list = [];
-        var exist_target_id = [];
+        var exist_target = [];
         $('#insert_target').modal('hide');
         $('#new_target').empty();
         for (var i = 0; i < importData.length; i++){
             var target_id = importData[i].split(':')[0];
             var target_name = importData[i].split(':')[1];
             target_list.push(target_name);
-            exist_target_id.push(target_id + ':' + target_name);
+            exist_target.push(target_id + ':' + target_name);
             $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target_id + '">\n' +
                 '    <div class="col-md-4" style="padding: 0">\n' +
                 '        <input type="text" readonly class="form-control" value="' + target_name + '">\n' +
@@ -462,7 +469,7 @@ $('#addapp_save').click(function () {
                 '</div>');
         }
         $('#target_data').val(target_list);
-        $('#exist_target').val(exist_target_id);
+        $('#exist_target').val(exist_target);
     }
 });
 
