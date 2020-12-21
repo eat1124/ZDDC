@@ -389,6 +389,7 @@ $(document).ready(function () {
             }
         }
 
+
         if ($('#datatype option:selected').text() == '日期' || $('#datatype option:selected').text() == '文本') {
             // 数值类型
             $('#cumulate_weight').hide();
@@ -405,6 +406,12 @@ $(document).ready(function () {
             $('#calculate').show();
             $('#calculate_analysis').show();
             $('#data_from_div').show();
+
+            if (['录入','提取', '电表走字'].indexOf(selected_operation_type) != -1) {
+                $('#calculate_analysis').hide();
+                $('#data_from_div').hide();
+                $('#calculate').hide();
+            }
         }
 
         ajaxFunction();
