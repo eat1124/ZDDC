@@ -674,6 +674,10 @@ $(document).ready(function () {
                 $('td', row).css("color", "#0000FF");
             }
 
+            if (data.todayvalue == -9999 || data.curvalue == -9999){
+                $('td', row).css("color", "#FF0000");
+            }
+
             if (data.releasestate == '0') {
                 $("#save2").show();
                 $("#del2").show();
