@@ -975,6 +975,9 @@ $(document).ready(function () {
             if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)){
                 $('td', row).css("color", "#0000FF");
             }
+            if (data.todayvalue == -9999 || data.curvalue == -9999){
+                $('td', row).css("color", "#FF0000");
+            }
 
             if (data.releasestate == '0') {
                 $("#save3").show();
@@ -1283,7 +1286,7 @@ $(document).ready(function () {
                     if (full.releasestate=='1' || full.meterchangedata_id){
                         disabled = "disabled"
                     }
-                    return "<input " + disabled + "   style='margin-top:-5px;width:90px;height:24px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
+                    return "<input " + disabled + "   style='margin-top:-5px;width:100px;height:24px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
                 }
             },
             {
@@ -1293,19 +1296,19 @@ $(document).ready(function () {
                     if (full.releasestate=='1' || full.meterchangedata_id){
                         disabled = "disabled"
                     }
-                    return "<input " + disabled + "  style='margin-top:-5px;width:90px;height:24px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
+                    return "<input " + disabled + "  style='margin-top:-5px;width:100px;height:24px;'id='table5_twentyfourdata_" + full.id + "' name='table5_twentyfourdata'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -10,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style='margin-top:-5px;width:70px;height:24px;' id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_metervalue_" + full.id + "' name='table5_metervalue'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -9,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style='margin-top:-5px;width:70px;height:24px;' id='table5_magnification_" + full.id + "' name='table5_magnification'  type='text' value='" + full.target_magnification + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:80px;height:24px;' id='table5_magnification_" + full.id + "' name='table5_magnification'  type='text' value='" + full.target_magnification + "'></input>"
                 }
             },
             {
@@ -1337,38 +1340,38 @@ $(document).ready(function () {
                         disabled = "disabled"
                     }
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input disabled style='margin-top:-5px;width:80px;height:24px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
-                        return "<input " + disabled + "   class='table5_curvaluedate' style='margin-top:-5px;width:100px;height:24px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        return "<input " + disabled + "   class='table5_curvaluedate' style='margin-top:-5px;width:80px;height:24px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                     }
                     if (full.target_datatype == 'text') {
-                        return "<input " + disabled + "   style='margin-top:-5px;width:100px;height:24px;' id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        return "<input " + disabled + "   style='margin-top:-5px;width:80px;height:24px;' id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
                     }
                 }
             },
             {
                 "targets": -5,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_cumulativemonth_" + full.id + "' name='table5_cumulativemonth'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:90px;height:24px;' id='table5_cumulativemonth_" + full.id + "' name='table5_cumulativemonth'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -4,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_cumulativequarter_" + full.id + "' name='table5_cumulativequarter'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:90px;height:24px;' id='table5_cumulativequarter_" + full.id + "' name='table5_cumulativequarter'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -3,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_cumulativehalfyear_" + full.id + "' name='table5_cumulativehalfyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:90px;height:24px;' id='table5_cumulativehalfyear_" + full.id + "' name='table5_cumulativehalfyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -2,
                 "mRender": function (data, type, full) {
-                    return "<input disabled  style='margin-top:-5px;width:100px;height:24px;'id='table5_cumulativeyear_" + full.id + "' name='table5_cumulativeyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled  style='margin-top:-5px;width:90px;height:24px;'id='table5_cumulativeyear_" + full.id + "' name='table5_cumulativeyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
