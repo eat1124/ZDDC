@@ -9816,7 +9816,7 @@ def get_report_search_data(request):
             pass
 
         cycles = DictList.objects.exclude(state="9").filter(dictindex_id=12).values()
-        report_submits = ReportSubmit.objects.filter(state="1").order_by("-id").values(
+        report_submits = ReportSubmit.objects.filter(state="1").order_by("-report_time").values(
             "id", "app_id", "report_model_id", "report_model__name", "state", "person", "write_time", "report_time",
             "report_model__report_type", "report_model__code", "report_model__file_name"
         )
@@ -9902,6 +9902,7 @@ def get_report_search_data(request):
                                     "relative_file_name": app.code + '/' + report_submit["report_model__file_name"],
                                     "report_server": report_server,
                                     "reporting_date": "{0:%Y-%m-%d}".format(report_submit["report_time"]) if report_submit["report_time"] else "",
+                                    "report_type_id": report_type,
                                 })
                         report_model_info["data"] = report_submit_list
                         report_model_list.append(report_model_info)

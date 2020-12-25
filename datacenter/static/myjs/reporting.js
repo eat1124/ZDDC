@@ -1318,7 +1318,7 @@ $(document).ready(function () {
                     if (full.releasestate=='1' || full.meterchangedata_id){
                         disabled = "disabled"
                     }
-                    return "<input " + disabled + " style='margin-top:-5px;width:80px;height:24px;' id='table5_todayvalue_" + full.id + "' name='table5_todayvalue'  type='number' value='" + data + "'></input>"
+                    return "<input " + disabled + " style='margin-top:-5px;width:90px;height:24px;' id='table5_todayvalue_" + full.id + "' name='table5_todayvalue'  type='number' value='" + data + "'></input>"
                 }
             },
             {
@@ -1340,13 +1340,13 @@ $(document).ready(function () {
                         disabled = "disabled"
                     }
                     if (full.target_datatype == 'numbervalue') {
-                        return "<input disabled style='margin-top:-5px;width:80px;height:24px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
+                        return "<input disabled style='margin-top:-5px;width:90px;height:24px;' id='table5_curvalue_" + full.id + "' name='table5_curvalue'  type='number' value='" + data + "'></input>"
                     }
                     if (full.target_datatype == 'date') {
-                        return "<input " + disabled + "   class='table5_curvaluedate' style='margin-top:-5px;width:80px;height:24px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                        return "<input " + disabled + "   class='table5_curvaluedate' style='margin-top:-5px;width:90px;height:24px;' id='table5_curvaluedate_" + full.id + "' name='table5_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
                     }
                     if (full.target_datatype == 'text') {
-                        return "<input " + disabled + "   style='margin-top:-5px;width:80px;height:24px;' id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                        return "<input " + disabled + "   style='margin-top:-5px;width:90px;height:24px;' id='table5_curvaluetext_" + full.id + "' name='table5_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
                     }
                 }
             },

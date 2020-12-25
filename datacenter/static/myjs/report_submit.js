@@ -261,7 +261,63 @@ $(document).ready(function() {
         "columnDefs": [{
             "targets": -4,
             "mRender": function(data, type, full) {
-                return "<a href='http://" + full.report_server + "/webroot/decision/view/report?viewlet=" + full.relative_file_name + "&curdate=" + $('#reporting_date').val()  + "&op=write" + "' target='_blank'>" + full.name + "</a>"
+                var reporting_date = $('#reporting_date').val();
+                // 月报
+                if (full.report_type_id == 23){
+                     var curYear = reporting_date.split("-") [0];
+                     var curMonth = reporting_date.split("-") [1];
+                     return "<a href='http://" + full.report_server + "/webroot/decision/view/report?viewlet=" + full.relative_file_name +
+                        "&curYear=" + curYear + "&curMonth=" + curMonth  + "&op=write" + "' target='_blank'>" + full.name + "</a>"
+                }
+                // 季报
+                if (full.report_type_id == 24){
+                    // 2020
+                    var curYear = reporting_date.split("-") [0];
+                    // 03
+                    var season = reporting_date.split("-") [1];
+                    var curSeason = '';
+                    if (season == '03'){
+                        curSeason = 1
+                    }
+                    else if (season == '06'){
+                        curSeason = 2
+                    }
+                    else if (season == '09'){
+                        curSeason = 3
+                    }
+                    else {
+                        curSeason = 4
+                    }
+                     return "<a href='http://" + full.report_server + "/webroot/decision/view/report?viewlet=" + full.relative_file_name +
+                        "&curYear=" + curYear + "&curSeason=" + curSeason  + "&op=write" + "' target='_blank'>" + full.name + "</a>"
+                }
+                // 半年报
+                if (full.report_type_id == 25){
+                    // 2020
+                    var curYear = reporting_date.split("-") [0];
+                    // 06
+                    var halfyear = reporting_date.split("-") [1];
+                    var curHalfyear = '';
+                    if (halfyear == '06'){
+                        curHalfyear = 1
+                    }else {
+                        curHalfyear = 2
+                    }
+                    return "<a href='http://" + full.report_server + "/webroot/decision/view/report?viewlet=" + full.relative_file_name +
+                        "&curYear=" + curYear + "&curHalfyear=" + curHalfyear  + "&op=write" + "' target='_blank'>" + full.name + "</a>"
+                }
+                // 年报
+                if (full.report_type_id == 26){
+                    // 2020
+                    var curYear = reporting_date.split("-") [0];
+                    return "<a href='http://" + full.report_server + "/webroot/decision/view/report?viewlet=" + full.relative_file_name +
+                        "&curYear=" + curYear + "&op=write" + "' target='_blank'>" + full.name + "</a>"
+                }
+                // 日报
+                else {
+                    return "<a href='http://" + full.report_server + "/webroot/decision/view/report?viewlet=" + full.relative_file_name +
+                    "&curdate=" + $('#reporting_date').val()  + "&op=write" + "' target='_blank'>" + full.name + "</a>"
+                }
             }
         }, {
             "targets": -2,
