@@ -350,11 +350,13 @@ function loadtargetData() {
                 "targets": 0,
                 "mRender": function (data, type, full) {
                     var checked = '';
+                    var exist_target_id = [];
                     var exist_target = $('#exist_target').val().split(',');
+                    for (var i=0; i < exist_target.length; i++){
+                        exist_target_id.push(exist_target[i].split(':')[0])
+                    }
                     var target_id = full.id.toString();
-                    var target_name = full.name;
-                    t_target = target_id + ':' + target_name;
-                    if (exist_target.indexOf(t_target) !=-1){
+                    if (exist_target_id.indexOf(target_id) !=-1){
                        checked = 'checked'
                     }
                     var t_target = full.id + ':' + full.name;
@@ -389,19 +391,10 @@ function loadtargetData() {
 var importData = [];
 $('#sample_1 tbody').on('click', 'input[name="selecttarget"]', function () {
     if ($(this).prop('checked')) {
-        var target_id = $(this).val().split(':')[0];
-        var target_name = $(this).val().split(':')[1];
-        for (var i = 0; i < importData.length; i++){
-            var exist_target_id = importData[i].split(':')[0];
-            var exist_target_name = importData[i].split(':')[1];
-            if (target_id == exist_target_id && target_name != exist_target_name){
-                importData.splice(i, 1)
-            }
-        }
         importData.push($(this).val());
     } else {
         for (var i = 0; i < importData.length; i++) {
-            if (importData[i] == $(this).val()) {
+            if (importData[i] == $(this).val() || importData[i].split(':')[0] == $(this).val().split(':')[0]) {
                 importData.splice(i, 1);
             }
         }
@@ -430,6 +423,13 @@ $('#addapp_save').click(function () {
     $.each(table, function (i, item) {
         if ($('#select_target_' + item.id).prop('checked')) {
             var t_name = item.id + ':' + item.name;
+            for (var i = 0; i < importData.length; i++){
+                var exist_target_id = importData[i].split(':')[0];
+                var exist_target_name = importData[i].split(':')[1];
+                if (item.id == exist_target_id && item.name != exist_target_name){
+                    importData.splice(i, 1)
+                }
+            }
             if (importData.indexOf(t_name) == -1 ){
                 importData.push(t_name);
             }
@@ -473,20 +473,30 @@ $('#addapp_save').click(function () {
     }
 });
 
-// 全选
+// 本页全选
 $('#select_all_target').click(function () {
      var table = $('#sample_1').DataTable().data();
      $.each(table, function (i, item) {
          $('#select_target_' + item.id).prop('checked',true);
+         if ($('#select_target_' + item.id).prop('checked')){
+             importData.push(item.id + ':' + item.name)
+         }
+
      });
 });
 
 // 取消全选
 $('#select_all_cancel').click(function () {
-     importData = [];
-     var table = $('#sample_1').DataTable().data();
-     $.each(table, function (i, item) {
-            $('#select_target_' + item.id).prop('checked',false)
-     });
+    var table = $('#sample_1').DataTable().data();
+    $.each(table, function (i, item) {
+        $('#select_target_' + item.id).prop('checked',false);
+        if ($('#select_target_' + item.id).prop('checked') == false){
+            for (var i = 0; i < importData.length; i++) {
+                if (importData[i] == $('#select_target_' + item.id).val()) {
+                    importData.splice(i, 1);
+                }
+            }
+        }
+    });
 });
 

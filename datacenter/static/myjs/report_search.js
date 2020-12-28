@@ -131,9 +131,9 @@ $(document).ready(function () {
                         var halfyear = reporting_date.split("-") [1];
                         var curHalfyear = '';
                         if (halfyear == '06'){
-                            curHalfyear = 1
+                            curHalfyear = '上'
                         }else {
-                            curHalfyear = 2
+                            curHalfyear = '下'
                         }
                         return "<a href='http://" + full.report_server + "/webroot/decision/view/report?viewlet=" + full.relative_file_name +
                             "&curYear=" + curYear + "&curHalfyear=" + curHalfyear  + "&op=write" + "' target='_blank'>" + full.name + "</a>"
