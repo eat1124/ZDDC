@@ -5898,12 +5898,12 @@ def single_reextract(request):
                                             if row[0] is not None:
                                                 rowvalue += row[0]
                                                 rownum += 1
-                                        extractdata.curvalue = rowvalue / rownum
+                                        extractdata.todayvalue = rowvalue / rownum
                                     else:
-                                        extractdata.curvalue = rows[0][0]
-                                    extractdata.curvalue = decimal.Decimal(
-                                        float(extractdata.curvalue) * float(c_target.magnification))
-                                    extractdata.curvalue = round(extractdata.curvalue, c_target.digit)
+                                        extractdata.todayvalue = rows[0][0]
+                                    extractdata.todayvalue = decimal.Decimal(
+                                        float(extractdata.todayvalue) * float(c_target.magnification))
+                                    extractdata.todayvalue = round(extractdata.todayvalue, c_target.digit)
                                 except:
                                     pass
                         if not rows or not c_target.cycle:  # 没取到数据 或者 没有取数周期，根据数据源实时取
@@ -5918,15 +5918,15 @@ def single_reextract(request):
                                             if row[0] is not None:
                                                 rowvalue += row[0]
                                                 rownum += 1
-                                        extractdata.curvalue = rowvalue / rownum
+                                        extractdata.todayvalue = rowvalue / rownum
                                     else:
-                                        extractdata.curvalue = result_list[0][0]
-                                    extractdata.curvalue = decimal.Decimal(
-                                        float(extractdata.curvalue) * float(c_target.magnification))
-                                    extractdata.curvalue = round(extractdata.curvalue, c_target.digit)
+                                        extractdata.todayvalue = result_list[0][0]
+                                    extractdata.todayvalue = decimal.Decimal(
+                                        float(extractdata.todayvalue) * float(c_target.magnification))
+                                    extractdata.todayvalue = round(extractdata.todayvalue, c_target.digit)
                                 except Exception as e:
                                     print(e)
-
+                        extractdata.curvalue = extractdata.todayvalue + extractdata.judgevalue
                         if c_target.cumulative in ['1', '2', '3', '4']:
                             cumulative = getcumulative(tableList, c_target, reporting_date, extractdata.curvalue)
                             extractdata.cumulativemonth = cumulative["cumulativemonth"]
@@ -6510,12 +6510,12 @@ def reporting_reextract(request):
                                         if row[0] is not None:
                                             rowvalue += row[0]
                                             rownum += 1
-                                    extractdata.curvalue = rowvalue / rownum
+                                    extractdata.todayvalue = rowvalue / rownum
                                 else:
-                                    extractdata.curvalue = rows[0][0]
-                                extractdata.curvalue = decimal.Decimal(
-                                    float(extractdata.curvalue) * float(target.magnification))
-                                extractdata.curvalue = round(extractdata.curvalue, target.digit)
+                                    extractdata.todayvalue = rows[0][0]
+                                extractdata.todayvalue = decimal.Decimal(
+                                    float(extractdata.todayvalue) * float(target.magnification))
+                                extractdata.todayvalue = round(extractdata.todayvalue, target.digit)
                             except:
                                 pass
                     if not rows or not target.cycle:  # 没取到数据 或者 没有取数周期，根据数据源实时取
@@ -6530,15 +6530,15 @@ def reporting_reextract(request):
                                         if row[0] is not None:
                                             rowvalue += row[0]
                                             rownum += 1
-                                    extractdata.curvalue = rowvalue / rownum
+                                    extractdata.todayvalue = rowvalue / rownum
                                 else:
-                                    extractdata.curvalue = result_list[0][0]
-                                extractdata.curvalue = decimal.Decimal(
-                                    float(extractdata.curvalue) * float(target.magnification))
-                                extractdata.curvalue = round(extractdata.curvalue, target.digit)
+                                    extractdata.todayvalue = result_list[0][0]
+                                extractdata.todayvalue = decimal.Decimal(
+                                    float(extractdata.todayvalue) * float(target.magnification))
+                                extractdata.todayvalue = round(extractdata.todayvalue, target.digit)
                             except Exception as e:
                                 print(e)
-
+                    extractdata.curvalue = extractdata.todayvalue + extractdata.judgevalue
                     if target.cumulative in ['1', '2', '3', '4']:
                         cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
@@ -9613,16 +9613,20 @@ def get_important_targets(request):
                     {"target": "NEW_JYTJ_GRBZMH_Y", "v_type": "curvalue", "value": 0}
                 ],
                 "HBZB": [
-                    {"target": "NEW_HB_01_SO2ND", "v_type": "curvalue", "value": 0},
-                    {"target": "NEW_HB_02_SO2ND", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_01_SO2ZSND", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_02_SO2ZSND", "v_type": "curvalue", "value": 0},
                     {"target": "NEW_HB_01_SO2PFL", "v_type": "curvalue", "value": 0},
                     {"target": "NEW_HB_02_SO2PFL", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_01_YCZSND", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_02_YCZSND", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_01_YCPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_02_YCPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_01_NOXZSND", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_02_NOXZSND", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_01_NOXPFL", "v_type": "curvalue", "value": 0},
+                    {"target": "NEW_HB_02_NOXPFL", "v_type": "curvalue", "value": 0},
                     {"target": "NEW_HB_01_YQPFL", "v_type": "curvalue", "value": 0},
                     {"target": "NEW_HB_02_YQPFL", "v_type": "curvalue", "value": 0},
-                    {"target": "NEW_HB_01_NOXND", "v_type": "curvalue", "value": 0},
-                    {"target": "NEW_HB_02_NOXND", "v_type": "curvalue", "value": 0},
-                    {"target": "NEW_HB_01_NOXPFL", "v_type": "curvalue", "value": 0},
-                    {"target": "NEW_HB_02_NOXPFL", "v_type": "curvalue", "value": 0}
                 ],
                 "FDL_JH": [
                     [  # 发电量年计划
