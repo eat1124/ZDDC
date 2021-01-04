@@ -410,7 +410,7 @@ $(document).ready(function() {
                 '    <label class="col-md-2 control-label">' + data.report_info_list[i].report_info_name + '</label>\n' +
                 '    <div class="col-md-10">\n' + '<input hidden id="report_info_name_' + (i + 1) + '" type="text" name="report_info_name_' + (i + 1) + '" value="' + data.report_info_list[i].report_info_name + '">' +
                 '<input hidden id="report_info_id_' + (i + 1) + '" type="text" name="report_info_id_' + (i + 1) + '" value="' + data.report_info_list[i].report_info_id + '">' +
-                '        <input id="report_info_value_' + (i + 1) + '" type="text" name="report_info_value_' + (i + 1) + '" class="form-control " placeholder="" value="' + data.report_info_list[i].report_info_value + '">\n' +
+                '        <textarea class="form-control" placeholder=""  id="report_info_value_' + (i + 1) + '" name="report_info_value_' + (i + 1) + '">' + data.report_info_list[i].report_info_value + '</textarea>\n' +
                 '        <div class="form-control-focus"></div>\n' +
                 '    </div>\n' +
                 '</div>')

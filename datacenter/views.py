@@ -4511,7 +4511,7 @@ def reporting_data(request):
                 except:
                     pass
                 try:
-                    judgevalue = round(data.judgevalue, data.target.digit) if data.judgevalue else 0
+                    judgevalue = round(data.judgevalue, data.target.digit)
                 except:
                     pass
                 try:
