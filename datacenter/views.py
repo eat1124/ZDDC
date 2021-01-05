@@ -7698,37 +7698,19 @@ def getfun(myfunlist, fun):
     return myfunlist
 
 
-def childfun(myfun, funid,request):
-    funlist = request.session['funlist']
-    mychildfun = []
-    funs = myfun.children.order_by("sort").exclude(state="9")
-
+def childfun(myfun, funid):
     pisselected = False
-    for fun in funs:
-        if fun in funlist:
-            isselected = False
-            url = fun.url if fun.url else ""
-            # if len(fun.app.all()) > 0:
-            if fun.app:
-                url = fun.url + str(fun.id) + "/" if fun.url else ""
-            if str(fun.id) == str(funid):
-                isselected = True
-                pisselected = True
-                mychildfun.append({
-                    "id": fun.id, "name": fun.name, "url": url,
-                    "icon": fun.icon, "isselected": isselected,
-                    "child": [], "new_window": fun.if_new_wd,
-                })
-            else:
-                returnfuns = childfun(fun, funid,request)
-                mychildfun.append({
-                    "id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
-                    "isselected": returnfuns["isselected"], "child": returnfuns["fun"],
-                    "new_window": fun.if_new_wd,
-                })
-                if returnfuns["isselected"]:
-                    pisselected = returnfuns["isselected"]
-    return {"fun": mychildfun, "isselected": pisselected}
+    for fun in myfun:
+        if str(fun["id"]) == str(funid):
+            fun["isselected"] = True
+            pisselected = True
+        else:
+            returnfuns = childfun(fun["child"], funid)
+            fun["isselected"] = returnfuns["isselected"]
+            fun["child"] = returnfuns["fun"]
+            if returnfuns["isselected"]:
+                pisselected = returnfuns["isselected"]
+    return {"fun": myfun, "isselected": pisselected}
 
 
 def getpagefuns(funid, request):
@@ -7739,25 +7721,12 @@ def getpagefuns(funid, request):
     task_nums = 0
 
     for fun in funlist:
-        if fun.pnode_id == 1:
-            isselected = False
-            url = fun.url if fun.url else ""
-            if fun.app:
-                url = fun.url + str(fun.id) + "/" if fun.url else ""
-            if str(fun.id) == str(funid):
-                isselected = True
-                pagefuns.append({
-                    "id": fun.id, "name": fun.name, "url": url,
-                    "icon": fun.icon, "isselected": isselected,
-                    "child": [], "new_window": fun.if_new_wd,
-                })
-            else:
-                returnfuns = childfun(fun, funid)
-                pagefuns.append({
-                    "id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
-                    "isselected": returnfuns["isselected"], "child": returnfuns["fun"],
-                    "new_window": fun.if_new_wd,
-                })
+        if str(fun["id"]) == str(funid):
+            fun["isselected"] = True
+        else:
+            returnfuns = childfun(fun["child"], funid)
+            fun["isselected"] = returnfuns["isselected"]
+            fun["child"] = returnfuns["fun"]
 
     curfun = Fun.objects.filter(id=int(funid))
     if len(curfun) > 0:
@@ -7773,7 +7742,7 @@ def getpagefuns(funid, request):
             "id": curfun[0].id, "name": curfun[0].name, "url": myurl, "jsurl": jsurl
         }
 
-    return {"pagefuns": pagefuns, "curfun": mycurfun, "task_nums": task_nums}
+    return {"pagefuns": funlist, "curfun": mycurfun, "task_nums": task_nums}
 
 
 def test(request):
@@ -7785,6 +7754,24 @@ def test(request):
                       {'username': request.user.userinfo.fullname, "errors": errors})
     else:
         return HttpResponseRedirect("/login")
+
+def getchildfun(myfun,funlist):
+    mychildfun = []
+    funs = myfun.children.order_by("sort").exclude(state="9")
+
+    for fun in funs:
+        if fun in funlist:
+            url = fun.url if fun.url else ""
+            # if len(fun.app.all()) > 0:
+            if fun.app:
+                url = fun.url + str(fun.id) + "/" if fun.url else ""
+            returnfuns = getchildfun(fun,funlist)
+            mychildfun.append({
+                "id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
+                "isselected": False, "child": returnfuns["fun"],
+                "new_window": fun.if_new_wd,
+            })
+    return {"fun": mychildfun}
 
 
 def custom_personal_fun_list(if_superuser, userinfo_id):
@@ -7816,7 +7803,24 @@ def custom_personal_fun_list(if_superuser, userinfo_id):
         if value.sort is None:
             value.sort = 0
     funlist = sorted(funlist, key=lambda fun: fun.sort)
-    return funlist
+
+    pagefuns = []
+
+    for fun in funlist:
+        if fun.pnode_id == 1:
+            url = fun.url if fun.url else ""
+            url = fun.url if fun.url else ""
+            # if len(fun.app.all()) > 0:
+            if fun.app:
+                url = fun.url + str(fun.id) + "/" if fun.url else ""
+            returnfuns = getchildfun(fun,funlist)
+            pagefuns.append({
+                "id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
+                "isselected": False, "child": returnfuns["fun"],
+                "new_window": fun.if_new_wd,
+            })
+
+    return pagefuns
 
 
 def index(request, funid):
