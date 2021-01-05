@@ -126,12 +126,12 @@ DATABASES = {
         'ENGINE': 'sql_server.pyodbc',
         'NAME': 'datacenter',
 
-        # 'USER': 'datacenter',
-        # 'HOST': '10.160.32.30',
-        # 'PASSWORD': 'tesunet@2020',
-        'USER': 'sa',
-        'HOST': 'localhost',
-        'PASSWORD': '1',
+        'USER': 'datacenter',
+        'HOST': '10.160.32.30',
+        'PASSWORD': 'tesunet@2020',
+        # 'USER': 'sa',
+        # 'HOST': 'localhost',
+        # 'PASSWORD': '1',
 
         'PORT': '1433',
         'OPTIONS': {

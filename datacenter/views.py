@@ -3623,28 +3623,6 @@ def target_del(request):
         else:
             return HttpResponse(0)
 
-def reporting_del_single(request):
-    if request.user.is_authenticated():
-        if 'id' in request.POST:
-            id = request.POST.get('id', '')
-            reporting_date = request.POST.get('reporting_date', '')
-            reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
-            try:
-                id = int(id)
-            except:
-                raise Http404()
-
-
-            data = getmodels("Meterdata", str(reporting_date.year)).objects.get(id=id,datadate=reporting_date)
-            data.state = "9"
-
-
-            data.save()
-
-            return HttpResponse(1)
-        else:
-            return HttpResponse(0)
-
 
 def target_app_index(request, funid):
     """
