@@ -1897,7 +1897,6 @@ $(document).ready(function () {
                 funid: $('#funid').val(),
             },
             success: function (data) {
-                console.log(data['data'])
                 if (data['status'] == 1) {
                     table.ajax.reload();
                 }
@@ -1905,10 +1904,23 @@ $(document).ready(function () {
             },
             error: function (e) {
                 alert("页面出现错误，请于管理员联系。");
+                if (operationtype == 15){
+                    $('#save1').show();
+                }
+                if (operationtype == 16){
+                    $('#save2').show();
+                }
+                if (operationtype == 17){
+                    $('#save3').show();
+                }
+                if (operationtype == 1){
+                    $('#save5').show();
+                }
             }
         });
     }
     $("#new1").click(function () {
+        $('#new1').hide();
         var table = $('#sample_1').DataTable();
         $.ajax({
             type: "POST",
@@ -1934,6 +1946,7 @@ $(document).ready(function () {
             },
             error: function (e) {
                 alert("新增失败，请于管理员联系。");
+                $('#new1').show();
             }
         });
     });
@@ -1971,6 +1984,7 @@ $(document).ready(function () {
         }
     });
     $('#save1').click(function () {
+        $('#save1').hide();
         $("Element").blur();
         var table = $('#sample_1').DataTable().data();
         var savedata = [];
@@ -1993,6 +2007,7 @@ $(document).ready(function () {
     });
 
     $("#new2").click(function () {
+         $('#new2').hide();
         var table = $('#sample_2').DataTable();
         $.ajax({
             type: "POST",
@@ -2019,6 +2034,7 @@ $(document).ready(function () {
             },
             error: function (e) {
                 alert("新增失败，请于管理员联系。");
+                 $('#new1').show();
             }
         });
     });
@@ -2057,6 +2073,7 @@ $(document).ready(function () {
         }
     });
     $('#save2').click(function () {
+         $('#save2').hide();
         $("Element").blur();
         var table = $('#sample_2').DataTable().data();
         var savedata = [];
@@ -2117,6 +2134,7 @@ $(document).ready(function () {
     };
     // 新增数据计算
     $("#new3").click(function () {
+         $('#new3').hide();
         // 滚动条
         customModal.show();
         var table = $('#sample_3').DataTable();
@@ -2147,6 +2165,7 @@ $(document).ready(function () {
             },
             error: function (e) {
                 alert("新增失败，请于管理员联系。");
+                 $('#new3').show();
                 // 隐藏滚动条
                 customModal.hide();
             }
@@ -2187,6 +2206,7 @@ $(document).ready(function () {
         }
     });
     $('#save3').click(function () {
+        $('#save3').hide();
         $("Element").blur();
         var table = $('#sample_3').DataTable().data();
         var savedata = [];
@@ -2239,6 +2259,7 @@ $(document).ready(function () {
     });
 
     $("#new5").click(function () {
+        $('#new5').hide();
         var table = $('#sample_5').DataTable();
         $.ajax({
             type: "POST",
@@ -2264,6 +2285,7 @@ $(document).ready(function () {
             },
             error: function (e) {
                 alert("新增失败，请于管理员联系。");
+                $('#new5').show();
             }
         });
     });
@@ -2301,6 +2323,7 @@ $(document).ready(function () {
         }
     });
     $('#save5').click(function () {
+        $('#save5').hide();
         $("Element").blur();
         var table = $('#sample_5').DataTable().data();
         var savedata = [];

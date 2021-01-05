@@ -58,6 +58,7 @@ from .ftp_file_handler import *
 from utils.handle_process import Extract, PIQuery, get_dict_name
 from django.shortcuts import render_to_response
 
+funlist = []
 
 info = {"webaddr": "cv-server", "port": "81", "username": "admin", "passwd": "Admin@2017", "token": "",
         "lastlogin": 0}
@@ -70,7 +71,6 @@ def page_not_found(request):
 
 def page_error(request):
     return render_to_response('500.html')
-
 
 def report_server(request, funid):
     if request.user.is_authenticated():
@@ -86,7 +86,7 @@ def report_server(request, funid):
             ps_script_path = rs.ps_script_path
 
         return render(request, 'report_server.html',
-                      {'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid,request),
+                      {'username': request.user.userinfo.fullname, "pagefuns": getpagefuns(funid),
                        'id': id, 'report_server': report_server, 'user_name': user_name,
                        'password': password, 'report_file_path': report_file_path,
                        'web_server': web_server, 'ps_script_path': ps_script_path
@@ -499,7 +499,7 @@ def process_monitor_index(request, funid):
             })
         return render(request, 'process_monitor.html',
                       {'username': request.user.userinfo.fullname,
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -1518,7 +1518,7 @@ def report_index(request, funid):
                        "all_app_list": all_app_list,
                        "errors": errors,
                        "id": id,
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -1832,7 +1832,7 @@ def report_app_index(request, funid):
                        "errors": errors,
                        "id": id,
                        "adminapp": adminapp,
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -2060,7 +2060,7 @@ def app_index(request, funid):
     if request.user.is_authenticated():
         return render(request, 'app.html',
                       {'username': request.user.userinfo.fullname,
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -2095,7 +2095,7 @@ def dictindex(request, funid):
         alldict = DictIndex.objects.order_by("sort").exclude(state="9")
         return render(request, 'dict.html',
                       {'username': request.user.userinfo.fullname,
-                       "alldict": alldict, "pagefuns": getpagefuns(funid,request)})
+                       "alldict": alldict, "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -2292,7 +2292,7 @@ def storage_index(request, funid):
                       {'username': request.user.userinfo.fullname,
                        "storage_type_list": storage_type_list,
                        "valid_time_list": valid_time_list,
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -2432,7 +2432,7 @@ def cycle_index(request, funid):
     if request.user.is_authenticated():
         return render(request, 'cycle.html',
                       {'username': request.user.userinfo.fullname,
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -2760,7 +2760,7 @@ def source_index(request, funid):
                            "code": code,
                            "name": name,
                            "connection": connection,
-                           "pagefuns": getpagefuns(funid,request)})
+                           "pagefuns": getpagefuns(funid)})
         except Exception as e:
             print(e)
             return HttpResponseRedirect("/index")
@@ -3033,7 +3033,7 @@ def target_index(request, funid):
                        "cycle_list": cycle_list,
                        "storage_list": storage_list,
                        "weight_targets": weight_targets,
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -3623,6 +3623,28 @@ def target_del(request):
         else:
             return HttpResponse(0)
 
+def reporting_del_single(request):
+    if request.user.is_authenticated():
+        if 'id' in request.POST:
+            id = request.POST.get('id', '')
+            reporting_date = request.POST.get('reporting_date', '')
+            reporting_date = datetime.datetime.strptime(reporting_date, "%Y-%m-%d")
+            try:
+                id = int(id)
+            except:
+                raise Http404()
+
+
+            data = getmodels("Meterdata", str(reporting_date.year)).objects.get(id=id,datadate=reporting_date)
+            data.state = "9"
+
+
+            data.save()
+
+            return HttpResponse(1)
+        else:
+            return HttpResponse(0)
+
 
 def target_app_index(request, funid):
     """
@@ -3743,7 +3765,7 @@ def target_app_index(request, funid):
                        "storage_list": storage_list,
                        "adminapp": adminapp.id if adminapp else '',
                        "works_list": works_list,
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -3889,7 +3911,7 @@ def target_app_search_index(request, funid):
                        "storage_list": storage_list,
                        "adminapp": adminapp,
                        "search_app": search_app,
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -3953,7 +3975,7 @@ def constant_index(request, funid):
         return render(request, 'constant.html',
                       {'username': request.user.userinfo.fullname,
                        "app_list": app_list,
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -4111,7 +4133,7 @@ def constant_app_index(request, funid):
         return render(request, 'constant_app.html',
                       {'username': request.user.userinfo.fullname,
                        "adminapp": adminapp.id if adminapp else '',
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -4402,7 +4424,7 @@ def reporting_index(request, cycletype, funid):
                            "extracttagtabclass": extracttagtabclass,
                            "calculatetagtabclass": calculatetagtabclass,
                            "search_app": search_app,
-                           "pagefuns": getpagefuns(funid,request),
+                           "pagefuns": getpagefuns(funid),
                            "funid": funid})
     else:
         return HttpResponseRedirect("/login")
@@ -7396,7 +7418,7 @@ def report_submit_index(request, funid):
                        "yeardate": yeardate,
                        "adminapp": adminapp,
                        "funid": funid,
-                       "pagefuns": getpagefuns(funid,request)})
+                       "pagefuns": getpagefuns(funid)})
     else:
         return HttpResponseRedirect("/login")
 
@@ -7699,34 +7721,63 @@ def getfun(myfunlist, fun):
 
 
 def childfun(myfun, funid):
+    mychildfun = []
+    funs = myfun.children.order_by("sort").exclude(state="9")
+
     pisselected = False
-    for fun in myfun:
-        if str(fun["id"]) == str(funid):
-            fun["isselected"] = True
-            pisselected = True
-        else:
-            returnfuns = childfun(fun["child"], funid)
-            fun["isselected"] = returnfuns["isselected"]
-            fun["child"] = returnfuns["fun"]
-            if returnfuns["isselected"]:
-                pisselected = returnfuns["isselected"]
-    return {"fun": myfun, "isselected": pisselected}
+    for fun in funs:
+        if fun in funlist:
+            isselected = False
+            url = fun.url if fun.url else ""
+            # if len(fun.app.all()) > 0:
+            if fun.app:
+                url = fun.url + str(fun.id) + "/" if fun.url else ""
+            if str(fun.id) == str(funid):
+                isselected = True
+                pisselected = True
+                mychildfun.append({
+                    "id": fun.id, "name": fun.name, "url": url,
+                    "icon": fun.icon, "isselected": isselected,
+                    "child": [], "new_window": fun.if_new_wd,
+                })
+            else:
+                returnfuns = childfun(fun, funid)
+                mychildfun.append({
+                    "id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
+                    "isselected": returnfuns["isselected"], "child": returnfuns["fun"],
+                    "new_window": fun.if_new_wd,
+                })
+                if returnfuns["isselected"]:
+                    pisselected = returnfuns["isselected"]
+    return {"fun": mychildfun, "isselected": pisselected}
 
 
-def getpagefuns(funid, request):
-    funlist = request.session['funlist']
+def getpagefuns(funid, request=""):
     pagefuns = []
     mycurfun = {}
     message_task = []
     task_nums = 0
 
     for fun in funlist:
-        if str(fun["id"]) == str(funid):
-            fun["isselected"] = True
-        else:
-            returnfuns = childfun(fun["child"], funid)
-            fun["isselected"] = returnfuns["isselected"]
-            fun["child"] = returnfuns["fun"]
+        if fun.pnode_id == 1:
+            isselected = False
+            url = fun.url if fun.url else ""
+            if fun.app:
+                url = fun.url + str(fun.id) + "/" if fun.url else ""
+            if str(fun.id) == str(funid):
+                isselected = True
+                pagefuns.append({
+                    "id": fun.id, "name": fun.name, "url": url,
+                    "icon": fun.icon, "isselected": isselected,
+                    "child": [], "new_window": fun.if_new_wd,
+                })
+            else:
+                returnfuns = childfun(fun, funid)
+                pagefuns.append({
+                    "id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
+                    "isselected": returnfuns["isselected"], "child": returnfuns["fun"],
+                    "new_window": fun.if_new_wd,
+                })
 
     curfun = Fun.objects.filter(id=int(funid))
     if len(curfun) > 0:
@@ -7742,7 +7793,7 @@ def getpagefuns(funid, request):
             "id": curfun[0].id, "name": curfun[0].name, "url": myurl, "jsurl": jsurl
         }
 
-    return {"pagefuns": funlist, "curfun": mycurfun, "task_nums": task_nums}
+    return {"pagefuns": pagefuns, "curfun": mycurfun, "task_nums": task_nums}
 
 
 def test(request):
@@ -7754,24 +7805,6 @@ def test(request):
                       {'username': request.user.userinfo.fullname, "errors": errors})
     else:
         return HttpResponseRedirect("/login")
-
-def getchildfun(myfun,funlist):
-    mychildfun = []
-    funs = myfun.children.order_by("sort").exclude(state="9")
-
-    for fun in funs:
-        if fun in funlist:
-            url = fun.url if fun.url else ""
-            # if len(fun.app.all()) > 0:
-            if fun.app:
-                url = fun.url + str(fun.id) + "/" if fun.url else ""
-            returnfuns = getchildfun(fun,funlist)
-            mychildfun.append({
-                "id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
-                "isselected": False, "child": returnfuns["fun"],
-                "new_window": fun.if_new_wd,
-            })
-    return {"fun": mychildfun}
 
 
 def custom_personal_fun_list(if_superuser, userinfo_id):
@@ -7803,29 +7836,13 @@ def custom_personal_fun_list(if_superuser, userinfo_id):
         if value.sort is None:
             value.sort = 0
     funlist = sorted(funlist, key=lambda fun: fun.sort)
-
-    pagefuns = []
-
-    for fun in funlist:
-        if fun.pnode_id == 1:
-            url = fun.url if fun.url else ""
-            url = fun.url if fun.url else ""
-            # if len(fun.app.all()) > 0:
-            if fun.app:
-                url = fun.url + str(fun.id) + "/" if fun.url else ""
-            returnfuns = getchildfun(fun,funlist)
-            pagefuns.append({
-                "id": fun.id, "name": fun.name, "url": url, "icon": fun.icon,
-                "isselected": False, "child": returnfuns["fun"],
-                "new_window": fun.if_new_wd,
-            })
-
-    return pagefuns
+    return funlist
 
 
 def index(request, funid):
     if request.user.is_authenticated():
-        request.session['funlist'] = custom_personal_fun_list(request.user.is_superuser, request.user.userinfo.id)
+        global funlist
+        funlist = custom_personal_fun_list(request.user.is_superuser, request.user.userinfo.id)
         # 右上角消息任务
         return render(request, "index.html",
                       {'username': request.user.userinfo.fullname, "homepage": True,
@@ -8258,7 +8275,8 @@ def function(request, funid):
                             new_window_div = ""
 
                         # 功能节点修改后，更新funlist
-                        request.session['funlist'] = custom_personal_fun_list(request.user.is_superuser, request.user.userinfo.id)
+                        global funlist
+                        funlist = custom_personal_fun_list(request.user.is_superuser, request.user.userinfo.id)
                     except Exception as e:
                         print(e)
                         errors.append('保存失败。')
@@ -8322,7 +8340,7 @@ def function(request, funid):
                 "mytype": mytype, "hiddendiv": hiddendiv, "treedata": treedata,
                 "works_select_list": works_select_list,
                 "app_select_list": pre_app_select_list, "app_hidden_div": app_hidden_div,
-                "pagefuns": getpagefuns(funid, request),
+                "pagefuns": getpagefuns(funid, request=request),
                 "visited_url_div": visited_url_div,
                 "new_window_div": new_window_div,
             })
@@ -8356,8 +8374,9 @@ def fundel(request):
                             pass
 
                 # 删除时更新右侧菜单
+                global funlist
 
-                request.session['funlist'] = custom_personal_fun_list(request.user.is_superuser, request.user.userinfo.id)
+                funlist = custom_personal_fun_list(request.user.is_superuser, request.user.userinfo.id)
                 return HttpResponse(1)
             else:
                 return HttpResponse(0)
@@ -8748,7 +8767,7 @@ def organization(request, funid):
                            "selectgroup": selectgroup, "remark": remark, "title": title, "mytype": mytype,
                            "hiddenuser": hiddenuser, "hiddenorg": hiddenorg, "newpassword": newpassword,
                            "editpassword": editpassword, "hiddendiv": hiddendiv, "treedata": treedata,
-                           "pagefuns": getpagefuns(funid, request)})
+                           "pagefuns": getpagefuns(funid, request=request)})
 
         except Exception as e:
             print(e)
@@ -9181,7 +9200,7 @@ def reporting_log_index(request, funid):
         end_time = datetime.datetime.now().strftime("%Y-%m-%d")
         return render(request, 'reporting_log.html',
                       {'username': request.user.userinfo.fullname,
-                       "pagefuns": getpagefuns(funid,request),
+                       "pagefuns": getpagefuns(funid),
                        "start_time": start_time,
                        "end_time": end_time,
                        })
