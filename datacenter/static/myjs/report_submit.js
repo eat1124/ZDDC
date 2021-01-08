@@ -248,6 +248,7 @@ $(document).ready(function() {
     $('#sample_1').dataTable({
         "bAutoWidth": true,
         "bSort": false,
+        "iDisplayLength": 25,
         "bProcessing": true,
         "ajax": "../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(),
         "columns": [
