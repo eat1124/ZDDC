@@ -361,7 +361,9 @@ function getStatisticReport(start_date, end_date, search_id, date_type) {
                         if (statistic_type == '1'){  // 求和
                             // ...
                         } else if (statistic_type == '2'){
-                            zj_sum = (zj_sum/avai_num).toFixed(2)
+                            if (avai_num !=0){
+                                zj_sum = (zj_sum/avai_num).toFixed(2)
+                            }
                         } else {
                             zj_sum = "-"
                         }

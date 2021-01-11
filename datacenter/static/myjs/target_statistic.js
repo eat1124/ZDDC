@@ -30,17 +30,25 @@ function renderStatisticDataTable(table_data) {
             {"data": "remark"},
             {"data": null}
         ],
-        "columnDefs": [{
+        "columnDefs": [
+            {
+            "targets": -5,
+            "width": "50px",
+        },
+            {
+            "targets": -4,
+            "mRender": function (data, type, full) {
+                var href = '/statistic_report/?search_id=' + full.id + "&date_type=" + full.type;
+                return "<a href='" + href + "' target='_blank'>" + full.name + "</a>";
+            }
+        },
+            {
             "targets": -1,
-            "width": "80px",
+            "width": "40px",
             "data": null,
             "mRender": function (data, type, full) {
-                var date_type = data.type;
-                var search_id = full.id;
-                var href = '/statistic_report/?search_id=' + search_id + "&date_type=" + date_type;
                 return "<button id='edit' title='编辑' data-toggle='modal'  data-target='#static01'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>" +
-                    "<button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>" +
-                    "<a href='" + href + "' title='查看报表' target='_blank' class='btn btn-xs btn-primary' type='button'><i class='fa fa-external-link'></i></a>";
+                    "<button title='删除'  id='delrow' class='btn btn-xs btn-primary' type='button'><i class='fa fa-trash-o'></i></button>"
             }
         }],
         "oLanguage": {

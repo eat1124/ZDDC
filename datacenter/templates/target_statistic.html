@@ -22,9 +22,9 @@
     <table class="table table-striped table-bordered table-hover table-checkable order-column" id="search_table">
         <thead>
         <tr>
-            <th> ID</th>
-            <th> 查询名</th>
-            <th> 类型</th>
+            <th> 序号</th>
+            <th> 查询名称</th>
+            <th> 查询类型</th>
             <th> 说明</th>
             <th style="width:50px;"> 操作</th>
         </tr>
@@ -49,7 +49,7 @@
                         <div class="form-body">
                             <div class="form-group">
                                 <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>查询名</label>
+                                        style="color:red; ">*</span>查询名称</label>
                                 <div class="col-md-10">
                                     <input id="search_name" type="text" name="search_name" class="form-control">
                                     <div class="form-control-focus"></div>
@@ -57,7 +57,7 @@
                             </div>
                             <div class="form-group">
                                 <label class="col-md-2 control-label"><span
-                                        style="color:red; ">*</span>类型</label>
+                                        style="color:red; ">*</span>查询类型</label>
                                 <div class="col-md-10">
                                     <select id="search_type" name="search_type" class="form-control">
                                         {% for cl in cycle_list %}
