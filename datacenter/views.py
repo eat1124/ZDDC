@@ -4581,7 +4581,7 @@ def reporting_data(request):
                     zerodata = "{:f}".format(decimal.Decimal(data.zerodata if data.zerodata else "0").normalize())
                     twentyfourdata = "{:f}".format(
                         decimal.Decimal(data.twentyfourdata if data.zerodata else "0").normalize())
-                    metervalue = data.metervalue
+                    metervalue = data.metervalue if data.metervalue else 0
                     meterchangedata_id = ""
                     oldtable_zerodata = ""
                     oldtable_twentyfourdata = ""
@@ -6605,7 +6605,7 @@ def reporting_new(request):
                                                                                days=-1))
                     meterdata = getmodels("Meterdata", str(reporting_date.year))()
                     if len(all_meterdata) > 0:
-                        meterdata.zerodata = all_meterdata[0].twentyfourdata
+                        meterdata.zerodata = all_meterdata[0].twentyfourdata if all_meterdata[0].twentyfourdata else 0
                     else:
                         meterdata.zerodata = 0
                     meterdata.twentyfourdata = meterdata.zerodata

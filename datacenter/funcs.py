@@ -157,7 +157,7 @@ def migrate_data_before_target_changed(target, new_type):
                         PreModel = getmodels(pre_op_type, str(n_year))
                         NewModel = getmodels(new_op_type, str(n_year))
                         pre_data = PreModel.objects.exclude(state="9").filter(target=target).values(
-                            "datadate", "curvalue", "curvaluedate", "curvaluetext", "cumulativemonth", 
+                            "datadate", "todayvalue", "judgevalue",  "curvalue", "curvaluedate", "curvaluetext", "cumulativemonth",
                             "cumulativequarter", "cumulativehalfyear", "cumulativeyear", "releasestate",
                             "target_id"
                         )
