@@ -383,6 +383,7 @@ $(document).ready(function () {
                 $("#new1").show();
                 $("#save1").hide();
                 $("#del1").hide();
+                $("#supply1").hide();
                 $("#release1").hide();
                 $("#gorelease1").hide();
                 $("#unrelease1").hide();
@@ -407,6 +408,7 @@ $(document).ready(function () {
             if (data.releasestate == '0') {
                 $("#save1").show();
                 $("#del1").show();
+                $("#supply1").show();
                 $("#release1").show();
                 $("#gorelease1").hide();
                 $("#unrelease1").show();
@@ -417,6 +419,7 @@ $(document).ready(function () {
                 $("#new1").hide();
                 $("#save1").hide();
                 $("#del1").hide();
+                $("#supply1").hide();
                 $("#release1").hide();
                 $("#unrelease1").hide();
                 $("#gorelease1").show();
@@ -653,6 +656,7 @@ $(document).ready(function () {
                 $("#new2").show();
                 $("#save2").hide();
                 $("#del2").hide();
+                $("#supply2").hide();
                 $("#reset2").hide();
                 $("#release2").hide();
                 $("#gorelease2").hide();
@@ -681,6 +685,7 @@ $(document).ready(function () {
             if (data.releasestate == '0') {
                 $("#save2").show();
                 $("#del2").show();
+                $("#supply2").show();
                 $("#reset2").show();
                 $("#release2").show();
                 $("#gorelease2").hide();
@@ -691,6 +696,7 @@ $(document).ready(function () {
                 $("#new2").hide();
                 $("#save2").hide();
                 $("#del2").hide();
+                $("#supply2").hide();
                 $("#reset2").hide();
                 $("#release2").hide();
                 $("#unrelease2").hide();
@@ -956,6 +962,7 @@ $(document).ready(function () {
                 $("#new3").show();
                 $("#save3").hide();
                 $("#del3").hide();
+                $("#supply3").hide();
                 $("#reset3").hide();
                 $("#release3").hide();
                 $("#gorelease3").hide();
@@ -982,6 +989,7 @@ $(document).ready(function () {
             if (data.releasestate == '0') {
                 $("#save3").show();
                 $("#del3").show();
+                $("#supply3").show();
                 $("#reset3").show();
                 $("#release3").show();
                 $("#gorelease3").hide();
@@ -992,6 +1000,7 @@ $(document).ready(function () {
                 $("#new3").hide();
                 $("#save3").hide();
                 $("#del3").hide();
+                $("#supply3").hide();
                 $("#reset3").hide();
                 $("#release3").hide();
                 $("#unrelease3").hide();
@@ -1417,6 +1426,7 @@ $(document).ready(function () {
                 $("#new5").show();
                 $("#save5").hide();
                 $("#del5").hide();
+                $("#supply5").hide();
                 $("#release5").hide();
                 $("#gorelease5").hide();
                 $("#unrelease5").hide();
@@ -1442,6 +1452,7 @@ $(document).ready(function () {
             if (data.releasestate == '0') {
                 $("#save5").show();
                 $("#del5").show();
+                $("#supply5").show();
                 $("#release5").show();
                 $("#gorelease5").hide();
                 $("#unrelease5").show();
@@ -1451,6 +1462,7 @@ $(document).ready(function () {
                 $("#new5").hide();
                 $("#save5").hide();
                 $("#del5").hide();
+                $("#supply5").hide();
                 $("#release5").hide();
                 $("#unrelease5").hide();
                 $("#gorelease5").show();
@@ -1862,19 +1874,16 @@ $(document).ready(function () {
             minView: 3,
         });
     }
-
     if ($('#cycletype').val() == "12") {
         seasonFunction()
         $('#reporting_date').hide();
         $('#season').show()
-
     }
 
     if ($('#cycletype').val() == "13") {
         yearFunction()
         $('#reporting_date').hide();
         $('#year').show()
-
     }
     if ($('#cycletype').val() == "14") {
         $('#reporting_date').datetimepicker({
@@ -2005,9 +2014,39 @@ $(document).ready(function () {
         });
         reportingSave(15, savedata, table);
     });
+    $("#supply1").click(function () {
+        $("Element").blur();
+        var table = $('#sample_1').DataTable().data();
+        var savedata = [];
+        $.each(table, function (i, item) {
+            savedata.push(item.target_id)
+        });
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_supply/",
+            data: {
+                operationtype: 15,
+                app: $('#app').val(),
+                cycletype: $('#cycletype').val(),
+                savedata: JSON.stringify(savedata),
+                reporting_date: $('#reporting_date').val(),
+                funid: $('#funid').val(),
+            },
+            success: function (data) {
+                if (data['status'] == 1) {
+                    table.ajax.reload();
+                }
+                alert(data['data']);
+            },
+            error: function (e) {
+                alert("页面出现错误，请于管理员联系。");
+            }
+        });
+    });
 
     $("#new2").click(function () {
-         $('#new2').hide();
+        $('#new2').hide();
         var table = $('#sample_2').DataTable();
         $.ajax({
             type: "POST",
@@ -2072,8 +2111,39 @@ $(document).ready(function () {
 
         }
     });
+    $("#supply2").click(function () {
+        $("Element").blur();
+        var table = $('#sample_2').DataTable().data();
+        var savedata = [];
+        $.each(table, function (i, item) {
+            savedata.push(item.target_id)
+        });
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_supply/",
+            data: {
+                operationtype: 16,
+                app: $('#app').val(),
+                cycletype: $('#cycletype').val(),
+                savedata: JSON.stringify(savedata),
+                reporting_date: $('#reporting_date').val(),
+                funid: $('#funid').val(),
+            },
+            success: function (data) {
+                if (data['status'] == 1) {
+                    table.ajax.reload();
+                }
+                alert(data['data']);
+            },
+            error: function (e) {
+                alert("页面出现错误，请于管理员联系。");
+            }
+        });
+
+    });
     $('#save2').click(function () {
-         $('#save2').hide();
+        $('#save2').hide();
         $("Element").blur();
         var table = $('#sample_2').DataTable().data();
         var savedata = [];
@@ -2120,6 +2190,7 @@ $(document).ready(function () {
             }
         });
     });
+
     var customModal = {
         "show": function () {
             $('#waiting_calculate').modal('show');
@@ -2132,9 +2203,10 @@ $(document).ready(function () {
             $(".modal-backdrop").css('opacity', '0.5');
         },
     };
+
     // 新增数据计算
     $("#new3").click(function () {
-         $('#new3').hide();
+        $('#new3').hide();
         // 滚动条
         customModal.show();
         var table = $('#sample_3').DataTable();
@@ -2204,6 +2276,37 @@ $(document).ready(function () {
             });
 
         }
+    });
+    $("#supply3").click(function () {
+        $("Element").blur();
+        var table = $('#sample_3').DataTable().data();
+        var savedata = [];
+        $.each(table, function (i, item) {
+            savedata.push(item.target_id)
+        });
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_supply/",
+            data: {
+                operationtype: 17,
+                app: $('#app').val(),
+                cycletype: $('#cycletype').val(),
+                savedata: JSON.stringify(savedata),
+                reporting_date: $('#reporting_date').val(),
+                funid: $('#funid').val(),
+            },
+            success: function (data) {
+                if (data['status'] == 1) {
+                    table.ajax.reload();
+                }
+                alert(data['data']);
+            },
+            error: function (e) {
+                alert("页面出现错误，请于管理员联系。");
+            }
+        });
+
     });
     $('#save3').click(function () {
         $('#save3').hide();
@@ -2321,6 +2424,37 @@ $(document).ready(function () {
             });
 
         }
+    });
+    $("#supply5").click(function () {
+        $("Element").blur();
+        var table = $('#sample_5').DataTable().data();
+        var savedata = [];
+        $.each(table, function (i, item) {
+            savedata.push(item.target_id)
+        });
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            url: "../../../reporting_supply/",
+            data: {
+                operationtype: 1,
+                app: $('#app').val(),
+                cycletype: $('#cycletype').val(),
+                savedata: JSON.stringify(savedata),
+                reporting_date: $('#reporting_date').val(),
+                funid: $('#funid').val(),
+            },
+            success: function (data) {
+                if (data['status'] == 1) {
+                    table.ajax.reload();
+                }
+                alert(data['data']);
+            },
+            error: function (e) {
+                alert("页面出现错误，请于管理员联系。");
+            }
+        });
+
     });
     $('#save5').click(function () {
         $('#save5').hide();

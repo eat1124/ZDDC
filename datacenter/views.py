@@ -6767,6 +6767,206 @@ def reporting_new(request):
         })
 
 
+def reporting_supply(request):
+    if request.user.is_authenticated():
+        app = request.POST.get('app', '')
+        savedata = request.POST.get('savedata')
+        exist_target_id = json.loads(savedata)
+        operationtype = request.POST.get('operationtype')
+        cycletype = request.POST.get('cycletype', '')
+        reporting_date = request.POST.get('reporting_date', '')
+        funid = request.POST.get('funid', '')
+        work = None
+        status = 1
+        data = '补充成功。'
+        try:
+            funid = int(funid)
+            fun = Fun.objects.get(id=funid)
+            work = fun.work
+        except:
+            pass
+        try:
+            app = int(app)
+            reporting_date = getreporting_date(reporting_date, cycletype)
+        except:
+            pass
+        # 所有常数
+        all_constant = Constant.objects.exclude(state="9").values()
+        all_target = Target.objects.exclude(state="9")
+        tableyear = str(reporting_date.year)
+
+        EntryTable = getmodels("Entrydata", tableyear)
+        MeterTable = getmodels("Meterdata", tableyear)
+        ExtractTable = getmodels("Extractdata", tableyear)
+        CalculateTable = getmodels("Calculatedata", tableyear)
+        tableList = {"Entrydata": EntryTable, "Meterdata": MeterTable, "Extractdata": ExtractTable,
+                     "Calculatedata": CalculateTable}
+        guid = uuid.uuid1()
+        cur_target = Target.objects.exclude(state="9").order_by("sort").filter(adminapp__id=app, operationtype=operationtype,
+                                            cycletype=cycletype, work=work).exclude(id__in=exist_target_id)
+        if len(cur_target) <= 0:
+            status = 0
+            data = '无需补充。'
+        else:
+            for target in cur_target:
+                a_cycle_aft_date = get_a_cycle_aft(reporting_date, cycletype)
+                if operationtype == "1":
+                    all_meterdata = getmodels("Meterdata", str((reporting_date + datetime.timedelta(
+                        days=-1)).year)).objects.exclude(state="9").filter(target=target,atadate=reporting_date + datetime.timedelta(days=-1))
+                    meterdata = getmodels("Meterdata", str(reporting_date.year))()
+                    if len(all_meterdata) > 0:
+                        meterdata.zerodata = all_meterdata[0].twentyfourdata if all_meterdata[0].twentyfourdata else 0
+                    else:
+                        meterdata.zerodata = 0
+                    meterdata.twentyfourdata = meterdata.zerodata
+                    tablename = ""
+                    try:
+                        tablename = target.storage.tablename
+                    except:
+                        pass
+                    rows = []
+                    if tablename:
+                        try:
+                            with connection.cursor() as cursor:
+                                reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
+                                strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
+                                    tablename=tablename, target_id=target.id, datadate=reporting_date_stf
+                                )
+                                cursor.execute(strsql)
+                                rows = cursor.fetchall()
+                        finally:
+                            connection.close()
+                    if len(rows) > 0:
+                        try:
+                            meterdata.twentyfourdata = rows[0][0]
+                        except:
+                            pass
+                    if not rows or not target.cycle:
+                        ret = Extract.getDataFromSource(target, a_cycle_aft_date)
+                        result_list = ret["result"]
+                        if result_list:
+                            try:
+                                meterdata.twentyfourdata = result_list[0][0]
+                            except:
+                                pass
+                    meterdata.target = target
+                    meterdata.datadate = reporting_date
+                    meterdata.metervalue = decimal.Decimal(meterdata.twentyfourdata) - decimal.Decimal(
+                        meterdata.zerodata)
+                    meterdata.todayvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
+                    meterdata.todayvalue = round(meterdata.todayvalue, target.digit)
+                    meterdata.judgevalue = 0
+                    meterdata.curvalue = meterdata.todayvalue + meterdata.judgevalue
+                    if target.cumulative in ['1', '2', '3', '4']:
+                        cumulative = getcumulative(tableList, target, reporting_date, meterdata.curvalue)
+                        meterdata.cumulativemonth = cumulative["cumulativemonth"]
+                        meterdata.cumulativequarter = cumulative["cumulativequarter"]
+                        meterdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                        meterdata.cumulativeyear = cumulative["cumulativeyear"]
+                    meterdata.save()
+                if operationtype == "15":
+                    entrydata = getmodels("Entrydata", str(reporting_date.year))()
+                    entrydata.target = target
+                    entrydata.datadate = reporting_date
+                    entrydata.todayvalue = 0
+                    entrydata.judgevalue = 0
+                    entrydata.curvalue = 0
+                    if target.cumulative in ['1', '2', '3', '4']:
+                        cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
+                        entrydata.cumulativemonth = cumulative["cumulativemonth"]
+                        entrydata.cumulativequarter = cumulative["cumulativequarter"]
+                        entrydata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                        entrydata.cumulativeyear = cumulative["cumulativeyear"]
+                    entrydata.save()
+                if operationtype == "16":
+                    extractdata = getmodels("Extractdata", str(reporting_date.year))()
+                    extractdata.target = target
+                    extractdata.datadate = reporting_date
+                    extractdata.todayvalue = -9999
+                    extractdata.judgevalue = 0
+
+                    tablename = ""
+                    try:
+                        tablename = target.storage.tablename
+                    except:
+                        pass
+                    rows = []
+                    if tablename:
+                        try:
+                            cursor = connection.cursor()
+                            with connection.cursor() as cursor:
+                                reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
+                                strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
+                                    tablename=tablename, target_id=target.id, datadate=reporting_date_stf
+                                )
+                                cursor.execute(strsql)
+                                rows = cursor.fetchall()
+                            connection.close()
+                        except Exception as e:
+                            pass
+                    if len(rows) > 0:
+                        try:
+                            if target.is_repeat == '2':
+                                rownum = 0
+                                rowvalue = 0
+                                for row in rows:
+                                    if row[0] is not None:
+                                        rowvalue += row[0]
+                                        rownum += 1
+                                extractdata.todayvalue = rowvalue / rownum
+                            else:
+                                extractdata.todayvalue = rows[0][0]
+                            extractdata.todayvalue = decimal.Decimal(
+                                float(extractdata.todayvalue) * float(target.magnification))
+                            extractdata.todayvalue = round(extractdata.todayvalue, target.digit)
+                        except:
+                            pass
+                    if not rows or not target.cycle:
+                        ret = Extract.getDataFromSource(target, a_cycle_aft_date)
+                        result_list = ret["result"]
+                        if result_list:
+                            try:
+                                if target.is_repeat == '2':
+                                    rownum = 0
+                                    rowvalue = 0
+                                    for row in result_list:
+                                        if row[0] is not None:
+                                            rowvalue += row[0]
+                                            rownum += 1
+                                    extractdata.todayvalue = rowvalue / rownum
+                                else:
+                                    extractdata.todayvalue = result_list[0][0]
+                                extractdata.todayvalue = decimal.Decimal(
+                                    float(extractdata.todayvalue) * float(target.magnification))
+                                extractdata.todayvalue = round(extractdata.todayvalue, target.digit)
+                            except Exception as e:
+                                print(e)
+                    extractdata.curvalue = extractdata.todayvalue + extractdata.judgevalue
+                    if target.cumulative in ['1', '2', '3', '4']:
+                        cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
+                        extractdata.cumulativemonth = cumulative["cumulativemonth"]
+                        extractdata.cumulativequarter = cumulative["cumulativequarter"]
+                        extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                        extractdata.cumulativeyear = cumulative["cumulativeyear"]
+                    extractdata.save()
+                if operationtype == "17":
+                    if target.calculateguid != str(guid):
+                        try:
+                            getcalculatedata(target, reporting_date, str(guid), all_constant, all_target, tableList)
+                        except Exception as e:
+                            print(e)
+                            status = 0
+                            data = '计算失败：{e}'.format(e=e)
+                            import traceback
+                            traceback.print_exc()
+                            break
+
+        return JsonResponse({
+            'status': status,
+            'data': data
+        })
+
+
 def reporting_del(request):
     if request.user.is_authenticated():
         result = {
