@@ -6812,7 +6812,7 @@ def reporting_supply(request):
                 a_cycle_aft_date = get_a_cycle_aft(reporting_date, cycletype)
                 if operationtype == "1":
                     all_meterdata = getmodels("Meterdata", str((reporting_date + datetime.timedelta(
-                        days=-1)).year)).objects.exclude(state="9").filter(target=target,atadate=reporting_date + datetime.timedelta(days=-1))
+                        days=-1)).year)).objects.exclude(state="9").filter(target=target,datadate=reporting_date + datetime.timedelta(days=-1))
                     meterdata = getmodels("Meterdata", str(reporting_date.year))()
                     if len(all_meterdata) > 0:
                         meterdata.zerodata = all_meterdata[0].twentyfourdata if all_meterdata[0].twentyfourdata else 0
