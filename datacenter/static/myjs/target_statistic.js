@@ -337,20 +337,20 @@ var completed = false;
 function loadtargetData() {
     if (completed) {
         var table_1 = $('#sample_1').DataTable();
-        table_1.ajax.url("../../target_insert_data/?app_id=" + $('#app_id').val()).load();
+        table_1.ajax.url("../../target_insert_data/?search_adminapp=" + $('#app_id').val()).load();
         }
     else {
         $('#sample_1').dataTable({
             "bAutoWidth": true,
             "bSort": false,
             "bProcessing": true,
-            "ajax": "../../target_insert_data/?app_id=" + $('#app_id').val(),
+            "ajax": "../../target_insert_data/?search_adminapp=" + $('#app_id').val(),
             "columns": [
                 {"data": "id"},
                 {"data": "id"},
                 {"data": "name"},
                 {"data": "code"},
-                {"data": "cycletype"},
+                {"data": "cycletype_name"},
                 {"data": "cumulative"}
 
             ],

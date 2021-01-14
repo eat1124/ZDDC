@@ -670,52 +670,40 @@ $(document).ready(function () {
         }
         $('#sample_3').dataTable({
             "bAutoWidth": true,
-            "bSort": true,
+            "bSort": false,
             "bProcessing": true,
-            "ajax": "../../target_data/?&datatype=" + $('#datatype').val(),
+            "ajax": "../../target_insert_data/?&datatype=" + $('#datatype').val()  + "&search_adminapp=" + $('#adminapp').val(),
             "columns": [
                 {"data": "id"},
                 {"data": "name"},
                 {"data": "code"},
                 {"data": "cumulative"},
                 {"data": "cycletype_name"},
+                {"data": "adminapp_name"},
                 {"data": null},
                 {"data": null},
                 {"data": null}
             ],
             "columnDefs": [{
-                "targets": -5,
-                "data": null,
-                "mRender": function (data, type, full) {
-                    var cumulative_info = {
-                        "0": "不累计",
-                        "1": "求和",
-                        "2": "算术平均",
-                        "3": "加权平均",
-                        "4": "非零算数平均"
-                    };
-                    return cumulative_info[full.cumulative]
-                }
-            }, {
                 "targets": -3,
                 "data": null,
                 "mRender": function (data, type, full) {
-                    if (full.cumulative == "0") {
+                    if (full.cumulative == "不累计") {
                         return "<select style='width:100px'><option value='d'>当前值</option>"
                     }
-                    if (full.cumulative != "0" && full.cycletype_name == "日") {
+                    if (full.cumulative != "不累计" && full.cycletype_name == "日") {
                         return "<select style='width:100px'><option value='d'>当前值</option><option value='m'>月累计</option><option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
                     }
-                    if (full.cumulative != "0" && full.cycletype_name == "月") {
+                    if (full.cumulative != "不累计" && full.cycletype_name == "月") {
                         return "<select style='width:100px'><option value='d'>当前值</option><option value='s'>季累计</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
                     }
-                    if (full.cumulative != "0" && full.cycletype_name == "季") {
+                    if (full.cumulative != "不累计" && full.cycletype_name == "季") {
                         return "<select style='width:100px'><option value='d'>当前值</option><option value='h'>半年累计</option><option value='y'>年累计</option></select>";
                     }
-                    if (full.cumulative != "0" && full.cycletype_name == "半年") {
+                    if (full.cumulative != "不累计" && full.cycletype_name == "半年") {
                         return "<select style='width:100px'><option value='d'>当前值</option><option value='y'>年累计</option></select>";
                     }
-                    if (full.cumulative != "0" && full.cycletype_name == "年") {
+                    if (full.cumulative != "不累计" && full.cycletype_name == "年") {
                         return "<select style='width:100px'><option value='d'>当前值</option></select>";
                     }
                     if (full.cumulative == null || full.cumulative == '') {
@@ -915,9 +903,9 @@ $(document).ready(function () {
     }
 
 
-    $('#search_adminapp3,#search_app3,#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3').change(function () {
+    $('#search_operationtype3,#search_cycletype3,#search_businesstype3,#search_unit3').change(function () {
         var table = $('#sample_3').DataTable();
-        table.ajax.url("../../target_data?search_adminapp=" + $('#search_adminapp3').val() + "&search_app=" + $('#search_app3').val() + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val()).load();
+        table.ajax.url("../../target_insert_data?search_adminapp=" + $('#adminapp').val() + "&search_operationtype=" + $('#search_operationtype3').val() + "&search_cycletype=" + $('#search_cycletype3').val() + "&search_businesstype=" + $('#search_businesstype3').val() + "&search_unit=" + $('#search_unit3').val()).load();
     });
 
 
@@ -947,9 +935,9 @@ $(document).ready(function () {
 
     $('#sample_4').dataTable({
         "bAutoWidth": true,
-        "bSort": true,
+        "bSort": false,
         "bProcessing": true,
-        "ajax": "../../constant_data/",
+        "ajax": "../../constant_data/?&search_adminapp=" + $('#adminapp').val(),
         "columns": [
             {"data": "id"},
             {"data": "name"},

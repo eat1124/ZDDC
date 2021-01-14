@@ -574,37 +574,37 @@
                                     <div class="panel-body">
                                         <div class="bs-example form-horizontal activate-form">
                                             <div class="row">
-                                                <div class="col-md-12">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group ">
-                                                            <label class="col-md-3 control-label">管理应用</label>
-                                                            <div class="col-md-7">
-                                                                <select class="form-control" id="search_adminapp3"
-                                                                        name="search_adminapp3">
-                                                                    <option selected value="">全部</option>
-                                                                    {% for app in app_list %}
-                                                                        <option value="{{ app.app_id }}">{{ app.app_name }}</option>
-                                                                    {% endfor %}
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group ">
-                                                            <label class="col-md-3 control-label">查询应用</label>
-                                                            <div class="col-md-7">
-                                                                <select class="form-control" id="search_app3"
-                                                                        name="search_app3">
-                                                                    <option selected value="">全部</option>
-                                                                    {% for app in app_list %}
-                                                                        <option value="{{ app.app_id }}">{{ app.app_name }}</option>
-                                                                    {% endfor %}
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                </div>
+{#                                                <div class="col-md-12">#}
+{#                                                    <div class="col-md-6">#}
+{#                                                        <div class="form-group ">#}
+{#                                                            <label class="col-md-3 control-label">管理应用</label>#}
+{#                                                            <div class="col-md-7">#}
+{#                                                                <select class="form-control" id="search_adminapp3"#}
+{#                                                                        name="search_adminapp3">#}
+{#                                                                    <option selected value="">全部</option>#}
+{#                                                                    {% for app in app_list %}#}
+{#                                                                        <option value="{{ app.app_id }}">{{ app.app_name }}</option>#}
+{#                                                                    {% endfor %}#}
+{#                                                                </select>#}
+{#                                                            </div>#}
+{#                                                        </div>#}
+{#                                                    </div>#}
+{#                                                    <div class="col-md-6">#}
+{#                                                        <div class="form-group ">#}
+{#                                                            <label class="col-md-3 control-label">查询应用</label>#}
+{#                                                            <div class="col-md-7">#}
+{#                                                                <select class="form-control" id="search_app3"#}
+{#                                                                        name="search_app3">#}
+{#                                                                    <option selected value="">全部</option>#}
+{#                                                                    {% for app in app_list %}#}
+{#                                                                        <option value="{{ app.app_id }}">{{ app.app_name }}</option>#}
+{#                                                                    {% endfor %}#}
+{#                                                                </select>#}
+{#                                                            </div>#}
+{#                                                        </div>#}
+{#                                                    </div>#}
+{##}
+{#                                                </div>#}
                                                 <div class="col-md-12">
                                                     <div class="col-md-6">
                                                         <div class="form-group ">
@@ -681,6 +681,7 @@
                                 <th> 指标代码</th>
                                 <th> 累积类型</th>
                                 <th> 周期类型</th>
+                                <th> 所属应用</th>
                                 <th> 数据字段</th>
                                 <th> 数据时间</th>
                                 <th style="width:50px;"> 操作</th>

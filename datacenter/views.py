@@ -10150,12 +10150,32 @@ def target_statistic(request, funid):
 def target_insert_data(request):
     if request.user.is_authenticated():
         result = []
-        app_id = request.GET.get('app_id', '')
+
+        search_adminapp = request.GET.get('search_adminapp', '')
+
+        search_operationtype = request.GET.get('search_operationtype', '')
+        search_cycletype = request.GET.get('search_cycletype', '')
+        search_businesstype = request.GET.get('search_businesstype', '')
+        search_unit = request.GET.get('search_unit', '')
+        datatype = request.GET.get('datatype', '')
+
         try:
-            app_id = int(app_id)
-        except Exception as e:
-            print(e)
-        targets = Target.objects.exclude(state="9").filter(Q(adminapp__id=app_id) | Q(app__id=app_id))
+            search_adminapp = int(search_adminapp)
+        except:
+            pass
+        all_target = Target.objects.exclude(state="9").order_by("sort").filter(Q(adminapp__id=search_adminapp) | Q(app__id=search_adminapp))
+
+        if search_operationtype != "":
+            all_target = all_target.filter(operationtype=int(search_operationtype))
+        if search_cycletype != "":
+            all_target = all_target.filter(cycletype=int(search_cycletype))
+        if search_businesstype != "":
+            all_target = all_target.filter(businesstype=int(search_businesstype))
+        if search_unit != "":
+            all_target = all_target.filter(unit=int(search_unit))
+        if datatype != "":
+            all_target = all_target.filter(datatype=datatype)
+
         all_dict_list = DictList.objects.exclude(state='9').values('id', 'name')
         cumulative_dict = {
             "0": "不累计",
@@ -10164,7 +10184,7 @@ def target_insert_data(request):
             "3": "加权平均",
             "4": "非零算数平均",
         }
-        for target in targets:
+        for target in all_target:
             cycletype = target.cycletype
             if cycletype:
                 for dict in all_dict_list:
@@ -10175,8 +10195,9 @@ def target_insert_data(request):
                 "id": target.id,
                 "name": target.name,
                 "code": target.code,
-                "cycletype": cycletype,
-                "cumulative": cumulative_dict[target.cumulative]
+                "cycletype_name": cycletype,
+                "cumulative": cumulative_dict[target.cumulative],
+                "adminapp_name": target.adminapp.name
             })
         return JsonResponse({"data": result})
 
