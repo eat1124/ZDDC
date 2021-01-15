@@ -487,9 +487,10 @@ $('#select_all_target').click(function () {
      $.each(table, function (i, item) {
          $('#select_target_' + item.id).prop('checked',true);
          if ($('#select_target_' + item.id).prop('checked')){
-             importData.push(item.id + ':' + item.name)
+             if (importData.indexOf(item.id + ':' + item.name) == -1){
+                 importData.push(item.id + ':' + item.name)
+             }
          }
-
      });
 });
 
