@@ -835,6 +835,8 @@ $(document).ready(function () {
             {"data": "cumulativehalfyear"},
             {"data": "cumulativeyear"},
             {"data": null},
+            {"data": null},
+
         ],
 
         "columnDefs": [
@@ -859,13 +861,24 @@ $(document).ready(function () {
                 "visible": false,
             },
             {
+                "targets": -9,
+                "mRender": function (data, type, full) {
+                    var disabled = "";
+                    if (full.releasestate=='1'){
+                        disabled = "disabled"
+                    }
+                    return "<input " + disabled + " style='margin-top:-5px;width:120px;height:24px;' id='table3_todayvalue_" + full.id + "' name='table3_todayvalue'  type='number' value='" + data + "'></input>"
+                }
+            },
+            {
                 "targets": -8,
                 "mRender": function (data, type, full) {
                     var disabled = "";
                     if (full.releasestate=='1'){
                         disabled = "disabled"
                     }
-                    return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table3_todayvalue_" + full.id + "' name='table3_todayvalue'  type='number' value='" + data + "'></input>"
+                    return "<input " + disabled + " style='margin-top:-5px;width:120px;height:24px;' id='table3_judgevalue_" + full.id + "' name='table3_judgevalue'  type='number' value='" + data + "'></input>"
+
                 }
             },
             {
@@ -875,54 +888,43 @@ $(document).ready(function () {
                     if (full.releasestate=='1'){
                         disabled = "disabled"
                     }
-                    return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;' id='table3_judgevalue_" + full.id + "' name='table3_judgevalue'  type='number' value='" + data + "'></input>"
-
+                    if (full.target_datatype == 'numbervalue') {
+                        return "<input disabled style='margin-top:-5px;width:120px;height:24px;' id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
+                    }
+                    if (full.target_datatype == 'date') {
+                        return "<input " + disabled + " class='table3_curvaluedate' style='margin-top:-5px;width:120px;height:24px;' id='table3_curvaluedate_" + full.id + "' name='table3_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
+                    }
+                    if (full.target_datatype == 'text') {
+                        return "<input " + disabled + " style='margin-top:-5px;width:120px;height:24px;'  id='table3_curvaluetext_" + full.id + "' name='table3_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
+                    }
                 }
             },
             {
                 "targets": -6,
                 "mRender": function (data, type, full) {
-                    var disabled = "";
-                    if (full.releasestate=='1'){
-                        disabled = "disabled"
-                    }
-                    if (full.target_datatype == 'numbervalue') {
-                        return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table3_curvalue_" + full.id + "' name='table3_curvalue'  type='number' value='" + data + "'></input>"
-                    }
-                    if (full.target_datatype == 'date') {
-                        return "<input " + disabled + " class='table3_curvaluedate' style='margin-top:-5px;width:134px;height:24px;' id='table3_curvaluedate_" + full.id + "' name='table3_curvaluedate'  type='datetime'  value='" + full.curvaluedate + "'></input>"
-                    }
-                    if (full.target_datatype == 'text') {
-                        return "<input " + disabled + " style='margin-top:-5px;width:134px;height:24px;'  id='table3_curvaluetext_" + full.id + "' name='table3_curvaluetext'  type='text' value='" + full.curvaluetext + "'></input>"
-                    }
+                    return "<input disabled style='margin-top:-5px;width:120px;height:24px;' id='table3_cumulativemonth_" + full.id + "' name='table3_cumulativemonth'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -5,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table3_cumulativemonth_" + full.id + "' name='table3_cumulativemonth'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:120px;height:24px;' id='table3_cumulativequarter_" + full.id + "' name='table3_cumulativequarter'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -4,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table3_cumulativequarter_" + full.id + "' name='table3_cumulativequarter'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:120px;height:24px;' id='table3_cumulativehalfyear_" + full.id + "' name='table3_cumulativehalfyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -3,
                 "mRender": function (data, type, full) {
-                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table3_cumulativehalfyear_" + full.id + "' name='table3_cumulativehalfyear'  type='text' value='" + data + "'></input>"
+                    return "<input disabled style='margin-top:-5px;width:120px;height:24px;' id='table3_cumulativeyear_" + full.id + "' name='table3_cumulativeyear'  type='text' value='" + data + "'></input>"
                 }
             },
             {
                 "targets": -2,
-                "mRender": function (data, type, full) {
-                    return "<input disabled style='margin-top:-5px;width:134px;height:24px;' id='table3_cumulativeyear_" + full.id + "' name='table3_cumulativeyear'  type='text' value='" + data + "'></input>"
-                }
-            },
-            {
-                "targets": -1,
                 "data": null,
                 "orderable": false,
                 "mRender": function (data, type, full) {
@@ -930,9 +932,16 @@ $(document).ready(function () {
                     if (full.releasestate=='1'){
                         disabled = "disabled"
                     }
-                    return "<button " + disabled + " id='edit' title='查看公式' data-toggle='modal'  data-target='#static3'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>" +
-                    "<button " + disabled + " id='single_recalculate1' title='重新计算(包括当前指标)' class='btn btn-xs purple-plum' type='button'><i class='fa fa-calculator'></i></button>" +
+                    return "<button " + disabled + " id='single_recalculate1' title='重新计算(包括当前指标)' class='btn btn-xs purple-plum' type='button'><i class='fa fa-calculator'></i></button>" +
                     "<button " + disabled + " id='single_recalculate2' title='重新计算(不包括当前指标)' class='btn btn-xs blue-hoki' type='button'><i class='fa fa-calculator'></i></button>"
+                }
+            },
+            {
+                "targets": -1,
+                "data": null,
+                "orderable": false,
+                "mRender": function (data, type, full) {
+                    return "<button id='edit' title='查看公式' data-toggle='modal'  data-target='#static3'  class='btn btn-xs btn-primary' type='button'><i class='fa fa-edit'></i></button>"
                 }
             }
         ],
