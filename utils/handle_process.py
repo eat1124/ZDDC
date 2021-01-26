@@ -499,7 +499,6 @@ class Extract(object):
                         format_date = Extract.format_date(time, pre_format_list[0])
                         # 格式化后的SQL
                         source_content = source_content.replace(pre_format_list[0], format_date)
-
                     db_query = SeveralDBQuery(source_type_name, source_connection)
                     db_query.fetch_all(source_content)
                     result_list = db_query.result
@@ -706,6 +705,8 @@ class Extract(object):
         # LDE代表昨天24点， < br >
         # MS代表月初， < br >
         # ME代表月末， < br >
+        # DM代表本月， < br >
+        # LM代表上月， < br >
         # LMS代表上月初， < br >
         # LME代表上月末， < br >
         # SS代表季初， < br >
@@ -749,6 +750,17 @@ class Extract(object):
             month = date.month
             a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
             newdate = datetime.datetime(year=year, month=month, day=b)
+
+        # 当月所在月份:to_char(RQ,'yyyy-MM') = '2021-01'
+        if cond == "DM":
+            date_now = date.replace(day=1)
+            newdate = date_now.strftime('%Y-%m')
+        # 上月所在月份:to_char(RQ,'yyyy-MM') = '2020-12'
+        if cond == "LM":
+            date_now = date.replace(day=1)
+            newdate = date_now + datetime.timedelta(days=-1)
+            newdate = newdate.strftime('%Y-%m')
+
         if cond == "LME":
             date_now = date.replace(day=1)
             newdate = date_now + datetime.timedelta(days=-1)
@@ -805,9 +817,11 @@ class Extract(object):
             newdate = newdate + datetime.timedelta(days=-1)
 
         date_init = '' if return_type == 'str' else None
-
         if return_type == 'str':
-            date_init = '{:%Y-%m-%d}'.format(newdate)
+            if cond == 'LM' or cond == 'DM':
+                date_init = newdate
+            else:
+                date_init = '{:%Y-%m-%d}'.format(newdate)
         if return_type == 'timestamp':
             date_init = newdate
 

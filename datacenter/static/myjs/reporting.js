@@ -1392,9 +1392,9 @@ $(document).ready(function () {
                 "mRender": function (data, type, full) {
                     var disabled = "";
                     var class_color = "class='btn btn-xs btn-primary'";
-                    if (full.releasestate=='1'){
-                        disabled = "disabled"
-                    }
+                    // if (full.releasestate=='1'){
+                    //     disabled = "disabled"
+                    // }
                     if (full.meterchangedata_id){
                         class_color = "class='btn btn-xs btn-warning'";
                     }
@@ -1646,6 +1646,16 @@ $(document).ready(function () {
                 return false
             }
         })
+        console.log(data.releasestate)
+        if (data.releasestate == '1'){
+            $('#oldtable_zerodata,#newtable_zerodata,#oldtable_twentyfourdata,#newtable_twentyfourdata,#oldtable_value,' +
+                '#newtable_value,#newtable_magnification,#oldtable_finalvalue,#newtable_finalvalue,#finalvalue').attr('readonly', 'readonly');
+            $('#confirm').attr('disabled', 'disabled')
+        }else {
+            $('#oldtable_zerodata,#newtable_zerodata,#oldtable_twentyfourdata,#newtable_twentyfourdata,#oldtable_value,' +
+                '#newtable_value,#newtable_magnification,#oldtable_finalvalue,#newtable_finalvalue,#finalvalue').removeAttr('readonly', 'readonly');
+            $('#confirm').removeAttr('disabled', 'disabled')
+        }
         $("#id").val(data.id);
         $("#target_id").val(data.target_id);
         $("#cumulative").val(data.target_cumulative);
