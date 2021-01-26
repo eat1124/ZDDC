@@ -1390,15 +1390,11 @@ $(document).ready(function () {
                 "data": null,
                 "width": "10px",
                 "mRender": function (data, type, full) {
-                    var disabled = "";
                     var class_color = "class='btn btn-xs btn-primary'";
-                    // if (full.releasestate=='1'){
-                    //     disabled = "disabled"
-                    // }
                     if (full.meterchangedata_id){
                         class_color = "class='btn btn-xs btn-warning'";
                     }
-                    return "<button " + disabled + " id='edit' title='换表' data-toggle='modal'  data-target='#static5' " + class_color + " type='button'><i class='fa fa-edit'></i></button>"
+                    return "<button id='edit' title='换表' data-toggle='modal'  data-target='#static5' " + class_color + " type='button'><i class='fa fa-edit'></i></button>"
                 }
             },
         ],
@@ -1633,8 +1629,6 @@ $(document).ready(function () {
     });
 
 
-
-
     // 电表走字换表
     $('#sample_5 tbody').on('click', 'button#edit', function () {
         var data5 = $('#sample_5').DataTable().data();
@@ -1645,8 +1639,8 @@ $(document).ready(function () {
                 data = item;
                 return false
             }
-        })
-        console.log(data.releasestate)
+        });
+        // 发布之后，换表数据只能查看不能修改
         if (data.releasestate == '1'){
             $('#oldtable_zerodata,#newtable_zerodata,#oldtable_twentyfourdata,#newtable_twentyfourdata,#oldtable_value,' +
                 '#newtable_value,#newtable_magnification,#oldtable_finalvalue,#newtable_finalvalue,#finalvalue').attr('readonly', 'readonly');
