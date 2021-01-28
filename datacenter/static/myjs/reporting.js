@@ -1293,11 +1293,8 @@ $(document).ready(function () {
             {
                 "targets": -12,
                 "mRender": function (data, type, full) {
-                    var disabled = "";
-                    if (full.releasestate=='1' || full.meterchangedata_id){
-                        disabled = "disabled"
-                    }
-                    return "<input " + disabled + "   style='margin-top:-5px;width:100px;height:24px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
+                    // 0点走字为昨天24点走字，不可修改
+                    return "<input disabled style='margin-top:-5px;width:100px;height:24px;' id='table5_zerodata_" + full.id + "' name='table5_zerodata'  type='text' value='" + data + "'></input>"
                 }
             },
             {
