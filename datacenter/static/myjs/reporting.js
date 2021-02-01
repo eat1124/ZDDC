@@ -1207,6 +1207,7 @@ $(document).ready(function () {
         "ajax": "../../../reporting_search_data/?app=" + $('#app').val() + "&cycletype=" + $('#cycletype').val() + "&reporting_date=" + $('#reporting_date').val() + "&searchapp=" + $('#searchapp').val(),
         "columns": [
             {"data": "target_name"},
+            {"data": "target_unity"},
             {"data": "zerodata"},
             {"data": "twentyfourdata"},
             {"data": "todayvalue"},
