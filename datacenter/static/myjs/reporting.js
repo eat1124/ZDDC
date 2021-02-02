@@ -510,7 +510,7 @@ $(document).ready(function () {
     // 数据提取 operationtype 16
     $('#sample_2').dataTable({
         "bAutoWidth": true,
-        "bSort": true,
+        "bSort": false,
         "bProcessing": true,
         "bPaginate": false,
         "bFilter": false,
@@ -813,7 +813,7 @@ $(document).ready(function () {
     // 数据计算 operationtype 17
     $('#sample_3').dataTable({
         "bAutoWidth": true,
-        "bSort": true,
+        "bSort": false,
         "bProcessing": true,
         "bPaginate": false,
         "bFilter": false,
