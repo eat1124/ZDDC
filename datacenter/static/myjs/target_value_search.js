@@ -42,9 +42,10 @@ $(document).ready(function () {
             "bProcessing": true,
             "data": data,
             "columns": [
+                {"data": "time"},
                 {"data": "name"},
                 {"data": "code"},
-                {"data": "time"},
+                {"data": "unity"},
                 {"data": "curvalue"},
                 {"data": "cumulativemonth"},
                 {"data": "cumulativequarter"},

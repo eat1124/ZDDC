@@ -10211,12 +10211,13 @@ def get_target_value(c_target, start_date, end_date):
                 )
         # 对值的处理
         for ato in appointed_time_object.values(
-                "curvalue", "target__name", "target__code", "datadate", "target__digit",
+                "curvalue", "target__name", "target__code", "target__unity", "datadate", "target__digit",
                 "cumulativemonth", "cumulativequarter", "cumulativehalfyear", "cumulativeyear",
         ):
             data.append({
                 "name": ato["target__name"],
                 "code": ato["target__code"],
+                "unity": ato["target__unity"],
                 "curvalue": round(ato["curvalue"] if ato["curvalue"] else 0, ato["target__digit"]),
                 "cumulativemonth": round(ato["cumulativemonth"] if ato["cumulativemonth"] else 0, ato["target__digit"]),
                 "cumulativequarter": round(ato["cumulativequarter"] if ato["cumulativequarter"] else 0, ato["target__digit"]),
@@ -10280,6 +10281,7 @@ def get_target_search_data(request):
                         data = [{
                             "name": tv["name"],
                             "code": tv["code"],
+                            "unity": tv["unity"],
                             "curvalue": tv["curvalue"],
                             "cumulativemonth": tv["cumulativemonth"],
                             "cumulativequarter": tv["cumulativequarter"],
@@ -10292,6 +10294,7 @@ def get_target_search_data(request):
                         s_target_values = [{
                             "name": tv["name"],
                             "code": tv["code"],
+                            "unity": tv["unity"],
                             "curvalue": tv["curvalue"],
                             "cumulativemonth": tv["cumulativemonth"],
                             "cumulativequarter": tv["cumulativequarter"],
@@ -10303,6 +10306,7 @@ def get_target_search_data(request):
                         e_target_values = [{
                             "name": tv["name"],
                             "code": tv["code"],
+                            "unity": tv["unity"],
                             "curvalue": tv["curvalue"],
                             "cumulativemonth": tv["cumulativemonth"],
                             "cumulativequarter": tv["cumulativequarter"],
@@ -10321,6 +10325,7 @@ def get_target_search_data(request):
                                 m_data = [{
                                     "name": tv["name"],
                                     "code": tv["code"],
+                                    "unity": tv["unity"],
                                     "curvalue": tv["curvalue"],
                                     "cumulativemonth": tv["cumulativemonth"],
                                     "cumulativequarter": tv["cumulativequarter"],
@@ -10849,6 +10854,9 @@ def get_statistic_report(request):
                         else:
                             rowspan = 2
                         for target in targets:
+                            target_unity = Target.objects.filter(id=target['target_id']).first().unity
+                            target_name = target['target_name'] + ' (' + target_unity + ')'
+                            target['new_target_name'] = target_name
                             head_targets.append(target)
 
                         head_data.append({
@@ -10932,7 +10940,7 @@ def get_statistic_report(request):
                     date_list = get_date_list_during_period(start_date, end_date, date_type)
 
                     all_targets = Target.objects.exclude(state="9").values(
-                        "id", "name", "operationtype"
+                        "id", "name", "operationtype", "cumulative"
                     )
 
                     def get_target_info(target_id: str) -> dict:
@@ -10951,6 +10959,7 @@ def get_statistic_report(request):
                             statistic_type = cd["statistic_type"]
                             for target in targets:
                                 target_id = target["target_id"]
+                                target_cumulative = get_target_info(target_id).get("cumulative", "")
                                 operation_type = get_target_info(target_id).get("operationtype", "")
                                 try:
                                     cur_data = all_data[operation_type]
@@ -10963,31 +10972,31 @@ def get_statistic_report(request):
                                             # 判断取的值类型
                                             if target["cumulative_type"] == "0":
                                                 target_values.append({
-                                                    "value": d["curvalue"] if d["curvalue"] else "/",
+                                                    "value": d["curvalue"],
                                                     "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "1":
                                                 target_values.append({
-                                                    "value": d["cumulativemonth"] if d["curvalue"] else "/",
+                                                    "value": d["cumulativemonth"],
                                                     "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "2":
                                                 target_values.append({
-                                                    "value": d["cumulativequarter"] if d["curvalue"] else "/",
+                                                    "value": d["cumulativequarter"],
                                                     "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "3":
                                                 target_values.append({
-                                                    "value": d["cumulativehalfyear"] if d["curvalue"] else "/",
+                                                    "value": d["cumulativehalfyear"],
                                                     "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "4":
                                                 target_values.append({
-                                                    "value": d["cumulativeyear"] if d["curvalue"] else "/",
+                                                    "value": d["cumulativeyear"],
                                                     "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
@@ -11032,16 +11041,14 @@ def get_statistic_report(request):
                                 in_sum += 1
                         if cumulative == "1":  # 求和
                             pass
-                        if cumulative in ["2", "4"]:  # 平均
+                        if cumulative in ["0", "2", "4"]:  # 0:不累计，2：算数平均， 3：非零算数平均
                             v_sum = v_sum / decimal.Decimal(str(in_sum)) if in_sum else 0
                             v_sum = round(v_sum, 4)
-                        if cumulative == "0":  # 不累计
-                            v_sum = "/"
                         if cumulative == "3":   # 加权平均->待
                             v_sum = "/"
                         v_sums.append({
                             "statistic_type": statistic_type,
-                            "v": float(v_sum) if v_sum and v_sum != "/" else "/"
+                            "v": float(v_sum) if v_sum or v_sum != "/" else "/"
                         }) # 合计里放个总计类型
             except Exception as e:
                 status = 0

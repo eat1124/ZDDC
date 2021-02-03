@@ -173,7 +173,8 @@ function renderTargetColDataTable(table_data) {
         for (var i = 0; i < data.targets.length; i++) {
             var target_id = data.targets[i].target_id;
             var target_name = data.targets[i].target_name;
-            var t_data = target_id + ":"  + target_name;
+            var target_cumulative = data.targets[i].cumulative_type;
+            var t_data = target_id + ":"  + target_name + ":" + target_cumulative;
             targets.push(t_data);
         }
         var target_name_list = [];
@@ -181,7 +182,44 @@ function renderTargetColDataTable(table_data) {
         for (var i = 0; i < targets.length; i++){
             var target_id = targets[i].split(':')[0];
             var target_name = targets[i].split(':')[1];
+            var target_cumulative = targets[i].split(':')[2];
             target_name_list.push(target_name);
+            if (target_cumulative == '0'){
+                var selected0 = 'selected';
+                var selected1 = '';
+                var selected2 = '';
+                var selected3 = '';
+                var selected4 = '';
+            }
+            if (target_cumulative == '1'){
+                var selected0 = '';
+                var selected1 = 'selected';
+                var selected2 = '';
+                var selected3 = '';
+                var selected4 = '';
+            }
+            if (target_cumulative == '2'){
+                var selected0 = '';
+                var selected1 = '';
+                var selected2 = 'selected';
+                var selected3 = '';
+                var selected4 = '';
+            }
+            if (target_cumulative == '3'){
+                var selected0 = '';
+                var selected1 = '';
+                var selected2 = '';
+                var selected3 = 'selected';
+                var selected4 = '';
+            }
+            if (target_cumulative == '4'){
+                var selected0 = '';
+                var selected1 = '';
+                var selected2 = '';
+                var selected3 = '';
+                var selected4 = 'selected';
+            }
+
             $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target_id + '">\n' +
                 '    <div class="col-md-4" style="padding: 0">\n' +
                 '        <input type="text" readonly class="form-control" value="' + target_name + '">\n' +
@@ -193,12 +231,12 @@ function renderTargetColDataTable(table_data) {
                 '        <input type="text" class="form-control" value="' + target_name + '">\n' +
                 '    </div>\n' +
                 '    <div class="col-md-2" style="padding: 0;margin-left:20px">\n' +
-                '        <select class="form-control">\n' +
-                '           <option value="0">当前值</option>' +
-                '           <option value="1">月累计值</option>' +
-                '           <option value="2">季累计值</option>' +
-                '           <option value="3">半年累计值</option>' +
-                '           <option value="4">年累计值</option>' +
+                '        <select class="form-control" value="' + target_cumulative + '">\n' +
+                '           <option ' + selected0 + ' value="0">当前值</option>' +
+                '           <option ' + selected1 + ' value="1">月累计值</option>' +
+                '           <option ' + selected2 + ' value="2">季累计值</option>' +
+                '           <option ' + selected3 + ' value="3">半年累计值</option>' +
+                '           <option ' + selected4 + ' value="4">年累计值</option>' +
                 '        </select>\n' +
                 '    </div>\n' +
                 '</div>');
