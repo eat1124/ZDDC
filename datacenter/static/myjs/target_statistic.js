@@ -1,3 +1,5 @@
+var targets_sorted = [];
+
 function getSearchStatistic() {
     $.ajax({
         type: "POST",
@@ -160,6 +162,7 @@ function renderTargetColDataTable(table_data) {
         }
     });
     $('#col_table tbody').on('click', 'button#edit', function () {
+        targets_sorted = [];
         var table = $('#col_table').DataTable();
         var data = table.row($(this).parents('tr')).data();
         // 预先清空
@@ -168,86 +171,117 @@ function renderTargetColDataTable(table_data) {
         $("#col_name").val(data.name);
         $("#statistic_type").val(data.statistic_type);
         $("#col_remark").val(data.remark);
-
-        var targets = [];
         for (var i = 0; i < data.targets.length; i++) {
             var target_id = data.targets[i].target_id;
             var target_name = data.targets[i].target_name;
             var target_cumulative = data.targets[i].cumulative_type;
             var t_data = target_id + ":"  + target_name + ":" + target_cumulative;
-            targets.push(t_data);
+            targets_sorted.push(t_data);
         }
-        var target_name_list = [];
-        $('#exist_target').val(targets);
-        for (var i = 0; i < targets.length; i++){
-            var target_id = targets[i].split(':')[0];
-            var target_name = targets[i].split(':')[1];
-            var target_cumulative = targets[i].split(':')[2];
-            target_name_list.push(target_name);
-            if (target_cumulative == '0'){
-                var selected0 = 'selected';
-                var selected1 = '';
-                var selected2 = '';
-                var selected3 = '';
-                var selected4 = '';
-            }
-            if (target_cumulative == '1'){
-                var selected0 = '';
-                var selected1 = 'selected';
-                var selected2 = '';
-                var selected3 = '';
-                var selected4 = '';
-            }
-            if (target_cumulative == '2'){
-                var selected0 = '';
-                var selected1 = '';
-                var selected2 = 'selected';
-                var selected3 = '';
-                var selected4 = '';
-            }
-            if (target_cumulative == '3'){
-                var selected0 = '';
-                var selected1 = '';
-                var selected2 = '';
-                var selected3 = 'selected';
-                var selected4 = '';
-            }
-            if (target_cumulative == '4'){
-                var selected0 = '';
-                var selected1 = '';
-                var selected2 = '';
-                var selected3 = '';
-                var selected4 = 'selected';
-            }
-
-            $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target_id + '">\n' +
-                '    <div class="col-md-4" style="padding: 0">\n' +
-                '        <input type="text" readonly class="form-control" value="' + target_name + '">\n' +
-                '    </div>\n' +
-                '    <div class="col-md-1" style="padding: 0 40px; margin-top:5px">\n' +
-                '        <span style="text-align: center; vertical-align: middle;"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
-                '    </div>\n' +
-                '    <div class="col-md-4" style="padding: 0">\n' +
-                '        <input type="text" class="form-control" value="' + target_name + '">\n' +
-                '    </div>\n' +
-                '    <div class="col-md-2" style="padding: 0;margin-left:20px">\n' +
-                '        <select class="form-control" value="' + target_cumulative + '">\n' +
-                '           <option ' + selected0 + ' value="0">当前值</option>' +
-                '           <option ' + selected1 + ' value="1">月累计值</option>' +
-                '           <option ' + selected2 + ' value="2">季累计值</option>' +
-                '           <option ' + selected3 + ' value="3">半年累计值</option>' +
-                '           <option ' + selected4 + ' value="4">年累计值</option>' +
-                '        </select>\n' +
-                '    </div>\n' +
-                '</div>');
-        }
-        $('#target_data').val(target_name_list);
+        $('#exist_target').val(targets_sorted);
+        edit_reorder();
         $('#rename_div').show();
     });
     $('#col_table tbody').on('click', 'button#delrow', function () {
         var table = $('#col_table').DataTable();
         table.rows($(this).parents('tr')).remove().draw();
     });
+}
+
+//列信息配置
+function edit_reorder(){
+    $('#new_target').empty();
+    var target_name_list = [];
+    for (var i = 0; i < targets_sorted.length; i++){
+        var target_id = targets_sorted[i].split(':')[0];
+        var target_name = targets_sorted[i].split(':')[1];
+        var target_cumulative = targets_sorted[i].split(':')[2];
+        target_name_list.push(target_name);
+        if (target_cumulative == '0'){
+            var selected0 = 'selected';
+            var selected1 = '';
+            var selected2 = '';
+            var selected3 = '';
+            var selected4 = '';
+        }
+        if (target_cumulative == '1'){
+            var selected0 = '';
+            var selected1 = 'selected';
+            var selected2 = '';
+            var selected3 = '';
+            var selected4 = '';
+        }
+        if (target_cumulative == '2'){
+            var selected0 = '';
+            var selected1 = '';
+            var selected2 = 'selected';
+            var selected3 = '';
+            var selected4 = '';
+        }
+        if (target_cumulative == '3'){
+            var selected0 = '';
+            var selected1 = '';
+            var selected2 = '';
+            var selected3 = 'selected';
+            var selected4 = '';
+        }
+        if (target_cumulative == '4'){
+            var selected0 = '';
+            var selected1 = '';
+            var selected2 = '';
+            var selected3 = '';
+            var selected4 = 'selected';
+        }
+        $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target_id + '">\n' +
+            '    <div class="col-md-1" style="padding: 0; margin-top:5px">\n' +
+            '        <a href="javascript:edit_doUp(' + i + ');"  title="上移"><i class="fa fa-lg fa fa-arrow-up" style="color: #00B83F"></i></a>\n' +
+            '    </div>\n' +
+            '    <div class="col-md-1" style="padding: 0; margin-top:5px">\n' +
+            '        <a href="javascript:edit_doDown(' + i + ');"  title="下移"><i class="fa fa-lg fa-arrow-down" style="color: #00B83F"></i></a>\n' +
+            '    </div>\n' +
+            '    <div class="col-md-3" style="padding: 0">\n' +
+            '        <input type="text" readonly class="form-control" value="' + target_name + '">\n' +
+            '    </div>\n' +
+            '    <div class="col-md-1" style="padding: 0 40px; margin-top:5px">\n' +
+            '        <span style="text-align: center; vertical-align: middle;" title="重命名"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
+            '    </div>\n' +
+            '    <div class="col-md-3" style="padding: 0">\n' +
+            '        <input type="text" class="form-control" value="' + target_name + '">\n' +
+            '    </div>\n' +
+            '    <div class="col-md-2" style="padding: 0;margin-left:20px">\n' +
+            '        <select class="form-control" value="' + target_cumulative + '">\n' +
+            '           <option ' + selected0 + ' value="0">当前值</option>' +
+            '           <option ' + selected1 + ' value="1">月累计值</option>' +
+            '           <option ' + selected2 + ' value="2">季累计值</option>' +
+            '           <option ' + selected3 + ' value="3">半年累计值</option>' +
+            '           <option ' + selected4 + ' value="4">年累计值</option>' +
+            '        </select>\n' +
+            '    </div>\n' +
+            '</div>');
+    }
+    $('#target_data').val(target_name_list);
+}
+
+//编辑上移
+function edit_doUp(i) {
+    if (i == 0) {
+        return;
+    }
+    var tem = targets_sorted[i - 1];
+    targets_sorted[i - 1] = targets_sorted[i];
+    targets_sorted[i] = tem;
+    edit_reorder();
+}
+
+//编辑下移
+function edit_doDown(i) {
+    if (i == targets_sorted.length - 1) {
+        return;
+    }
+    var tem = targets_sorted[i + 1];
+    targets_sorted[i + 1] = targets_sorted[i];
+    targets_sorted[i] = tem;
+    edit_reorder();
 }
 
 function addOrEdit() {
@@ -259,9 +293,9 @@ function addOrEdit() {
         var targets = [];
         $('#new_target').children().each(function () {
             var target_id = $(this).attr("target_id"),
-                target_name = $(this).children().eq(0).find('input').val(),
-                new_target_name = $(this).children().eq(2).find('input').val(),
-                cumulative_type = $(this).children().eq(3).find('select').val();
+                target_name = $(this).children().eq(2).find('input').val(),
+                new_target_name = $(this).children().eq(4).find('input').val(),
+                cumulative_type = $(this).children().eq(5).find('select').val();
             targets.push({
                 'target_id': target_id,
                 'target_name': target_name,
@@ -277,14 +311,14 @@ function addOrEdit() {
         }).draw();
     } else {
         // 修改
-        var targets = []
+        var targets = [];
         var index = col_id - 1;
         var c_row = table.row(index);
         $('#new_target').children().each(function () {
             var target_id = $(this).attr("target_id"),
-                target_name = $(this).children().eq(0).find('input').val(),
-                new_target_name = $(this).children().eq(2).find('input').val(),
-                cumulative_type = $(this).children().eq(3).find('select').val();
+                target_name = $(this).children().eq(2).find('input').val(),
+                new_target_name = $(this).children().eq(4).find('input').val(),
+                cumulative_type = $(this).children().eq(5).find('select').val();
             targets.push({
                 'target_id': target_id,
                 'target_name': target_name,
@@ -342,12 +376,10 @@ $('#statistic_save').click(function () {
     var search_table = $('#search_table').DataTable();
     var col_table = $('#col_table').DataTable();
     var col_table_data = col_table.rows().data();
-
     var col_data = [];
     for (var i = 0; i < col_table_data.length; i++) {
         col_data.push(col_table_data[i]);
     }
-
     $.ajax({
         type: "POST",
         dataType: "JSON",
@@ -484,40 +516,73 @@ $('#addapp_save').click(function () {
     if (importData.length < 1) {
         alert("请至少选择一个指标");
     } else {
-        var target_list = [];
-        var exist_target = [];
-        $('#insert_target').modal('hide');
-        $('#new_target').empty();
-        for (var i = 0; i < importData.length; i++){
-            var target_id = importData[i].split(':')[0];
-            var target_name = importData[i].split(':')[1];
-            target_list.push(target_name);
-            exist_target.push(target_id + ':' + target_name);
-            $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target_id + '">\n' +
-                '    <div class="col-md-4" style="padding: 0">\n' +
-                '        <input type="text" readonly class="form-control" value="' + target_name + '">\n' +
-                '    </div>\n' +
-                '    <div class="col-md-1" style="padding: 0 40px; margin-top:5px">\n' +
-                '        <span style="text-align: center; vertical-align: middle;"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
-                '    </div>\n' +
-                '    <div class="col-md-4" style="padding: 0">\n' +
-                '        <input type="text" class="form-control" value="' + target_name + '">\n' +
-                '    </div>\n' +
-                '    <div class="col-md-2" style="padding: 0;margin-left:20px">\n' +
-                '        <select class="form-control">\n' +
-                '           <option value="0">当前值</option>' +
-                '           <option value="1">月累计值</option>' +
-                '           <option value="2">季累计值</option>' +
-                '           <option value="3">半年累计值</option>' +
-                '           <option value="4">年累计值</option>' +
-                '        </select>\n' +
-                '    </div>\n' +
-                '</div>');
-        }
-        $('#target_data').val(target_list);
-        $('#exist_target').val(exist_target);
+        new_reorder();
     }
 });
+
+//列信息配置
+function new_reorder(){
+    var target_list = [];
+    var exist_target = [];
+    $('#insert_target').modal('hide');
+    $('#new_target').empty();
+    for (var i = 0; i < importData.length; i++){
+        var target_id = importData[i].split(':')[0];
+        var target_name = importData[i].split(':')[1];
+        target_list.push(target_name);
+        exist_target.push(target_id + ':' + target_name);
+        $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target_id + '">\n' +
+            '    <div class="col-md-1" style="padding: 0; margin-top:5px">\n' +
+            '        <a href="javascript:new_doUp(' + i + ');"  title="上移"><i class="fa fa-lg fa-arrow-up" style="color: #00B83F"></i></a>\n' +
+            '    </div>\n' +
+            '    <div class="col-md-1" style="padding: 0; margin-top:5px">\n' +
+            '        <a href="javascript:new_doDown(' + i + ');" title="下移"><i class="fa fa-lg fa-arrow-down" style="color: #00B83F"></i></a>\n' +
+            '    </div>\n' +
+            '    <div class="col-md-3" style="padding: 0">\n' +
+            '        <input type="text" readonly class="form-control" value="' + target_name + '">\n' +
+            '    </div>\n' +
+            '    <div class="col-md-1" style="padding: 0 40px; margin-top:5px">\n' +
+            '        <span style="text-align: center; vertical-align: middle;" title="重命名"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
+            '    </div>\n' +
+            '    <div class="col-md-3" style="padding: 0">\n' +
+            '        <input type="text" class="form-control" value="' + target_name + '">\n' +
+            '    </div>\n' +
+            '    <div class="col-md-2" style="padding: 0;margin-left:20px">\n' +
+            '        <select class="form-control">\n' +
+            '           <option value="0">当前值</option>' +
+            '           <option value="1">月累计值</option>' +
+            '           <option value="2">季累计值</option>' +
+            '           <option value="3">半年累计值</option>' +
+            '           <option value="4">年累计值</option>' +
+            '        </select>\n' +
+            '    </div>\n' +
+            '</div>');
+    }
+    $('#target_data').val(target_list);
+    $('#exist_target').val(exist_target);
+}
+
+//新增上移
+function new_doUp(i) {
+    if (i == 0) {
+        return;
+    }
+    var tem = importData[i - 1];
+    importData[i - 1] = importData[i];
+    importData[i] = tem;
+    new_reorder();
+}
+
+//新增下移
+function new_doDown(i) {
+    if (i == importData.length - 1) {
+        return;
+    }
+    var tem = importData[i + 1];
+    importData[i + 1] = importData[i];
+    importData[i] = tem;
+    new_reorder();
+}
 
 // 本页全选
 $('#select_all_target').click(function () {
