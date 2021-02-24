@@ -233,16 +233,10 @@ function edit_reorder(){
             var selected4 = 'selected';
         }
         $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target_id + '">\n' +
-            '    <div class="col-md-1" style="padding: 0; margin-top:5px">\n' +
-            '        <a href="javascript:edit_doUp(' + i + ');"  title="上移"><i class="fa fa-lg fa fa-arrow-up" style="color: #00B83F"></i></a>\n' +
-            '    </div>\n' +
-            '    <div class="col-md-1" style="padding: 0; margin-top:5px">\n' +
-            '        <a href="javascript:edit_doDown(' + i + ');"  title="下移"><i class="fa fa-lg fa-arrow-down" style="color: #00B83F"></i></a>\n' +
-            '    </div>\n' +
             '    <div class="col-md-3" style="padding: 0">\n' +
             '        <input type="text" readonly class="form-control" value="' + target_name + '">\n' +
             '    </div>\n' +
-            '    <div class="col-md-1" style="padding: 0 40px; margin-top:5px">\n' +
+            '    <div class="col-md-1" style="padding: 0 20px; margin-top:5px">\n' +
             '        <span style="text-align: center; vertical-align: middle;" title="重命名"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
             '    </div>\n' +
             '    <div class="col-md-3" style="padding: 0">\n' +
@@ -256,6 +250,11 @@ function edit_reorder(){
             '           <option ' + selected3 + ' value="3">半年累计值</option>' +
             '           <option ' + selected4 + ' value="4">年累计值</option>' +
             '        </select>\n' +
+            '    </div>\n' +
+            '    <div class="col-md-2" style="padding: 0;margin-top:5px;margin-left:20px">\n' +
+            '        <a href="javascript:edit_doUp(' + i + ');"  title="上移"><i class="fa fa-lg fa fa-arrow-up" style="color: #00B83F"></i></a>\n' +
+            '        <a href="javascript:edit_doDown(' + i + ');"  title="下移"><i class="fa fa-lg fa-arrow-down" style="color: #00B83F;margin-left:20px"></i></a>\n' +
+            '        <a href="javascript:edit_del(' + i + ');" title="删除"><i class="fa fa-trash-o fa-lg" style="color: #00B83F;margin-left:20px;font-weight:bold"></i></a>\n' +
             '    </div>\n' +
             '</div>');
     }
@@ -284,6 +283,13 @@ function edit_doDown(i) {
     edit_reorder();
 }
 
+//编辑删除
+function edit_del(i) {
+    targets_sorted.splice(i,1);
+    edit_reorder();
+}
+
+
 function addOrEdit() {
     // 新增行 修改行
     var table = $('#col_table').DataTable();
@@ -293,9 +299,9 @@ function addOrEdit() {
         var targets = [];
         $('#new_target').children().each(function () {
             var target_id = $(this).attr("target_id"),
-                target_name = $(this).children().eq(2).find('input').val(),
-                new_target_name = $(this).children().eq(4).find('input').val(),
-                cumulative_type = $(this).children().eq(5).find('select').val();
+                target_name = $(this).children().eq(0).find('input').val(),
+                new_target_name = $(this).children().eq(2).find('input').val(),
+                cumulative_type = $(this).children().eq(3).find('select').val();
             targets.push({
                 'target_id': target_id,
                 'target_name': target_name,
@@ -316,9 +322,9 @@ function addOrEdit() {
         var c_row = table.row(index);
         $('#new_target').children().each(function () {
             var target_id = $(this).attr("target_id"),
-                target_name = $(this).children().eq(2).find('input').val(),
-                new_target_name = $(this).children().eq(4).find('input').val(),
-                cumulative_type = $(this).children().eq(5).find('select').val();
+                target_name = $(this).children().eq(0).find('input').val(),
+                new_target_name = $(this).children().eq(2).find('input').val(),
+                cumulative_type = $(this).children().eq(3).find('select').val();
             targets.push({
                 'target_id': target_id,
                 'target_name': target_name,
@@ -503,8 +509,7 @@ $('#addapp_save').click(function () {
             var t_name = item.id + ':' + item.name;
             for (var i = 0; i < importData.length; i++){
                 var exist_target_id = importData[i].split(':')[0];
-                var exist_target_name = importData[i].split(':')[1];
-                if (item.id == exist_target_id && item.name != exist_target_name){
+                if (item.id == exist_target_id){
                     importData.splice(i, 1)
                 }
             }
@@ -532,16 +537,10 @@ function new_reorder(){
         target_list.push(target_name);
         exist_target.push(target_id + ':' + target_name);
         $('#new_target').append('<div class="form-group" style="margin-left: 0; margin-right: 0" target_id="' + target_id + '">\n' +
-            '    <div class="col-md-1" style="padding: 0; margin-top:5px">\n' +
-            '        <a href="javascript:new_doUp(' + i + ');"  title="上移"><i class="fa fa-lg fa-arrow-up" style="color: #00B83F"></i></a>\n' +
-            '    </div>\n' +
-            '    <div class="col-md-1" style="padding: 0; margin-top:5px">\n' +
-            '        <a href="javascript:new_doDown(' + i + ');" title="下移"><i class="fa fa-lg fa-arrow-down" style="color: #00B83F"></i></a>\n' +
-            '    </div>\n' +
             '    <div class="col-md-3" style="padding: 0">\n' +
             '        <input type="text" readonly class="form-control" value="' + target_name + '">\n' +
             '    </div>\n' +
-            '    <div class="col-md-1" style="padding: 0 40px; margin-top:5px">\n' +
+            '    <div class="col-md-1" style="padding: 0 20px; margin-top:5px">\n' +
             '        <span style="text-align: center; vertical-align: middle;" title="重命名"><i class="fa fa-lg fa-arrow-right" style="color: #00B83F"></i></span>\n' +
             '    </div>\n' +
             '    <div class="col-md-3" style="padding: 0">\n' +
@@ -555,6 +554,11 @@ function new_reorder(){
             '           <option value="3">半年累计值</option>' +
             '           <option value="4">年累计值</option>' +
             '        </select>\n' +
+            '    </div>\n' +
+            '    <div class="col-md-2" style="padding: 0;margin-top:5px;margin-left:25px">\n' +
+            '        <a href="javascript:new_doUp(' + i + ');"  title="上移"><i class="fa fa-lg fa fa-arrow-up" style="color: #00B83F"></i></a>\n' +
+            '        <a href="javascript:new_doDown(' + i + ');"  title="下移"><i class="fa fa-lg fa-arrow-down" style="color: #00B83F;margin-left:20px"></i></a>\n' +
+            '        <a href="javascript:new_del(' + i + ');" title="删除"><i class="fa fa-trash-o fa-lg" style="color: #00B83F;margin-left:20px;font-weight:bold"></i></a>\n' +
             '    </div>\n' +
             '</div>');
     }
@@ -583,6 +587,13 @@ function new_doDown(i) {
     importData[i] = tem;
     new_reorder();
 }
+
+// 新增删除
+function new_del(i) {
+    importData.splice(i,1);
+    new_reorder();
+}
+
 
 // 本页全选
 $('#select_all_target').click(function () {
