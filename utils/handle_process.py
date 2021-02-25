@@ -371,8 +371,10 @@ class Extract(object):
         # 定时器
         while True:
             time_now = datetime.datetime.now()
-
-            self.get_data(time_now)
+            try:
+                self.get_data(time_now)
+            except Exception as e:
+                take_notes(self.source_id, self.app_id, self.cycle_id, str(e))
             time.sleep(60)
 
     def get_data(self, now_time):
@@ -1094,7 +1096,11 @@ class Extract(object):
     def run(self):
         # 补取()
         # 启动定时器，每分钟执行一次
-        self.supplement()
+        try:
+            self.supplement()
+        except Exception as e:
+            take_notes(self.source_id, self.app_id, self.cycle_id, str(e))
+
         self.set_timer()
 
 
