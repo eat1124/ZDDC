@@ -401,7 +401,7 @@ $(document).ready(function () {
         var table1 = $('#sample_1').DataTable();
         var table2 = $('#sample_2').DataTable();
         if (importData.length < 1) {
-            alert("请至少选择一个指标");
+            alert("请至少选择一个指标。");
         } else {
             $.ajax({
                 type: "POST",

@@ -519,7 +519,7 @@ $('#addapp_save').click(function () {
         }
     });
     if (importData.length < 1) {
-        alert("请至少选择一个指标");
+        alert("请至少选择一个指标。");
     } else {
         new_reorder();
     }

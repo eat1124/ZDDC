@@ -252,6 +252,7 @@ $(document).ready(function() {
         "bProcessing": true,
         "ajax": "../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val(),
         "columns": [
+            {"data": "id"},
             { "data": "id" },
             { "data": "name" },
             { "data": "code" },
@@ -260,6 +261,12 @@ $(document).ready(function() {
         ],
 
         "columnDefs": [{
+                "targets": 0,
+                "mRender": function (data, type, full) {
+                    return "<input id='select_tmp_" + full.id + "' name='selecttmp' type='checkbox' class='checkboxes' value='" + data + "'/>"
+                }
+            },
+            {
             "targets": -4,
             "mRender": function(data, type, full) {
                 var reporting_date = $('#reporting_date').val();
@@ -354,6 +361,7 @@ $(document).ready(function() {
             "sZeroRecords": "没有检索到数据",
         }
     });
+
     // 行按钮
     $('#sample_1 tbody').on('click', 'button#edit', function() {
         var table = $('#sample_1').DataTable();
@@ -398,8 +406,8 @@ $(document).ready(function() {
             '    <label class="col-md-2 control-label"><span\n' +
             '            style="color:red; "></span>制表日期</label>\n' +
             '    <div class="col-md-4">\n' +
-            '        <input id="write_time" type="text" name="write_time" class="form-control "\n' +
-            '               placeholder="" value="' + data.write_time + '" readonly>\n' +
+            '        <input id="write_time" type="date" name="write_time" autocomplete="off" class="form-control "\n' +
+            '               placeholder="" value="' + data.write_time + '">\n' +
             '        <div class="form-control-focus"></div>\n' +
             '\n' +
             '    </div>\n' +
@@ -450,7 +458,7 @@ $(document).ready(function() {
         }
     });
     // 默认
-    $('#reporting_date').datetimepicker({
+    $('#reporting_date, #write_time').datetimepicker({
         format: 'yyyy-mm-dd',
         autoclose: true,
         startView: 2,
@@ -462,6 +470,7 @@ $(document).ready(function() {
      *      seleced_report_type：
      */
     $("#search_report_type").change(function() {
+        importData = [];
         $('#reporting_date').datetimepicker("remove");
         var report_type = $("#search_report_type").val();
         customTimePicker(report_type);
@@ -502,7 +511,7 @@ $(document).ready(function() {
     });
 
     $("#submit_btn").click(function() {
-        $("#post_type").val("submit")
+        $("#post_type").val("submit");
         $.ajax({
             type: "POST",
             dataType: 'json',
@@ -521,6 +530,82 @@ $(document).ready(function() {
                 alert("页面出现错误，请于管理员联系。");
             }
         });
+    });
+
+    // 选中导入指标
+    var importData = [];
+    $('#sample_1 tbody').on('click', 'input[name="selecttmp"]', function () {
+        if ($(this).prop('checked')) {
+            importData.push($(this).val());
+        } else {
+            for (var i = 0; i < importData.length; i++) {
+                if (importData[i] == $(this).val()) {
+                    importData.splice(i, 1);
+                }
+            }
+        }
+    });
+
+    // 全选报表
+    $('#select_all_tmp').click(function () {
+        var table = $('#sample_1').DataTable().data();
+        if (importData.length < 1){
+            $.each(table, function (i, item) {
+                $('#select_tmp_' + item.id).prop('checked',true);
+                if ($('#select_tmp_' + item.id).prop('checked')){
+                    if (importData.indexOf(item.id) == -1){
+                        importData.push(item.id)
+                    }
+                }
+            });
+        }else {
+            $.each(table, function (i, item) {
+                $('#select_tmp_' + item.id).prop('checked',false);
+                if ($('#select_tmp_' + item.id).prop('checked') == false){
+                    for (var i = 0; i < importData.length; i++) {
+                        if (importData[i] == $('#select_tmp_' + item.id).val()) {
+                            importData.splice(i, 1);
+                        }
+                    }
+                }
+            });
+            importData = [];
+        }
+    });
+
+    // 发布所有报表
+    $("#release_all_tmp").click(function() {
+        if (importData.length < 1) {
+            alert("请至少选择一张报表。");
+        } else {
+            var report_type = $("#search_report_type").val();
+            var report_time = $("#reporting_date").val();
+            $.ajax({
+                type: "POST",
+                dataType: 'json',
+                url: "../../report_submit_all_tmp/",
+                data:
+                    {
+                        app: $('#app').val(),
+                        report_type: report_type,
+                        report_time: report_time,
+                        report_model_list: JSON.stringify(importData),
+                    },
+                success: function(data) {
+                    var myres = data["res"];
+                    if (myres == "发布成功。") {
+                        $('#static').modal('hide');
+                        var table = $('#sample_1').DataTable();
+                        table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
+                    }
+                    alert(myres);
+                },
+                error: function(e) {
+                    alert("页面出现错误，请于管理员联系。");
+                }
+            });
+        }
+
     });
 
     $('#error').click(function() {

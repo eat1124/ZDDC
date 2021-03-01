@@ -140,6 +140,7 @@ urlpatterns = [
     url(r'^report_submit_data/$', report_submit_data),
     url(r'^report_submit_save/$', report_submit_save),
     url(r'^report_submit_del/$', report_submit_del),
+    url(r'^report_submit_all_tmp/$', report_submit_all_tmp),
 
 
     # 数据服务

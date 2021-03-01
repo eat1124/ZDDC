@@ -7606,7 +7606,6 @@ def report_submit_index(request, funid):
             "25": date4,
             "26": date5.strftime("%Y"),
         }
-
         return render(request, 'report_submit.html',
                       {'username': request.user.userinfo.fullname,
                        "selected_report_type": report_type,
@@ -7861,6 +7860,67 @@ def report_submit_save(request):
                         return JsonResponse(result)
             else:
                 result["res"] = "网络异常。"
+            return JsonResponse(result)
+
+
+def report_submit_all_tmp(request):
+    if request.user.is_authenticated():
+        # 新增报表模型
+        if request.method == "POST":
+            result = {}
+            report_model_list = request.POST.get("report_model_list", "")
+            report_model_list = json.loads(report_model_list)
+            if report_model_list:
+                for report_model_id in report_model_list:
+                    report_model = int(report_model_id)
+                    user_id = int(request.user.id)
+                    app = request.POST.get("app", "")
+                    report_time = request.POST.get("report_time", "")
+                    person = UserInfo.objects.exclude(state="9").get(user_id=user_id).fullname
+                    write_time = datetime.datetime.now().strftime("%Y-%m-%d")
+                    length_tag = report_time.count("-")
+                    if length_tag == 0:
+                        report_time = datetime.datetime.strptime(report_time, "%Y") if report_time else None
+                        report_time = report_time.replace(month=12, day=31) if report_time else None
+                    elif length_tag == 1:
+                        report_time = datetime.datetime.strptime(report_time, "%Y-%m") if report_time else None
+                        a, b = calendar.monthrange(report_time.year, report_time.month) if report_time else None
+                        report_time = datetime.datetime(year=report_time.year, month=report_time.month,
+                                                        day=b) if report_time else None
+                    elif length_tag == 2:
+                        report_time = datetime.datetime.strptime(report_time, "%Y-%m-%d") if report_time else None
+                    else:
+                        result["res"] = "网络异常。"
+                        return JsonResponse(result)
+                    current_report_submit = ReportSubmit.objects.exclude(state="9").filter(
+                        report_model_id=report_model, report_time=report_time)
+                    # 新增
+                    if not current_report_submit.exists():
+                        try:
+                            report_submit_add = ReportSubmit()
+                            report_submit_add.report_model_id = report_model
+                            report_submit_add.app_id = app
+                            report_submit_add.person = person
+                            report_submit_add.state = "0"
+                            report_submit_add.write_time = write_time
+                            report_submit_add.report_time = report_time
+                            report_submit_add.state = "1"
+                            report_submit_add.save()
+                            report_info = ReportInfo.objects.exclude(state="9").filter(report_model_id=report_model)
+                            if report_info.exists():
+                                for i in report_info:
+                                    report_submit_info = ReportSubmitInfo()
+                                    report_submit_info.name = i.name
+                                    report_submit_info.value = i.default_value
+                                    report_submit_info.report_submit = report_submit_add
+                                    report_submit_info.save()
+                        except Exception as e:
+                            print(e)
+                            result["res"] = "网络异常。"
+                            return JsonResponse(result)
+                result["res"] = "发布成功。"
+            else:
+                result["res"] = "2222网络异常。"
             return JsonResponse(result)
 
 
