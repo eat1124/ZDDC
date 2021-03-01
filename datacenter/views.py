@@ -5558,8 +5558,11 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList, fo
                                 condtions = {'datadate__year': date.year, 'datadate__month': date.month}
                             if cond == "Y":
                                 condtions = {'datadate__year': date.year}
-                            if cond == "L":
+                            if cond == "L":  # 前一天
                                 newdate = date + datetime.timedelta(days=-1)
+                                condtions = {'datadate': newdate}
+                            if cond == "N":  # 后一天
+                                newdate = date + datetime.timedelta(days=1)
                                 condtions = {'datadate': newdate}
 
                             if cond == "MS":
@@ -6061,7 +6064,7 @@ def reporting_formulacalculate(request):
             target_codename[code] = name
         data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积", "c": "常数"}
         data_time = {
-            "D": "当天", "L": "前一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末",
+            "D": "当天", "L": "前一天","N": "后一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末",
             "SS": "季初", "SE": "季末", "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末",
             "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初", "YE": "年末", "LYS": "去年初",
             "LYE": "去年末", "MAVG": "月平均值", "SAVG": "季平均值", "HAVG": "半年平均值", "YAVG": "年均值",
@@ -6152,7 +6155,9 @@ def reporting_formulacalculate(request):
                                     if cond == "L":
                                         newdate = date + datetime.timedelta(days=-1)
                                         condtions = {'datadate': newdate}
-
+                                    if cond == "N":
+                                        newdate = date + datetime.timedelta(days=1)
+                                        condtions = {'datadate': newdate}
                                     if cond == "MS":
                                         newdate = date.replace(day=1)
                                         condtions = {'datadate': newdate}
