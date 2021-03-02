@@ -10540,7 +10540,7 @@ def target_statistic_data(request):
         info = ""
         data = []
 
-        target_statistics = TargetStatistic.objects.exclude(state="9")
+        target_statistics = TargetStatistic.objects.exclude(state="9").order_by("sort")
         type_list = DictList.objects.filter(dictindex_id=12).values()
 
         for target_statistic in target_statistics:
@@ -10557,6 +10557,7 @@ def target_statistic_data(request):
                     "type": target_statistic.type,
                     "type_name": type_name,
                     "remark": target_statistic.remark,
+                    "sort": target_statistic.sort,
                     "target_col": target_col
                 })
 
@@ -10579,6 +10580,7 @@ def target_statistic_save(request):
         name = request.POST.get("name", "")
         type = request.POST.get("type", "")
         remark = request.POST.get("remark", "")
+        sort = request.POST.get("sort", "")
 
         try:
             id = int(id)
@@ -10603,6 +10605,7 @@ def target_statistic_save(request):
                             "name": name,
                             "type": type,
                             "remark": remark,
+                            "sort": sort,
                             "col_data": col_data,
                             "user": request.user.userinfo,
                         })
@@ -10616,6 +10619,7 @@ def target_statistic_save(request):
                             "name": name,
                             "type": type,
                             "remark": remark,
+                            "sort": sort,
                             "col_data": col_data,
                             "user": request.user.userinfo,
                         })

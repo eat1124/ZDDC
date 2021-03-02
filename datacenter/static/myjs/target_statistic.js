@@ -20,7 +20,6 @@ function getSearchStatistic() {
 function renderStatisticDataTable(table_data) {
     $('#search_table').dataTable().fnDestroy();
     $('#search_table').dataTable({
-        "ordering": true,
         "bAutoWidth": true,
         "bSort": false,
         "bProcessing": true,
@@ -75,6 +74,8 @@ function renderStatisticDataTable(table_data) {
         $("#search_name").val(data.name);
         $("#search_type").val(data.type);
         $("#search_remark").val(data.remark);
+        $("#search_sort").val(data.sort);
+
         // 指标列dataTable
         renderTargetColDataTable(data.target_col);
     });
@@ -350,6 +351,7 @@ $('#search_new').click(function () {
     $('#search_name').val('');
     $('#search_type').val('');
     $('#search_remark').val('');
+    $('#search_sort').val('');
     $('#static01').modal('show');
     renderTargetColDataTable([]);
 });
@@ -395,6 +397,7 @@ $('#statistic_save').click(function () {
             "name": $('#search_name').val(),
             "type": $('#search_type').val(),
             "remark": $('#search_remark').val(),
+            "sort": $('#search_sort').val(),
             "col_data": JSON.stringify(col_data)
         },
         success: function (data) {
