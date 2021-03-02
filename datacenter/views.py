@@ -926,6 +926,8 @@ def get_log_info(request):
                         log_info.create_time) if log_info.create_time else '',
                     'content': log_info.content,
                 })
+                if num > 98:
+                    break
         return JsonResponse({"data": result})
     else:
         return HttpResponseRedirect("/login")
