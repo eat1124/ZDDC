@@ -94,6 +94,34 @@
         </div>
     </div>
 </div>
+<div id="select_write_time" class="modal fade" tabindex="-1" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog" style="width: 700px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">制表日期</h4>
+                </div>
+                <div class="panel-body">
+                    <form class="bs-example form-horizontal activate-form" method="post" id="report_submit_form">{% csrf_token %}
+
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="col-md-2 control-label"><span
+                                        style="color:red; ">*</span>制表日期</label>
+                                <div class="col-md-10">
+                                    <input id="all_write_time" autocomplete="off" type="datetime" name="all_write_time" value="{{dateday}}" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn dark btn-outline">关闭</button>
+                    <button type="button" id="release_all_report" name="release_all_report" class="btn green">发布</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block script %}
 <script>

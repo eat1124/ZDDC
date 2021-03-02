@@ -1218,6 +1218,24 @@ $(document).ready(function () {
             {"data": "cumulativehalfyear"},
             {"data": "cumulativeyear"},
         ],
+        "columnDefs": [
+            {
+                "targets": -9,
+                "visible": false,
+            },
+            {
+                "targets": -8,
+                "visible": false,
+            },
+            {
+                "targets": -7,
+                "visible": false,
+            },
+            {
+                "targets": -6,
+                "visible": false,
+            },
+        ],
         "createdRow": function (row, data, index) {
             if (data.curvalue == "" || data.releasestate == "0") {
                 $('td', row).css("color", "#FF0000");
