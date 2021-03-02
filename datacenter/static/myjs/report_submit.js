@@ -601,6 +601,7 @@ $(document).ready(function() {
             success: function(data) {
                 var myres = data["res"];
                 if (myres == "发布成功。") {
+                    importData = [];
                     $("#select_write_time").modal("hide");
                     var table = $('#sample_1').DataTable();
                     table.ajax.url("../../../report_submit_data/?search_app=" + $('#app').val() + "&" + "search_date=" + $('#reporting_date').val() + "&" + "search_report_type=" + $('#search_report_type').val()).load();
