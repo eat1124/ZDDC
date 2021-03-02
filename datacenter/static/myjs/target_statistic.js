@@ -22,6 +22,7 @@ function renderStatisticDataTable(table_data) {
     $('#search_table').dataTable({
         "bAutoWidth": true,
         "bSort": false,
+        "iDisplayLength": 25,
         "bProcessing": true,
         "data": table_data,
         "columns": [
