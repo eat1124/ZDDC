@@ -495,6 +495,7 @@ class TargetStatistic(models.Model):
     remark = models.TextField("查询说明", null=True, default="")
     col_data = models.TextField("指标列JSON信息", null=True, default="")
     state = models.CharField('状态', max_length=10, null=True, default="")
+    sort = models.IntegerField("排序", blank=True, null=True)
     user = models.ForeignKey(UserInfo, null=True, verbose_name="权限用户")
 
 
