@@ -4524,7 +4524,7 @@ def reporting_data(request):
                     curvaluedate = data.curvaluedate.strftime('%Y-%m-%d %H:%M:%S') if data.curvaluedate else "",
                 except:
                     pass
-                if data.target.cumulative in ['1', '2', '3', '4']:
+                if data.target.cumulative in ['1', '2', '3', '4', '5']:
                     try:
                         cumulativemonth = round(data.cumulativemonth, data.target.digit)
                     except:
@@ -4616,7 +4616,7 @@ def reporting_data(request):
                         newtable_magnification = cur_meterchange['newtable_magnification']
                         newtable_finalvalue = cur_meterchange['newtable_finalvalue']
                         finalvalue = cur_meterchange['finalvalue']
-                        if data.target.cumulative in ['1', '2', '3', '4']:
+                        if data.target.cumulative in ['1', '2', '3', '4', '5']:
                             try:
                                 oldtable_zerodata = round(oldtable_zerodata, data.target.digit)
                             except:
@@ -4921,6 +4921,7 @@ def getcumulative(tableList, target, date, value):
         算术平均
         加权平均
         非零算数平均
+        求和(上月)(环保专用)
     """
     cumulativemonth = value
     cumulativequarter = value
@@ -5006,6 +5007,76 @@ def getcumulative(tableList, target, date, value):
     lastcumulativemonth, lastcumulativequarter, lastcumulativehalfyear, lastcumulativeyear \
         = get_last_cumulative_data(tableList, target, date)
 
+    def get_lm_last_cumulative_data(tmp_target, tmp_date):
+        """
+        获取累计类型为求和(上月)(环保专用)指标的累计时间推迟一个月
+        """
+        lm_lastcumulativemonth = 0
+        lm_lastcumulativequarter = 0
+        lm_lastcumulativehalfyear = 0
+        lm_lastcumulativeyear = 0
+
+        lastg_date = datetime.datetime.strptime('2000-01-01', "%Y-%m-%d")
+        if tmp_target.cycletype == "11":
+            lastg_date = tmp_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(
+                days=-1)
+        queryset = tableList["Entrydata"].objects
+        operationtype = tmp_target.operationtype
+        if operationtype == "1":
+            queryset = tableList["Meterdata"].objects
+        if operationtype == "15":
+            queryset = tableList["Entrydata"].objects
+        if operationtype == "16":
+            queryset = tableList["Extractdata"].objects
+        if operationtype == "17":
+            queryset = tableList["Calculatedata"].objects
+
+        # 上月份为12月，取去年表数据
+        if lastg_date.month == 12:
+            lm_tableyear = str(lastg_date.year)
+            lm_tableList = {
+                "Entrydata": getmodels("Entrydata", lm_tableyear),
+                "Meterdata": getmodels("Meterdata", lm_tableyear),
+                "Extractdata": getmodels("Extractdata", lm_tableyear),
+                "Calculatedata": getmodels("Calculatedata", lm_tableyear)
+            }
+            queryset = tableList["Entrydata"].objects
+            operationtype = tmp_target.operationtype
+            if operationtype == "1":
+                queryset = lm_tableList["Meterdata"].objects
+            if operationtype == "15":
+                queryset = lm_tableList["Entrydata"].objects
+            if operationtype == "16":
+                queryset = lm_tableList["Extractdata"].objects
+            if operationtype == "17":
+                queryset = lm_tableList["Calculatedata"].objects
+            all_data = queryset.exclude(state="9").filter(target=tmp_target, datadate=lastg_date)
+        else:
+            all_data = queryset.exclude(state="9").filter(target=tmp_target, datadate=lastg_date)
+
+        if len(all_data) > 0:
+            try:
+                if tmp_date.month in [1, 3, 4, 6, 7, 9, 10, 12]:
+                    lm_lastcumulativequarter += all_data[0].cumulativequarter
+            except:
+                pass
+            try:
+                if tmp_date.month in [1, 3, 4, 5, 6, 7, 9, 10, 11, 12]:
+                    lm_lastcumulativehalfyear += all_data[0].cumulativehalfyear
+            except:
+                pass
+            try:
+                if tmp_date.month != 2:
+                    lm_lastcumulativeyear += all_data[0].cumulativeyear
+            except:
+                pass
+        else:
+            pass
+        return lm_lastcumulativemonth, lm_lastcumulativequarter, lm_lastcumulativehalfyear, lm_lastcumulativeyear
+
+    lm_lastcumulativemonth, lm_lastcumulativequarter, lm_lastcumulativehalfyear, lm_lastcumulativeyear \
+        = get_lm_last_cumulative_data(target, date)
+
     def get_sum_cumulative_data(tableList, tmp_target, tmp_start_date, tmp_date):
         """
         算数平均
@@ -5074,6 +5145,13 @@ def getcumulative(tableList, target, date, value):
         cumulativequarter = lastcumulativequarter + value
         cumulativehalfyear = lastcumulativehalfyear + value
         cumulativeyear = lastcumulativeyear + value
+
+    if cumulative == '5':  # 求和(上月)(环保专用)
+        cumulativemonth = lm_lastcumulativemonth + value
+        cumulativequarter = lm_lastcumulativequarter + value
+        cumulativehalfyear = lm_lastcumulativehalfyear + value
+        cumulativeyear = lm_lastcumulativeyear + value
+
     if cumulative == '2':  # 算术平均，保留位数
         if target.cycletype == "10":
             # 日报
@@ -5790,7 +5868,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList, fo
     calculatedata.curvalue = calculatedata.todayvalue + calculatedata.judgevalue
 
     # 累计值计算
-    if target.cumulative in ['1', '2', '3', '4']:
+    if target.cumulative in ['1', '2', '3', '4', '5']:
         cumulative = getcumulative(tableList, target, date, decimal.Decimal(str(calculatedata.curvalue)))
         calculatedata.cumulativemonth = cumulative["cumulativemonth"]
         calculatedata.cumulativequarter = cumulative["cumulativequarter"]
@@ -6692,7 +6770,7 @@ def reporting_new(request):
                     meterdata.judgevalue = 0
                     meterdata.curvalue = meterdata.todayvalue + meterdata.judgevalue
 
-                    if target.cumulative in ['1', '2', '3', '4']:
+                    if target.cumulative in ['1', '2', '3', '4', '5']:
                         cumulative = getcumulative(tableList, target, reporting_date, meterdata.curvalue)
                         meterdata.cumulativemonth = cumulative["cumulativemonth"]
                         meterdata.cumulativequarter = cumulative["cumulativequarter"]
@@ -6707,7 +6785,7 @@ def reporting_new(request):
                     entrydata.todayvalue = 0
                     entrydata.judgevalue = 0
                     entrydata.curvalue = 0
-                    if target.cumulative in ['1', '2', '3', '4']:
+                    if target.cumulative in ['1', '2', '3', '4', '5']:
                         cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
                         entrydata.cumulativemonth = cumulative["cumulativemonth"]
                         entrydata.cumulativequarter = cumulative["cumulativequarter"]
@@ -6780,7 +6858,7 @@ def reporting_new(request):
                             except Exception as e:
                                 print(e)
                     extractdata.curvalue = extractdata.todayvalue + extractdata.judgevalue
-                    if target.cumulative in ['1', '2', '3', '4']:
+                    if target.cumulative in ['1', '2', '3', '4', '5']:
                         cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
                         extractdata.cumulativequarter = cumulative["cumulativequarter"]
@@ -7502,7 +7580,7 @@ def reporting_save(request):
                 # 保存时，重新累计
                 try:
                     target = Target.objects.get(id=int(curdata['target_id']))
-                    if target.cumulative in ['1', '2', '3', '4']:
+                    if target.cumulative in ['1', '2', '3', '4', '5']:
                         cumulative = getcumulative(tableList, target, reporting_date, decimal.Decimal(str(curdata["curvalue"])))
                         operation_type = target.operationtype
                         table_name = map_operation(operation_type)
@@ -10615,18 +10693,20 @@ def target_statistic_save(request):
                     col_data = json.loads(col_data)
                 except Exception:
                     pass
+
                 if id == 0:
                     try:
                         TargetStatistic.objects.create(**{
                             "name": name,
                             "type": type,
                             "remark": remark,
-                            "sort": sort,
+                            "sort": int(sort) if sort else None,
                             "col_data": col_data,
                             "user": request.user.userinfo,
                         })
                         info = "新增成功。"
                     except Exception as e:
+
                         stauts = 0
                         info = "新增查询失败。"
                 else:
@@ -10635,7 +10715,7 @@ def target_statistic_save(request):
                             "name": name,
                             "type": type,
                             "remark": remark,
-                            "sort": sort,
+                            "sort": int(sort) if sort else None,
                             "col_data": col_data,
                             "user": request.user.userinfo,
                         })

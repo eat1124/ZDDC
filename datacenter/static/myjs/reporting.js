@@ -435,7 +435,7 @@ $(document).ready(function () {
         $('#table1_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table1_todayvalue_' + data.id).val())), math.bignumber(Number($('#table1_judgevalue_' + data.id).val())))));
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4', '5'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -474,7 +474,7 @@ $(document).ready(function () {
         $('#table1_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table1_todayvalue_' + data.id).val())), math.bignumber(Number($('#table1_judgevalue_' + data.id).val())))));
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4', '5'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -713,7 +713,7 @@ $(document).ready(function () {
         $('#table2_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table2_todayvalue_' + data.id).val())), math.bignumber(Number($('#table2_judgevalue_' + data.id).val())))));
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4', '5'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -752,7 +752,7 @@ $(document).ready(function () {
         $('#table2_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table2_todayvalue_' + data.id).val())), math.bignumber(Number($('#table2_judgevalue_' + data.id).val())))));
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4', '5'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -1020,7 +1020,7 @@ $(document).ready(function () {
 
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4', '5'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -1061,7 +1061,7 @@ $(document).ready(function () {
 
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4', '5'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -1498,7 +1498,7 @@ $(document).ready(function () {
 
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4', '5'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -1543,7 +1543,7 @@ $(document).ready(function () {
         $('#table5_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table5_todayvalue_' + data.id).val())), math.bignumber(Number($('#table5_judgevalue_' + data.id).val())))));
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4', '5'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -1583,7 +1583,7 @@ $(document).ready(function () {
         $('#table5_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table5_todayvalue_' + data.id).val())), math.bignumber(Number($('#table5_judgevalue_' + data.id).val())))));
 
         // 累计值 月、季、半年、年
-        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4', '5'].indexOf(data.target_cumulative) != -1) {
             $.ajax({
                 type: "POST",
                 url: "../../../ajax_cumulate/",
@@ -1615,7 +1615,7 @@ $(document).ready(function () {
         var table = $('#sample_5').DataTable();
         var data = table.row($(this).parents('tr')).data();
         // 累计值 月、季、半年、年
-        if (['1', '2', '3', '4'].indexOf(data.target_cumulative) != -1) {
+        if (['1', '2', '3', '4', '5'].indexOf(data.target_cumulative) != -1) {
             $('#table5_curvalue_' + data.id).val(math.number(math.add(math.bignumber(Number($('#table5_todayvalue_' + data.id).val())), math.bignumber(Number($('#table5_judgevalue_' + data.id).val())))));
 
             $.ajax({
@@ -1753,7 +1753,7 @@ $(document).ready(function () {
             $("#table5_zerodata_" + id).attr("disabled", "disabled");
 
             // 累计值 月、季、半年、年
-            if (['1', '2', '3', '4'].indexOf(cumulative) != -1) {
+            if (['1', '2', '3', '4', '5'].indexOf(cumulative) != -1) {
                 $.ajax({
                     type: "POST",
                     url: "../../../ajax_cumulate/",
