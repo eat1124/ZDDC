@@ -5540,7 +5540,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList, fo
                             if cond == "LYS" or cond == "LYE" or (
                                     (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
                                     (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
-                                    (cond == "LMS" or cond == "LME" or cond == "SLME") and int(date.month) < 2):
+                                    (cond == "LMS" or cond == "LME" or cond == "SLME" or cond == "ELME") and int(date.month) < 2):
                                 tableyear = str(int(date.year) - 1)
 
                                 if operationtype == "1":
@@ -5576,10 +5576,18 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList, fo
                                 a, b = calendar.monthrange(year, month)  # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
                                 newdate = datetime.datetime(year=year, month=month, day=b)  # 构造本月月末datetime
                                 condtions = {'datadate': newdate}
+
+                            # 上月末，当月为1月，则数据为0
                             if cond == "LME":
                                 date_now = date.replace(day=1)
                                 newdate = date_now + datetime.timedelta(days=-1)
                                 condtions = {'datadate': newdate}
+                            # 上月末，当月为1月，则取去年12月份数据
+                            if cond == "ELME":
+                                date_now = date.replace(day=1)
+                                newdate = date_now + datetime.timedelta(days=-1)
+                                condtions = {'datadate': newdate}
+
                             if cond == "LMS":
                                 date_now = date.replace(day=1)
                                 date_now = date_now + datetime.timedelta(days=-1)
@@ -6066,7 +6074,7 @@ def reporting_formulacalculate(request):
             target_codename[code] = name
         data_field = {"d": "当前值", "m": "月累积", "s": "季累积", "h": "半年累积", "y": "年累积", "c": "常数"}
         data_time = {
-            "D": "当天", "L": "前一天","N": "后一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末",
+            "D": "当天", "L": "前一天","N": "后一天", "MS": "月初", "ME": "月末", "LMS": "上月初", "LME": "上月末", "ELME": "上月末(连续)",
             "SS": "季初", "SE": "季末", "LSS": "上季初", "LSE": "上季末", "HS": "半年初", "HE": "半年末",
             "LHS": "前个半年初", "LHE": "前个半年末", "YS": "年初", "YE": "年末", "LYS": "去年初",
             "LYE": "去年末", "MAVG": "月平均值", "SAVG": "季平均值", "HAVG": "半年平均值", "YAVG": "年均值",
@@ -6136,7 +6144,7 @@ def reporting_formulacalculate(request):
                                     if cond == "LYS" or cond == "LYE" or (
                                             (cond == "LSS" or cond == "LSE") and int(date.month) < 4) or (
                                             (cond == "LHS" or cond == "LHE") and int(date.month) < 7) or (
-                                            (cond == "LMS" or cond == "LME" or cond == "SLME") and int(date.month) < 2):
+                                            (cond == "LMS" or cond == "LME" or cond == "SLME" or cond == "ELME") and int(date.month) < 2):
                                         tableyear = str(int(date.year) - 1)
                                     operationtype = membertarget.operationtype
                                     if operationtype == "1":
@@ -6169,7 +6177,13 @@ def reporting_formulacalculate(request):
                                         a, b = calendar.monthrange(year, month)
                                         newdate = datetime.datetime(year=year, month=month, day=b)
                                         condtions = {'datadate': newdate}
+                                    # 上月末，当月为1月，则数据为0
                                     if cond == "LME":
+                                        date_now = date.replace(day=1)
+                                        newdate = date_now + datetime.timedelta(days=-1)
+                                        condtions = {'datadate': newdate}
+                                    # 上月末，当月为1月，则取去年12月份数据
+                                    if cond == "ELME":
                                         date_now = date.replace(day=1)
                                         newdate = date_now + datetime.timedelta(days=-1)
                                         condtions = {'datadate': newdate}
