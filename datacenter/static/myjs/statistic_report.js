@@ -325,7 +325,7 @@ function getStatisticReport(start_date, end_date, search_id, date_type) {
                  */
                 var v_sum_tr = '<tr><td style="text-align: center;">合计</td>';
                 for (var L = 0; L < v_sums.length; L++) {
-                    v_sum_tr += '<td style="text-align: right;"><input name="statistic_type" value="' + v_sums[L]["statistic_type"] + '" hidden>' + v_sums[L]["v"] + '</td>';
+                    v_sum_tr += '<td style="text-align: right;"><input name="statistic_type" hidden>' + v_sums[L]["v"] + '</td>';
                 }
                 v_sum_tr += '</td></tr>';
                 $('#statistic_report_dt').find('tbody').append(v_sum_tr);
@@ -392,7 +392,7 @@ $('#search').click(function () {
 
 $('#to_excel').click(function () {
     if (confirm("确定要导出EXCEL文件吗？")) {
-        $("#statistic_report_dt").tableExport({fileName: $('#search_name').val(), type: "xls", escape: "false"});
+        $("#statistic_report_dt").tableExport({fileName: $('#search_name').val(), type: "excel", escape: "false"});
     }
 });
 
