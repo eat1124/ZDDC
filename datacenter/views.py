@@ -10775,16 +10775,35 @@ def statistic_report(request):
         s_time = n_time.replace(hour=0, minute=0, second=0, microsecond=0)  # 开始时间
         s_date = s_time.strftime("%Y-%m-%d")
         if date_type == '10':  # 日
-            s_time = s_time - relativedelta(months=1)
-            s_time = get_last_day_in_month(s_time)
+            """
+            开始日期：当年当月第一天
+            结束日期：当年当月昨天
+            如果：当日为1日：开始时间：当日，结束时间：当日
+            """
+            s_time = n_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             s_date = s_time.strftime("%Y-%m-%d")
+            if n_time.day != 1:
+                e_time = n_time + datetime.timedelta(days=-1)
+                e_date = e_time.strftime("%Y-%m-%d")
+            else:
+                e_time = n_time
+                e_date = e_time.strftime("%Y-%m-%d")
+
         if date_type == '11':  # 月
-            s_time = s_time - relativedelta(months=1)
+            """
+            开始日期：当年第一月
+            结束日期：当年上个月
+            如果：当月为1月：开始时间：当月，结束时间：当月
+            """
+            s_time = n_time.replace(month=1, hour=0, minute=0, second=0, microsecond=0)
             s_time = get_last_day_in_month(s_time)
-
             s_date = s_time.strftime("%Y-%m")
-            e_date = e_time.strftime("%Y-%m")
-
+            if n_time.month != 1:
+                e_time = n_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=-1)
+                e_date = e_time.strftime("%Y-%m")
+            else:
+                e_time = n_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                e_date = e_time.strftime("%Y-%m")
         e_seasondate = ''
         s_seasondate = ''
         if date_type == '12':  # 季
@@ -11218,7 +11237,7 @@ def get_statistic_report(request):
                             if type(c_v) != str and c_v:
                                 v_sum += decimal.Decimal(str(c_v))
                                 in_sum += 1
-                        if cumulative == "1":  # 求和
+                        if cumulative == "1" or cumulative == "5":  # 1：求和，5：求和(上月)/(煤机环保专用)
                             pass
                         if cumulative in ["0", "2", "4"]:  # 0:不累计，2：算数平均， 3：非零算数平均
                             v_sum = v_sum / decimal.Decimal(str(in_sum)) if in_sum else 0
