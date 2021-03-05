@@ -4867,7 +4867,7 @@ def reporting_search_data(request):
                     pass
             elif data["target"].datatype == "text":
                 curvalue = data["curvaluetext"]
-            if data["target"].cumulative in ['1', '2', '3', '4']:
+            if data["target"].cumulative in ['1', '2', '3', '4', '5']:
                 try:
                     cumulativemonth = round(data["cumulativemonth"], data["target"].digit)
                 except:
@@ -6027,7 +6027,7 @@ def single_reextract(request):
                                 except Exception as e:
                                     print(e)
                         extractdata.curvalue = extractdata.todayvalue + extractdata.judgevalue
-                        if c_target.cumulative in ['1', '2', '3', '4']:
+                        if c_target.cumulative in ['1', '2', '3', '4', '5']:
                             cumulative = getcumulative(tableList, c_target, reporting_date, extractdata.curvalue)
                             extractdata.cumulativemonth = cumulative["cumulativemonth"]
                             extractdata.cumulativequarter = cumulative["cumulativequarter"]
@@ -6657,7 +6657,7 @@ def reporting_reextract(request):
                             except Exception as e:
                                 print(e)
                     extractdata.curvalue = extractdata.todayvalue + extractdata.judgevalue
-                    if target.cumulative in ['1', '2', '3', '4']:
+                    if target.cumulative in ['1', '2', '3', '4', '5']:
                         cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
                         extractdata.cumulativequarter = cumulative["cumulativequarter"]
@@ -6975,7 +6975,7 @@ def reporting_supply(request):
                     meterdata.todayvalue = round(meterdata.todayvalue, target.digit)
                     meterdata.judgevalue = 0
                     meterdata.curvalue = meterdata.todayvalue + meterdata.judgevalue
-                    if target.cumulative in ['1', '2', '3', '4']:
+                    if target.cumulative in ['1', '2', '3', '4', '5']:
                         cumulative = getcumulative(tableList, target, reporting_date, meterdata.curvalue)
                         meterdata.cumulativemonth = cumulative["cumulativemonth"]
                         meterdata.cumulativequarter = cumulative["cumulativequarter"]
@@ -6989,7 +6989,7 @@ def reporting_supply(request):
                     entrydata.todayvalue = 0
                     entrydata.judgevalue = 0
                     entrydata.curvalue = 0
-                    if target.cumulative in ['1', '2', '3', '4']:
+                    if target.cumulative in ['1', '2', '3', '4', '5']:
                         cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
                         entrydata.cumulativemonth = cumulative["cumulativemonth"]
                         entrydata.cumulativequarter = cumulative["cumulativequarter"]
@@ -7060,7 +7060,7 @@ def reporting_supply(request):
                             except Exception as e:
                                 print(e)
                     extractdata.curvalue = extractdata.todayvalue + extractdata.judgevalue
-                    if target.cumulative in ['1', '2', '3', '4']:
+                    if target.cumulative in ['1', '2', '3', '4', '5']:
                         cumulative = getcumulative(tableList, target, reporting_date, extractdata.curvalue)
                         extractdata.cumulativemonth = cumulative["cumulativemonth"]
                         extractdata.cumulativequarter = cumulative["cumulativequarter"]
@@ -10580,6 +10580,7 @@ def target_insert_data(request):
             "2": "算数平均",
             "3": "加权平均",
             "4": "非零算数平均",
+            "5": "求和(上月)(环保专用)"
         }
         for target in all_target:
             cycletype = target.cycletype
