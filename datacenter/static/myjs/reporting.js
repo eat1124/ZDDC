@@ -646,6 +646,18 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
         "fnDrawCallback": function (data) {
+            layui.use('laydate', function () {
+                var laydate = layui.laydate;
+
+                $('input[id^="table2_curvaluedate_"]').each(function () {
+                    var d_ele = $(this).prop("id");
+                    laydate.render({
+                        elem: '#' + d_ele,
+                        type: 'datetime',
+                        theme: '#428bca'
+                    });
+                });
+            });
             if (data.aoData.length > 0) {
                 $("#new2").hide();
             } else {
@@ -950,6 +962,18 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
         "fnDrawCallback": function (data) {
+            layui.use('laydate', function () {
+                var laydate = layui.laydate;
+
+                $('input[id^="table3_curvaluedate_"]').each(function () {
+                    var d_ele = $(this).prop("id");
+                    laydate.render({
+                        elem: '#' + d_ele,
+                        type: 'datetime',
+                        theme: '#428bca'
+                    });
+                });
+            });
             if (data.aoData.length > 0) {
                 $("#new3").hide();
             } else {
@@ -1422,6 +1446,18 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
         "fnDrawCallback": function (data) {
+            layui.use('laydate', function () {
+                var laydate = layui.laydate;
+
+                $('input[id^="table5_curvaluedate_"]').each(function () {
+                    var d_ele = $(this).prop("id");
+                    laydate.render({
+                        elem: '#' + d_ele,
+                        type: 'datetime',
+                        theme: '#428bca'
+                    });
+                });
+            });
             if (data.aoData.length > 0) {
                 $("#new5").hide();
             } else {
