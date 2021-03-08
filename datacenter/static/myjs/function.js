@@ -228,10 +228,12 @@ $(function () {
             $('input:radio[name=radio2]')[1].checked = true;
         $("input:radio[name=radio2]").change(function () {
             if ($("#fun:checked").val() == "fun") {
+                $("#visited_url_div").show();
                 $("#app_div").show();
                 $("#works_div").show();
                 $("#new_window_div").show();
             } else {
+                $("#visited_url_div").hide();
                 $("#app_div").hide();
                 $("#works_div").hide();
                 $("#new_window_div").hide();
