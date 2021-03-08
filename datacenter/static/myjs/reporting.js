@@ -646,10 +646,6 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
         "fnDrawCallback": function (data) {
-            $('.table2_curvaluedate').datetimepicker({
-                format: 'yyyy-mm-dd hh:ii:ss',
-                autoclose: true,
-            });
             if (data.aoData.length > 0) {
                 $("#new2").hide();
             } else {
@@ -954,10 +950,6 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
         "fnDrawCallback": function (data) {
-            $('.table3_curvaluedate').datetimepicker({
-                format: 'yyyy-mm-dd hh:ii:ss',
-                autoclose: true,
-            });
             if (data.aoData.length > 0) {
                 $("#new3").hide();
             } else {
@@ -1430,10 +1422,6 @@ $(document).ready(function () {
             "sZeroRecords": "没有检索到数据",
         },
         "fnDrawCallback": function (data) {
-            $('.table5_curvaluedate').datetimepicker({
-                format: 'yyyy-mm-dd hh:ii:ss',
-                autoclose: true,
-            });
             if (data.aoData.length > 0) {
                 $("#new5").hide();
             } else {
