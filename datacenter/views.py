@@ -10163,9 +10163,30 @@ def get_important_targets(request):
                 jn["value"] = recent_data.get(jn["v_type"], 0)
                 jn["target_name"] = recent_data["target_name"]
 
+        jk_info = [{"work": "应用：", "cycle": "周期：", "last_time": "最新取数时间：", "remark": "说明："}]
+        all_processmonitor = ProcessMonitor.objects.exclude(state="9").filter(status='运行中')
+        now_time = datetime.datetime.now()
+        if len(all_processmonitor) > 0:
+            for processmonitor in all_processmonitor:
+                jk_dict = {}
+                if processmonitor.last_time:
+                    jk_dict['work'] = processmonitor.app_admin.name
+                    jk_dict['cycle'] = processmonitor.cycle.name
+                    lasttime = processmonitor.last_time
+                    lasttime_far_from_now = (now_time - lasttime).total_seconds() / 60 / 60
+                    if (lasttime_far_from_now) > 1:
+                        remark = '1小时内没有进行取数，请校对。'
+                    else:
+                        remark = '取数时间正常。'
+                    jk_dict['last_time'] = lasttime.strftime('%Y-%m-%d %H:%M:%S')
+                    jk_dict['remark'] = remark
+                else:
+                    continue
+                jk_info.append(jk_dict)
         return JsonResponse({
             "status": status,
-            "data": data
+            "data": data,
+            "jk_info": jk_info
         })
     else:
         return HttpResponseRedirect("/login")

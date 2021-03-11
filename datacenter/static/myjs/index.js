@@ -296,6 +296,8 @@ function getImportantTargets() {
             var jf_jyzbs = jf["JYZB"],
                 jf_hbzbs = jf["HBZB"];
 
+            var jk_info = data.jk_info;
+
             /*
                 燃热
              */
@@ -444,6 +446,16 @@ function getImportantTargets() {
             }
             createHighChart("jf_plan", jf_year_plan_all, jf_year_plan_done);
 
+            // 进程监控信息
+            $("#jk_info").empty();
+            for (var i = 0; i < jk_info.length; i++){
+                $("#jk_info").append('<div class="col-md-12" style="margin-bottom: 5px;">\n' +
+                        '    <div class="col-md-3 work" style="padding:0">' + jk_info[i]["work"] + '</div>\n' +
+                        '    <div class="col-md-3 cycle" style="padding:0;"> ' + jk_info[i]["cycle"] + '</div>\n' +
+                        '    <div class="col-md-3 latest_time" style="padding:0;"> ' + jk_info[i]["last_time"] + '</div>\n' +
+                        '    <div class="col-md-3 remark" style="padding:0;"> ' + jk_info[i]["remark"] + '</div>\n' +
+                        '</div>');
+            }
         }
     })
 }
