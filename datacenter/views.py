@@ -10163,8 +10163,8 @@ def get_important_targets(request):
                 jn["value"] = recent_data.get(jn["v_type"], 0)
                 jn["target_name"] = recent_data["target_name"]
 
-        jk_info = [{"work": "应用：", "cycle": "周期：", "last_time": "最新取数时间：", "remark": "说明："}]
-        all_processmonitor = ProcessMonitor.objects.exclude(state="9").filter(status='运行中')
+        jk_info = [{"work": "应用名称：", "cycle": "周期名称：", "last_time": "最新取数时间：", "remark": "运行说明："}]
+        all_processmonitor = ProcessMonitor.objects.exclude(state="9").exclude(create_time__isnull=True).exclude(cycle_id__isnull=True)
         now_time = datetime.datetime.now()
         if len(all_processmonitor) > 0:
             for processmonitor in all_processmonitor:
