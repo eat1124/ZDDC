@@ -204,14 +204,9 @@ class PIQuery(object):
         status = 1
         try:
             conn = self.connection['host']
-
             if operate == 'REAL':
                 curvalue = json.loads(ManagePI.ReadHisValueFromPI(conn, tag, start_time))
             elif operate == 'AVG':
-                # 求平均值：2021-03-12 00:00:00 2021-03-13 00:00:00
-                start_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
-                start_time = start_time + datetime.timedelta(days=-1)
-                start_time = start_time.strftime("%Y-%m-%d %H:%M:%S")
                 curvalue = json.loads(ManagePI.ReadAvgValueFromPI(conn, tag, start_time, end_time))
             elif operate == 'MAX':
                 curvalue = json.loads(ManagePI.ReadMaxValueFromPI(conn, tag, start_time, end_time))
