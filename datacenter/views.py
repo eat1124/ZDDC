@@ -1271,7 +1271,7 @@ def report_index(request, funid):
                 errors.append("请选择要导入的文件。")
             else:
                 if if_contains_sign(file_name):
-                    errors.append(r"""请注意文件命名格式，'\/"*?<>'符号文件不允许上传。""")
+                    errors.append(r"""请注意文件命名格式，'#\/"*?<>'符号文件不允许上传。""")
                 else:
                     file_names=file_name.split('.')
                     if file_names[-1]!='cpt' and file_names[-1] != "":
@@ -1588,7 +1588,7 @@ def report_app_index(request, funid):
                 errors.append("请选择要导入的文件。")
             else:
                 if if_contains_sign(file_name):
-                    errors.append(r"""请注意文件命名格式，'\/"*?<>'符号文件不允许上传。""")
+                    errors.append(r"""请注意文件命名格式，'#\/"*?<>'符号文件不允许上传。""")
                 else:
                     file_names = file_name.split('.')
                     if file_names[-1] != 'cpt' and file_names[-1] != "":

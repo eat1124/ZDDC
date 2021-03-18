@@ -570,7 +570,7 @@ def set_error_state(temp_request, process_run_id, task_content):
 
 
 def if_contains_sign(file_name):
-    sign_string = '\/"*?<>'
+    sign_string = '#\/"*?<>'
     for i in sign_string:
         if i in file_name:
             return True
