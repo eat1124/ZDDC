@@ -119,12 +119,11 @@ function renderTargetColDataTable(table_data) {
         "data": table_data,
         "columns": [
             {"data": "name"},
-            {"data": "statistic_type"},
             {"data": null},
             {"data": null}
         ],
         "columnDefs": [{
-            "targets": -4,
+            "targets": -3,
             "width": "20%",
         }, {
             "targets": -2,
@@ -171,7 +170,6 @@ function renderTargetColDataTable(table_data) {
         $('#new_target').empty();
         $("#col_id").val(table.row($(this).parents('tr')).index() + 1);
         $("#col_name").val(data.name);
-        $("#statistic_type").val(data.statistic_type);
         $("#col_remark").val(data.remark);
         for (var i = 0; i < data.targets.length; i++) {
             var target_id = data.targets[i].target_id;
@@ -315,7 +313,6 @@ function addOrEdit() {
             "name": $('#col_name').val(),
             "targets": targets,
             "remark": $('#col_remark').val(),
-            "statistic_type": $('#statistic_type').val(),
         }).draw();
     } else {
         // 修改
@@ -338,7 +335,6 @@ function addOrEdit() {
             "name": $('#col_name').val(),
             "targets": targets,
             "remark": $('#col_remark').val(),
-            "statistic_type": $('#statistic_type').val(),
         }).draw();
     }
 

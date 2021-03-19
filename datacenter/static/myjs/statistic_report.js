@@ -329,50 +329,6 @@ function getStatisticReport(start_date, end_date, search_id, date_type) {
                 }
                 v_sum_tr += '</td></tr>';
                 $('#statistic_report_dt').find('tbody').append(v_sum_tr);
-                /**
-                 * 总计
-                 */
-                var first_zj_tr = '<tr>';
-                var td_num = 1;
-                for (var m = 0; m < head_data.length; m++) {
-                    var col_name = head_data[m]['col_name'],
-                        colspan = head_data[m]['colspan'];
-                    if (m == 0) {
-                        first_zj_tr += '<td colspan="' + colspan + ' " style="text-align: center;">总计</td>';
-                    } else {
-                        // 合计求和->总计
-                        // 根据指标statistic_type求总计
-                        var zj_sum = 0;
-                        var hj_tds = $('#statistic_report_dt').find('tr').eq(-1).find('td');
-                        var statistic_type = null;
-                        var avai_num = 0;
-                        for (var n = 0; n < colspan; n++) {
-                            hj_td = hj_tds.eq(td_num);
-                            var c_hj = parseFloat(hj_td.text());
-                            statistic_type = hj_td.find("input[name='statistic_type']").val();
-                            
-                            if (!isNaN(c_hj)) {
-                                zj_sum = math.add(math.bignumber(Number(zj_sum)), math.bignumber(Number(c_hj))); // math.js精度计算
-                                avai_num += 1;
-                            }
-
-                            td_num += 1;
-                        }
-                        if (statistic_type == '1'){  // 求和
-                            // ...
-                        } else if (statistic_type == '2'){
-                            if (avai_num !=0){
-                                zj_sum = (zj_sum/avai_num).toFixed(2)
-                            }
-                        } else {
-                            zj_sum = "-"
-                        }
-
-                        first_zj_tr += '<td colspan="' + colspan + ' " style="text-align: center;">' + zj_sum + '</td>';
-                    }
-                }
-                first_zj_tr += '</tr>';
-                $('#statistic_report_dt').find('tbody').append(first_zj_tr);
 
             } else {
                 alert(info);

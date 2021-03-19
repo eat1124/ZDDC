@@ -10739,7 +10739,7 @@ def target_statistic_save(request):
                             "remark": remark,
                             "sort": int(sort) if sort else None,
                             "col_data": col_data,
-                            "user": request.user.userinfo,
+                            # "user": request.user.userinfo,   # 编辑时不保存用户
                         })
                         info = "修改成功。"
                     except Exception as e:
@@ -10953,7 +10953,6 @@ def get_statistic_report(request):
 
                 """
                 "[{
-                    'statistic_type': '1', 
                     'name': 'b', 
                     'remark': '', 
                     'targets': [
@@ -11176,7 +11175,6 @@ def get_statistic_report(request):
 
                         for cd in col_data:
                             targets = cd["targets"]
-                            statistic_type = cd["statistic_type"]
                             for target in targets:
                                 target_id = target["target_id"]
                                 target_cumulative = get_target_info(target_id).get("cumulative", "")
@@ -11193,31 +11191,26 @@ def get_statistic_report(request):
                                             if target["cumulative_type"] == "0":
                                                 target_values.append({
                                                     "value": d["curvalue"],
-                                                    "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "1":
                                                 target_values.append({
                                                     "value": d["cumulativemonth"],
-                                                    "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "2":
                                                 target_values.append({
                                                     "value": d["cumulativequarter"],
-                                                    "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "3":
                                                 target_values.append({
                                                     "value": d["cumulativehalfyear"],
-                                                    "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             if target["cumulative_type"] == "4":
                                                 target_values.append({
                                                     "value": d["cumulativeyear"],
-                                                    "statistic_type": statistic_type,
                                                     "cumulative": d["cumulative"],
                                                 })
                                             has_value = True
@@ -11225,7 +11218,6 @@ def get_statistic_report(request):
                                     if not has_value:
                                         target_values.append({
                                             "value": "-",
-                                            "statistic_type": statistic_type,
                                             "cumulative": "",
                                         })
                         if target_values:
@@ -11247,12 +11239,10 @@ def get_statistic_report(request):
                     for i in range(0, target_values_length):
                         v_sum = decimal.Decimal('0')
                         cumulative = ""
-                        statistic_type = ""
                         in_sum = 0  # 参与合计的数量
                         for bd in body_data:
                             target_values = bd["target_values"]
                             c_v = target_values[i].get("value", "-")
-                            statistic_type = target_values[i].get("statistic_type", "-")
                             pre_cumulative = target_values[i].get("cumulative", "-")
                             if pre_cumulative not in ["-", ""]:
                                 cumulative = pre_cumulative
@@ -11267,7 +11257,6 @@ def get_statistic_report(request):
                         if cumulative == "3":   # 加权平均->待
                             v_sum = "/"
                         v_sums.append({
-                            "statistic_type": statistic_type,
                             "v": float(v_sum) if v_sum or v_sum != "/" else "/"
                         }) # 合计里放个总计类型
             except Exception as e:
