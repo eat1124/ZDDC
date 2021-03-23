@@ -318,7 +318,7 @@
                                     </div>
                                     <div class="portlet-body">
                                         <div class="portlet-body">
-                                            <div class="row static-info" style="height:220px;">
+                                            <div class="row static-info" style="height:250px;">
                                                 <div class="row col-md-12" id="jk_info" style="margin: 0; padding:0;">
                                                     <div class="col-md-12">
                                                         <div class="col-md-3 work" style="padding:0">loading...</div>
@@ -334,64 +334,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div id="static " class="modal fade " tabindex="-1 " data-backdrop="static " data-keyboard="false ">
-                <div class="modal-dialog ">
-                    <div class="modal-content ">
-                        <div class="modal-header ">
-                            <button type="button " class="close " data-dismiss="modal " aria-hidden="true "></button>
-                            <h4 class="modal-title ">当前告警</h4>
-                        </div>
-                        <div class="modal-body " style="margin-bottom:40px ">
-                            <div id="myTabContent1 " class="tab-content ">
-                                <div>
-                                    <form class="bs-example form-horizontal activate-form "
-                                          id="formactivate ">{% csrf_token %}
-                                        <input type="text " name="jobid " id="jobid " value=" " hidden>
-                                        <div class="form-body ">
-                                            <div class="form-group ">
-                                                <label class="col-md-3 control-label ">客户机</label>
-                                                <div class="col-md-9 " id=" ">
-                                                    <input type="text " autocomplete="off " class="form-control "
-                                                           value=" " name="clientname " id="clientname " readonly>
-                                                </div>
-                                            </div>
-                                            <div class="form-group ">
-                                                <label class="col-md-3 control-label ">类型</label>
-                                                <div class="col-md-9 " id=" ">
-                                                    <input type="text " autocomplete="off " class="form-control "
-                                                           value=" " name="idataagent " id="idataagent " readonly>
-                                                </div>
-                                            </div>
-                                            <div class="form-group ">
-                                                <label class="col-md-3 control-label ">告警信息</label>
-                                                <div class="col-md-9 " id=" ">
-                                                    <textarea name="jobfailedreason " id="jobfailedreason " cols="50 "
-                                                              rows="10 " style="resize:none; " autocomplete="off "
-                                                              class="form-control " readonly></textarea>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-                                        <div class="form-actions ">
-                                            <div class="modal-footer ">
-                                                <button type="button " id="not_display " name="not_display "
-                                                        class="btn green ">不再显示
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-
-
-                            </div>
-                        </div>
-                    </div>
-
-
                 </div>
             </div>
 

@@ -9954,9 +9954,6 @@ def get_important_targets(request):
         燃热：发电量、上网电量、供热量、负荷率、厂用电率、发电标煤耗、供电标煤耗、供热标煤耗 -> 没有耗煤量
         9F：发电量、上网电量、耗气量、负荷率、厂用电率、发电标煤耗、供电标煤耗
     发电量月计划、上网电量月计划
-    
-    :param request:
-    :return:
     """
     if request.user.is_authenticated():
         status = 1
@@ -10067,15 +10064,11 @@ def get_important_targets(request):
             },
         }
 
-        # now = datetime.datetime.now()
-        # now = datetime.datetime.strptime("2020-07-21", "%Y-%m-%d")
-
         # **************
         #   燃热
         # **************
         #   经营指标
         rr_jyzbs = data["RR"]["JYZB"]
-
         for rr_jyzb in rr_jyzbs:
             rr_jyzb_code = rr_jyzb["target"]
             recent_data = get_target_data_recently(rr_jyzb_code)
@@ -10085,7 +10078,6 @@ def get_important_targets(request):
 
         #   环保指标
         rr_hbzbs = data["RR"]["HBZB"]
-
         for rr_hbzb in rr_hbzbs:
             rr_hbzb_code = rr_hbzb["target"]
             recent_data = get_target_data_recently(rr_hbzb_code)
@@ -10094,7 +10086,6 @@ def get_important_targets(request):
             rr_hbzb["unit"] = recent_data["unit"]
         #   年计划
         rr_njhs = data["RR"]["FDL_JH"]
-
         for rr_njh in rr_njhs:
             for rn in rr_njh:
                 recent_data = get_target_data_recently(rn["target"])
@@ -10105,7 +10096,6 @@ def get_important_targets(request):
         # **************
         #   经营指标
         mj_jyzbs = data["MJ"]["JYZB"]
-
         for mj_jyzb in mj_jyzbs:
             mj_jyzb_code = mj_jyzb["target"]
             recent_data = get_target_data_recently(mj_jyzb_code)
@@ -10115,7 +10105,6 @@ def get_important_targets(request):
 
         #   环保指标
         mj_hbzbs = data["MJ"]["HBZB"]
-
         for mj_hbzb in mj_hbzbs:
             mj_hbzb_code = mj_hbzb["target"]
             recent_data = get_target_data_recently(mj_hbzb_code)
@@ -10125,7 +10114,6 @@ def get_important_targets(request):
 
         #   年计划
         mj_njhs = data["MJ"]["FDL_JH"]
-
         for mj_njh in mj_njhs:
             for mn in mj_njh:
                 recent_data = get_target_data_recently(mn["target"])
@@ -10136,7 +10124,6 @@ def get_important_targets(request):
         # **************
         #   经营指标
         jf_jyzbs = data["9F"]["JYZB"]
-
         for jf_jyzb in jf_jyzbs:
             jf_jyzb_code = jf_jyzb["target"]
             recent_data = get_target_data_recently(jf_jyzb_code)
@@ -10146,7 +10133,6 @@ def get_important_targets(request):
 
         #   环保指标
         jf_hbzbs = data["9F"]["HBZB"]
-
         for jf_hbzb in jf_hbzbs:
             jf_hbzb_code = jf_hbzb["target"]
             recent_data = get_target_data_recently(jf_hbzb_code)
@@ -10156,33 +10142,77 @@ def get_important_targets(request):
 
         #   年计划
         jf_njhs = data["9F"]["FDL_JH"]
-
         for jf_njh in jf_njhs:
             for jn in jf_njh:
                 recent_data = get_target_data_recently(jn["target"])
                 jn["value"] = recent_data.get(jn["v_type"], 0)
                 jn["target_name"] = recent_data["target_name"]
 
+        # ***************
+        # 首页进程监控信息
+        # ***************
+        targets = Target.objects.filter(operationtype__in=[16, 1]).exclude(state=9).values('source_id', 'adminapp_id', 'cycle_id')
+        def does_it_exist(source, adminapp=None, cycle=None):
+            if source and not any([adminapp, cycle]):
+                for t in targets:
+                    if source == t['source_id']:
+                        return True
+            if all([source, adminapp]) and not cycle:
+                for t in targets:
+                    if source == t['source_id'] and adminapp == t['adminapp_id']:
+                        return True
+            if all([source, adminapp, cycle]):
+                for t in targets:
+                    if source == t['source_id'] and adminapp == t['adminapp_id'] and cycle == t['cycle_id']:
+                        return True
+            return False
+        source = Source.objects.exclude(state='9')
+        app = App.objects.exclude(state='9')
+        cycle = Cycle.objects.exclude(state='9')
         jk_info = [{"work": "应用名称：", "cycle": "周期名称：", "last_time": "最新取数时间：", "remark": "运行说明："}]
-        all_processmonitor = ProcessMonitor.objects.exclude(state="9").exclude(create_time__isnull=True).exclude(cycle_id__isnull=True)
+        f_jk_info = []
         now_time = datetime.datetime.now()
-        if len(all_processmonitor) > 0:
-            for processmonitor in all_processmonitor:
-                jk_dict = {}
-                if processmonitor.last_time:
-                    jk_dict['work'] = processmonitor.app_admin.name
-                    jk_dict['cycle'] = processmonitor.cycle.name
-                    lasttime = processmonitor.last_time
-                    lasttime_far_from_now = (now_time - lasttime).total_seconds() / 60 / 60
-                    if (lasttime_far_from_now) > 1:
-                        remark = '1小时内没有进行取数，请校对。'
+        for s in source:
+            if not s.type:
+                if does_it_exist(s.id):
+                    for a in app:
+                        if does_it_exist(s.id, a.id):
+                            for c in cycle:
+                                if does_it_exist(s.id, a.id, c.id):
+                                    cps = ProcessMonitor.objects.filter(source_id=s.id).filter(app_admin_id=a.id).\
+                                        filter(cycle_id=c.id).exclude(state='9')
+                                    if cps.exists():
+                                        cp = cps[0]
+                                        remark = ''
+                                        jk_dict = {}
+                                        if cp.last_time:
+                                            lasttime_from_now = (now_time - cp.last_time).total_seconds() / 60 / 60
+                                            if (lasttime_from_now) > 1:
+                                                remark = '1小时内没有进行取数，请校对。'
+                                            else:
+                                                remark = '取数时间正常。'
+                                        jk_dict['last_time'] = '{:%Y-%m-%d %H:%M:%S}'.format(
+                                            cp.last_time) if cp.last_time else ""
+                                        jk_dict['remark'] = remark
+                                        jk_dict['work'] = cp.app_admin.name
+                                        jk_dict['cycle'] = cp.cycle.name
+                                        jk_info.append(jk_dict)
+            else:
+                # 固定节点(数据补取、数据清理)
+                f_jk_dict = {}
+                f_cps = ProcessMonitor.objects.filter(source_id=s.id).exclude(state='9')
+                if f_cps.exists():
+                    f_cp = f_cps[0]
+                    if f_cp.status == '运行中':
+                        remark = '运行正常。'
                     else:
-                        remark = '取数时间正常。'
-                    jk_dict['last_time'] = lasttime.strftime('%Y-%m-%d %H:%M:%S')
-                    jk_dict['remark'] = remark
-                else:
-                    continue
-                jk_info.append(jk_dict)
+                        remark = '运行异常，请校对。'
+                    f_jk_dict['last_time'] = '{:%Y-%m-%d %H:%M:%S}'.format(f_cp.last_time) if f_cp.last_time else "无"
+                    f_jk_dict['remark'] = remark
+                    f_jk_dict['work'] = f_cp.source.name
+                    f_jk_dict['cycle'] = "无"
+                    f_jk_info.append(f_jk_dict)
+        jk_info += f_jk_info
         return JsonResponse({
             "status": status,
             "data": data,
