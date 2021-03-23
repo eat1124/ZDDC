@@ -10185,12 +10185,15 @@ def get_important_targets(request):
                                         cp = cps[0]
                                         remark = ''
                                         jk_dict = {}
-                                        if cp.last_time:
-                                            lasttime_from_now = (now_time - cp.last_time).total_seconds() / 60 / 60
-                                            if (lasttime_from_now) > 1:
-                                                remark = '1小时内没有进行取数，请校对。'
-                                            else:
-                                                remark = '取数时间正常。'
+                                        if cp.status == '运行中':
+                                            if cp.last_time:
+                                                lasttime_from_now = (now_time - cp.last_time).total_seconds() / 60 / 60
+                                                if (lasttime_from_now) > 1:
+                                                    remark = '1小时内没有进行取数，请校对。'
+                                                else:
+                                                    remark = '运行正常。'
+                                        else:
+                                            remark = '进程已关闭，请开启。'
                                         jk_dict['last_time'] = '{:%Y-%m-%d %H:%M:%S}'.format(
                                             cp.last_time) if cp.last_time else ""
                                         jk_dict['remark'] = remark
@@ -10206,7 +10209,7 @@ def get_important_targets(request):
                     if f_cp.status == '运行中':
                         remark = '运行正常。'
                     else:
-                        remark = '运行异常，请校对。'
+                        remark = '进程已关闭，请开启。'
                     f_jk_dict['last_time'] = '{:%Y-%m-%d %H:%M:%S}'.format(f_cp.last_time) if f_cp.last_time else "无"
                     f_jk_dict['remark'] = remark
                     f_jk_dict['work'] = f_cp.source.name
