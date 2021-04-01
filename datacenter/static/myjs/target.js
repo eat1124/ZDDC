@@ -455,12 +455,12 @@ $(document).ready(function () {
         }
     });
 
-    $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit,#works').change(function () {
+    $('#search_adminapp,#search_app,#search_operationtype,#search_cycletype,#search_businesstype,#search_unit,#works,#search_cumulative').change(function () {
         var table = $('#sample_1').DataTable();
         table.ajax.url("../target_data?search_adminapp=" + $('#search_adminapp').val() + "&search_app=" + $('#search_app').val() +
             "&search_operationtype=" + $('#search_operationtype').val() + "&search_cycletype=" + $('#search_cycletype').val() +
             "&search_businesstype=" + $('#search_businesstype').val() + "&search_unit=" + $('#search_unit').val() +
-            "&works=" + $('#works').val()
+            "&works=" + $('#works').val() + "&search_cumulative=" + $('#search_cumulative').val()
         ).load();
     });
 

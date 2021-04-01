@@ -3071,6 +3071,7 @@ def target_data(request):
         search_app_noselect = request.GET.get('search_app_noselect', '')
         datatype = request.GET.get('datatype', '')
         works = request.GET.get('works', '')
+        search_cumulative = request.GET.get('search_cumulative', '')
 
         all_target = Target.objects.exclude(state="9").order_by("sort").select_related(
             "adminapp", "storage", "work"
@@ -3106,6 +3107,8 @@ def target_data(request):
             all_target = all_target.filter(unit=search_unit)
         if datatype != "":
             all_target = all_target.filter(datatype=datatype)
+        if search_cumulative != "":
+            all_target = all_target.filter(cumulative=search_cumulative)
         try:
             works = int(works)
             all_target = all_target.filter(work_id=works)
