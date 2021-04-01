@@ -132,7 +132,8 @@ class Target(models.Model):
         ('1', '求和'),
         ('2', '算术平均'),
         ('3', '加权平均'),
-        ('4', '非零算术平均')
+        ('4', '非零算术平均'),
+        ('5', '求和(上月)(环保专用)')
     ))
     weight_target = models.ForeignKey("self", null=True, verbose_name='加权指标')
     upperlimit = models.DecimalField("上限", null=True, max_digits=20, decimal_places=5)

@@ -29,6 +29,7 @@ $(document).ready(function () {
             {"data": "unity"},
             {"data": "code"},
             {"data": "operationtype_name"},
+            {"data": "cumulative"},
             {"data": "cycletype_name"},
             {"data": "businesstype_name"},
             {"data": "unit_name"},
@@ -36,6 +37,21 @@ $(document).ready(function () {
         ],
 
         "columnDefs": [{
+                "targets": -5,
+                "data": null,
+                "mRender": function (data, type, full) {
+                    var cumulative_info = {
+                        "0": "不累计",
+                        "1": "求和",
+                        "2": "算术平均",
+                        "3": "加权平均",
+                        "4": "非零算数平均",
+                        "5": "求和(上月)(环保专用)"
+                    };
+                    return cumulative_info[full.cumulative]
+                }
+            },
+            {
             "targets": -1,
             "data": null,
             "width": "100px",
