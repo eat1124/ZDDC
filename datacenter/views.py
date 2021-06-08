@@ -5971,73 +5971,72 @@ def single_reextract(request):
                 if operationtype == "16":
                     extractdata = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
                         target_id=c_target.id).filter(datadate=reporting_date)
-                    if len(extractdata) > 0:
-                        extractdata = extractdata[0]
-                        tablename = ""
+                    # if len(extractdata) > 0:
+                    #     extractdata = extractdata[0]
+                    #     tablename = ""
+                    #     try:
+                    #         tablename = c_target.storage.tablename
+                    #     except:
+                    #         pass
+                    #
+                    #     rows = []
+                    #     if tablename:
+                    #         try:
+                    #             with connection.cursor() as cursor:
+                    #                 reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
+                    #                 strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
+                    #                     tablename=tablename, target_id=c_target.id, datadate=reporting_date_stf
+                    #                 )
+                    #                 cursor.execute(strsql)
+                    #                 rows = cursor.fetchall()
+                    #             connection.close()
+                    #         except Exception as e:
+                    #             pass
+                    #         if len(rows) > 0:
+                    #             try:
+                    #                 if c_target.is_repeat == '2':
+                    #                     rownum = 0
+                    #                     rowvalue = 0
+                    #                     for row in rows:
+                    #                         if row[0] is not None:
+                    #                             rowvalue += row[0]
+                    #                             rownum += 1
+                    #                     extractdata.todayvalue = rowvalue / rownum
+                    #                 else:
+                    #                     extractdata.todayvalue = rows[0][0]
+                    #                 extractdata.todayvalue = decimal.Decimal(
+                    #                     float(extractdata.todayvalue) * float(c_target.magnification))
+                    #                 extractdata.todayvalue = round(extractdata.todayvalue, c_target.digit)
+                    #             except:
+                    #                 pass
+                    #     if not rows or not c_target.cycle:  # 没取到数据 或者 没有取数周期，根据数据源实时取
+                    ret = Extract.getDataFromSource(c_target, a_cycle_aft_date)
+                    result_list = ret["result"]
+                    if result_list:
                         try:
-                            tablename = c_target.storage.tablename
-                        except:
-                            pass
-
-                        rows = []
-                        if tablename:
-                            try:
-                                with connection.cursor() as cursor:
-                                    reporting_date_stf = reporting_date.strftime("%Y-%m-%d %H:%M:%S")
-                                    strsql = "SELECT curvalue FROM {tablename} WHERE target_id='{target_id}' AND datadate='{datadate}' ORDER BY id DESC".format(
-                                        tablename=tablename, target_id=c_target.id, datadate=reporting_date_stf
-                                    )
-                                    cursor.execute(strsql)
-                                    rows = cursor.fetchall()
-                                connection.close()
-                            except Exception as e:
-                                pass
-                            if len(rows) > 0:
-                                try:
-                                    if c_target.is_repeat == '2':
-                                        rownum = 0
-                                        rowvalue = 0
-                                        for row in rows:
-                                            if row[0] is not None:
-                                                rowvalue += row[0]
-                                                rownum += 1
-                                        extractdata.todayvalue = rowvalue / rownum
-                                    else:
-                                        extractdata.todayvalue = rows[0][0]
-                                    extractdata.todayvalue = decimal.Decimal(
-                                        float(extractdata.todayvalue) * float(c_target.magnification))
-                                    extractdata.todayvalue = round(extractdata.todayvalue, c_target.digit)
-                                except:
-                                    pass
-                        if not rows or not c_target.cycle:  # 没取到数据 或者 没有取数周期，根据数据源实时取
-                            ret = Extract.getDataFromSource(c_target, a_cycle_aft_date)
-                            result_list = ret["result"]
-                            if result_list:
-                                try:
-                                    if c_target.is_repeat == '2':
-                                        rownum = 0
-                                        rowvalue = 0
-                                        for row in result_list:
-                                            if row[0] is not None:
-                                                rowvalue += row[0]
-                                                rownum += 1
-                                        extractdata.todayvalue = rowvalue / rownum
-                                    else:
-                                        extractdata.todayvalue = result_list[0][0]
-                                    extractdata.todayvalue = decimal.Decimal(
-                                        float(extractdata.todayvalue) * float(c_target.magnification))
-                                    extractdata.todayvalue = round(extractdata.todayvalue, c_target.digit)
-                                except Exception as e:
-                                    print(e)
-                        extractdata.curvalue = extractdata.todayvalue + extractdata.judgevalue
-                        if c_target.cumulative in ['1', '2', '3', '4', '5']:
-                            cumulative = getcumulative(tableList, c_target, reporting_date, extractdata.curvalue)
-                            extractdata.cumulativemonth = cumulative["cumulativemonth"]
-                            extractdata.cumulativequarter = cumulative["cumulativequarter"]
-                            extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
-                            extractdata.cumulativeyear = cumulative["cumulativeyear"]
-                        extractdata.save()
-                        info = "{0}{1}".format(c_target.name, info)
+                            if c_target.is_repeat == '2':
+                                rownum = 0
+                                rowvalue = 0
+                                for row in result_list:
+                                    if row[0] is not None:
+                                        rowvalue += row[0]
+                                        rownum += 1
+                                extractdata.todayvalue = rowvalue / rownum
+                            else:
+                                extractdata.todayvalue = result_list[0][0]
+                            extractdata.todayvalue = decimal.Decimal(extractdata.todayvalue)
+                            extractdata.todayvalue = round(extractdata.todayvalue, c_target.digit)
+                        except Exception as e:
+                            print(e)
+                    extractdata.curvalue = extractdata.todayvalue + extractdata.judgevalue
+                    if c_target.cumulative in ['1', '2', '3', '4', '5']:
+                        cumulative = getcumulative(tableList, c_target, reporting_date, extractdata.curvalue)
+                        extractdata.cumulativemonth = cumulative["cumulativemonth"]
+                        extractdata.cumulativequarter = cumulative["cumulativequarter"]
+                        extractdata.cumulativehalfyear = cumulative["cumulativehalfyear"]
+                        extractdata.cumulativeyear = cumulative["cumulativeyear"]
+                    extractdata.save()
+                    info = "{0}{1}".format(c_target.name, info)
             return JsonResponse({
                 "status": status,
                 "info": info,
@@ -6654,8 +6653,7 @@ def reporting_reextract(request):
                                     extractdata.todayvalue = rowvalue / rownum
                                 else:
                                     extractdata.todayvalue = result_list[0][0]
-                                extractdata.todayvalue = decimal.Decimal(
-                                    float(extractdata.todayvalue) * float(target.magnification))
+                                extractdata.todayvalue = decimal.Decimal(extractdata.todayvalue)
                                 extractdata.todayvalue = round(extractdata.todayvalue, target.digit)
                             except Exception as e:
                                 print(e)
