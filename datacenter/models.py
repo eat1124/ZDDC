@@ -486,6 +486,7 @@ class UpdateDataLog(models.Model):
     write_time = models.DateTimeField("变更时间时间", blank=True, null=True)
     before_curvalue = models.DecimalField("变更前数据", null=True, max_digits=22, decimal_places=7)
     after_curvalue = models.DecimalField("变更后数据", null=True, max_digits=22, decimal_places=7)
+    raw_curvalue = models.DecimalField("原始数据", null=True, max_digits=22, decimal_places=7)
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
 
