@@ -7334,6 +7334,20 @@ def reporting_save(request):
         cycletype = request.POST.get('cycletype', '')
         savedata = json.loads(savedata)
         reporting_date = request.POST.get('reporting_date', '')
+
+        app = request.POST.get('app', '')
+        funid = request.POST.get('funid', '')
+
+        try:
+            funid = int(funid)
+            fun = Fun.objects.get(id=funid)
+            work = fun.work
+            app = int(app)
+        except Exception as e:
+            return JsonResponse({
+                'status': 0,
+                'data': str(e)
+            })
         try:
             reporting_date = getreporting_date(reporting_date, cycletype)
         except:
@@ -7396,24 +7410,46 @@ def reporting_save(request):
                     break
             if single_save_query_data:
                 if single_save_query_data['target__datatype'] == 'numbervalue':
+                    before_curvalue = float(single_save_query_data['curvalue'])
+                    after_curvalue = float(curdata["curvalue"])
+                    # 更改了数据，记录数据
+                    try:
+                        if before_curvalue != after_curvalue:
+                            before_curvalue = decimal.Decimal(str(before_curvalue)).quantize(decimal.Decimal(Digit(single_save_query_data['target__digit'])), rounding=decimal.ROUND_HALF_UP)
+                            after_curvalue = decimal.Decimal(str(after_curvalue)).\
+                                quantize(decimal.Decimal(Digit(single_save_query_data['target__digit'])), rounding=decimal.ROUND_HALF_UP)
+                            UpdateDataLog.objects.create(**{
+                                'cycletype': cycletype,
+                                'operationtype': operationtype,
+                                'datadate': reporting_date,
+                                'write_time': datetime.datetime.now(),
+                                'before_curvalue': before_curvalue,
+                                'after_curvalue': after_curvalue,
+                                'target_id': curdata['target_id'],
+                                'adminapp_id': app,
+                                'work': work,
+                                'user_id': request.user.id,
+                            })
+                    except Exception as e:
+                        print(e)
                     try:
                         result['todayvalue'] = float(curdata["todayvalue"])
                         result['todayvalue'] = decimal.Decimal(str(curdata['todayvalue'])).quantize(
-                            decimal.Decimal(Digit(curdata['target__digit'])),
+                            decimal.Decimal(Digit(single_save_query_data['target__digit'])),
                             rounding=decimal.ROUND_HALF_UP)
                     except Exception as e:
                         pass
                     try:
                         result['judgevalue'] = float(curdata["judgevalue"])
                         result['judgevalue'] = decimal.Decimal(str(curdata['judgevalue'])).quantize(
-                            decimal.Decimal(Digit(curdata['target__digit'])),
+                            decimal.Decimal(Digit(single_save_query_data['target__digit'])),
                             rounding=decimal.ROUND_HALF_UP)
                     except Exception as e:
                         pass
                     try:
                         result['curvalue'] = float(curdata["curvalue"])
                         result['curvalue'] = decimal.Decimal(str(curdata['curvalue'])).quantize(
-                            decimal.Decimal(Digit(curdata['target__digit'])),
+                            decimal.Decimal(Digit(single_save_query_data['target__digit'])),
                             rounding=decimal.ROUND_HALF_UP)
                     except Exception as e:
                         pass
@@ -9644,6 +9680,84 @@ def reporting_log_data(request):
                 'user': user_no_color,
                 'id': rl.id
 
+            })
+        return JsonResponse({
+            'data': reporting_log_list
+        })
+    else:
+        return HttpResponseRedirect('/login')
+
+
+# 更新数据记录
+def update_data_log_index(request, funid):
+    if request.user.is_authenticated():
+        start_time = (datetime.datetime.now() - datetime.timedelta(days=365)).strftime("%Y-%m")
+        end_time = datetime.datetime.now().strftime("%Y-%m")
+
+        try:
+            cur_fun = Fun.objects.filter(id=int(funid)).exclude(state='9')
+            adminapp = cur_fun[0].app
+        except:
+            return HttpResponseRedirect("/index")
+        return render(request, 'update_data_log.html',
+                      {'username': request.user.userinfo.fullname,
+                       "pagefuns": getpagefuns(funid, request),
+                       "start_time": start_time,
+                       "end_time": end_time,
+                       "adminapp": adminapp.id if adminapp else '',
+                       })
+    else:
+        return HttpResponseRedirect("/login")
+
+
+def update_data_log_data(request):
+    if request.user.is_authenticated():
+        adminapp = request.GET.get('adminapp', '')
+        start_time = request.GET.get('start_time', '')
+        end_time = request.GET.get('end_time', '')
+
+        start_time = datetime.datetime.strptime(start_time, "%Y-%m")
+        end_time = datetime.datetime.strptime(end_time, "%Y-%m") + datetime.timedelta(days=30)
+        try:
+            adminapp = int(adminapp)
+        except:
+            pass
+        update_data_log = UpdateDataLog.objects.exclude(state='9').order_by('-id').select_related('adminapp', 'work', 'target')\
+            .filter(write_time__range=[start_time, end_time],adminapp_id=adminapp)
+        dict_list = DictList.objects.exclude(state='9').values()
+        reporting_log_list = []
+
+        for rl in update_data_log:
+            user = rl.user.userinfo.fullname if rl.user.userinfo else ''
+            app = rl.adminapp.name if rl.adminapp else ''
+            work = rl.work.name if rl.work else ''
+            target_name = rl.target.name if rl.target else ''
+            before_curvalue = round(rl.before_curvalue, rl.target.digit)
+            after_curvalue = round(rl.after_curvalue, rl.target.digit)
+            datadate = get_format_date(rl.datadate, rl.cycletype)
+            cycletype = int(rl.cycletype)
+            for dl in dict_list:
+                if cycletype == dl['id']:
+                    cycletype = dl['name']
+                    break
+            write_time = ''
+            try:
+                write_time = '{:%Y-%m-%d %H:%M:%S}'.format(rl.write_time)
+            except:
+                pass
+            operationtype = map_operation(rl.operationtype, True) if rl.operationtype else ""
+            reporting_log_list.append({
+                'id': rl.id,
+                'target_name': target_name,
+                'cycletype': cycletype,
+                'operationtype': operationtype,
+                'datadate': datadate,
+                'write_time': write_time,
+                'user': user,
+                'app': app,
+                'work': work,
+                'before_curvalue': before_curvalue,
+                'after_curvalue': after_curvalue,
             })
         return JsonResponse({
             'data': reporting_log_list

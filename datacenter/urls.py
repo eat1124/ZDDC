@@ -135,6 +135,9 @@ urlpatterns = [
     url(r'^reporting_log/$', reporting_log_index, {'funid': '168'}),
     url(r'^reporting_log_data/$', reporting_log_data),
 
+    url(r'^update_data_log/(?P<funid>\d+)/$', update_data_log_index),
+    url(r'^update_data_log_data/$', update_data_log_data),
+
     # 报表上报
     url(r'^report_submit/(?P<funid>\d+)/$', report_submit_index),
     url(r'^report_submit_data/$', report_submit_data),

@@ -1945,6 +1945,7 @@ $(document).ready(function () {
             dataType: 'json',
             url: "../../../reporting_save/",
             data: {
+                app: $('#app').val(),
                 operationtype: operationtype,
                 cycletype: $('#cycletype').val(),
                 savedata: JSON.stringify(savedata),
