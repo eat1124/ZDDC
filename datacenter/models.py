@@ -472,6 +472,23 @@ class ReportingLog(models.Model):
     state = models.CharField("状态", blank=True, null=True, max_length=20)
 
 
+class UpdateDataLog(models.Model):
+    """
+    变更数据记录表
+    """
+    target = models.ForeignKey(Target, db_index=True)
+    adminapp = models.ForeignKey(App, null=True, related_name='updatedatalog_adminapp_set')
+    work = models.ForeignKey('Work', null=True, verbose_name='业务')
+    user = models.ForeignKey(User, blank=True, null=True, verbose_name="变更人")
+    cycletype = models.CharField("周期类型", blank=True, max_length=20)
+    operationtype = models.CharField("操作类型", blank=True, max_length=20)
+    datadate = models.DateTimeField("数据时间", blank=True, null=True)
+    write_time = models.DateTimeField("变更时间时间", blank=True, null=True)
+    before_curvalue = models.DecimalField("变更前数据", null=True, max_digits=22, decimal_places=7)
+    after_curvalue = models.DecimalField("变更后数据", null=True, max_digits=22, decimal_places=7)
+    state = models.CharField("状态", blank=True, null=True, max_length=20)
+
+
 class SupplementProcess(models.Model):
     """
     补取进程表
