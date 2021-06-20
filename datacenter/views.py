@@ -7245,30 +7245,14 @@ def reporting_release(request):
                         'user_id': user_id,
                         'type': 'release',
                     })
+
                     # 以下为发布数据，修改更改数据的原始数据
-                    all_target_id_list = []
                     try:
-                        for id in savedata15:
-                            obj = getmodels("Enteydata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                                id=int(id['id']))[0]
-                            all_target_id_list.append(obj.target_id)
-                        for id in savedata1:
-                            obj = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                                id=int(id['id']))[0]
-                            all_target_id_list.append(obj.target_id)
-                        for id in savedata16:
-                            obj = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                                id=int(id['id']))[0]
-                            all_target_id_list.append(obj.target_id)
-                        for id in savedata17:
-                            obj = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
-                                id=int(id['id']))[0]
-                            all_target_id_list.append(obj.target_id)
-                        for target_id in all_target_id_list:
-                            update_obj = UpdateDataLog.objects.exclude(state='9').filter(datadate=reporting_date,
-                                                                                         target_id=target_id)
-                            if update_obj.exists():
-                                update_obj.update(raw_curvalue=update_obj[0].after_curvalue)
+                        update_obj = UpdateDataLog.objects.exclude(state='9').filter(datadate=reporting_date)
+                        if update_obj.exists():
+                            for i in update_obj:
+                                obj = update_obj.filter(id=i.id)
+                                obj.update(raw_curvalue=obj[0].after_curvalue)
                     except Exception as e:
                         pass
                 else:
