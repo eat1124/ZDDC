@@ -403,9 +403,9 @@ $(document).ready(function () {
             if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)){
                 $('td', row).css("color", "#0000FF");
             }
-            // 1 发布 0 未发布
+            // 1 ：发布 空： 未发布 0：取消发布
             // gorelease1 已发布 unrelease1 未发布
-            if (data.releasestate == '0') {
+            if (data.releasestate == '0' || data.releasestate == '') {
                 $("#save1").show();
                 $("#del1").show();
                 $("#supply1").show();
@@ -690,7 +690,7 @@ $(document).ready(function () {
                 $('td', row).css("color", "#FF0000");
             }
 
-            if (data.releasestate == '0') {
+            if (data.releasestate == '0' || data.releasestate == '') {
                 $("#save2").show();
                 $("#del2").show();
                 $("#supply2").show();
@@ -1004,7 +1004,7 @@ $(document).ready(function () {
                 $('td', row).css("color", "#FF0000");
             }
 
-            if (data.releasestate == '0') {
+            if (data.releasestate == '0' || data.releasestate == '') {
                 $("#save3").show();
                 $("#del3").show();
                 $("#supply3").show();
@@ -1253,7 +1253,7 @@ $(document).ready(function () {
             },
         ],
         "createdRow": function (row, data, index) {
-            if (data.curvalue == "" || data.releasestate == "0") {
+            if (data.curvalue == "" || data.releasestate == "0" || data.releasestate == '') {
                 $('td', row).css("color", "#FF0000");
             } else if ((data.target_upperlimit && data.curvalue > data.target_upperlimit) || (data.target_lowerlimit && data.curvalue < data.target_lowerlimit)) {
                 $('td', row).css("color", "#0000FF");
@@ -1487,7 +1487,7 @@ $(document).ready(function () {
                 $('td', row).css("color", "#FF0000");
             }
 
-            if (data.releasestate == '0') {
+            if (data.releasestate == '0' || data.releasestate == '') {
                 $("#save5").show();
                 $("#del5").show();
                 $("#supply5").show();

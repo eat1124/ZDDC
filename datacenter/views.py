@@ -5868,6 +5868,7 @@ def getcalculatedata(target, date, guid, all_constant, all_target, tableList, fo
     calculatedata.todayvalue = decimal.Decimal(str(calculatedata.todayvalue)).quantize(decimal.Decimal(Digit(target.digit)),
                                                                                    rounding=decimal.ROUND_HALF_UP)
     calculatedata.judgevalue = 0
+    calculatedata.releasestate = ''
     calculatedata.curvalue = calculatedata.todayvalue + calculatedata.judgevalue
 
     # 累计值计算
@@ -6769,6 +6770,7 @@ def reporting_new(request):
                     meterdata.todayvalue = decimal.Decimal(meterdata.metervalue) * decimal.Decimal(target.magnification)
                     meterdata.todayvalue = round(meterdata.todayvalue, target.digit)
                     meterdata.judgevalue = 0
+                    meterdata.releasestate = ''
                     meterdata.curvalue = meterdata.todayvalue + meterdata.judgevalue
 
                     if target.cumulative in ['1', '2', '3', '4', '5']:
@@ -6786,6 +6788,7 @@ def reporting_new(request):
                     entrydata.todayvalue = 0
                     entrydata.judgevalue = 0
                     entrydata.curvalue = 0
+                    entrydata.releasestate = ''
                     if target.cumulative in ['1', '2', '3', '4', '5']:
                         cumulative = getcumulative(tableList, target, reporting_date, entrydata.curvalue)
                         entrydata.cumulativemonth = cumulative["cumulativemonth"]
@@ -6800,6 +6803,7 @@ def reporting_new(request):
                     extractdata.datadate = reporting_date
                     extractdata.todayvalue = -9999
                     extractdata.judgevalue = 0
+                    extractdata.releasestate = ''
 
                     tablename = ""
                     try:
@@ -7140,13 +7144,14 @@ def reporting_del(request):
 
                 if all_data:
                     try:
-                        all_data.update(**{'state': '9', 'releasestate': '0'})
+                        # 删除更新数据记录日志表中数据
+                        for i in all_data:
+                            UpdateDataLog.objects.exclude(state='9').filter(datadate=reporting_date,target_id=i.target_id).update(state='9')
                     except Exception as e:
-                        JsonResponse({
-                            'status': 0,
-                            'data': '删除失败。'
-                        })
-                    else:
+                        pass
+                    try:
+                        all_data.update(**{'state': '9', 'releasestate': '0'})
+
                         ReportingLog.objects.create(**{
                             'write_time': datetime.datetime.now(),
                             'datadate': reporting_date,
@@ -7157,7 +7162,11 @@ def reporting_del(request):
                             'user_id': user_id,
                             'type': 'del',
                         })
-
+                    except Exception as e:
+                        JsonResponse({
+                            'status': 0,
+                            'data': '删除失败。'
+                        })
         return JsonResponse(result)
 
 
@@ -7236,6 +7245,32 @@ def reporting_release(request):
                         'user_id': user_id,
                         'type': 'release',
                     })
+                    # 以下为发布数据，修改更改数据的原始数据
+                    all_target_id_list = []
+                    try:
+                        for id in savedata15:
+                            obj = getmodels("Enteydata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                                id=int(id['id']))[0]
+                            all_target_id_list.append(obj.target_id)
+                        for id in savedata1:
+                            obj = getmodels("Meterdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                                id=int(id['id']))[0]
+                            all_target_id_list.append(obj.target_id)
+                        for id in savedata16:
+                            obj = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                                id=int(id['id']))[0]
+                            all_target_id_list.append(obj.target_id)
+                        for id in savedata17:
+                            obj = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").filter(
+                                id=int(id['id']))[0]
+                            all_target_id_list.append(obj.target_id)
+                        for target_id in all_target_id_list:
+                            update_obj = UpdateDataLog.objects.exclude(state='9').filter(datadate=reporting_date,
+                                                                                         target_id=target_id)
+                            if update_obj.exists():
+                                update_obj.update(raw_curvalue=update_obj[0].after_curvalue)
+                    except Exception as e:
+                        pass
                 else:
                     result['data'] = '{0}发布失败。'.format(error_info[:-1] if error_info.endswith(',') else error_info)
 
@@ -7375,28 +7410,28 @@ def reporting_save(request):
                 'zerodata', 'twentyfourdata', 'metervalue', 'target__magnification', 'todayvalue', 'judgevalue',
                 'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
                 'cumulativequarter',
-                'cumulativehalfyear', 'cumulativeyear', 'id'
+                'cumulativehalfyear', 'cumulativeyear', 'id',  'releasestate'
             )
         if operationtype == "15":
             save_query_data = getmodels("Entrydata", str(reporting_date.year)).objects.exclude(state="9").values(
                 'todayvalue', 'judgevalue',
                 'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
                 'cumulativequarter',
-                'cumulativehalfyear', 'cumulativeyear', 'id'
+                'cumulativehalfyear', 'cumulativeyear', 'id', 'releasestate'
             )
         if operationtype == "16":
             save_query_data = getmodels("Extractdata", str(reporting_date.year)).objects.exclude(state="9").values(
                 'todayvalue', 'judgevalue',
                 'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
                 'cumulativequarter',
-                'cumulativehalfyear', 'cumulativeyear', 'id'
+                'cumulativehalfyear', 'cumulativeyear', 'id',  'releasestate'
             )
         if operationtype == "17":
             save_query_data = getmodels("Calculatedata", str(reporting_date.year)).objects.exclude(state="9").values(
                 'todayvalue', 'judgevalue',
                 'curvalue', 'target__digit', 'target__datatype', 'curvaluedate', 'curvaluetext', 'cumulativemonth',
                 'cumulativequarter',
-                'cumulativehalfyear', 'cumulativeyear', 'id'
+                'cumulativehalfyear', 'cumulativeyear', 'id',  'releasestate'
             )
 
         for curdata in savedata:
@@ -7414,22 +7449,33 @@ def reporting_save(request):
                     after_curvalue = float(curdata["curvalue"])
                     # 更改了数据，记录数据
                     try:
-                        if before_curvalue != after_curvalue:
-                            before_curvalue = decimal.Decimal(str(before_curvalue)).quantize(decimal.Decimal(Digit(single_save_query_data['target__digit'])), rounding=decimal.ROUND_HALF_UP)
-                            after_curvalue = decimal.Decimal(str(after_curvalue)).\
-                                quantize(decimal.Decimal(Digit(single_save_query_data['target__digit'])), rounding=decimal.ROUND_HALF_UP)
-                            UpdateDataLog.objects.create(**{
-                                'cycletype': cycletype,
-                                'operationtype': operationtype,
-                                'datadate': reporting_date,
-                                'write_time': datetime.datetime.now(),
-                                'before_curvalue': before_curvalue,
-                                'after_curvalue': after_curvalue,
-                                'target_id': curdata['target_id'],
-                                'adminapp_id': app,
-                                'work': work,
-                                'user_id': request.user.id,
-                            })
+                        if single_save_query_data['releasestate'] == '0':
+                            if before_curvalue != after_curvalue:
+                                before_curvalue = decimal.Decimal(str(before_curvalue)).quantize(decimal.Decimal(Digit(single_save_query_data['target__digit'])), rounding=decimal.ROUND_HALF_UP)
+                                after_curvalue = decimal.Decimal(str(after_curvalue)).\
+                                    quantize(decimal.Decimal(Digit(single_save_query_data['target__digit'])), rounding=decimal.ROUND_HALF_UP)
+
+                                update_obj = UpdateDataLog.objects.exclude(state='9').filter(datadate=reporting_date, target_id=curdata['target_id'])
+                                if update_obj.exists():
+                                    update_obj.update(**{
+                                        'write_time': datetime.datetime.now(),
+                                        'before_curvalue': update_obj[0].raw_curvalue,
+                                        'after_curvalue': after_curvalue,
+                                    })
+                                else:
+                                    update_obj.create(**{
+                                        'cycletype': cycletype,
+                                        'operationtype': operationtype,
+                                        'datadate': reporting_date,
+                                        'write_time': datetime.datetime.now(),
+                                        'before_curvalue': before_curvalue,
+                                        'after_curvalue': after_curvalue,
+                                        'target_id': curdata['target_id'],
+                                        'adminapp_id': app,
+                                        'work': work,
+                                        'user_id': request.user.id,
+                                        'raw_curvalue': before_curvalue,
+                                    })
                     except Exception as e:
                         print(e)
                     try:
