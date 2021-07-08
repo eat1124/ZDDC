@@ -810,9 +810,13 @@ $(document).ready(function () {
                         info = data.info;
                     if (status == 1) {
                         table.ajax.reload();
+                        alert("提取成功！");
                     } else {
                         alert(info);
                     }
+                },
+                error: function (e) {
+                    alert("提取失败，请于管理员联系。");
                 }
             })
         }
